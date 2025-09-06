@@ -1,12 +1,11 @@
 ﻿-- Tạo database
-IF DB_ID('DoAnWeb') IS NOT NULL
-    DROP DATABASE DoAnWeb;
+IF DB_ID('WebMyPham') IS NOT NULL
+    DROP DATABASE WebMyPham;
 GO
-CREATE DATABASE DoAnWeb;
+CREATE DATABASE WebMyPham;
 GO
-USE DoAnWeb;
 
-USE DoAnWeb;
+USE WebMyPham;
 GO
 
 -- Bảng categories
