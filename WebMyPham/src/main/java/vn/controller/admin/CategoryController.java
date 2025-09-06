@@ -1,6 +1,7 @@
 package vn.controller.admin;
 
 import java.security.Principal;
+
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,8 +18,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import vn.entity.Category;
 import vn.entity.User;
-import vn.entity.repository.CategoryRepository;
-import vn.entity.repository.UserRepository;
+import vn.repository.CategoryRepository;
+import vn.repository.UserRepository;
 
 @Controller
 @RequestMapping("/admin")
