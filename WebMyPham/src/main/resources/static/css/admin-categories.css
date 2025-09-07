@@ -1,0 +1,203 @@
+/* Admin Categories Page Custom CSS */
+
+/* Custom styles for categories page */
+.page-title {
+  color: #1572e8;
+  font-weight: 600;
+}
+
+/* Card styling */
+.card {
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.card-title {
+  color: #333;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+/* Button styling */
+.btn-primary {
+  background: linear-gradient(45deg, #1572e8, #0d6efd);
+  border: none;
+  border-radius: 25px;
+  padding: 8px 20px;
+}
+
+.btn-primary:hover {
+  background: linear-gradient(45deg, #0d6efd, #1572e8);
+  transform: translateY(-1px);
+}
+
+/* Table styling */
+.table-striped tbody tr:nth-of-type(odd) {
+  background-color: #f8f9fa;
+}
+
+.table th {
+  background-color: #1572e8;
+  color: white;
+  font-weight: 600;
+  border: none;
+}
+
+/* Image styling in table */
+.category-image {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 2px solid #e9ecef;
+}
+
+/* Modal styling */
+.modal-header {
+  background: linear-gradient(45deg, #1572e8, #0d6efd);
+  color: white;
+  border-radius: 10px 10px 0 0;
+}
+
+.modal-title {
+  color: white !important;
+}
+
+/* Form styling */
+.form-group-default {
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+}
+
+.form-group-default:focus-within {
+  border-color: #1572e8;
+  box-shadow: 0 0 0 0.2rem rgba(21, 114, 232, 0.25);
+}
+
+/* Action buttons */
+.form-button-action .btn {
+  margin: 0 2px;
+  border-radius: 50%;
+  width: 35px;
+  height: 35px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-link.btn-primary {
+  color: #1572e8;
+}
+
+.btn-link.btn-primary:hover {
+  color: #0d6efd;
+  background-color: rgba(21, 114, 232, 0.1);
+}
+
+.btn-link.btn-danger {
+  color: #dc3545;
+}
+
+.btn-link.btn-danger:hover {
+  color: #c82333;
+  background-color: rgba(220, 53, 69, 0.1);
+}
+
+/* Breadcrumb styling */
+.breadcrumbs {
+  background-color: transparent;
+}
+
+.breadcrumbs .nav-item a {
+  color: #6c757d;
+  text-decoration: none;
+}
+
+.breadcrumbs .nav-item a:hover {
+  color: #1572e8;
+}
+
+/* Alert styling */
+.alert-success {
+  background-color: #d1edff;
+  border-color: #1572e8;
+  color: #0c5aa6;
+  border-radius: 8px;
+}
+
+/* Footer styling */
+.footer {
+  background-color: #f8f9fa;
+  border-top: 1px solid #e9ecef;
+}
+
+.footer .nav-link {
+  color: #6c757d;
+}
+
+.footer .nav-link:hover {
+  color: #1572e8;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .d-flex.align-items-center {
+    flex-direction: column;
+    align-items: stretch !important;
+  }
+
+  .ml-auto {
+    margin-left: 0 !important;
+    margin-top: 10px;
+  }
+
+  .category-image {
+    width: 40px;
+    height: 40px;
+  }
+}
+
+/* Loading animation */
+.loading {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(21, 114, 232, 0.3);
+  border-radius: 50%;
+  border-top-color: #1572e8;
+  animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Custom checkbox */
+.custom-checkbox {
+  position: relative;
+  display: inline-block;
+}
+
+/* Hover effects */
+.card:hover {
+  transform: translateY(-2px);
+  transition: all 0.3s ease;
+}
+
+/* Success message animation */
+.alert-success {
+  animation: slideIn 0.5s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

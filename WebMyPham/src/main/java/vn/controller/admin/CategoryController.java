@@ -87,6 +87,22 @@ public class CategoryController {
 		return "admin/editCategory";
 	}
 
+	// update category
+	@PostMapping(value = "/updateCategory")
+	public String updateCategory(@Validated @ModelAttribute("category") Category category, ModelMap model,
+			BindingResult bindingResult) {
+
+		if (bindingResult.hasErrors()) {
+			model.addAttribute("error", "Update failure");
+			return "admin/editCategory";
+		}
+
+		categoryRepository.save(category);
+		model.addAttribute("message", "Update successful!");
+
+		return "redirect:/admin/categories";
+	}
+
 	// delete category
 	@GetMapping("/delete/{id}")
 	public String delCategory(@PathVariable("id") Long id, Model model) {
