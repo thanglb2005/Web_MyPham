@@ -70,7 +70,26 @@ INSERT INTO users_roles(user_id, role_id)
 VALUES (1,1),(2,1),(3,1),(4,2);
 GO
 
--- Bảng products
+-- Bảng brands
+IF OBJECT_ID('brands', 'U') IS NOT NULL DROP TABLE brands;
+CREATE TABLE brands (
+    brand_id BIGINT IDENTITY(1,1) PRIMARY KEY,
+    brand_name NVARCHAR(255) NOT NULL,
+    brand_image NVARCHAR(255) NULL,
+    description NVARCHAR(1000) NULL,
+    origin NVARCHAR(255) NULL,
+    status BIT DEFAULT 1
+);
+
+INSERT INTO brands(brand_name, brand_image, description, origin, status) 
+VALUES 
+(N'Maybelline', 'maybelline.jpg', N'Thương hiệu mỹ phẩm nổi tiếng từ Mỹ', N'Mỹ', 1),
+(N'Innisfree', 'innisfree.jpg', N'Mỹ phẩm thiên nhiên từ đảo Jeju', N'Hàn Quốc', 1),
+(N'L''Oreal', 'loreal.jpg', N'Tập đoàn mỹ phẩm hàng đầu thế giới', N'Pháp', 1),
+(N'Nivea', 'nivea.jpg', N'Thương hiệu dưỡng da lâu đời từ Đức', N'Đức', 1);
+GO
+
+-- Bảng products 
 IF OBJECT_ID('products', 'U') IS NOT NULL DROP TABLE products;
 CREATE TABLE products (
     product_id BIGINT IDENTITY(1,1) PRIMARY KEY,
@@ -83,15 +102,19 @@ CREATE TABLE products (
     quantity INT NOT NULL,
     status BIT NULL,
     category_id BIGINT NULL,
+    brand_id BIGINT NULL,
+    manufacture_date DATE NULL,
+    expiry_date DATE NULL,
     favorite BIT NOT NULL,
-    CONSTRAINT FK_products_categories FOREIGN KEY(category_id) REFERENCES categories(category_id)
+    CONSTRAINT FK_products_categories FOREIGN KEY(category_id) REFERENCES categories(category_id),
+    CONSTRAINT FK_products_brands FOREIGN KEY(brand_id) REFERENCES brands(brand_id)
 );
 
-INSERT INTO products(description, discount, entered_date, price, product_image, product_name, quantity, status, category_id, favorite)
+INSERT INTO products(description, discount, entered_date, price, product_image, product_name, quantity, status, category_id, brand_id, manufacture_date, expiry_date, favorite)
 VALUES
-(N'Son môi cao cấp, giữ màu lâu, không chì', 10, '2025-09-04', 250000, 'son.jpg', N'Son đỏ Ruby', 100, 1, 1, 0),
-(N'Kem dưỡng trắng da ban đêm, an toàn cho mọi loại da', 5, '2025-09-04', 350000, 'kem.jpg', N'Kem dưỡng ban đêm', 50, 1, 2, 0),
-(N'Nước hoa hương hoa hồng sang trọng, lưu hương 12h', 0, '2025-09-04', 1200000, 'nuochoa.jpg', N'Nước hoa Rose', 30, 1, 3, 0);
+(N'Son môi cao cấp, giữ màu lâu, không chì', 10, '2025-09-04', 250000, 'son.jpg', N'Son đỏ Ruby', 100, 1, 1, 1, '2025-01-15', '2028-01-15', 0),
+(N'Kem dưỡng trắng da ban đêm, an toàn cho mọi loại da', 5, '2025-09-04', 350000, 'kem.jpg', N'Kem dưỡng ban đêm', 50, 1, 2, 2, '2025-03-20', '2027-03-20', 0),
+(N'Nước hoa hương hoa hồng sang trọng, lưu hương 12h', 0, '2025-09-04', 1200000, 'nuochoa.jpg', N'Nước hoa Rose', 30, 1, 3, 3, '2025-05-10', '2030-05-10', 0);
 GO
 
 -- Bảng orders
