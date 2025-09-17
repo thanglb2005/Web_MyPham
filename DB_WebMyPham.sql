@@ -22,7 +22,12 @@ VALUES
 (NULL, N'Kem dưỡng da'),
 (NULL, N'Nước hoa'),
 (NULL, N'Sữa rửa mặt'),
-(NULL, N'Toner');
+(NULL, N'Toner'),
+(NULL, N'Mặt nạ'),
+(NULL, N'Kem chống nắng'),
+(NULL, N'Phấn phủ'),
+(NULL, N'Tẩy tế bào chết'),
+(NULL, N'Serum dưỡng da');
 GO
 
 -- Bảng user
