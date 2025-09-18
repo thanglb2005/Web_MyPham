@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý danh mục - OneShop Admin</title>
+    <link rel="icon" href="/images/favicon.png" />
+    <link rel="stylesheet" href="/fonts/flaticon/flaticon.css" />
+    <link rel="stylesheet" href="/fonts/icofont/icofont.min.css" />
+    <link rel="stylesheet" href="/fonts/fontawesome/fontawesome.min.css" />
+    <link rel="stylesheet" href="/vendor/bootstrap/bootstrap.min.css" />
+    <link rel="stylesheet" href="/css/main.css" />
+    <style>
+        :root {
+            --primary-color: #007bff;
+            --primary-dark: #0056b3;
+            --primary-light: #66b3ff;
+        }
+        
+        .btn-primary {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            border-color: var(--primary-dark);
+        }
+        
+        .btn-warning {
+            background: #ffc107;
+            border-color: #ffc107;
+            color: #212529;
+        }
+        
+        .btn-danger {
+            background: #dc3545;
+            border-color: #dc3545;
+        }
+        
+        .admin-sidebar {
+            background: #f8f9fa;
+            min-height: 100vh;
+            padding: 20px 0;
+        }
+        
+        .admin-menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .admin-menu-item {
+            display: block;
+            padding: 15px 20px;
+            color: #333;
+            text-decoration: none;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .admin-menu-item:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+        
+        .admin-menu-item.active {
+            background: var(--primary-color);
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div th:replace="admin/fragments/header :: header"></div>
+
+    <div class="container-fluid mt-4">
+        <div class="row">
+            <div th:replace="admin/fragments/navbar :: navbar"></div>
+
+            <div class="col-md-9">
+                <div class="admin-content">
+                    <h2>Quản lý danh mục</h2>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>Thêm danh mục mới</h5>
+                        </div>
+                        <div class="card-body">
+                            <form th:action="@{/admin/categories/add}" method="post" class="row">
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label for="categoryName">Tên danh mục</label>
+                                        <input type="text" id="categoryName" name="categoryName" class="form-control" placeholder="Nhập tên danh mục" required />
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label for="categoryImage">URL ảnh danh mục</label>
+                                        <input type="text" id="categoryImage" name="categoryImage" class="form-control" placeholder="Nhập URL ảnh (tùy chọn)" />
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label>&nbsp;</label>
+                                        <button type="submit" class="btn btn-primary btn-block">Thêm danh mục</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <div class="card mt-4">
+                        <div class="card-header">
+                            <h5>Danh sách danh mục</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Tên danh mục</th>
+                                            <th>Ảnh</th>
+                                            <th>Hành động</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr th:each="category : ${categories}">
+                                            <td th:text="${category.categoryId}"></td>
+                                            <td th:text="${category.categoryName}"></td>
+                                            <td>
+                                                <img th:if="${category.categoryImage}" th:src="${category.categoryImage}" alt="Category Image" style="width: 50px; height: 50px; object-fit: cover;" />
+                                                <span th:unless="${category.categoryImage}">Không có ảnh</span>
+                                            </td>
+                                            <td>
+                                                <button type="button" class="btn btn-warning btn-sm" data-bs-toggle="modal" th:data-bs-target="'#editCategoryModal' + ${category.categoryId}">
+                                                    <i class="icofont-edit"></i> Sửa
+                                                </button>
+                                                <a th:href="@{/admin/categories/delete/{id}(id=${category.categoryId})}" class="btn btn-danger btn-sm" onclick="return confirm('Bạn có chắc chắn muốn xóa danh mục này?');">
+                                                    <i class="icofont-trash"></i> Xóa
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Category Modals -->
+    <div th:each="category : ${categories}" class="modal fade" th:id="'editCategoryModal' + ${category.categoryId}" tabindex="-1" aria-labelledby="editCategoryModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form th:action="@{/admin/categories/edit/{id}(id=${category.categoryId})}" method="post">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="editCategoryModalLabel">Sửa danh mục</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label for="editCategoryName" class="form-label">Tên danh mục</label>
+                            <input type="text" class="form-control" id="editCategoryName" name="categoryName" th:value="${category.categoryName}" required />
+                        </div>
+                        <div class="form-group">
+                            <label for="editCategoryImage" class="form-label">URL ảnh danh mục</label>
+                            <input type="text" class="form-control" id="editCategoryImage" name="categoryImage" th:value="${category.categoryImage}" />
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                        <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div th:replace="admin/fragments/footer :: footer"></div>
+
+    <script src="/vendor/bootstrap/jquery-3.6.0.min.js"></script>
+    <script src="/vendor/bootstrap/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - OneShop</title>
+    <link rel="icon" href="/images/favicon.png" />
+    <link rel="stylesheet" href="/fonts/flaticon/flaticon.css" />
+    <link rel="stylesheet" href="/fonts/icofont/icofont.min.css" />
+    <link rel="stylesheet" href="/fonts/fontawesome/fontawesome.min.css" />
+    <link rel="stylesheet" href="/vendor/bootstrap/bootstrap.min.css" />
+    <link rel="stylesheet" href="/css/main.css" />
+    <link rel="stylesheet" href="/css/profile.css" />
+    <style>
+        :root {
+            --primary-color: #007bff;
+            --primary-dark: #0056b3;
+            --primary-light: #66b3ff;
+        }
+        
+        .btn-primary {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            border-color: var(--primary-dark);
+        }
+        
+        .text-primary {
+            color: var(--primary-color) !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="user-profile-part">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-md-8 col-lg-6">
+                    <div class="user-profile-card">
+                        <div class="user-profile-header">
+                            <h3>Thông tin cá nhân</h3>
+                            <p>Cập nhật thông tin tài khoản của bạn</p>
+                        </div>
+                        <div class="user-profile-body">
+                            <form th:action="@{/update-profile}" method="post">
+                                <div class="form-group">
+                                    <label for="name">Họ và tên</label>
+                                    <input type="text" id="name" name="name" class="form-control" th:value="${user.name}" required />
+                                </div>
+                                <div class="form-group">
+                                    <label for="email">Email</label>
+                                    <input type="email" id="email" name="email" class="form-control" th:value="${user.email}" required />
+                                </div>
+                                <div class="form-group">
+                                    <label for="avatar">Avatar URL</label>
+                                    <input type="text" id="avatar" name="avatar" class="form-control" th:value="${user.avatar}" />
+                                </div>
+                                <div class="form-group">
+                                    <button type="submit" class="btn btn-primary btn-block">Cập nhật thông tin</button>
+                                </div>
+                                <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+                                <div th:if="${message}" class="alert alert-success" th:text="${message}"></div>
+                            </form>
+                            
+                            <hr class="my-4">
+                            
+                            <div class="form-group">
+                                <a href="/change-password" class="btn btn-outline-primary btn-block">Đổi mật khẩu</a>
+                            </div>
+                            
+                            <div class="form-group">
+                                <a href="/" class="btn btn-secondary btn-block">Về trang chủ</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

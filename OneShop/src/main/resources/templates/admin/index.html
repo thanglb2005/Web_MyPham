@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OneShop - Trang quản trị</title>
+    <link rel="icon" href="/images/favicon.png" />
+    <link rel="stylesheet" href="/fonts/flaticon/flaticon.css" />
+    <link rel="stylesheet" href="/fonts/icofont/icofont.min.css" />
+    <link rel="stylesheet" href="/fonts/fontawesome/fontawesome.min.css" />
+    <link rel="stylesheet" href="/vendor/bootstrap/bootstrap.min.css" />
+    <link rel="stylesheet" href="/css/main.css" />
+    <style>
+        :root {
+            --primary-color: #007bff;
+            --primary-dark: #0056b3;
+            --primary-light: #66b3ff;
+        }
+        
+        .card-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+        
+        .btn-primary {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            border-color: var(--primary-dark);
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
+            color: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
+        }
+        
+        .stat-icon {
+            font-size: 3rem;
+            opacity: 0.8;
+        }
+        
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        
+        .stat-label {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+    <div th:replace="~{admin/fragments/header :: header}"></div>
+    
+    <div class="container-fluid">
+        <div class="row">
+            <div th:replace="~{admin/fragments/navbar :: navbar}"></div>
+            
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+                <!-- Header -->
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-4 border-bottom">
+                    <div>
+                        <h1 class="h2 text-primary">Dashboard</h1>
+                        <p class="text-muted">Tổng quan hệ thống OneShop</p>
+                    </div>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <div class="btn-group me-2">
+                            <button type="button" class="btn btn-sm btn-outline-secondary">
+                                <i class="fas fa-download"></i> Export
+                            </button>
+                        </div>
+                        <a href="/admin/categories" class="btn btn-sm btn-primary">
+                            <i class="fas fa-plus"></i> Quản lý Categories
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Statistics Cards -->
+                <div class="row mb-4">
+                    <div class="col-xl-3 col-md-6 mb-4">
+                        <div class="stat-card">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <div class="stat-label">Tổng Users</div>
+                                    <div class="stat-number" th:text="${totalUsers}">0</div>
+                                </div>
+                                <div class="stat-icon">
+                                    <i class="fas fa-users"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-xl-3 col-md-6 mb-4">
+                        <div class="stat-card">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <div class="stat-label">Tổng Categories</div>
+                                    <div class="stat-number" th:text="${totalCategories}">0</div>
+                                </div>
+                                <div class="stat-icon">
+                                    <i class="fas fa-tags"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-xl-3 col-md-6 mb-4">
+                        <div class="stat-card">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <div class="stat-label">Tổng Products</div>
+                                    <div class="stat-number">0</div>
+                                </div>
+                                <div class="stat-icon">
+                                    <i class="fas fa-box"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-xl-3 col-md-6 mb-4">
+                        <div class="stat-card">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <div class="stat-label">Tổng Orders</div>
+                                    <div class="stat-number">0</div>
+                                </div>
+                                <div class="stat-icon">
+                                    <i class="fas fa-shopping-cart"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Welcome Section -->
+                <div class="row">
+                    <div class="col-lg-8">
+                        <div class="card shadow mb-4">
+                            <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                                <h6 class="m-0 font-weight-bold text-primary">
+                                    <i class="fas fa-tachometer-alt me-2"></i>Chào mừng đến với OneShop Admin
+                                </h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-8">
+                                        <h4 class="text-primary mb-3">Hệ thống quản lý mỹ phẩm cao cấp</h4>
+                                        <p class="mb-3">OneShop là nền tảng quản lý mỹ phẩm chuyên nghiệp, giúp bạn dễ dàng quản lý toàn bộ hệ thống kinh doanh mỹ phẩm.</p>
+                                        
+                                        <div class="row mb-3">
+                                            <div class="col-md-6">
+                                                <h6 class="text-primary">Tính năng chính:</h6>
+                                                <ul class="list-unstyled">
+                                                    <li><i class="fas fa-check text-success me-2"></i>Quản lý danh mục sản phẩm</li>
+                                                    <li><i class="fas fa-check text-success me-2"></i>Quản lý sản phẩm chi tiết</li>
+                                                    <li><i class="fas fa-check text-success me-2"></i>Quản lý đơn hàng</li>
+                                                    <li><i class="fas fa-check text-success me-2"></i>Quản lý người dùng</li>
+                                                </ul>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <h6 class="text-primary">Thống kê:</h6>
+                                                <ul class="list-unstyled">
+                                                    <li><i class="fas fa-chart-bar text-info me-2"></i>Báo cáo doanh thu</li>
+                                                    <li><i class="fas fa-chart-pie text-info me-2"></i>Phân tích bán hàng</li>
+                                                    <li><i class="fas fa-users text-info me-2"></i>Thống kê khách hàng</li>
+                                                    <li><i class="fas fa-box text-info me-2"></i>Quản lý kho</li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="d-flex gap-2">
+                                            <a href="/admin/categories" class="btn btn-primary">
+                                                <i class="fas fa-tags me-1"></i>Quản lý Categories
+                                            </a>
+                                            <a href="/admin/products" class="btn btn-outline-primary">
+                                                <i class="fas fa-box me-1"></i>Quản lý Products
+                                            </a>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 text-center">
+                                        <i class="fas fa-store fa-5x text-primary opacity-50"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-lg-4">
+                        <div class="card shadow mb-4">
+                            <div class="card-header py-3">
+                                <h6 class="m-0 font-weight-bold text-primary">
+                                    <i class="fas fa-info-circle me-2"></i>Thông tin hệ thống
+                                </h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <small class="text-muted">Phiên bản</small>
+                                    <div class="fw-bold">OneShop v1.0</div>
+                                </div>
+                                <div class="mb-3">
+                                    <small class="text-muted">Cập nhật cuối</small>
+                                    <div class="fw-bold">Hôm nay</div>
+                                </div>
+                                <div class="mb-3">
+                                    <small class="text-muted">Trạng thái</small>
+                                    <div>
+                                        <span class="badge bg-success">Hoạt động</span>
+                                    </div>
+                                </div>
+                                <hr>
+                                <div class="text-center">
+                                    <small class="text-muted">© 2024 OneShop Team</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <div th:replace="~{admin/fragments/footer :: footer}"></div>
+
+    <script src="/vendor/bootstrap/jquery-1.12.4.min.js"></script>
+    <script src="/vendor/bootstrap/popper.min.js"></script>
+    <script src="/vendor/bootstrap/bootstrap.min.js"></script>
+    <script src="/js/main.js"></script>
+</body>
+</html>

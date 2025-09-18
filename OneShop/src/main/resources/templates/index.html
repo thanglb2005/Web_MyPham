@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OneShop - Mỹ phẩm cao cấp</title>
+    <link rel="icon" href="/images/favicon.png" />
+    <link rel="stylesheet" href="/fonts/flaticon/flaticon.css" />
+    <link rel="stylesheet" href="/fonts/icofont/icofont.min.css" />
+    <link rel="stylesheet" href="/fonts/fontawesome/fontawesome.min.css" />
+    <link rel="stylesheet" href="/vendor/venobox/venobox.min.css" />
+    <link rel="stylesheet" href="/vendor/slickslider/slick.min.css" />
+    <link rel="stylesheet" href="/vendor/niceselect/nice-select.min.css" />
+    <link rel="stylesheet" href="/vendor/bootstrap/bootstrap.min.css" />
+    <link rel="stylesheet" href="/css/main.css" />
+    <link rel="stylesheet" href="/css/index.css" />
+    <style>
+        /* Đổi màu xanh lá sang xanh nước biển */
+        :root {
+            --primary-color: #007bff;
+            --primary-dark: #0056b3;
+            --primary-light: #66b3ff;
+            --secondary-color: #17a2b8;
+            --success-color: #28a745;
+            --warning-color: #ffc107;
+            --danger-color: #dc3545;
+            --info-color: #17a2b8;
+        }
+        
+        .btn-inline {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        
+        .btn-inline:hover {
+            background: var(--primary-dark);
+            border-color: var(--primary-dark);
+        }
+        
+        .btn-outline {
+            color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        
+        .btn-outline:hover {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        
+        .navbar-brand {
+            color: var(--primary-color) !important;
+        }
+        
+        .text-primary {
+            color: var(--primary-color) !important;
+        }
+        
+        .bg-primary {
+            background-color: var(--primary-color) !important;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header-part">
+        <div class="container">
+            <div class="header-content">
+                <div class="header-left">
+                    <div class="header-logo">
+                        <a href="/">
+                            <img src="/images/logo.png" alt="OneShop" />
+                        </a>
+                    </div>
+                </div>
+                <div class="header-center">
+                    <div class="header-search">
+                        <form>
+                            <input type="text" placeholder="Tìm kiếm sản phẩm..." />
+                            <button type="submit">
+                                <i class="icofont-search"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                <div class="header-right">
+                    <div class="header-account">
+                        <div th:if="${user != null}">
+                            <a href="/profile" class="header-user">
+                                <i class="icofont-user"></i>
+                                <span th:text="${user.name}"></span>
+                            </a>
+                            <a href="/logout" class="header-logout">
+                                <i class="icofont-logout"></i>
+                                <span>Đăng xuất</span>
+                            </a>
+                        </div>
+                        <div th:if="${user == null}">
+                            <a href="/login" class="header-login">
+                                <i class="icofont-login"></i>
+                                <span>Đăng nhập</span>
+                            </a>
+                            <a href="/register" class="header-register">
+                                <i class="icofont-user-plus"></i>
+                                <span>Đăng ký</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation -->
+    <nav class="navbar-part">
+        <div class="container">
+            <div class="navbar-content">
+                <div class="navbar-left">
+                    <div class="navbar-category">
+                        <a href="#" class="navbar-category-btn">
+                            <i class="icofont-navigation-menu"></i>
+                            <span>Danh mục</span>
+                        </a>
+                    </div>
+                </div>
+                <div class="navbar-center">
+                    <ul class="navbar-menu">
+                        <li><a href="/">Trang chủ</a></li>
+                        <li><a href="/categories">Danh mục</a></li>
+                        <li><a href="/about">Giới thiệu</a></li>
+                        <li><a href="/contact">Liên hệ</a></li>
+                    </ul>
+                </div>
+                <div class="navbar-right">
+                    <div class="navbar-cart">
+                        <a href="/cart">
+                            <i class="icofont-shopping-cart"></i>
+                            <span>Giỏ hàng</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Banner Section -->
+    <section class="home-index-slider slider-arrow slider-dots">
+        <div class="banner-part banner-1">
+            <div class="container">
+                <div class="row align-items-center">
+                    <div class="col-md-6 col-lg-6">
+                        <div class="banner-content">
+                            <h1>Mỹ phẩm cao cấp - Giao hàng tận nhà miễn phí</h1>
+                            <p>OneShop mang đến những sản phẩm mỹ phẩm chất lượng cao, an toàn và hiệu quả. Chúng tôi cam kết mang đến vẻ đẹp tự nhiên cho bạn.</p>
+                            <div class="banner-btn">
+                                <a class="btn btn-inline" href="/categories">
+                                    <i class="fas fa-shopping-basket"></i>
+                                    <span>Mua sắm ngay</span>
+                                </a>
+                                <a class="btn btn-outline" href="#categories">
+                                    <i class="icofont-sale-discount"></i>
+                                    <span>Khuyến mãi</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-6">
+                        <div class="banner-img">
+                            <img src="/images/home/index/01.png" alt="OneShop" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Categories Section -->
+    <section id="categories" class="category-part">
+        <div class="container">
+            <div class="row">
+                <div class="col-12">
+                    <div class="section-heading">
+                        <h2>Danh mục sản phẩm</h2>
+                        <p>Khám phá các danh mục mỹ phẩm đa dạng của chúng tôi</p>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div th:each="category : ${categories}" class="col-md-3 col-sm-6 col-12">
+                    <div class="category-card">
+                        <div class="category-img">
+                            <img th:if="${category.categoryImage}" th:src="${category.categoryImage}" alt="Category" />
+                            <img th:unless="${category.categoryImage}" src="/images/category/vegetables.jpg" alt="Category" />
+                        </div>
+                        <div class="category-content">
+                            <h4 th:text="${category.categoryName}"></h4>
+                            <a href="#" class="category-btn">Xem sản phẩm</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section class="about-part">
+        <div class="container">
+            <div class="row">
+                <div class="col-12">
+                    <div class="section-heading">
+                        <h2>Về OneShop</h2>
+                        <p>OneShop là cửa hàng mỹ phẩm cao cấp với đa dạng các sản phẩm chăm sóc da, trang điểm và chăm sóc tóc. Chúng tôi cam kết mang đến những sản phẩm chất lượng tốt nhất cho khách hàng.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer-part">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="footer-content">
+                        <h4>OneShop</h4>
+                        <p>Mỹ phẩm cao cấp - Vẻ đẹp tự nhiên</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="footer-content">
+                        <h4>Liên kết</h4>
+                        <ul>
+                            <li><a href="/">Trang chủ</a></li>
+                            <li><a href="/categories">Danh mục</a></li>
+                            <li><a href="/about">Giới thiệu</a></li>
+                            <li><a href="/contact">Liên hệ</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="footer-content">
+                        <h4>Liên hệ</h4>
+                        <p>Email: info@oneshop.com</p>
+                        <p>Điện thoại: 0123 456 789</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="/vendor/bootstrap/jquery-3.6.0.min.js"></script>
+    <script src="/vendor/bootstrap/bootstrap.bundle.min.js"></script>
+    <script src="/vendor/slickslider/slick.min.js"></script>
+    <script src="/vendor/venobox/venobox.min.js"></script>
+    <script src="/vendor/niceselect/nice-select.min.js"></script>
+    <script src="/js/main.js"></script>
+    <script src="/js/index.js"></script>
+</body>
+</html>
