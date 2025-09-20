@@ -47,6 +47,21 @@ public class CategoryController {
     }
 
     @GetMapping("/categories/edit/{id}")
+    public String editCategoryForm(@PathVariable Long id, HttpSession session, Model model) {
+        User user = (User) session.getAttribute("user");
+        if (user == null) {
+            return "redirect:/login";
+        }
+        
+        Category category = categoryService.getCategoryById(id).orElse(null);
+        if (category != null) {
+            model.addAttribute("category", category);
+            return "admin/editCategory";
+        }
+        return "redirect:/admin/categories";
+    }
+
+    @PostMapping("/categories/edit/{id}")
     public String editCategory(@PathVariable Long id, 
                               @RequestParam String categoryName,
                               @RequestParam(required = false) String categoryImage,
