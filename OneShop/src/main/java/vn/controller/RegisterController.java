@@ -63,11 +63,20 @@ public class RegisterController {
         System.out.println("Email: " + email);
         System.out.println("OTP: " + random_otp);
         
-        String body = "<div>\r\n" + 
-                     "<h3>Mã xác thực OTP của bạn là: <span style=\"color:#007bff; font-weight: bold;\">"
-                     + random_otp + "</span></h3>\r\n" + 
+        String body = "<div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;'>" +
+                     "<h2 style='color: #007bff; text-align: center;'>OneShop - Xác thực đăng ký tài khoản</h2>" +
+                     "<p>Xin chào <strong>" + name + "</strong>,</p>" +
+                     "<p>Chào mừng bạn đến với OneShop! Cảm ơn bạn đã đăng ký tài khoản.</p>" +
+                     "<p>Để hoàn tất quá trình đăng ký, vui lòng nhập mã xác thực OTP sau:</p>" +
+                     "<div style='text-align: center; margin: 20px 0;'>" +
+                     "<span style='background-color: #007bff; color: white; padding: 15px 30px; font-size: 24px; font-weight: bold; border-radius: 5px;'>" + random_otp + "</span>" +
+                     "</div>" +
+                     "<p>Mã này có hiệu lực trong 10 phút. Vui lòng không chia sẻ mã này với bất kỳ ai.</p>" +
+                     "<p>Nếu bạn không đăng ký tài khoản OneShop, vui lòng bỏ qua email này.</p>" +
+                     "<hr style='margin: 20px 0;'>" +
+                     "<p style='color: #666; font-size: 12px;'>OneShop Team</p>" +
                      "</div>";
-        sendMailService.queue(email, "Đăng ký tài khoản OneShop", body);
+        sendMailService.queue(email, "OneShop - Xác thực đăng ký tài khoản", body);
 
         // Lưu thông tin user tạm thời vào session
         User tempUser = new User();

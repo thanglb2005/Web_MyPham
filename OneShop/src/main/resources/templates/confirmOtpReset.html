@@ -19,7 +19,7 @@
      name="keywords"
      content="organic, food, shop, ecommerce, store, html, bootstrap, template, agriculture, vegetables, products, farm, grocery, natural, online"
    />
-   <title>OneShop - Mỹ phẩm cao cấp</title>
+   <title>OneShop - Xác thực OTP</title>
    <link rel="icon" href="/images/favicon.png" />
    <link rel="stylesheet" href="/fonts/flaticon/flaticon.css" />
    <link rel="stylesheet" href="/fonts/icofont/icofont.min.css" />
@@ -64,14 +64,16 @@
        color: var(--primary-color) !important;
      }
      
-     .form-check-input:checked {
-       background-color: var(--primary-color) !important;
-       border-color: var(--primary-color) !important;
-     }
-     
      .user-form-logo img {
        width: 350px !important;
        height: auto !important;
+     }
+     
+     .otp-input {
+       text-align: center;
+       font-size: 24px;
+       font-weight: bold;
+       letter-spacing: 5px;
      }
    </style>
  </head>
@@ -85,33 +87,12 @@
            </div>
            <div class="user-form-card">
              <div class="user-form-title">
-               <h2>Đăng nhập!</h2>
-               <p>Sử Dụng Thông Tin Đăng Nhập Của Bạn Để Truy Cập</p>
-               <br>
-               <div class="alert alert-success" role="alert"
-					th:if="${message}">
-					<strong>Chúc mừng !</strong>  Bạn đã đăng ký và kích hoạt tài khoản thành công!
-				</div>
-				
+               <h2>Xác thực OTP</h2>
+               <p>Nhập mã xác thực 6 chữ số đã được gửi tới email của bạn</p>
+               <p><strong>Email: <span th:text="${email}"></span></strong></p>
              </div>
              <div class="user-form-group">
-               <ul class="user-form-social">
-                 <li>
-                   <a href="javascript:void(0);" class="facebook">
-                   	<i class="fab fa-facebook-f"></i>login with facebook
-                   </a>
-                 </li>
-
-                 <li>
-                   <a href="javascript:void(0);" class="google">
-                   	<i class="fab fa-google"></i>login with google
-                   </a>
-                 </li>
-
-               </ul>
-               <div class="user-form-divider"><p>hoặc</p></div>
-               
-               <form th:action="@{/login}" method="post" class="user-form">
+               <form th:action="@{/confirmOtpReset}" method="post" class="user-form">
                
               		 <!-- error message -->
 					<div th:if="${error}">
@@ -120,54 +101,17 @@
 					<br>
                  <div class="form-group">
                    <input
-                     type="email"
-                     name="email"
-                     class="form-control"
-                     placeholder="Địa chỉ Email"
+                     type="text"
+                     name="otp"
+                     class="form-control otp-input"
+                     placeholder="Nhập mã OTP"
+                     maxlength="6"
                      autocomplete="off"
+                     required
                    />
-                 </div>
-                 <div class="form-group">
-                   <input
-                     type="password"
-                     name="password"
-                     class="form-control"
-                     id="myPass"
-                     placeholder="Mật khẩu"
-                   />
-                 </div>
-                 <div class="row mb-3">
-                   <div class="col-6">
-                     <div class="form-check">
-                       <input
-                         class="form-check-input"
-                         type="checkbox"
-                         value=""
-                         id="check"
-                         onclick="hidePass()"
-                       />
-                       <label class="form-check-label" for="check" >Hiển thị mật khẩu</label>
-                     </div>
-                   </div>
-                   <div class="col-6">
-                     <div class="form-check">
-                       <input
-                         class="form-check-input"
-                         type="checkbox"
-                         name="rememberMe"
-                         value="true"
-                         id="rememberMe"
-                       />
-                       <label class="form-check-label" for="rememberMe" >Ghi nhớ đăng nhập</label>
-                     </div>
-                   </div>
                  </div>
                  <div class="form-button">
-                   <button type="submit">Đăng nhập</button>
-                   <p>
-                       Quên Mật Khẩu?
-                       <a th:href="@{/forgotPassword}">Tại đây</a>
-                   </p>
+                   <button type="submit">Xác thực</button>
                  </div>
                </form>
                
@@ -175,7 +119,7 @@
            </div>
            <div class="user-form-remind">
              <p>
-               Không Có Bất Kỳ Tài Khoản?<a th:href="@{/register}">Đăng Ký Tại Đây</a>
+               Không nhận được email? <a th:href="@{/forgotPassword}">Gửi lại</a>
              </p>
            </div>
            <div class="user-form-footer">
@@ -187,15 +131,14 @@
    </section>
    
    <script>
-		function hidePass() {
-			var x = document.getElementById("myPass");
-			if (x.type === "password") {
-				x.type = "text";
-			} else {
-				x.type = "password";
-			}
-		}
-	</script>
+     // Auto focus on OTP input
+     document.addEventListener('DOMContentLoaded', function() {
+       const otpInput = document.querySelector('input[name="otp"]');
+       if (otpInput) {
+         otpInput.focus();
+       }
+     });
+   </script>
    
    <script src="/vendor/bootstrap/jquery-1.12.4.min.js"></script>
    <script src="/vendor/bootstrap/popper.min.js"></script>
