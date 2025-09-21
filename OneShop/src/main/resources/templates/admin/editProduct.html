@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chỉnh sửa sản phẩm - OneShop Admin</title>
+
+    <!-- CSS Libraries -->
+    <link rel="stylesheet" href="/assets/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="/assets/css/atlantis.min.css" />
+    <link rel="stylesheet" href="/fonts/fontawesome/fontawesome.min.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
+    />
+
+    <style>
+      /* Fixed Sidebar */
+      .sidebar {
+        position: fixed !important;
+        top: 60px;
+        left: 0;
+        bottom: 0;
+        z-index: 1028;
+        width: 250px;
+        background: white !important;
+        border-right: 1px solid #e9ecef;
+        margin: 0;
+        padding: 0;
+      }
+
+      /* Main Content Adjustment */
+      .main-panel {
+        margin-top: 60px !important;
+        margin-left: 250px !important;
+        padding: 0;
+        margin-right: 0;
+      }
+
+      .content {
+        padding: 0;
+        margin: 0;
+        position: relative;
+        top: 0;
+      }
+
+      .page-inner {
+        padding: 20px;
+        margin: 0;
+      }
+
+      .page-header {
+        padding: 15px 20px;
+        margin: 0;
+        background: white;
+        border-bottom: 1px solid #e9ecef;
+        position: relative;
+        top: 0;
+      }
+
+      .page-title {
+        color: #333;
+        font-size: 1.8rem;
+        margin: 0;
+        font-weight: 600;
+      }
+
+      .card {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        border: 1px solid #dee2e6;
+        overflow: hidden;
+      }
+
+      .card-header {
+        background: #f8f9fa;
+        border-bottom: 1px solid #dee2e6;
+        padding: 15px 20px;
+        font-weight: 600;
+        color: #495057;
+      }
+
+      .card-body {
+        padding: 20px;
+      }
+
+      .form-group {
+        margin-bottom: 20px;
+      }
+
+      .form-label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: 500;
+        color: #495057;
+      }
+
+      .form-control {
+        width: 100%;
+        padding: 10px 15px;
+        border: 1px solid #ced4da;
+        border-radius: 5px;
+        font-size: 0.9rem;
+      }
+
+      .form-control:focus {
+        outline: none;
+        border-color: #007bff;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+      }
+
+      .btn {
+        border: none;
+        border-radius: 5px;
+        padding: 10px 20px;
+        font-weight: 500;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        text-decoration: none;
+        transition: all 0.3s ease;
+      }
+
+      .btn:hover {
+        opacity: 0.9;
+      }
+
+      .btn-primary {
+        background: #007bff;
+        color: white;
+      }
+
+      .btn-success {
+        background: #28a745;
+        color: white;
+      }
+
+      .btn-secondary {
+        background: #6c757d;
+        color: white;
+      }
+
+      .form-control-file {
+        display: block;
+        width: 100%;
+        padding: 8px 12px;
+        font-size: 14px;
+        line-height: 1.5;
+        color: #495057;
+        background-color: #fff;
+        background-clip: padding-box;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+        transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+      }
+
+      .form-control-file:focus {
+        border-color: #007bff;
+        outline: 0;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+      }
+
+      .current-image {
+        max-width: 200px;
+        max-height: 200px;
+        object-fit: contain;
+        border-radius: 8px;
+        border: 2px solid #e9ecef;
+        margin-bottom: 10px;
+      }
+
+      .image-preview {
+        max-width: 200px;
+        max-height: 200px;
+        object-fit: contain;
+        border-radius: 8px;
+        border: 2px solid #28a745;
+        margin-top: 10px;
+        display: none;
+      }
+
+      .breadcrumb {
+        background: transparent;
+        padding: 0;
+        margin: 0;
+      }
+
+      .breadcrumb-item + .breadcrumb-item::before {
+        content: ">";
+        color: #6c757d;
+      }
+
+      .breadcrumb-item a {
+        color: #007bff;
+        text-decoration: none;
+      }
+
+      .breadcrumb-item a:hover {
+        text-decoration: underline;
+      }
+
+      .breadcrumb-item.active {
+        color: #6c757d;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrapper">
+      <!-- Header -->
+      <th:block th:replace="~{admin/fragments/header :: header}"></th:block>
+
+      <!-- Navbar -->
+      <th:block th:replace="~{admin/fragments/navbar :: navbar}"></th:block>
+
+      <div class="main-panel">
+        <div class="content">
+          <!-- Page Header -->
+          <div class="page-header">
+            <h2 class="page-title">Chỉnh sửa sản phẩm</h2>
+            <nav aria-label="breadcrumb">
+              <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                  <a th:href="@{/admin/home}">Trang chủ</a>
+                </li>
+                <li class="breadcrumb-item">
+                  <a th:href="@{/admin/products}">Quản lý sản phẩm</a>
+                </li>
+                <li class="breadcrumb-item active">Chỉnh sửa sản phẩm</li>
+              </ol>
+            </nav>
+          </div>
+
+          <div class="page-inner">
+            <div class="row justify-content-center">
+              <div class="col-md-10">
+                <div class="card">
+                  <div class="card-header">
+                    <h5 class="mb-0">
+                      <i class="fas fa-edit"></i>
+                      Thông tin sản phẩm
+                    </h5>
+                  </div>
+                  <div class="card-body">
+                    <form
+                      th:action="@{/admin/editProduct/{id}(id=${product.productId})}"
+                      th:object="${product}"
+                      method="post"
+                      enctype="multipart/form-data"
+                    >
+                      <div class="row">
+                        <div class="col-sm-12">
+                          <div class="form-group">
+                            <label class="form-label">Tên sản phẩm</label>
+                            <input
+                              th:field="*{productName}"
+                              type="text"
+                              class="form-control"
+                              placeholder="Tên sản phẩm..."
+                              required
+                            />
+                          </div>
+                        </div>
+
+                        <div class="col-md-6">
+                          <div class="form-group">
+                            <label class="form-label">Danh mục</label>
+                            <select
+                              class="form-control"
+                              name="categoryId"
+                              required
+                            >
+                              <option value="">Chọn danh mục</option>
+                              <option
+                                th:each="category : ${categoryList}"
+                                th:value="${category.categoryId}"
+                                th:text="${category.categoryName}"
+                                th:selected="${category.categoryId == product.category.categoryId}"
+                              ></option>
+                            </select>
+                          </div>
+                        </div>
+
+                        <div class="col-md-6">
+                          <div class="form-group">
+                            <label class="form-label">Thương hiệu</label>
+                            <select
+                              class="form-control"
+                              name="brandId"
+                              required
+                            >
+                              <option value="">Chọn thương hiệu</option>
+                              <option
+                                th:each="brand : ${brandList}"
+                                th:value="${brand.brandId}"
+                                th:text="${brand.brandName}"
+                                th:selected="${brand.brandId == product.brand.brandId}"
+                              ></option>
+                            </select>
+                          </div>
+                        </div>
+
+                        <div class="col-md-6">
+                          <div class="form-group">
+                            <label class="form-label">Giá</label>
+                            <input
+                              th:field="*{price}"
+                              type="number"
+                              min="0"
+                              class="form-control"
+                              placeholder="Giá sản phẩm"
+                              required
+                            />
+                          </div>
+                        </div>
+
+                        <div class="col-md-6">
+                          <div class="form-group">
+                            <label class="form-label">Số lượng</label>
+                            <input
+                              th:field="*{quantity}"
+                              type="number"
+                              min="0"
+                              class="form-control"
+                              placeholder="Số lượng"
+                              required
+                            />
+                          </div>
+                        </div>
+
+                        <div class="col-md-6">
+                          <div class="form-group">
+                            <label class="form-label">Giảm giá (%)</label>
+                            <input
+                              th:field="*{discount}"
+                              type="number"
+                              min="0"
+                              max="100"
+                              class="form-control"
+                              placeholder="Giảm giá"
+                            />
+                          </div>
+                        </div>
+
+                        <div class="col-md-6">
+                          <div class="form-group">
+                            <label class="form-label">Ngày sản xuất</label>
+                            <input
+                              th:field="*{manufactureDate}"
+                              type="date"
+                              class="form-control"
+                            />
+                          </div>
+                        </div>
+
+                        <div class="col-md-6">
+                          <div class="form-group">
+                            <label class="form-label">Hạn sử dụng</label>
+                            <input
+                              th:field="*{expiryDate}"
+                              type="date"
+                              class="form-control"
+                            />
+                          </div>
+                        </div>
+
+                        <div class="col-md-6">
+                          <div class="form-group">
+                            <label class="form-label">Trạng thái</label>
+                            <select th:field="*{status}" class="form-control">
+                              <option value="true">Hoạt động</option>
+                              <option value="false">Tạm dừng</option>
+                            </select>
+                          </div>
+                        </div>
+
+                        <div class="col-md-6">
+                          <div class="form-group">
+                            <label class="form-label">Yêu thích</label>
+                            <select th:field="*{favorite}" class="form-control">
+                              <option value="true">Có</option>
+                              <option value="false">Không</option>
+                            </select>
+                          </div>
+                        </div>
+
+                        <div class="col-sm-12">
+                          <div class="form-group">
+                            <label class="form-label">Ảnh hiện tại</label>
+                            <div
+                              th:if="${product.productImage != null and product.productImage != ''}"
+                            >
+                              <img
+                                th:src="@{'/loadImage?imageName='+${product.productImage}}"
+                                class="current-image"
+                                alt="Current Product Image"
+                              />
+                              <p class="text-muted">Ảnh hiện tại</p>
+                            </div>
+                            <div
+                              th:unless="${product.productImage != null and product.productImage != ''}"
+                            >
+                              <p class="text-muted">Chưa có ảnh</p>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div class="col-sm-12">
+                          <div class="form-group">
+                            <label class="form-label"
+                              >Ảnh mới (để trống nếu không đổi)</label
+                            >
+                            <input
+                              type="file"
+                              name="file"
+                              class="form-control-file"
+                              accept="image/*"
+                              onchange="previewImage(this)"
+                            />
+                            <img
+                              id="imagePreview"
+                              class="image-preview"
+                              alt="Preview"
+                            />
+                          </div>
+                        </div>
+
+                        <div class="col-sm-12">
+                          <div class="form-group">
+                            <label class="form-label">Mô tả sản phẩm</label>
+                            <textarea
+                              th:field="*{description}"
+                              class="form-control"
+                              rows="4"
+                              placeholder="Mô tả sản phẩm"
+                            ></textarea>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="text-right">
+                        <button type="submit" class="btn btn-success">
+                          <i class="fas fa-save"></i>
+                          Cập nhật sản phẩm
+                        </button>
+                        <a
+                          th:href="@{/admin/products}"
+                          class="btn btn-secondary"
+                        >
+                          <i class="fas fa-arrow-left"></i>
+                          Quay lại
+                        </a>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script src="/vendor/bootstrap/jquery-1.12.4.min.js"></script>
+    <script src="/vendor/bootstrap/popper.min.js"></script>
+    <script src="/vendor/bootstrap/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+      // Image preview function
+      function previewImage(input) {
+        const preview = document.getElementById("imagePreview");
+        const file = input.files[0];
+
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = function (e) {
+            preview.src = e.target.result;
+            preview.style.display = "block";
+          };
+          reader.readAsDataURL(file);
+        } else {
+          preview.style.display = "none";
+        }
+      }
+
+      // Form validation
+      document.querySelector("form").addEventListener("submit", function (e) {
+        const productName = document
+          .querySelector('input[name="productName"]')
+          .value.trim();
+        const categoryId = document.querySelector(
+          'select[name="categoryId"]'
+        ).value;
+        const brandId = document.querySelector('select[name="brandId"]').value;
+        const price = document.querySelector('input[name="price"]').value;
+        const quantity = document.querySelector('input[name="quantity"]').value;
+
+        if (!productName) {
+          e.preventDefault();
+          Swal.fire({
+            icon: "error",
+            title: "Lỗi!",
+            text: "Vui lòng nhập tên sản phẩm",
+          });
+          return;
+        }
+
+        if (!categoryId) {
+          e.preventDefault();
+          Swal.fire({
+            icon: "error",
+            title: "Lỗi!",
+            text: "Vui lòng chọn danh mục",
+          });
+          return;
+        }
+
+        if (!brandId) {
+          e.preventDefault();
+          Swal.fire({
+            icon: "error",
+            title: "Lỗi!",
+            text: "Vui lòng chọn thương hiệu",
+          });
+          return;
+        }
+
+        if (!price || price <= 0) {
+          e.preventDefault();
+          Swal.fire({
+            icon: "error",
+            title: "Lỗi!",
+            text: "Vui lòng nhập giá hợp lệ",
+          });
+          return;
+        }
+
+        if (!quantity || quantity < 0) {
+          e.preventDefault();
+          Swal.fire({
+            icon: "error",
+            title: "Lỗi!",
+            text: "Vui lòng nhập số lượng hợp lệ",
+          });
+          return;
+        }
+      });
+
+      // Success notification
+      document.addEventListener("DOMContentLoaded", function () {
+        const urlParams = new URLSearchParams(window.location.search);
+        const success = urlParams.get("success");
+        const action = urlParams.get("action");
+
+        if (success === "true") {
+          let title = "";
+          let text = "";
+
+          switch (action) {
+            case "edit":
+              title = "Cập nhật thành công!";
+              text = "Thông tin sản phẩm đã được cập nhật.";
+              break;
+            default:
+              title = "Thành công!";
+              text = "Thao tác đã được thực hiện thành công.";
+          }
+
+          Swal.fire({
+            icon: "success",
+            title: title,
+            text: text,
+            showConfirmButton: false,
+            timer: 2000,
+          });
+
+          // Clean URL
+          const url = new URL(window.location);
+          url.searchParams.delete("success");
+          url.searchParams.delete("action");
+          window.history.replaceState({}, document.title, url);
+        }
+      });
+    </script>
+
+    <!-- Scripts -->
+    <script src="/assets/js/core/jquery.3.2.1.min.js"></script>
+    <script src="/assets/js/core/popper.min.js"></script>
+    <script src="/assets/js/core/bootstrap.min.js"></script>
+    <script src="/assets/js/plugin/jquery-ui-1.12.1.custom/jquery-ui.min.js"></script>
+    <script src="/assets/js/plugin/jquery-ui-touch-punch/jquery.ui.touch-punch.min.js"></script>
+    <script src="/assets/js/plugin/jquery-scrollbar/jquery.scrollbar.min.js"></script>
+    <script src="/assets/js/atlantis.min.js"></script>
+
+    <script>
+      function toggleSidebar() {
+        const wrapper = document.querySelector(".wrapper");
+        const minibutton = document.querySelector(".toggle-sidebar");
+
+        if (wrapper.classList.contains("sidebar_minimize")) {
+          // Expand sidebar
+          wrapper.classList.remove("sidebar_minimize");
+          minibutton.classList.remove("toggled");
+          minibutton.innerHTML = '<i class="icon-menu"></i>';
+        } else {
+          // Collapse sidebar
+          wrapper.classList.add("sidebar_minimize");
+          minibutton.classList.add("toggled");
+          minibutton.innerHTML = '<i class="icon-options-vertical"></i>';
+        }
+        // Trigger resize event
+        window.dispatchEvent(new Event("resize"));
+      }
+    </script>
+  </body>
+</html>
