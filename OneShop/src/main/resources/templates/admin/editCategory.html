@@ -29,11 +29,11 @@
     </style>
 </head>
 <body>
-    <div th:replace="~{admin/fragments/header :: header}"></div>
+    <th:block th:replace="~{admin/fragments/header :: header}"></th:block>
     
     <div class="container-fluid">
         <div class="row">
-            <div th:replace="~{admin/fragments/navbar :: navbar}"></div>
+            <th:block th:replace="~{admin/fragments/navbar :: navbar}"></th:block>
             
             <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
                 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
@@ -98,7 +98,7 @@
         </div>
     </div>
 
-    <div th:replace="~{admin/fragments/footer :: footer}"></div>
+    <th:block th:replace="~{admin/fragments/footer :: footer}"></th:block>
 
     <script src="/vendor/bootstrap/jquery-1.12.4.min.js"></script>
     <script src="/vendor/bootstrap/popper.min.js"></script>

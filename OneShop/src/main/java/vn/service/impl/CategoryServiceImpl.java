@@ -1,6 +1,8 @@
 package vn.service.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import vn.entity.Category;
 import vn.repository.CategoryRepository;
@@ -38,6 +40,19 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public Category findByCategoryName(String categoryName) {
         return categoryRepository.findByCategoryName(categoryName);
+    }
+
+    @Override
+    public Page<Category> getAllCategoriesPaged(Pageable pageable) {
+        return categoryRepository.findAll(pageable);
+    }
+
+    @Override
+    public Page<Category> searchCategories(String keyword, Pageable pageable) {
+        if (keyword == null || keyword.trim().isEmpty()) {
+            return categoryRepository.findAll(pageable);
+        }
+        return categoryRepository.findByCategoryNameContainingIgnoreCase(keyword.trim(), pageable);
     }
 
 }

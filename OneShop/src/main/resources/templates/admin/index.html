@@ -5,170 +5,509 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OneShop - Trang quản trị</title>
     <link rel="icon" href="/images/favicon.png" />
-    <link rel="stylesheet" href="/fonts/flaticon/flaticon.css" />
-    <link rel="stylesheet" href="/fonts/icofont/icofont.min.css" />
-    <link rel="stylesheet" href="/fonts/fontawesome/fontawesome.min.css" />
-    <link rel="stylesheet" href="/vendor/bootstrap/bootstrap.min.css" />
-    <link rel="stylesheet" href="/css/main.css" />
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="/assets/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/assets/css/atlantis.css">
+    <link rel="stylesheet" href="/assets/css/demo.css">
+    <link rel="stylesheet" href="/assets/css/fonts.min.css">
+    <link rel="stylesheet" href="/assets/css/atlantis.min.css">
     <style>
-        :root {
-            --primary-color: #007bff;
-            --primary-dark: #0056b3;
-            --primary-light: #66b3ff;
+        /* Greeny-style customizations */
+        .logo-header {
+            background: white !important;
+            border-bottom: 1px solid #e9ecef;
         }
         
-        .btn-primary {
-            background: var(--primary-color);
-            border-color: var(--primary-color);
+        .logo-header .logo img {
+            width: 180px !important;
+            height: auto !important;
         }
         
-        .btn-primary:hover {
-            background: var(--primary-dark);
-            border-color: var(--primary-dark);
+        .navbar-header {
+            background: #007bff !important;
         }
         
-        .stat-card {
-            background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
-            color: white;
-            border-radius: 15px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
+        .navbar-header .navbar-nav .nav-link {
+            color: white !important;
         }
         
-        .stat-icon {
-            font-size: 3rem;
-            opacity: 0.8;
+        .navbar-header .navbar-nav .nav-link:hover {
+            color: #f8f9fa !important;
         }
         
-        .stat-number {
-            font-size: 2.5rem;
-            font-weight: bold;
-            margin: 10px 0;
+        /* Fixed Sidebar */
+        .sidebar {
+            position: fixed !important;
+            top: 60px;
+            left: 0;
+            bottom: 0;
+            z-index: 1028;
+            width: 250px;
+            background: white !important;
+            border-right: 1px solid #e9ecef;
+            margin: 0;
+            padding: 0;
         }
         
-        .stat-label {
-            font-size: 1rem;
-            opacity: 0.9;
+        /* Main Content Adjustment */
+        .main-panel {
+            margin-top: 60px !important;
+            margin-left: 250px !important;
+            padding: 0;
+            margin-right: 0;
         }
         
-        .admin-sidebar {
-            background: #f8f9fa;
-            min-height: 100vh;
-            padding: 20px 0;
+        .content {
+            padding: 0;
+            margin: 0;
+            position: relative;
+            top: 0;
         }
         
-        .admin-menu {
-            list-style: none;
+        .page-inner {
             padding: 0;
             margin: 0;
         }
         
-        .admin-menu-item {
-            display: block;
+        .page-header {
             padding: 15px 20px;
-            color: #333;
-            text-decoration: none;
-            border-bottom: 1px solid #eee;
+            margin: 0;
+            background: white;
+            border-bottom: 1px solid #e9ecef;
+            position: relative;
+            top: 0;
         }
         
-        .admin-menu-item:hover {
-            background: var(--primary-color);
+        /* Remove any default margins/padding */
+        * {
+            box-sizing: border-box;
+        }
+        
+        .main-panel .content .page-header {
+            margin-top: 0 !important;
+            padding-top: 15px;
+        }
+        
+        /* Force remove all gaps */
+        .main-panel {
+            margin-top: 60px !important;
+            margin-left: 250px !important;
+            padding: 0 !important;
+            margin-right: 0 !important;
+        }
+        
+        .content {
+            padding: 0 !important;
+            margin: 0 !important;
+            position: relative !important;
+            top: 0 !important;
+        }
+        
+        .page-header {
+            margin-top: 0 !important;
+            margin-bottom: 0 !important;
+            padding-top: 15px !important;
+            padding-bottom: 15px !important;
+            padding-left: 20px !important;
+            padding-right: 20px !important;
+        }
+        
+        /* Override Atlantis CSS completely */
+        .wrapper .main-panel .content {
+            margin-top: 0 !important;
+            padding-top: 0 !important;
+        }
+        
+        .wrapper .main-panel .content .page-header {
+            margin-top: 0 !important;
+            padding-top: 15px !important;
+        }
+        
+        /* Remove any potential gaps from body or html */
+        body, html {
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+        
+        /* Sidebar Toggle Styles - Exact Greeny approach */
+        @media screen and (min-width: 991px) {
+            .sidebar_minimize .main-panel {
+                width: calc(100% - 75px);
+                transition: all .3s;
+            }
+            
+            .sidebar_minimize .logo-header {
+                width: 75px;
+                transition: all .3s;
+                padding: 0px;
+                text-align: center;
+            }
+            
+            .sidebar_minimize .logo-header .logo {
+                position: absolute;
+                transform: translate3d(25px, 0, 0);
+                opacity: 0;
+            }
+            
+            .sidebar_minimize .logo-header .logo img {
+                display: none;
+            }
+            
+            .sidebar_minimize .logo-header .nav-toggle {
+                position: absolute;
+                left: 50%;
+                transform: translateX(-50%);
+                height: 100%;
+                right: 0 !important;
+            }
+            
+            .sidebar_minimize .sidebar {
+                width: 75px !important;
+                transition: all .3s;
+                background-color: white !important;
+                overflow: hidden !important;
+            }
+            
+            .sidebar_minimize .sidebar .sidebar-wrapper {
+                width: 75px !important;
+                transition: all .3s;
+                background-color: white !important;
+                overflow: hidden !important;
+            }
+            
+            .sidebar_minimize .sidebar .sidebar-wrapper .user {
+                padding-left: 0px;
+                padding-right: 0px;
+            }
+            
+            .sidebar_minimize .sidebar .sidebar-wrapper .user [class^="avatar-"] {
+                float: none !important;
+                margin: auto;
+            }
+            
+            .sidebar_minimize .sidebar .sidebar-wrapper .user .info {
+                display: none;
+            }
+            
+            .sidebar_minimize .sidebar .sidebar-wrapper .user .info span {
+                display: none;
+            }
+            
+            .sidebar_minimize .sidebar .sidebar-wrapper .nav-item {
+                position: relative;
+            }
+            
+            .sidebar_minimize .sidebar .sidebar-wrapper .nav-item a i {
+                margin-right: unset;
+            }
+            
+            .sidebar_minimize .sidebar .sidebar-wrapper .nav-item a .badge,
+            .sidebar_minimize .sidebar .sidebar-wrapper .nav-item a span,
+            .sidebar_minimize .sidebar .sidebar-wrapper .nav-item a .caret,
+            .sidebar_minimize .sidebar .sidebar-wrapper .nav-item a p {
+                display: none;
+                transition: all .3s;
+            }
+            
+            .sidebar_minimize .sidebar .sidebar-wrapper .nav-item.submenu .nav-collapse,
+            .sidebar_minimize .sidebar .sidebar-wrapper .nav-item.active .nav-collapse {
+                display: none;
+            }
+            
+            .sidebar_minimize .sidebar .sidebar-wrapper .nav-section .text-section {
+                display: none;
+            }
+            
+            /* Force hide all text content when minimized */
+            .sidebar_minimize .sidebar .sidebar-wrapper .user .info,
+            .sidebar_minimize .sidebar .sidebar-wrapper .user .info span,
+            .sidebar_minimize .sidebar .sidebar-wrapper .user .info .user-level,
+            .sidebar_minimize .sidebar .sidebar-wrapper .nav-item a span,
+            .sidebar_minimize .sidebar .sidebar-wrapper .nav-item a p,
+            .sidebar_minimize .sidebar .sidebar-wrapper .nav-item a .caret,
+            .sidebar_minimize .sidebar .sidebar-wrapper .nav-item a .badge,
+            .sidebar_minimize .sidebar .sidebar-wrapper .nav-section .text-section {
+                display: none !important;
+                opacity: 0 !important;
+                visibility: hidden !important;
+            }
+            
+            /* Keep only icons visible */
+            .sidebar_minimize .sidebar .sidebar-wrapper .nav-item a i {
+                display: block !important;
+                opacity: 1 !important;
+                visibility: visible !important;
+                margin: 0 !important;
+                text-align: center !important;
+            }
+            
+            .sidebar_minimize .sidebar .sidebar-wrapper .user [class^="avatar-"] {
+                display: block !important;
+                opacity: 1 !important;
+                visibility: visible !important;
+                margin: 0 auto !important;
+            }
+            
+            /* Hover effect - Override all hiding rules */
+            .sidebar_minimize .sidebar:hover {
+                width: 250px !important;
+            }
+            
+            .sidebar_minimize .sidebar:hover .sidebar-wrapper {
+                width: 250px !important;
+            }
+            
+            .sidebar_minimize .sidebar:hover .sidebar-wrapper .user {
+                padding-left: 15px !important;
+                padding-right: 15px !important;
+            }
+            
+            .sidebar_minimize .sidebar:hover .sidebar-wrapper .user [class^="avatar-"] {
+                float: left !important;
+                margin-right: 11px !important;
+            }
+            
+            .sidebar_minimize .sidebar:hover .sidebar-wrapper .user .info {
+                display: block !important;
+                opacity: 1 !important;
+                visibility: visible !important;
+            }
+            
+            .sidebar_minimize .sidebar:hover .sidebar-wrapper .user .info span {
+                display: block !important;
+                opacity: 1 !important;
+                visibility: visible !important;
+            }
+            
+            .sidebar_minimize .sidebar:hover .sidebar-wrapper .user .info .user-level {
+                display: block !important;
+                opacity: 1 !important;
+                visibility: visible !important;
+            }
+            
+            .sidebar_minimize .sidebar:hover .sidebar-wrapper .nav-item a i {
+                margin-right: 15px !important;
+            }
+            
+            .sidebar_minimize .sidebar:hover .sidebar-wrapper .nav-item a .badge,
+            .sidebar_minimize .sidebar:hover .sidebar-wrapper .nav-item a span,
+            .sidebar_minimize .sidebar:hover .sidebar-wrapper .nav-item a .caret,
+            .sidebar_minimize .sidebar:hover .sidebar-wrapper .nav-item a p {
+                display: block !important;
+                opacity: 1 !important;
+                visibility: visible !important;
+            }
+            
+            .sidebar_minimize .sidebar:hover .sidebar-wrapper .nav-item.submenu .nav-collapse,
+            .sidebar_minimize .sidebar:hover .sidebar-wrapper .nav-item.active .nav-collapse {
+                display: block !important;
+                opacity: 1 !important;
+                visibility: visible !important;
+            }
+            
+            .sidebar_minimize .sidebar:hover .sidebar-wrapper .nav-section .text-section {
+                display: block !important;
+                opacity: 1 !important;
+                visibility: visible !important;
+            }
+        }
+        
+        /* Normal state - when sidebar is not minimized */
+        @media screen and (min-width: 991px) {
+            .main-panel {
+                position: relative;
+                width: calc(100% - 250px);
+                height: 100vh;
+                min-height: 100%;
+                float: right;
+                transition: all .3s;
+            }
+            
+            .sidebar {
+                background-color: white !important;
+            }
+            
+            .sidebar .sidebar-wrapper {
+                background-color: white !important;
+            }
+        }
+        
+        .sidebar-toggle {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .sidebar-toggle:hover {
+            color: #007bff !important;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 991px) {
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+            
+            .sidebar.show {
+                transform: translateX(0);
+            }
+            
+            .main-panel {
+                margin-left: 0 !important;
+            }
+        }
+        
+        .sidebar-brand {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+        }
+        
+        .sidebar-brand .logo {
             color: white;
+            font-weight: bold;
+            font-size: 1.5rem;
         }
         
-        .admin-menu-item.active {
-            background: var(--primary-color);
-            color: white;
+        .nav-link.active {
+            background: #007bff !important;
+            color: white !important;
         }
         
-        .admin-footer {
-            background: #f8f9fa;
-            padding: 20px 0;
-            margin-top: 50px;
-            border-top: 1px solid #dee2e6;
+        .nav-link:hover {
+            background: #e3f2fd;
+            color: #007bff;
+        }
+        
+        .card-stats .card-body {
+            padding: 1.5rem;
+        }
+        
+        .card-stats .card-stats-title {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #6c757d;
+            margin-bottom: 0.5rem;
+        }
+        
+        .card-stats .card-stats-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #007bff;
+        }
+        
+        .card-stats .card-stats-icon {
+            font-size: 2.5rem;
+            color: #007bff;
+            opacity: 0.7;
         }
     </style>
 </head>
 <body>
-    <div th:replace="~{admin/fragments/header :: header}"></div>
-    
-    <div class="container-fluid">
-        <div class="row">
-            <div th:replace="~{admin/fragments/navbar :: navbar}"></div>
+    <div class="wrapper">
+        <!-- Header -->
+        <th:block th:replace="~{admin/fragments/header :: header}"></th:block>
+        
+        <!-- Navbar -->
+        <th:block th:replace="~{admin/fragments/navbar :: navbar}"></th:block>
             
-            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
-                <!-- Header -->
-                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-4 border-bottom">
-                    <div>
-                        <h1 class="h2 text-primary">Dashboard</h1>
-                        <p class="text-muted">Tổng quan hệ thống OneShop</p>
-                    </div>
-                    <div class="btn-toolbar mb-2 mb-md-0">
-                        <div class="btn-group me-2">
-                            <button type="button" class="btn btn-sm btn-outline-secondary">
-                                <i class="fas fa-download"></i> Export
-                            </button>
-                        </div>
-                        <a href="/admin/categories" class="btn btn-sm btn-primary">
-                            <i class="fas fa-plus"></i> Quản lý Categories
-                        </a>
-                    </div>
+        <div class="main-panel">
+            <div class="content">
+                <!-- Page Header -->
+                <div class="page-header">
+                    <h4 class="page-title">Dashboard</h4>
+                        <ul class="breadcrumbs">
+                            <li class="nav-home">
+                                <a href="/admin/home">
+                                    <i class="flaticon-home"></i>
+                                </a>
+                            </li>
+                            <li class="separator">
+                                <i class="flaticon-right-arrow"></i>
+                            </li>
+                            <li class="nav-item">
+                                <a href="#">Dashboard</a>
+                            </li>
+                        </ul>
                 </div>
 
+                <div class="page-inner">
                 <!-- Statistics Cards -->
-                <div class="row mb-4">
-                    <div class="col-xl-3 col-md-6 mb-4">
-                        <div class="stat-card">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div>
-                                    <div class="stat-label">Tổng Users</div>
-                                    <div class="stat-number" th:text="${totalUsers}">0</div>
+                    <div class="row">
+                        <div class="col-md-6 col-lg-3">
+                            <div class="card card-stats card-primary">
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-5">
+                                            <div class="icon-big text-center">
+                                                <i class="flaticon-users card-stats-icon"></i>
+                                            </div>
+                                        </div>
+                                        <div class="col-7 col-stats">
+                                            <div class="numbers">
+                                                <p class="card-stats-title">Tổng Users</p>
+                                                <h4 class="card-stats-number" th:text="${totalUsers}">0</h4>
+                                            </div>
                                 </div>
-                                <div class="stat-icon">
-                                    <i class="fas fa-users"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-xl-3 col-md-6 mb-4">
-                        <div class="stat-card">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div>
-                                    <div class="stat-label">Tổng Categories</div>
-                                    <div class="stat-number" th:text="${totalCategories}">0</div>
-                                </div>
-                                <div class="stat-icon">
-                                    <i class="fas fa-tags"></i>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="col-xl-3 col-md-6 mb-4">
-                        <div class="stat-card">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div>
-                                    <div class="stat-label">Tổng Products</div>
-                                    <div class="stat-number">0</div>
+                        <div class="col-md-6 col-lg-3">
+                            <div class="card card-stats card-info">
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-5">
+                                            <div class="icon-big text-center">
+                                                <i class="flaticon-tag card-stats-icon"></i>
+                                            </div>
+                                        </div>
+                                        <div class="col-7 col-stats">
+                                            <div class="numbers">
+                                                <p class="card-stats-title">Tổng Categories</p>
+                                                <h4 class="card-stats-number" th:text="${totalCategories}">0</h4>
+                                            </div>
                                 </div>
-                                <div class="stat-icon">
-                                    <i class="fas fa-box"></i>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="col-xl-3 col-md-6 mb-4">
-                        <div class="stat-card">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div>
-                                    <div class="stat-label">Tổng Orders</div>
-                                    <div class="stat-number">0</div>
+                        <div class="col-md-6 col-lg-3">
+                            <div class="card card-stats card-success">
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-5">
+                                            <div class="icon-big text-center">
+                                                <i class="flaticon-box card-stats-icon"></i>
+                                            </div>
+                                        </div>
+                                        <div class="col-7 col-stats">
+                                            <div class="numbers">
+                                                <p class="card-stats-title">Tổng Products</p>
+                                                <h4 class="card-stats-number">0</h4>
+                                            </div>
                                 </div>
-                                <div class="stat-icon">
-                                    <i class="fas fa-shopping-cart"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                        <div class="col-md-6 col-lg-3">
+                            <div class="card card-stats card-warning">
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-5">
+                                            <div class="icon-big text-center">
+                                                <i class="flaticon-shopping-cart card-stats-icon"></i>
+                                            </div>
+                                        </div>
+                                        <div class="col-7 col-stats">
+                                            <div class="numbers">
+                                                <p class="card-stats-title">Tổng Orders</p>
+                                                <h4 class="card-stats-number">0</h4>
+                                            </div>
+                                </div>
                                 </div>
                             </div>
                         </div>
@@ -177,12 +516,12 @@
 
                 <!-- Welcome Section -->
                 <div class="row">
-                    <div class="col-lg-8">
-                        <div class="card shadow mb-4">
-                            <div class="card-header py-3 d-flex justify-content-between align-items-center">
-                                <h6 class="m-0 font-weight-bold text-primary">
-                                    <i class="fas fa-tachometer-alt"></i> Chào mừng đến với OneShop Admin
-                                </h6>
+                        <div class="col-md-8">
+                            <div class="card">
+                                <div class="card-header">
+                                    <div class="card-title">
+                                        <i class="flaticon-dashboard"></i> Chào mừng đến với OneShop Admin
+                                    </div>
                             </div>
                             <div class="card-body">
                                 <div class="row">
@@ -194,46 +533,46 @@
                                             <div class="col-md-6">
                                                 <h6 class="text-primary">Tính năng chính:</h6>
                                                 <ul class="list-unstyled">
-                                                    <li><i class="fas fa-check text-success"></i> Quản lý danh mục sản phẩm</li>
-                                                    <li><i class="fas fa-check text-success"></i> Quản lý sản phẩm chi tiết</li>
-                                                    <li><i class="fas fa-check text-success"></i> Quản lý đơn hàng</li>
-                                                    <li><i class="fas fa-check text-success"></i> Quản lý người dùng</li>
+                                                        <li><i class="flaticon-check text-success"></i> Quản lý danh mục sản phẩm</li>
+                                                        <li><i class="flaticon-check text-success"></i> Quản lý sản phẩm chi tiết</li>
+                                                        <li><i class="flaticon-check text-success"></i> Quản lý đơn hàng</li>
+                                                        <li><i class="flaticon-check text-success"></i> Quản lý người dùng</li>
                                                 </ul>
                                             </div>
                                             <div class="col-md-6">
                                                 <h6 class="text-primary">Thống kê:</h6>
                                                 <ul class="list-unstyled">
-                                                    <li><i class="fas fa-chart-bar text-info"></i> Báo cáo doanh thu</li>
-                                                    <li><i class="fas fa-chart-pie text-info"></i> Phân tích bán hàng</li>
-                                                    <li><i class="fas fa-users text-info"></i> Thống kê khách hàng</li>
-                                                    <li><i class="fas fa-box text-info"></i> Quản lý kho</li>
+                                                        <li><i class="flaticon-chart text-info"></i> Báo cáo doanh thu</li>
+                                                        <li><i class="flaticon-pie-chart text-info"></i> Phân tích bán hàng</li>
+                                                        <li><i class="flaticon-users text-info"></i> Thống kê khách hàng</li>
+                                                        <li><i class="flaticon-box text-info"></i> Quản lý kho</li>
                                                 </ul>
                                             </div>
                                         </div>
                                         
                                         <div class="d-flex">
                                             <a href="/admin/categories" class="btn btn-primary mr-2">
-                                                <i class="fas fa-tags"></i> Quản lý Categories
+                                                    <i class="flaticon-tag"></i> Quản lý Categories
                                             </a>
                                             <a href="/admin/products" class="btn btn-outline-primary">
-                                                <i class="fas fa-box"></i> Quản lý Products
+                                                    <i class="flaticon-box"></i> Quản lý Products
                                             </a>
                                         </div>
                                     </div>
                                     <div class="col-md-4 text-center">
-                                        <i class="fas fa-store fa-5x text-primary" style="opacity: 0.5;"></i>
+                                            <i class="flaticon-store fa-5x text-primary" style="opacity: 0.5;"></i>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
+                        
+                        <div class="col-md-4">
+                            <div class="card">
+                                <div class="card-header">
+                                    <div class="card-title">
+                                        <i class="flaticon-information"></i> Thông tin hệ thống
                     </div>
-                    
-                    <div class="col-lg-4">
-                        <div class="card shadow mb-4">
-                            <div class="card-header py-3">
-                                <h6 class="m-0 font-weight-bold text-primary">
-                                    <i class="fas fa-info-circle"></i> Thông tin hệ thống
-                                </h6>
                             </div>
                             <div class="card-body">
                                 <div class="mb-3">
@@ -258,15 +597,41 @@
                         </div>
                     </div>
                 </div>
-            </main>
+                </div>
+            </div>
         </div>
     </div>
 
-    <div th:replace="~{admin/fragments/footer :: footer}"></div>
+    <th:block th:replace="~{admin/fragments/footer :: footer}"></th:block>
 
-    <script src="/vendor/bootstrap/jquery-1.12.4.min.js"></script>
-    <script src="/vendor/bootstrap/popper.min.js"></script>
-    <script src="/vendor/bootstrap/bootstrap.min.js"></script>
-    <script src="/js/main.js"></script>
+    <!-- Scripts -->
+    <script src="/assets/js/core/jquery.3.2.1.min.js"></script>
+    <script src="/assets/js/core/popper.min.js"></script>
+    <script src="/assets/js/core/bootstrap.min.js"></script>
+    <script src="/assets/js/plugin/jquery-ui-1.12.1.custom/jquery-ui.min.js"></script>
+    <script src="/assets/js/plugin/jquery-ui-touch-punch/jquery.ui.touch-punch.min.js"></script>
+    <script src="/assets/js/plugin/jquery-scrollbar/jquery.scrollbar.min.js"></script>
+    <script src="/assets/js/atlantis.min.js"></script>
+    
+    <script>
+        function toggleSidebar() {
+            const wrapper = document.querySelector('.wrapper');
+            const minibutton = document.querySelector('.toggle-sidebar');
+            
+            if (wrapper.classList.contains('sidebar_minimize')) {
+                // Expand sidebar
+                wrapper.classList.remove('sidebar_minimize');
+                minibutton.classList.remove('toggled');
+                minibutton.innerHTML = '<i class="icon-menu"></i>';
+            } else {
+                // Collapse sidebar
+                wrapper.classList.add('sidebar_minimize');
+                minibutton.classList.add('toggled');
+                minibutton.innerHTML = '<i class="icon-options-vertical"></i>';
+            }
+            // Trigger resize event
+            window.dispatchEvent(new Event('resize'));
+        }
+    </script>
 </body>
 </html>
