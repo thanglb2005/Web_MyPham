@@ -18,6 +18,13 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
     />
 
+    <!-- CSS -->
+    <link rel="stylesheet" href="/assets/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="/assets/css/atlantis.css" />
+    <link rel="stylesheet" href="/assets/css/demo.css" />
+    <link rel="stylesheet" href="/assets/css/fonts.min.css" />
+    <link rel="stylesheet" href="/assets/css/atlantis.min.css" />
+
     <style>
       /* Fixed Sidebar */
       .sidebar {
@@ -31,6 +38,199 @@
         border-right: 1px solid #e9ecef;
         margin: 0;
         padding: 0;
+      }
+
+      /* Main Content Adjustment */
+      .main-panel {
+        margin-top: 60px !important;
+        margin-left: 250px !important;
+        padding: 0;
+        margin-right: 0;
+      }
+
+      .content {
+        padding: 0;
+        margin: 0;
+        position: relative;
+        top: 0;
+      }
+
+      .page-inner {
+        padding: 20px;
+        margin: 0;
+      }
+
+      .page-header {
+        padding: 15px 20px;
+        margin: 0;
+        background: white;
+        border-bottom: 1px solid #e9ecef;
+        position: relative;
+        top: 0;
+      }
+
+      .page-title {
+        color: #333;
+        font-size: 1.8rem;
+        margin: 0;
+        font-weight: 600;
+      }
+
+      /* Force remove all gaps */
+      .main-panel {
+        margin-top: 60px !important;
+        margin-left: 250px !important;
+        padding: 0 !important;
+        margin-right: 0 !important;
+      }
+
+      .content {
+        padding: 0 !important;
+        margin: 0 !important;
+        position: relative !important;
+        top: 0 !important;
+      }
+
+      .page-header {
+        margin-top: 0 !important;
+        margin-bottom: 0 !important;
+        padding-top: 15px !important;
+        padding-bottom: 15px !important;
+        padding-left: 20px !important;
+        padding-right: 20px !important;
+      }
+
+      /* Override Atlantis CSS completely */
+      .wrapper .main-panel .content {
+        margin-top: 0 !important;
+        padding-top: 0 !important;
+      }
+
+      .wrapper .main-panel .content .page-header {
+        margin-top: 0 !important;
+        padding-top: 15px !important;
+      }
+
+      /* Sidebar Toggle Styles - Exact same as admin/home */
+      @media screen and (min-width: 991px) {
+        .sidebar_minimize .main-panel {
+          width: calc(100% - 75px);
+          margin-left: 75px !important;
+          transition: all 0.3s;
+        }
+
+        .sidebar_minimize .logo-header {
+          width: 75px;
+          transition: all 0.3s;
+          padding: 0px;
+          text-align: center;
+        }
+
+        .sidebar_minimize .logo-header .logo {
+          position: absolute;
+          transform: translate3d(25px, 0, 0);
+          opacity: 0;
+        }
+
+        .sidebar_minimize .logo-header .logo img {
+          display: none;
+        }
+
+        .sidebar_minimize .logo-header .nav-toggle {
+          position: absolute;
+          left: 50%;
+          transform: translateX(-50%);
+          height: 100%;
+          right: 0 !important;
+        }
+
+        .sidebar_minimize .sidebar {
+          width: 75px !important;
+          transition: all 0.3s;
+          background-color: white !important;
+          overflow: hidden !important;
+        }
+
+        .sidebar_minimize .sidebar .sidebar-wrapper {
+          width: 75px !important;
+          transition: all 0.3s;
+          background-color: white !important;
+          overflow: hidden !important;
+        }
+
+        .sidebar_minimize .sidebar .sidebar-wrapper .user {
+          padding-left: 0px;
+          padding-right: 0px;
+        }
+
+        .sidebar_minimize .sidebar .sidebar-wrapper .user [class^="avatar-"] {
+          float: none !important;
+          margin: auto;
+        }
+
+        .sidebar_minimize .sidebar .sidebar-wrapper .user .info {
+          display: none;
+        }
+
+        .sidebar_minimize .sidebar .sidebar-wrapper .user .info span {
+          display: none;
+        }
+
+        .sidebar_minimize .sidebar .sidebar-wrapper .nav-item {
+          position: relative;
+        }
+
+        .sidebar_minimize .sidebar .sidebar-wrapper .nav-item a i {
+          margin-right: unset;
+        }
+
+        .sidebar_minimize .sidebar .sidebar-wrapper .nav-item a .badge,
+        .sidebar_minimize .sidebar .sidebar-wrapper .nav-item a span,
+        .sidebar_minimize .sidebar .sidebar-wrapper .nav-item a .caret,
+        .sidebar_minimize .sidebar .sidebar-wrapper .nav-item a p {
+          display: none;
+          transition: all 0.3s;
+        }
+
+        .sidebar_minimize
+          .sidebar
+          .sidebar-wrapper
+          .nav-item.submenu
+          .nav-collapse,
+        .sidebar_minimize
+          .sidebar
+          .sidebar-wrapper
+          .nav-item.active
+          .nav-collapse {
+          display: none;
+        }
+
+        .sidebar_minimize .sidebar .sidebar-wrapper .nav-section .text-section {
+          display: none;
+        }
+
+        /* Force hide all text content when minimized */
+        .sidebar_minimize .sidebar .sidebar-wrapper .user .info,
+        .sidebar_minimize .sidebar .sidebar-wrapper .user .info span,
+        .sidebar_minimize .sidebar .sidebar-wrapper .user .info .user-level,
+        .sidebar_minimize .sidebar .sidebar-wrapper .nav-item a span,
+        .sidebar_minimize .sidebar .sidebar-wrapper .nav-item a p,
+        .sidebar_minimize .sidebar .sidebar-wrapper .nav-item a .caret,
+        .sidebar_minimize .sidebar .sidebar-wrapper .nav-item a .badge,
+        .sidebar_minimize .sidebar .sidebar-wrapper .nav-section .text-section {
+          display: none !important;
+          opacity: 0 !important;
+          visibility: hidden !important;
+        }
+
+        /* Keep only icons visible */
+        .sidebar_minimize .sidebar .sidebar-wrapper .nav-item a i {
+          display: block !important;
+          opacity: 1 !important;
+          visibility: visible !important;
+          margin: 0 !important;
+          text-align: center !important;
+        }
       }
 
       /* Main Content Adjustment */
