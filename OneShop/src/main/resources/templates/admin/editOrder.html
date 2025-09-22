@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chi tiết đơn hàng - OneShop Admin</title>
+
+    <!-- CSS Libraries -->
+    <link rel="stylesheet" href="/assets/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="/assets/css/atlantis.min.css" />
+    <link rel="stylesheet" href="/fonts/fontawesome/fontawesome.min.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
+    />
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="/assets/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="/assets/css/atlantis.css" />
+    <link rel="stylesheet" href="/assets/css/demo.css" />
+    <link rel="stylesheet" href="/assets/css/fonts.min.css" />
+    <link rel="stylesheet" href="/assets/css/atlantis.min.css" />
+
+    <style>
+      /* Fixed Sidebar */
+      .sidebar {
+        position: fixed !important;
+        top: 60px;
+        left: 0;
+        bottom: 0;
+        z-index: 1028;
+        width: 250px;
+        background: white !important;
+        border-right: 1px solid #e9ecef;
+        margin: 0;
+        padding: 0;
+      }
+
+      /* Main Content Adjustment */
+      .main-panel {
+        margin-top: 60px !important;
+        margin-left: 250px !important;
+        padding: 0;
+        margin-right: 0;
+      }
+
+      .content {
+        padding: 0;
+        margin: 0;
+        position: relative;
+        top: 0;
+      }
+
+      .page-inner {
+        padding: 20px;
+        margin: 0;
+      }
+
+      .page-header {
+        padding: 15px 20px;
+        margin: 0;
+        background: white;
+        border-bottom: 1px solid #e9ecef;
+        position: relative;
+        top: 0;
+      }
+
+      .page-title {
+        color: #333;
+        font-size: 1.8rem;
+        margin: 0;
+        font-weight: 600;
+      }
+
+      .btn {
+        border: none;
+        border-radius: 5px;
+        padding: 10px 20px;
+        font-weight: 500;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        text-decoration: none;
+        transition: all 0.3s ease;
+      }
+
+      .btn:hover {
+        opacity: 0.9;
+      }
+
+      .btn-primary {
+        background: #007bff;
+        color: white;
+      }
+
+      .btn-secondary {
+        background: #6c757d;
+        color: white;
+      }
+
+      .card {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        border: 1px solid #dee2e6;
+        overflow: hidden;
+        margin-bottom: 20px;
+      }
+
+      .card-header {
+        background: #f8f9fa;
+        border-bottom: 1px solid #dee2e6;
+        padding: 15px 20px;
+        font-weight: 600;
+        color: #495057;
+      }
+
+      .card-body {
+        padding: 20px;
+      }
+
+      .table {
+        margin: 0;
+        background: white;
+      }
+
+      .table thead th {
+        background: #f8f9fa;
+        border: none;
+        padding: 15px 10px;
+        font-weight: 600;
+        color: #495057;
+        font-size: 0.9rem;
+        text-align: center;
+      }
+
+      .table tbody td {
+        padding: 15px 10px;
+        border-bottom: 1px solid #e9ecef;
+        vertical-align: middle;
+        text-align: center;
+      }
+
+      .table tbody tr:hover {
+        background: #f8f9fa;
+      }
+
+      .product-image {
+        max-width: 80px;
+        max-height: 80px;
+        object-fit: contain;
+        border-radius: 8px;
+        border: 2px solid #e9ecef;
+        transition: all 0.3s ease;
+        background: #f8f9fa;
+        display: block;
+        margin: 0 auto;
+      }
+
+      .product-image:hover {
+        transform: scale(1.1);
+        border-color: #007bff;
+        box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3);
+      }
+
+      .no-image {
+        width: 80px;
+        height: 80px;
+        background: #e9ecef;
+        border-radius: 8px;
+        border: 2px solid #e9ecef;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #6c757d;
+        font-size: 24px;
+        transition: all 0.3s ease;
+        margin: 0 auto;
+      }
+
+      .no-image:hover {
+        background: #dee2e6;
+        border-color: #adb5bd;
+      }
+
+      .price-display {
+        font-weight: 600;
+        color: #28a745;
+      }
+
+      .total-amount {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: #dc3545;
+      }
+
+      .order-info {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 8px;
+        border-left: 4px solid #007bff;
+        margin-bottom: 20px;
+      }
+
+      .order-info h5 {
+        color: #007bff;
+        margin-bottom: 10px;
+      }
+
+      .order-info p {
+        margin: 5px 0;
+        color: #495057;
+      }
+
+      .empty-state {
+        text-align: center;
+        padding: 40px 20px;
+        color: #6c757d;
+      }
+
+      .empty-state i {
+        font-size: 3rem;
+        margin-bottom: 15px;
+        opacity: 0.5;
+      }
+
+      .empty-state h3 {
+        margin: 0 0 10px 0;
+        color: #495057;
+      }
+
+      .empty-state p {
+        margin: 0;
+      }
+
+      /* Table Column Width Adjustments */
+      .table th:nth-child(1),
+      .table td:nth-child(1) {
+        width: 60px;
+      } /* ID */
+      .table th:nth-child(2),
+      .table td:nth-child(2) {
+        width: 100px;
+      } /* Ảnh */
+      .table th:nth-child(3),
+      .table td:nth-child(3) {
+        width: 200px;
+        min-width: 150px;
+      } /* Tên sản phẩm */
+      .table th:nth-child(4),
+      .table td:nth-child(4) {
+        width: 120px;
+      } /* Số lượng */
+      .table th:nth-child(5),
+      .table td:nth-child(5) {
+        width: 120px;
+        min-width: 100px;
+      } /* Giá */
+      .table th:nth-child(6),
+      .table td:nth-child(6) {
+        width: 120px;
+        min-width: 100px;
+      } /* Thành tiền */
+
+      /* Ensure table doesn't break layout */
+      .table {
+        table-layout: fixed;
+        word-wrap: break-word;
+      }
+
+      /* Table responsive adjustments */
+      .table-responsive {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      /* Ensure proper spacing for all columns */
+      .table td,
+      .table th {
+        padding: 8px 6px;
+        vertical-align: middle;
+        text-align: center;
+      }
+
+      /* Text alignment adjustments */
+      .table td:nth-child(3),
+      .table th:nth-child(3) {
+        text-align: left;
+      } /* Tên sản phẩm */
+
+      /* Prevent header text wrapping */
+      .table th {
+        white-space: nowrap;
+        font-size: 13px;
+        font-weight: 600;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrapper">
+      <!-- Header -->
+      <th:block th:replace="~{admin/fragments/header :: header}"></th:block>
+
+      <!-- Navbar -->
+      <th:block th:replace="~{admin/fragments/navbar :: navbar}"></th:block>
+
+      <div class="main-panel">
+        <div class="content">
+          <!-- Page Header -->
+          <div class="page-header">
+            <h2 class="page-title">Chi tiết đơn hàng #<span th:text="${orderId}"></span></h2>
+          </div>
+
+          <div class="page-inner">
+            <!-- Content Section -->
+            <div class="content-section">
+              <!-- Order Information -->
+              <div class="order-info">
+                <h5><i class="fas fa-info-circle"></i> Thông tin đơn hàng</h5>
+                <p><strong>Mã đơn hàng:</strong> #<span th:text="${orderId}"></span></p>
+                <p><strong>Tổng tiền:</strong> <span class="total-amount" th:text="${#numbers.formatDecimal(amount, 1, 'DEFAULT', 0, 'DEFAULT')}+' đ'"></span></p>
+              </div>
+
+              <!-- Order Details Table -->
+              <div class="table-container">
+                <div class="card">
+                  <div class="card-header">
+                    <h5 class="mb-0">
+                      <i class="fas fa-list"></i>
+                      Chi tiết sản phẩm trong đơn hàng
+                    </h5>
+                  </div>
+                  <div class="card-body" style="padding: 0">
+                    <div class="table-responsive">
+                      <table class="table table-hover" id="orderDetailsTable">
+                        <thead>
+                          <tr>
+                            <th>ID</th>
+                            <th>Ảnh</th>
+                            <th>Tên sản phẩm</th>
+                            <th>Số lượng</th>
+                            <th>Giá</th>
+                            <th>Thành tiền</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr th:each="detail : ${orderDetail}" class="fade-in">
+                            <td>
+                              <span
+                                class="badge badge-primary"
+                                th:text="${detail.orderDetailId}"
+                              ></span>
+                            </td>
+                            <td>
+                              <img
+                                th:if="${detail.product.productImage != null and detail.product.productImage != ''}"
+                                th:src="@{'/loadImage?imageName='+${detail.product.productImage}}"
+                                class="product-image"
+                                alt="Product Image"
+                                onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+                              />
+                              <div
+                                class="no-image"
+                                th:style="${detail.product.productImage == null or detail.product.productImage == ''} ? 'display: flex;' : 'display: none;'"
+                              >
+                                <i class="fas fa-image"></i>
+                              </div>
+                            </td>
+                            <td>
+                              <strong th:text="${detail.product.productName}"></strong>
+                            </td>
+                            <td>
+                              <span th:text="${detail.quantity}"></span>
+                            </td>
+                            <td>
+                              <span
+                                class="price-display"
+                                th:text="${#numbers.formatDecimal(detail.price, 1, 'DEFAULT', 0, 'DEFAULT')}+' đ'"
+                              ></span>
+                            </td>
+                            <td>
+                              <span
+                                class="price-display"
+                                th:text="${#numbers.formatDecimal(detail.price * detail.quantity, 1, 'DEFAULT', 0, 'DEFAULT')}+' đ'"
+                              ></span>
+                            </td>
+                          </tr>
+                          <tr th:if="${#lists.isEmpty(orderDetail)}">
+                            <td colspan="6" class="empty-state">
+                              <i class="fas fa-shopping-cart"></i>
+                              <h3>Không có sản phẩm nào</h3>
+                              <p>
+                                Đơn hàng này không có sản phẩm nào
+                              </p>
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Back Button -->
+              <div class="text-center">
+                <a href="/admin/orders" class="btn btn-secondary">
+                  <i class="fas fa-arrow-left"></i>
+                  Quay lại danh sách đơn hàng
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script src="/vendor/bootstrap/jquery-1.12.4.min.js"></script>
+    <script src="/vendor/bootstrap/popper.min.js"></script>
+    <script src="/vendor/bootstrap/bootstrap.min.js"></script>
+
+    <!-- Scripts -->
+    <script src="/assets/js/core/jquery.3.2.1.min.js"></script>
+    <script src="/assets/js/core/popper.min.js"></script>
+    <script src="/assets/js/core/bootstrap.min.js"></script>
+    <script src="/assets/js/plugin/jquery-ui-1.12.1.custom/jquery-ui.min.js"></script>
+    <script src="/assets/js/plugin/jquery-ui-touch-punch/jquery.ui.touch-punch.min.js"></script>
+    <script src="/assets/js/plugin/jquery-scrollbar/jquery.scrollbar.min.js"></script>
+    <script src="/assets/js/atlantis.min.js"></script>
+
+    <script>
+      function toggleSidebar() {
+        const wrapper = document.querySelector(".wrapper");
+        const minibutton = document.querySelector(".toggle-sidebar");
+
+        if (wrapper.classList.contains("sidebar_minimize")) {
+          // Expand sidebar
+          wrapper.classList.remove("sidebar_minimize");
+          minibutton.classList.remove("toggled");
+          minibutton.innerHTML = '<i class="icon-menu"></i>';
+        } else {
+          // Collapse sidebar
+          wrapper.classList.add("sidebar_minimize");
+          minibutton.classList.add("toggled");
+          minibutton.innerHTML = '<i class="icon-options-vertical"></i>';
+        }
+        // Trigger resize event
+        window.dispatchEvent(new Event("resize"));
+      }
+    </script>
+  </body>
+</html>
