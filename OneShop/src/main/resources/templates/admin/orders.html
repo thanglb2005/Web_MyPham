@@ -76,17 +76,18 @@
         font-weight: 600;
       }
 
-      /* Action Bar Styling */
-      .action-bar {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 20px;
-        padding: 20px;
-        background: white;
-        border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        gap: 15px;
+      /* Combined Bar Styling */
+      .combined-bar {
+        transition: all 0.3s ease;
+      }
+
+      .combined-bar:hover {
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15) !important;
+      }
+
+      .combined-bar .btn-sm {
+        padding: 6px 12px;
+        font-size: 0.875rem;
       }
 
       .btn {
@@ -462,55 +463,58 @@
           <div class="page-inner">
             <!-- Content Section -->
             <div class="content-section">
-              <!-- Action Bar -->
-              <div class="action-bar">
-                <div class="d-flex align-items-center">
-                  <h5 class="mb-0">
-                    <i class="fas fa-shopping-cart"></i>
-                    Tổng đơn hàng: <span th:text="${#lists.size(orderDetails)}" class="badge badge-primary"></span>
-                  </h5>
-                </div>
-
-                <a href="/admin/order-stats" class="btn btn-info">
-                  <i class="fas fa-chart-bar"></i>
-                  Thống kê
-                </a>
-                <a href="/admin/export" class="btn btn-success">
-                  <i class="fas fa-download"></i>
-                  Xuất Excel
-                </a>
-              </div>
-
-              <!-- Search and Filter Bar -->
-              <div class="search-filter-bar" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px;">
-                <form method="get" action="/admin/orders" class="row align-items-end">
-                  <div class="col-md-4">
-                    <label class="form-label">Tìm kiếm:</label>
-                    <input type="text" name="search" class="form-control" 
-                           th:value="${searchTerm}" 
-                           placeholder="Tên khách hàng, SĐT, địa chỉ...">
-                  </div>
-                  <div class="col-md-3">
-                    <label class="form-label">Trạng thái:</label>
-                    <select name="status" class="form-control">
-                      <option value="">Tất cả trạng thái</option>
-                      <option value="0" th:selected="${selectedStatus == 0}">Chờ xác nhận</option>
-                      <option value="1" th:selected="${selectedStatus == 1}">Đã xác nhận</option>
-                      <option value="2" th:selected="${selectedStatus == 2}">Đã giao hàng</option>
-                      <option value="3" th:selected="${selectedStatus == 3}">Đã hủy</option>
-                    </select>
-                  </div>
+              <!-- Combined Action and Search Bar -->
+              <div class="combined-bar" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px;">
+                <div class="row align-items-center">
+                  <!-- Left: Order Count -->
                   <div class="col-md-2">
-                    <button type="submit" class="btn btn-primary">
-                      <i class="fas fa-search"></i> Tìm kiếm
-                    </button>
+                    <h5 class="mb-0">
+                      <i class="fas fa-shopping-cart text-primary"></i>
+                      Tổng đơn hàng: <span th:text="${#lists.size(orderDetails)}" class="badge badge-primary"></span>
+                    </h5>
                   </div>
-                  <div class="col-md-2">
-                    <a href="/admin/orders" class="btn btn-secondary">
-                      <i class="fas fa-refresh"></i> Làm mới
+                  
+                  <!-- Center: Search Form -->
+                  <div class="col-md-6">
+                    <form method="get" action="/admin/orders" class="row align-items-center">
+                      <div class="col-md-6">
+                        <input type="text" name="search" class="form-control" 
+                               th:value="${searchTerm}" 
+                               placeholder="Tên khách hàng, SĐT, địa chỉ...">
+                      </div>
+                      <div class="col-md-4">
+                        <select name="status" class="form-control">
+                          <option value="">Tất cả trạng thái</option>
+                          <option value="0" th:selected="${selectedStatus == 0}">Chờ xác nhận</option>
+                          <option value="1" th:selected="${selectedStatus == 1}">Đã xác nhận</option>
+                          <option value="2" th:selected="${selectedStatus == 2}">Đã giao hàng</option>
+                          <option value="3" th:selected="${selectedStatus == 3}">Đã hủy</option>
+                        </select>
+                      </div>
+                      <div class="col-md-2">
+                        <button type="submit" class="btn btn-primary btn-sm">
+                          <i class="fas fa-search"></i>
+                        </button>
+                        <a href="/admin/orders" class="btn btn-secondary btn-sm ml-1">
+                          <i class="fas fa-refresh"></i>
+                        </a>
+                      </div>
+                    </form>
+                  </div>
+                  
+                  <!-- Right: Action Buttons -->
+                  <div class="col-md-4 text-right">
+                    <a href="/admin/order-stats" class="btn btn-info btn-sm">
+                      <i class="fas fa-chart-bar"></i>
+                      Thống kê
+                    </a>
+                    <a href="/admin/export" class="btn btn-success btn-sm" 
+                       title="Xuất file CSV - Mở bằng Excel: File > Mở > Chọn file CSV > Chọn 'Phân tách' > Chọn dấu phẩy">
+                      <i class="fas fa-download"></i>
+                      Xuất CSV
                     </a>
                   </div>
-                </form>
+                </div>
               </div>
 
               <!-- Orders Table -->

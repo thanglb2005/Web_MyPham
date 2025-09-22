@@ -143,18 +143,62 @@ public class OrderController {
         return new ModelAndView("forward:/admin/orders", model);
     }
 
-    // Export orders to Excel (placeholder for future implementation)
+    // Export orders to Excel
     @GetMapping(value = "/export")
     public void exportToExcel(HttpServletResponse response) throws IOException {
-        response.setContentType("application/octet-stream");
-        String headerKey = "Content-Disposition";
-        String headerValue = "attachment; filename=orders.xlsx";
-        response.setHeader(headerKey, headerValue);
+        List<Order> listOrders = orderRepository.findAll();
         
-        // Excel export functionality - placeholder for future implementation
-        // List<Order> listOrders = orderRepository.findAll();
-        // OrderExcelExporter excelExporter = new OrderExcelExporter(listOrders);
-        // excelExporter.export(response);
+        response.setContentType("text/csv; charset=UTF-8");
+        response.setHeader("Content-Disposition", "attachment; filename=orders.csv");
+        
+        // Create Excel-compatible content with proper formatting
+        StringBuilder excelContent = new StringBuilder();
+        
+        // Add BOM for UTF-8 to ensure proper encoding
+        excelContent.append("\uFEFF");
+        
+        // Header row with proper CSV formatting
+        excelContent.append("ID,Ngày đặt hàng,Khách hàng,Số điện thoại,Địa chỉ,Trạng thái,Tổng tiền\n");
+        
+        for (Order order : listOrders) {
+            excelContent.append(order.getOrderId()).append(",");
+            excelContent.append(order.getOrderDate()).append(",");
+            
+            // Escape customer name if it contains commas
+            String customerName = order.getUser() != null ? order.getUser().getName() : "N/A";
+            if (customerName.contains(",")) {
+                excelContent.append("\"").append(customerName).append("\"");
+            } else {
+                excelContent.append(customerName);
+            }
+            excelContent.append(",");
+            
+            excelContent.append(order.getPhone()).append(",");
+            
+            // Escape address if it contains commas
+            String address = order.getAddress();
+            if (address.contains(",")) {
+                excelContent.append("\"").append(address).append("\"");
+            } else {
+                excelContent.append(address);
+            }
+            excelContent.append(",");
+            
+            String status = "";
+            switch (order.getStatus()) {
+                case 0: status = "Chờ xác nhận"; break;
+                case 1: status = "Đã xác nhận"; break;
+                case 2: status = "Đã giao hàng"; break;
+                case 3: status = "Đã hủy"; break;
+                default: status = "Không xác định"; break;
+            }
+            excelContent.append(status).append(",");
+            excelContent.append(order.getAmount()).append("\n");
+        }
+        
+        // Write Excel content to response
+        response.getWriter().write(excelContent.toString());
+        response.getWriter().flush();
     }
 
     // Order statistics
