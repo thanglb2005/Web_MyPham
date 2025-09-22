@@ -556,6 +556,210 @@
         box-shadow: 0 4px 8px rgba(220, 53, 69, 0.4);
       }
 
+      .btn-info {
+        background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 8px 12px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 4px rgba(23, 162, 184, 0.3);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 40px;
+        height: 36px;
+      }
+
+      .btn-info:hover {
+        background: linear-gradient(135deg, #138496 0%, #117a8b 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(23, 162, 184, 0.4);
+      }
+
+      .btn-info i {
+        font-size: 14px;
+      }
+
+      /* Description Modal Styles */
+      .product-info {
+        padding: 10px 0;
+      }
+
+      .product-name {
+        color: #007bff;
+        font-weight: 600;
+        border-bottom: 2px solid #e9ecef;
+        padding-bottom: 10px;
+      }
+
+      .description-content {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 8px;
+        border-left: 4px solid #17a2b8;
+      }
+
+      .description-content p {
+        margin: 0;
+        line-height: 1.6;
+        font-size: 14px;
+      }
+
+      /* Date Display Styles */
+      .date-display {
+        font-size: 12px;
+        font-weight: 500;
+        color: #495057;
+        background: #f8f9fa;
+        padding: 4px 8px;
+        border-radius: 4px;
+        border: 1px solid #e9ecef;
+        display: inline-block;
+        min-width: 80px;
+        text-align: center;
+      }
+
+      .text-muted {
+        color: #6c757d !important;
+        font-style: italic;
+      }
+
+      /* Favorite Display Styles */
+      .favorite-active {
+        color: #dc3545;
+        font-size: 18px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
+
+      .favorite-active:hover {
+        color: #c82333;
+        transform: scale(1.2);
+      }
+
+      .favorite-inactive {
+        color: #6c757d;
+        font-size: 18px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
+
+      .favorite-inactive:hover {
+        color: #dc3545;
+        transform: scale(1.2);
+      }
+
+      /* Table Column Width Adjustments */
+      .table th:nth-child(1),
+      .table td:nth-child(1) {
+        width: 60px;
+      } /* ID */
+      .table th:nth-child(2),
+      .table td:nth-child(2) {
+        width: 100px;
+      } /* Ảnh */
+      .table th:nth-child(3),
+      .table td:nth-child(3) {
+        width: 200px;
+        min-width: 150px;
+      } /* Tên sản phẩm */
+      .table th:nth-child(4),
+      .table td:nth-child(4) {
+        width: 120px;
+      } /* Danh mục */
+      .table th:nth-child(5),
+      .table td:nth-child(5) {
+        width: 120px;
+      } /* Thương hiệu */
+      .table th:nth-child(6),
+      .table td:nth-child(6) {
+        width: 120px;
+        min-width: 100px;
+      } /* Giá */
+      .table th:nth-child(7),
+      .table td:nth-child(7) {
+        width: 80px;
+      } /* Giảm giá */
+      .table th:nth-child(8),
+      .table td:nth-child(8) {
+        width: 100px;
+      } /* Số lượng */
+      .table th:nth-child(9),
+      .table td:nth-child(9) {
+        width: 100px;
+      } /* Ngày SX */
+      .table th:nth-child(10),
+      .table td:nth-child(10) {
+        width: 100px;
+      } /* Hạn SD */
+      .table th:nth-child(11),
+      .table td:nth-child(11) {
+        width: 80px;
+      } /* Yêu thích */
+      .table th:nth-child(12),
+      .table td:nth-child(12) {
+        width: 80px;
+      } /* Mô tả */
+      .table th:nth-child(13),
+      .table td:nth-child(13) {
+        width: 100px;
+      } /* Trạng thái */
+      .table th:nth-child(14),
+      .table td:nth-child(14) {
+        width: 120px;
+      } /* Thao tác */
+
+      /* Ensure table doesn't break layout */
+      .table {
+        table-layout: fixed;
+        word-wrap: break-word;
+      }
+
+      /* Price column specific styling */
+      .price-display {
+        white-space: nowrap;
+        font-size: 13px;
+      }
+
+      /* Table responsive adjustments */
+      .table-responsive {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      /* Ensure proper spacing for all columns */
+      .table td,
+      .table th {
+        padding: 8px 6px;
+        vertical-align: middle;
+        text-align: center;
+      }
+
+      /* Text alignment adjustments */
+      .table td:nth-child(3),
+      .table th:nth-child(3) {
+        text-align: left;
+      } /* Tên sản phẩm */
+      .table td:nth-child(4),
+      .table th:nth-child(4) {
+        text-align: left;
+      } /* Danh mục */
+      .table td:nth-child(5),
+      .table th:nth-child(5) {
+        text-align: left;
+      } /* Thương hiệu */
+
+      /* Prevent header text wrapping */
+      .table th {
+        white-space: nowrap;
+        font-size: 13px;
+        font-weight: 600;
+      }
+
       .btn-edit i,
       .btn-delete i {
         font-size: 14px;
@@ -767,6 +971,10 @@
                             <th>Giá</th>
                             <th>Giảm giá</th>
                             <th>Số lượng</th>
+                            <th>Ngày SX</th>
+                            <th>Hạn SD</th>
+                            <th>Yêu thích</th>
+                            <th>Mô tả</th>
                             <th>Trạng thái</th>
                             <th>Thao tác</th>
                           </tr>
@@ -824,6 +1032,58 @@
                             </td>
                             <td>
                               <span
+                                th:if="${product.manufactureDate != null}"
+                                th:text="${#dates.format(product.manufactureDate, 'dd/MM/yyyy')}"
+                                class="date-display"
+                              ></span>
+                              <span
+                                th:unless="${product.manufactureDate != null}"
+                                class="text-muted"
+                                >--</span
+                              >
+                            </td>
+                            <td>
+                              <span
+                                th:if="${product.expiryDate != null}"
+                                th:text="${#dates.format(product.expiryDate, 'dd/MM/yyyy')}"
+                                class="date-display"
+                              ></span>
+                              <span
+                                th:unless="${product.expiryDate != null}"
+                                class="text-muted"
+                                >--</span
+                              >
+                            </td>
+                            <td>
+                              <span
+                                th:if="${product.favorite}"
+                                class="favorite-active"
+                                title="Sản phẩm yêu thích"
+                              >
+                                <i class="fas fa-heart"></i>
+                              </span>
+                              <span
+                                th:unless="${product.favorite}"
+                                class="favorite-inactive"
+                                title="Không yêu thích"
+                              >
+                                <i class="far fa-heart"></i>
+                              </span>
+                            </td>
+                            <td>
+                              <button
+                                type="button"
+                                class="btn btn-info btn-sm"
+                                th:data-description="${product.description}"
+                                th:data-product-name="${product.productName}"
+                                onclick="showDescription(this)"
+                                title="Xem mô tả"
+                              >
+                                <i class="fas fa-info-circle"></i>
+                              </button>
+                            </td>
+                            <td>
+                              <span
                                 th:if="${product.status}"
                                 class="status-active"
                               >
@@ -859,7 +1119,7 @@
                             </td>
                           </tr>
                           <tr th:if="${#lists.isEmpty(products)}">
-                            <td colspan="10" class="empty-state">
+                            <td colspan="14" class="empty-state">
                               <i class="fas fa-inbox"></i>
                               <h3>Chưa có sản phẩm nào</h3>
                               <p>
@@ -1049,6 +1309,55 @@
       </div>
     </div>
 
+    <!-- Description Modal -->
+    <div
+      class="modal fade"
+      id="descriptionModal"
+      tabindex="-1"
+      role="dialog"
+      aria-labelledby="descriptionModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="descriptionModalLabel">
+              <i class="fas fa-info-circle"></i>
+              Mô tả sản phẩm
+            </h5>
+            <button
+              type="button"
+              class="close"
+              data-dismiss="modal"
+              aria-label="Close"
+              onclick="closeDescriptionModal()"
+            >
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <div class="product-info">
+              <h6 class="product-name mb-3" id="modalProductName"></h6>
+              <div class="description-content">
+                <p id="modalDescription" class="text-muted"></p>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-dismiss="modal"
+              onclick="closeDescriptionModal()"
+            >
+              <i class="fas fa-times"></i>
+              Đóng
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- JavaScript -->
     <script src="/vendor/bootstrap/jquery-1.12.4.min.js"></script>
     <script src="/vendor/bootstrap/popper.min.js"></script>
@@ -1056,6 +1365,72 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
+      // Show Description Modal
+      function showDescription(button) {
+        const description = button.getAttribute("data-description");
+        const productName = button.getAttribute("data-product-name");
+
+        // Set modal content
+        document.getElementById("modalProductName").textContent = productName;
+
+        if (description && description.trim() !== "") {
+          document.getElementById("modalDescription").textContent = description;
+        } else {
+          document.getElementById("modalDescription").textContent =
+            "Chưa có mô tả cho sản phẩm này.";
+        }
+
+        // Show modal using Bootstrap 4 syntax
+        $("#descriptionModal").modal("show");
+      }
+
+      // Close modal function
+      function closeDescriptionModal() {
+        // Try multiple methods to close modal
+        $("#descriptionModal").modal("hide");
+
+        // Fallback method
+        setTimeout(function () {
+          const modal = document.getElementById("descriptionModal");
+          if (modal) {
+            modal.style.display = "none";
+            modal.classList.remove("show");
+            document.body.classList.remove("modal-open");
+
+            // Remove backdrop
+            const backdrop = document.querySelector(".modal-backdrop");
+            if (backdrop) {
+              backdrop.remove();
+            }
+          }
+        }, 100);
+      }
+
+      // Modal event listeners
+      $(document).ready(function () {
+        // Close modal when clicking outside
+        $("#descriptionModal").on("click", function (e) {
+          if (e.target === this) {
+            $(this).modal("hide");
+          }
+        });
+
+        // Close modal with ESC key
+        $(document).on("keydown", function (e) {
+          if (e.keyCode === 27) {
+            // ESC key
+            $("#descriptionModal").modal("hide");
+          }
+        });
+
+        // Close modal when clicking close button
+        $(
+          "#descriptionModal .close, #descriptionModal [data-dismiss='modal']"
+        ).on("click", function () {
+          $("#descriptionModal").modal("hide");
+        });
+      });
+
       // Delete Product
       function confirmDelete(button) {
         const id = button.getAttribute("data-id");
