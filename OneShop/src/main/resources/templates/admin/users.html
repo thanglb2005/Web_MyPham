@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý khách hàng - OneShop Admin</title>
+    <link rel="icon" href="/images/logo/logo.png" />
+    
+    <!-- CSS Files -->
+    <link rel="stylesheet" href="/assets/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/assets/css/atlantis.min.css">
+    <link rel="stylesheet" href="/assets/css/demo.css">
+    
+    <style>
+        .status-active {
+            color: #28a745;
+            font-weight: bold;
+        }
+        .status-inactive {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        .search-box {
+            margin-bottom: 20px;
+        }
+        .user-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+    </style>
+</head>
+<body>
+    <div class="wrapper">
+        <!-- Header -->
+        <th:block th:replace="~{admin/fragments/header :: header}"></th:block>
+        
+        <!-- Navbar -->
+        <th:block th:replace="~{admin/fragments/navbar :: navbar}"></th:block>
+        
+        <div class="main-panel">
+            <div class="content">
+                <div class="page-inner">
+                    <div class="page-header">
+                        <h4 class="page-title">Quản lý khách hàng</h4>
+                        <ul class="breadcrumbs">
+                            <li class="nav-home">
+                                <a href="/admin/home">
+                                    <i class="flaticon-home"></i>
+                                </a>
+                            </li>
+                            <li class="separator">
+                                <i class="flaticon-right-arrow"></i>
+                            </li>
+                            <li class="nav-item">
+                                <a href="javascript:void(0);">Quản lý khách hàng</a>
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <div class="col-md-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <h4 class="card-title" style="text-decoration: underline;">Danh sách khách hàng</h4>
+                                    <div class="search-box">
+                                        <form th:action="@{/admin/users/search}" method="get" class="form-inline">
+                                            <div class="input-group">
+                                                <input type="text" name="keyword" class="form-control" 
+                                                       placeholder="Tìm kiếm theo tên hoặc email..." 
+                                                       th:value="${keyword}">
+                                                <div class="input-group-append">
+                                                    <button class="btn btn-primary" type="submit">
+                                                        <i class="fa fa-search"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table id="users-table" class="display table table-striped table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>ID</th>
+                                                <th>Ảnh đại diện</th>
+                                                <th>Họ và tên</th>
+                                                <th>Email</th>
+                                                <th>Ngày đăng ký</th>
+                                                <th>Trạng thái</th>
+                                                <th>Hành động</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr th:each="user : ${users}">
+                                                <td th:text="${user.userId}"></td>
+                                                <td>
+                                                    <img th:if="${user.avatar != null and !#strings.isEmpty(user.avatar)}" 
+                                                         th:src="@{'/loadImage?imageName=' + ${user.avatar}}" 
+                                                         alt="Avatar" class="user-avatar">
+                                                    <img th:unless="${user.avatar != null and !#strings.isEmpty(user.avatar)}" 
+                                                         src="/images/user.png" 
+                                                         alt="Avatar" class="user-avatar">
+                                                </td>
+                                                <td th:text="${user.name != null ? user.name : 'N/A'}"></td>
+                                                <td th:text="${user.email != null ? user.email : 'N/A'}"></td>
+                                                <td th:text="${user.registerDate != null ? #temporals.format(user.registerDate, 'dd/MM/yyyy') : 'N/A'}"></td>
+                                                <td>
+                                                    <span th:if="${user.status}" class="status-active">Đang hoạt động</span>
+                                                    <span th:unless="${user.status}" class="status-inactive">Ngừng hoạt động</span>
+                                                </td>
+                                                <td>
+                                                    <div class="form-button-action">
+                                                        <a th:href="@{'/admin/users/detail/' + ${user.userId}}" 
+                                                           class="btn btn-link btn-primary btn-lg" 
+                                                           data-toggle="tooltip" title="Xem chi tiết">
+                                                            <i class="fa fa-eye"></i>
+                                                        </a>
+                                                        <form th:action="@{'/admin/users/toggle-status/' + ${user.userId}}" 
+                                                              method="post" style="display: inline;">
+                                                            <button type="submit" 
+                                                                    th:class="${user.status} ? 'btn btn-link btn-warning' : 'btn btn-link btn-success'"
+                                                                    th:title="${user.status} ? 'Vô hiệu hóa' : 'Kích hoạt'"
+                                                                    data-toggle="tooltip"
+                                                                    th:onclick="return confirm('Bạn có chắc chắn muốn thay đổi trạng thái của khách hàng này?')">
+                                                                <i th:class="${user.status} ? 'fa fa-ban' : 'fa fa-check'"></i>
+                                                            </button>
+                                                        </form>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                
+                                <!-- Thông báo nếu không có kết quả tìm kiếm -->
+                                <div th:if="${users != null and users.empty}" class="text-center py-4">
+                                    <p class="text-muted">Không tìm thấy khách hàng nào phù hợp với từ khóa tìm kiếm.</p>
+                                    <a href="/admin/users" class="btn btn-primary">Xem tất cả khách hàng</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Footer -->
+            <footer class="footer">
+                <div class="container-fluid">
+                    <nav class="pull-left">
+                        <ul class="nav">
+                            <li class="nav-item">
+                                <a class="nav-link" href="javascript:void(0);">OneShop</a>
+                            </li>
+                        </ul>
+                    </nav>
+                    <div class="copyright ml-auto">
+                        2024, made with <i class="fa fa-heart heart text-danger"></i> by <a href="javascript:void(0);">OneShop Team</a>
+                    </div>
+                </div>
+            </footer>
+        </div>
+    </div>
+    
+    <!-- Core JS Files -->
+    <script src="/assets/js/core/jquery.3.2.1.min.js"></script>
+    <script src="/assets/js/core/popper.min.js"></script>
+    <script src="/assets/js/core/bootstrap.min.js"></script>
+    <script src="/assets/js/plugin/datatables/datatables.min.js"></script>
+    <script src="/assets/js/atlantis.min.js"></script>
+    
+    <script>
+        $(document).ready(function() {
+            $('#users-table').DataTable({
+                "pageLength": 10,
+                "language": {
+                    "url": "//cdn.datatables.net/plug-ins/1.10.24/i18n/Vietnamese.json"
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -18,6 +18,15 @@ public class IndexAdminController {
     @Autowired
     private CategoryService categoryService;
 
+    @GetMapping("/admin")
+    public String admin(HttpSession session) {
+        User user = (User) session.getAttribute("user");
+        if (user == null) {
+            return "redirect:/login";
+        }
+        return "redirect:/admin/home";
+    }
+
     @GetMapping("/admin/home")
     public String adminHome(HttpSession session, Model model) {
         User user = (User) session.getAttribute("user");

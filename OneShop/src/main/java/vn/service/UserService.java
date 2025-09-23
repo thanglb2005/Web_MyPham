@@ -12,4 +12,8 @@ public interface UserService {
     User findByEmail(String email);
     List<User> findByStatus(Boolean status);
     boolean existsByEmail(String email);
+    
+    // Thêm các method cho quản lý khách hàng
+    void toggleUserStatus(Long userId);
+    List<User> searchUsers(String keyword);
 }
