@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Page</title>
+    <link rel="stylesheet" href="/assets/css/bootstrap.min.css">
+    <style>
+        body { background: #f8f9fa; }
+        .test-content { 
+            margin: 20px; 
+            padding: 20px; 
+            background: white; 
+            border-radius: 10px; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="test-content">
+        <h1>Test Page</h1>
+        <p>Nếu bạn thấy trang này, có nghĩa là server đang chạy.</p>
+        <a href="/admin/users" class="btn btn-primary">Go to Users Page</a>
+    </div>
+    
+    <script src="/assets/js/core/jquery.3.2.1.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            console.log('Test page loaded successfully');
+        });
+    </script>
+</body>
+</html>

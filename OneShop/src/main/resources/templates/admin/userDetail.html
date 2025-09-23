@@ -8,34 +8,451 @@
     
     <!-- CSS Files -->
     <link rel="stylesheet" href="/assets/css/bootstrap.min.css">
-    <link rel="stylesheet" href="/assets/css/atlantis.min.css">
+    <link rel="stylesheet" href="/assets/css/atlantis.css">
     <link rel="stylesheet" href="/assets/css/demo.css">
+    <link rel="stylesheet" href="/assets/css/fonts.min.css">
+    <link rel="stylesheet" href="/assets/css/atlantis.min.css">
     
     <style>
-        .user-detail-card {
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      /* Kế thừa toàn bộ style từ admin chính */
+      /* Greeny-style customizations */
+      .logo-header {
+        background: white !important;
+        border-bottom: 1px solid #e9ecef;
+      }
+
+      .logo-header .logo img {
+        width: 180px !important;
+        height: auto !important;
+      }
+
+      .navbar-header {
+        background: #007bff !important;
+      }
+
+      .navbar-header .navbar-nav .nav-link {
+        color: white !important;
+      }
+
+      .navbar-header .navbar-nav .nav-link:hover {
+        color: #f8f9fa !important;
+      }
+
+      /* Fixed Sidebar */
+      .sidebar {
+        position: fixed !important;
+        top: 60px;
+        left: 0;
+        bottom: 0;
+        z-index: 1028;
+        width: 250px;
+        background: white !important;
+        border-right: 1px solid #e9ecef;
+        margin: 0;
+        padding: 0;
+      }
+
+      /* Main Content Adjustment */
+      .main-panel {
+        margin-top: 60px !important;
+        margin-left: 250px !important;
+        padding: 0;
+        margin-right: 0;
+      }
+
+      .content {
+        padding: 0;
+        margin: 0;
+        position: relative;
+        top: 0;
+      }
+
+      .page-inner {
+        padding: 20px;
+        margin: 0;
+      }
+
+      .page-header {
+        padding: 15px 20px;
+        margin: 0;
+        background: white;
+        border-bottom: 1px solid #e9ecef;
+        position: relative;
+        top: 0;
+      }
+
+      /* Remove any default margins/padding */
+      * {
+        box-sizing: border-box;
+      }
+
+      .main-panel .content .page-header {
+        margin-top: 0 !important;
+        padding-top: 15px;
+      }
+
+      /* Force remove all gaps */
+      .main-panel {
+        margin-top: 60px !important;
+        margin-left: 250px !important;
+        padding: 0 !important;
+        margin-right: 0 !important;
+      }
+
+      .content {
+        padding: 0 !important;
+        margin: 0 !important;
+        position: relative !important;
+        top: 0 !important;
+      }
+
+      .page-header {
+        margin-top: 0 !important;
+        margin-bottom: 0 !important;
+        padding-top: 15px !important;
+        padding-bottom: 15px !important;
+        padding-left: 20px !important;
+        padding-right: 20px !important;
+      }
+
+      /* Override Atlantis CSS completely */
+      .wrapper .main-panel .content {
+        margin-top: 0 !important;
+        padding-top: 0 !important;
+      }
+
+      .wrapper .main-panel .content .page-header {
+        margin-top: 0 !important;
+        padding-top: 15px !important;
+      }
+
+      /* Remove any potential gaps from body or html */
+      body,
+      html {
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+
+      /* Sidebar Toggle Styles - Exact Greeny approach */
+      @media screen and (min-width: 991px) {
+        .sidebar_minimize .main-panel {
+          width: calc(100% - 75px);
+          transition: all 0.3s;
         }
-        .user-avatar-large {
-            width: 150px;
-            height: 150px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 4px solid #007bff;
+
+        .sidebar_minimize .logo-header {
+          width: 75px;
+          transition: all 0.3s;
+          padding: 0px;
+          text-align: center;
         }
-        .status-badge {
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-weight: bold;
+
+        .sidebar_minimize .logo-header .logo {
+          position: absolute;
+          transform: translate3d(25px, 0, 0);
+          opacity: 0;
         }
-        .status-active {
-            background-color: #d4edda;
-            color: #155724;
+
+        .sidebar_minimize .logo-header .logo img {
+          display: none;
         }
-        .status-inactive {
-            background-color: #f8d7da;
-            color: #721c24;
+
+        .sidebar_minimize .logo-header .nav-toggle {
+          position: absolute;
+          left: 50%;
+          transform: translateX(-50%);
+          height: 100%;
+          right: 0 !important;
         }
+
+        .sidebar_minimize .sidebar {
+          width: 75px !important;
+          transition: all 0.3s;
+          background-color: white !important;
+          overflow: hidden !important;
+        }
+
+        .sidebar_minimize .sidebar .sidebar-wrapper {
+          width: 75px !important;
+          transition: all 0.3s;
+          background-color: white !important;
+          overflow: hidden !important;
+        }
+
+        .sidebar_minimize .sidebar .sidebar-wrapper .user {
+          padding-left: 0px;
+          padding-right: 0px;
+        }
+
+        .sidebar_minimize .sidebar .sidebar-wrapper .user [class^="avatar-"] {
+          float: none !important;
+          margin: auto;
+        }
+
+        .sidebar_minimize .sidebar .sidebar-wrapper .user .info {
+          display: none;
+        }
+
+        .sidebar_minimize .sidebar .sidebar-wrapper .user .info span {
+          display: none;
+        }
+
+        .sidebar_minimize .sidebar .sidebar-wrapper .nav-item {
+          position: relative;
+        }
+
+        .sidebar_minimize .sidebar .sidebar-wrapper .nav-item a i {
+          margin-right: unset;
+        }
+
+        .sidebar_minimize .sidebar .sidebar-wrapper .nav-item a .badge,
+        .sidebar_minimize .sidebar .sidebar-wrapper .nav-item a span,
+        .sidebar_minimize .sidebar .sidebar-wrapper .nav-item a .caret,
+        .sidebar_minimize .sidebar .sidebar-wrapper .nav-item a p {
+          display: none;
+          transition: all 0.3s;
+        }
+
+        .sidebar_minimize
+          .sidebar
+          .sidebar-wrapper
+          .nav-item.submenu
+          .nav-collapse,
+        .sidebar_minimize
+          .sidebar
+          .sidebar-wrapper
+          .nav-item.active
+          .nav-collapse {
+          display: none;
+        }
+
+        .sidebar_minimize .sidebar .sidebar-wrapper .nav-section .text-section {
+          display: none;
+        }
+
+        /* Force hide all text content when minimized */
+        .sidebar_minimize .sidebar .sidebar-wrapper .user .info,
+        .sidebar_minimize .sidebar .sidebar-wrapper .user .info span,
+        .sidebar_minimize .sidebar .sidebar-wrapper .user .info .user-level,
+        .sidebar_minimize .sidebar .sidebar-wrapper .nav-item a span,
+        .sidebar_minimize .sidebar .sidebar-wrapper .nav-item a p,
+        .sidebar_minimize .sidebar .sidebar-wrapper .nav-item a .caret,
+        .sidebar_minimize .sidebar .sidebar-wrapper .nav-item a .badge,
+        .sidebar_minimize .sidebar .sidebar-wrapper .nav-section .text-section {
+          display: none !important;
+          opacity: 0 !important;
+          visibility: hidden !important;
+        }
+
+        /* Keep only icons visible */
+        .sidebar_minimize .sidebar .sidebar-wrapper .nav-item a i {
+          display: block !important;
+          opacity: 1 !important;
+          visibility: visible !important;
+          margin: 0 !important;
+          text-align: center !important;
+        }
+
+        .sidebar_minimize .sidebar .sidebar-wrapper .user [class^="avatar-"] {
+          display: block !important;
+          opacity: 1 !important;
+          visibility: visible !important;
+          margin: 0 auto !important;
+        }
+
+        /* Hover effect - Override all hiding rules */
+        .sidebar_minimize .sidebar:hover {
+          width: 250px !important;
+        }
+
+        .sidebar_minimize .sidebar:hover .sidebar-wrapper {
+          width: 250px !important;
+        }
+
+        .sidebar_minimize .sidebar:hover .sidebar-wrapper .user {
+          padding-left: 15px !important;
+          padding-right: 15px !important;
+        }
+
+        .sidebar_minimize
+          .sidebar:hover
+          .sidebar-wrapper
+          .user
+          [class^="avatar-"] {
+          float: left !important;
+          margin-right: 11px !important;
+        }
+
+        .sidebar_minimize .sidebar:hover .sidebar-wrapper .user .info {
+          display: block !important;
+          opacity: 1 !important;
+          visibility: visible !important;
+        }
+
+        .sidebar_minimize .sidebar:hover .sidebar-wrapper .user .info span {
+          display: block !important;
+          opacity: 1 !important;
+          visibility: visible !important;
+        }
+
+        .sidebar_minimize
+          .sidebar:hover
+          .sidebar-wrapper
+          .user
+          .info
+          .user-level {
+          display: block !important;
+          opacity: 1 !important;
+          visibility: visible !important;
+        }
+
+        .sidebar_minimize .sidebar:hover .sidebar-wrapper .nav-item a i {
+          margin-right: 15px !important;
+        }
+
+        .sidebar_minimize .sidebar:hover .sidebar-wrapper .nav-item a .badge,
+        .sidebar_minimize .sidebar:hover .sidebar-wrapper .nav-item a span,
+        .sidebar_minimize .sidebar:hover .sidebar-wrapper .nav-item a .caret,
+        .sidebar_minimize .sidebar:hover .sidebar-wrapper .nav-item a p {
+          display: block !important;
+          opacity: 1 !important;
+          visibility: visible !important;
+        }
+
+        .sidebar_minimize
+          .sidebar:hover
+          .sidebar-wrapper
+          .nav-item.submenu
+          .nav-collapse,
+        .sidebar_minimize
+          .sidebar:hover
+          .sidebar-wrapper
+          .nav-item.active
+          .nav-collapse {
+          display: block !important;
+          opacity: 1 !important;
+          visibility: visible !important;
+        }
+
+        .sidebar_minimize
+          .sidebar:hover
+          .sidebar-wrapper
+          .nav-section
+          .text-section {
+          display: block !important;
+          opacity: 1 !important;
+          visibility: visible !important;
+        }
+      }
+
+      /* Normal state - when sidebar is not minimized */
+      @media screen and (min-width: 991px) {
+        .main-panel {
+          position: relative;
+          width: calc(100% - 250px);
+          height: 100vh;
+          min-height: 100%;
+          float: right;
+          transition: all 0.3s;
+        }
+
+        .sidebar {
+          background-color: white !important;
+        }
+
+        .sidebar .sidebar-wrapper {
+          background-color: white !important;
+        }
+      }
+
+      .sidebar-toggle {
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
+
+      .sidebar-toggle:hover {
+        color: #007bff !important;
+      }
+
+      /* Responsive adjustments */
+      @media (max-width: 991px) {
+        .sidebar {
+          transform: translateX(-100%);
+          transition: transform 0.3s ease;
+        }
+
+        .sidebar.show {
+          transform: translateX(0);
+        }
+
+        .main-panel {
+          margin-left: 0 !important;
+        }
+      }
+
+      .sidebar-brand {
+        background: linear-gradient(135deg, #007bff, #0056b3);
+      }
+
+      .sidebar-brand .logo {
+        color: white;
+        font-weight: bold;
+        font-size: 1.5rem;
+      }
+
+      .nav-link.active {
+        background: #007bff !important;
+        color: white !important;
+      }
+
+      .nav-link:hover {
+        background: #e3f2fd;
+        color: #007bff;
+      }
+
+      /* Đảm bảo menu collapse hoạt động */
+      .sidebar .nav-item .collapse {
+        display: none !important;
+      }
+      .sidebar .nav-item .collapse.show {
+        display: block !important;
+      }
+      .sidebar .nav-item.active > a {
+        background-color: #007bff !important;
+        color: white !important;
+      }
+      .sidebar .nav-item .caret {
+        transition: transform 0.3s ease;
+      }
+      .sidebar .nav-item.active .caret {
+        transform: rotate(90deg);
+      }
+
+      /* User detail specific styles */
+      .user-detail-card {
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      }
+      .user-avatar-large {
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 4px solid #007bff;
+      }
+      .status-badge {
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-weight: bold;
+      }
+      .status-active {
+        background-color: #d4edda;
+        color: #155724;
+      }
+      .status-inactive {
+        background-color: #f8d7da;
+        color: #721c24;
+      }
     </style>
 </head>
 <body>
@@ -48,30 +465,31 @@
         
         <div class="main-panel">
             <div class="content">
+                <!-- Page Header -->
+                <div class="page-header">
+                    <h4 class="page-title">Chi tiết khách hàng</h4>
+                    <ul class="breadcrumbs">
+                        <li class="nav-home">
+                            <a href="/admin/home">
+                                <i class="flaticon-home"></i>
+                            </a>
+                        </li>
+                        <li class="separator">
+                            <i class="flaticon-right-arrow"></i>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/admin/users">Quản lý khách hàng</a>
+                        </li>
+                        <li class="separator">
+                            <i class="flaticon-right-arrow"></i>
+                        </li>
+                        <li class="nav-item">
+                            <a href="javascript:void(0);">Chi tiết</a>
+                        </li>
+                    </ul>
+                </div>
+
                 <div class="page-inner">
-                    <div class="page-header">
-                        <h4 class="page-title">Chi tiết khách hàng</h4>
-                        <ul class="breadcrumbs">
-                            <li class="nav-home">
-                                <a href="/admin/home">
-                                    <i class="flaticon-home"></i>
-                                </a>
-                            </li>
-                            <li class="separator">
-                                <i class="flaticon-right-arrow"></i>
-                            </li>
-                            <li class="nav-item">
-                                <a href="/admin/users">Quản lý khách hàng</a>
-                            </li>
-                            <li class="separator">
-                                <i class="flaticon-right-arrow"></i>
-                            </li>
-                            <li class="nav-item">
-                                <a href="javascript:void(0);">Chi tiết</a>
-                            </li>
-                        </ul>
-                    </div>
-                    
                     <div class="row">
                         <div class="col-md-8">
                             <div class="card user-detail-card">
@@ -81,10 +499,10 @@
                                 <div class="card-body">
                                     <div class="row">
                                         <div class="col-md-4 text-center">
-                                            <img th:if="${userDetail.avatar != null and !#strings.isEmpty(userDetail.avatar)}" 
+                                            <img th:if="${userDetail.avatar != null}" 
                                                  th:src="@{'/loadImage?imageName=' + ${userDetail.avatar}}" 
                                                  alt="Avatar" class="user-avatar-large mb-3">
-                                            <img th:unless="${userDetail.avatar != null and !#strings.isEmpty(userDetail.avatar)}" 
+                                            <img th:if="${userDetail.avatar == null}" 
                                                  src="/images/user.png" 
                                                  alt="Avatar" class="user-avatar-large mb-3">
                                         </div>
@@ -96,22 +514,22 @@
                                                 </tr>
                                                 <tr>
                                                     <td><strong>Họ và tên:</strong></td>
-                                                    <td th:text="${userDetail.name != null ? userDetail.name : 'N/A'}"></td>
+                                                    <td th:text="${userDetail.name}"></td>
                                                 </tr>
                                                 <tr>
                                                     <td><strong>Email:</strong></td>
-                                                    <td th:text="${userDetail.email != null ? userDetail.email : 'N/A'}"></td>
+                                                    <td th:text="${userDetail.email}"></td>
                                                 </tr>
                                                 <tr>
                                                     <td><strong>Ngày đăng ký:</strong></td>
-                                                    <td th:text="${userDetail.registerDate != null ? #temporals.format(userDetail.registerDate, 'dd/MM/yyyy HH:mm') : 'N/A'}"></td>
+                                                    <td th:text="${userDetail.registerDate}"></td>
                                                 </tr>
                                                 <tr>
                                                     <td><strong>Trạng thái:</strong></td>
                                                     <td>
                                                         <span th:if="${userDetail.status}" 
                                                               class="status-badge status-active">Đang hoạt động</span>
-                                                        <span th:unless="${userDetail.status}" 
+                                                        <span th:if="${!userDetail.status}" 
                                                               class="status-badge status-inactive">Ngừng hoạt động</span>
                                                     </td>
                                                 </tr>
@@ -120,8 +538,8 @@
                                                     <td>
                                                         <span th:if="${userDetail.roles != null and !userDetail.roles.empty}" 
                                                               th:each="role, iterStat : ${userDetail.roles}" 
-                                                              th:text="${role.name} + (${!iterStat.last} ? ', ' : '')"></span>
-                                                        <span th:unless="${userDetail.roles != null and !userDetail.roles.empty}" 
+                                                              th:text="${role.name}"></span>
+                                                        <span th:if="${userDetail.roles == null or userDetail.roles.empty}" 
                                                               class="text-muted">Chưa có vai trò</span>
                                                     </td>
                                                 </tr>
@@ -139,12 +557,12 @@
                                 </div>
                                 <div class="card-body">
                                     <div class="d-grid gap-2">
-                                        <form th:action="@{'/admin/users/toggle-status/' + ${userDetail.userId}}" 
+                                        <form th:action="@{/admin/users/toggle-status/{id}(id=${userDetail.userId})}" 
                                               method="post">
                                             <button type="submit" 
                                                     th:class="${userDetail.status} ? 'btn btn-warning btn-block' : 'btn btn-success btn-block'"
                                                     th:text="${userDetail.status} ? 'Vô hiệu hóa tài khoản' : 'Kích hoạt tài khoản'"
-                                                    th:onclick="return confirm('Bạn có chắc chắn muốn thay đổi trạng thái của khách hàng này?')">
+                                                    onclick="return confirm('Bạn có chắc chắn muốn thay đổi trạng thái của khách hàng này?')">
                                             </button>
                                         </form>
                                         
@@ -205,6 +623,62 @@
     <script src="/assets/js/core/jquery.3.2.1.min.js"></script>
     <script src="/assets/js/core/popper.min.js"></script>
     <script src="/assets/js/core/bootstrap.min.js"></script>
+    <script src="/assets/js/plugin/jquery-ui-1.12.1.custom/jquery-ui.min.js"></script>
+    <script src="/assets/js/plugin/jquery-ui-touch-punch/jquery.ui.touch-punch.min.js"></script>
+    <script src="/assets/js/plugin/jquery-scrollbar/jquery.scrollbar.min.js"></script>
     <script src="/assets/js/atlantis.min.js"></script>
+    
+    <script>
+        // Kế thừa script từ admin chính - Đảm bảo function global
+        window.toggleSidebar = function() {
+            const wrapper = document.querySelector(".wrapper");
+            const minibutton = document.querySelector(".toggle-sidebar");
+
+            if (wrapper.classList.contains("sidebar_minimize")) {
+                // Expand sidebar
+                wrapper.classList.remove("sidebar_minimize");
+                minibutton.classList.remove("toggled");
+                minibutton.innerHTML = '<i class="icon-menu"></i>';
+            } else {
+                // Collapse sidebar
+                wrapper.classList.add("sidebar_minimize");
+                minibutton.classList.add("toggled");
+                minibutton.innerHTML = '<i class="icon-options-vertical"></i>';
+            }
+            // Trigger resize event
+            window.dispatchEvent(new Event("resize"));
+        };
+
+        // Đảm bảo Bootstrap collapse hoạt động cho menu
+        $(document).ready(function() {
+            // Khởi tạo collapse cho menu - giống admin chính
+            $('[data-toggle="collapse"]').on('click', function(e) {
+                e.preventDefault();
+                var target = $(this).attr('href');
+                $(target).collapse('toggle');
+                
+                // Thêm class active cho menu item được click
+                $('.nav-item').removeClass('active');
+                $(this).closest('.nav-item').addClass('active');
+            });
+
+            // Đảm bảo menu mở đúng khi trang load - giống admin chính
+            $('.collapse').on('show.bs.collapse', function () {
+                $(this).closest('.nav-item').addClass('active');
+            });
+            
+            $('.collapse').on('hide.bs.collapse', function () {
+                $(this).closest('.nav-item').removeClass('active');
+            });
+
+            // Auto-highlight menu khi ở trang userDetail
+            setTimeout(function() {
+                $('.nav-item a[href="#tables"]').closest('.nav-item').addClass('active');
+                $('#tables').addClass('show');
+                $('.nav-item a[href="/admin/users"]').addClass('active');
+                console.log('Menu auto-highlighted');
+            }, 100);
+        });
+    </script>
 </body>
 </html>

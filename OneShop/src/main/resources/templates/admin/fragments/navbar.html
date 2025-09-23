@@ -15,6 +15,25 @@
     padding: 0;
   "
 >
+  <style>
+    /* Đảm bảo menu collapse hoạt động */
+    .nav-item .collapse {
+      display: none;
+    }
+    .nav-item .collapse.show {
+      display: block;
+    }
+    .nav-item.active > a {
+      background-color: #007bff !important;
+      color: white !important;
+    }
+    .nav-item .caret {
+      transition: transform 0.3s ease;
+    }
+    .nav-item.active .caret {
+      transform: rotate(90deg);
+    }
+  </style>
   <div class="sidebar-wrapper scrollbar scrollbar-inner">
     <div class="sidebar-content">
       <!-- User Profile -->

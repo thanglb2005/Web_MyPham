@@ -87,16 +87,58 @@ public class UserController {
         }
         
         List<User> users;
-        if (keyword == null || keyword.trim().isEmpty()) {
+        String searchKeyword = (keyword != null) ? keyword.trim() : "";
+        
+        if (searchKeyword.isEmpty()) {
+            // Nếu keyword rỗng, hiển thị thông báo yêu cầu nhập từ khóa
+            users = userService.getAllUsers(); // Vẫn hiển thị tất cả users
+            model.addAttribute("showEmptyKeywordMessage", true);
+        } else if (searchKeyword.length() < 2) {
+            // Nếu keyword quá ngắn
             users = userService.getAllUsers();
+            model.addAttribute("showShortKeywordMessage", true);
         } else {
-            users = userService.searchUsers(keyword.trim());
+            // Tìm kiếm bình thường
+            users = userService.searchUsers(searchKeyword);
         }
         
         model.addAttribute("users", users);
         model.addAttribute("user", adminUser);
-        model.addAttribute("keyword", keyword);
+        model.addAttribute("keyword", searchKeyword);
         
         return "admin/users";
+    }
+
+    /**
+     * Test page để kiểm tra
+     */
+    @GetMapping("/admin/test")
+    public String test() {
+        return "admin/test";
+    }
+
+    /**
+     * Debug page để kiểm tra CSS và JavaScript
+     */
+    @GetMapping("/admin/debug")
+    public String debug() {
+        return "admin/debug";
+    }
+
+    /**
+     * Test page đơn giản để kiểm tra users
+     */
+    @GetMapping("/admin/users-simple")
+    public String usersSimple(HttpSession session, Model model) {
+        User adminUser = (User) session.getAttribute("user");
+        if (adminUser == null) {
+            return "redirect:/login";
+        }
+        
+        List<User> users = userService.getAllUsers();
+        model.addAttribute("users", users);
+        model.addAttribute("user", adminUser);
+        
+        return "admin/users-simple";
     }
 }

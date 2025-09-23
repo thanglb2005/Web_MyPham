@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Page</title>
+    <link rel="stylesheet" href="/assets/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/assets/css/atlantis.min.css">
+    <style>
+        body { 
+            background: #f8f9fa; 
+            font-family: 'Roboto', sans-serif;
+        }
+        .debug-content { 
+            margin: 20px; 
+            padding: 20px; 
+            background: white; 
+            border-radius: 10px; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-table {
+            margin-top: 20px;
+        }
+        .test-table th {
+            background: #007bff;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="debug-content">
+        <h1>Debug Page - Kiểm tra CSS và JavaScript</h1>
+        
+        <div class="alert alert-info">
+            <h4>Kiểm tra CSS:</h4>
+            <p>Nếu bạn thấy màu xanh và border radius, CSS đang hoạt động.</p>
+        </div>
+        
+        <div class="alert alert-warning">
+            <h4>Kiểm tra JavaScript:</h4>
+            <p>Mở Developer Tools (F12) và xem Console để kiểm tra JavaScript.</p>
+        </div>
+        
+        <div class="test-table">
+            <h4>Test Table:</h4>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Tên</th>
+                        <th>Email</th>
+                        <th>Trạng thái</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>1</td>
+                        <td>Test User 1</td>
+                        <td>test1@example.com</td>
+                        <td><span class="badge badge-success">Active</span></td>
+                    </tr>
+                    <tr>
+                        <td>2</td>
+                        <td>Test User 2</td>
+                        <td>test2@example.com</td>
+                        <td><span class="badge badge-danger">Inactive</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="mt-3">
+            <a href="/admin/users" class="btn btn-primary">Go to Users Page</a>
+            <a href="/admin/test" class="btn btn-secondary">Go to Test Page</a>
+        </div>
+    </div>
+    
+    <script src="/assets/js/core/jquery.3.2.1.min.js"></script>
+    <script src="/assets/js/core/bootstrap.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            console.log('Debug page loaded successfully');
+            console.log('jQuery version:', $.fn.jquery);
+            console.log('Bootstrap version:', typeof $.fn.modal !== 'undefined' ? 'Loaded' : 'Not loaded');
+            
+            // Test table row click
+            $('.test-table tbody tr').on('click', function() {
+                console.log('Table row clicked:', $(this).text());
+                $(this).toggleClass('table-info');
+            });
+        });
+    </script>
+</body>
+</html>

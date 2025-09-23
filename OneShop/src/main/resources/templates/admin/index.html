@@ -709,6 +709,27 @@
         // Trigger resize event
         window.dispatchEvent(new Event("resize"));
       }
+
+      // Đảm bảo Bootstrap collapse hoạt động cho menu
+      $(document).ready(function() {
+        // Khởi tạo collapse cho menu
+        $('[data-toggle="collapse"]').on('click', function(e) {
+          e.preventDefault();
+          var target = $(this).attr('href');
+          $(target).collapse('toggle');
+        });
+
+        // Thêm class active cho menu item được click
+        $('.nav-item a[data-toggle="collapse"]').on('click', function() {
+          $('.nav-item').removeClass('active');
+          $(this).closest('.nav-item').addClass('active');
+        });
+
+        // Đảm bảo menu mở đúng khi trang load
+        $('.collapse').on('show.bs.collapse', function () {
+          $(this).siblings('.nav-item').addClass('active');
+        });
+      });
     </script>
   </body>
 </html>
