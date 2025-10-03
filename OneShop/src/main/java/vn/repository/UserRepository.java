@@ -17,6 +17,15 @@ public interface UserRepository extends JpaRepository<User, Long> {
     // Tìm kiếm user theo tên hoặc email
     List<User> findByNameContainingIgnoreCaseOrEmailContainingIgnoreCase(String name, String email);
     
+    // Count methods for KPIs
+    long countByStatus(Boolean status);
+    
+    @Query(value = "SELECT COUNT(*) FROM [user] WHERE CAST(register_date AS DATE) = CAST(GETDATE() AS DATE)", nativeQuery = true)
+    long countNewUsersToday();
+    
+    @Query(value = "SELECT COUNT(*) FROM [user] WHERE YEAR(register_date) = YEAR(GETDATE()) AND MONTH(register_date) = MONTH(GETDATE())", nativeQuery = true)
+    long countNewUsersThisMonth();
+    
     // ========== CUSTOMER STATISTICS QUERIES ==========
     
     /**

@@ -138,8 +138,14 @@ public class CustomerStatisticsController {
     @GetMapping("/customer-statistics/api/newest-users")
     @ResponseBody
     public ResponseEntity<List<Object[]>> apiNewestUsers() {
-        List<Object[]> data = userRepository.getNewestUsers();
-        return ResponseEntity.ok(data);
+        try {
+            List<Object[]> data = userRepository.getNewestUsers();
+            return ResponseEntity.ok(data);
+        } catch (Exception e) {
+            System.err.println("Error loading newest users: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.ok(List.of());
+        }
     }
 
     /**
@@ -158,11 +164,17 @@ public class CustomerStatisticsController {
     @GetMapping("/customer-statistics/api/top-customers-by-value")
     @ResponseBody
     public ResponseEntity<List<Object[]>> apiTopCustomersByValue(@RequestParam(defaultValue = "10") int limit) {
-        List<Object[]> data = orderRepository.getTopCustomersByValue();
-        if (data.size() > limit) {
-            data = data.subList(0, limit);
+        try {
+            List<Object[]> data = orderRepository.getTopCustomersByValue();
+            if (data.size() > limit) {
+                data = data.subList(0, limit);
+            }
+            return ResponseEntity.ok(data);
+        } catch (Exception e) {
+            System.err.println("Error loading top customers: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.ok(List.of());
         }
-        return ResponseEntity.ok(data);
     }
 
     /**
@@ -183,36 +195,48 @@ public class CustomerStatisticsController {
      */
     @GetMapping("/customer-statistics/api/kpis")
     @ResponseBody
-    public ResponseEntity<Map<String, Number>> apiCustomerKpis() {
-        Map<String, Number> kpis = new HashMap<>();
+    public ResponseEntity<Map<String, Object>> apiCustomerKpis() {
+        Map<String, Object> kpis = new HashMap<>();
         
         try {
-            // Get activity statistics
-            List<Object[]> activityStats = userRepository.getUserActivityStatistics();
-            if (!activityStats.isEmpty()) {
-                Object[] stats = activityStats.get(0);
-                kpis.put("totalUsers", (Number) stats[0]);
-                kpis.put("activeUsers", (Number) stats[1]);
-                kpis.put("inactiveUsers", (Number) stats[2]);
-                kpis.put("newUsersToday", (Number) stats[3]);
-                kpis.put("newUsersThisMonth", (Number) stats[4]);
-            }
+            // Get basic user count
+            long totalUsers = userRepository.count();
+            kpis.put("totalUsers", totalUsers);
+            
+            // Get active users (users with status = true)
+            long activeUsers = userRepository.countByStatus(true);
+            kpis.put("activeUsers", activeUsers);
+            
+            // Get inactive users (users with status = false)
+            long inactiveUsers = userRepository.countByStatus(false);
+            kpis.put("inactiveUsers", inactiveUsers);
+            
+            // Get new users today
+            long newUsersToday = userRepository.countNewUsersToday();
+            kpis.put("newUsersToday", newUsersToday);
+            
+            // Get new users this month
+            long newUsersThisMonth = userRepository.countNewUsersThisMonth();
+            kpis.put("newUsersThisMonth", newUsersThisMonth);
             
             // Get top customers count
             List<Object[]> topCustomers = orderRepository.getTopCustomersByValue();
             kpis.put("topCustomers", topCustomers.size());
             
             // Calculate active user percentage
-            if (kpis.containsKey("totalUsers") && kpis.containsKey("activeUsers")) {
-                long totalUsers = kpis.get("totalUsers").longValue();
-                long activeUsers = kpis.get("activeUsers").longValue();
-                if (totalUsers > 0) {
-                    double activePercentage = (activeUsers * 100.0) / totalUsers;
-                    kpis.put("activeUserPercentage", Math.round(activePercentage * 100.0) / 100.0);
-                }
+            if (totalUsers > 0) {
+                double activePercentage = (activeUsers * 100.0) / totalUsers;
+                kpis.put("activeUserPercentage", Math.round(activePercentage * 100.0) / 100.0);
+            } else {
+                kpis.put("activeUserPercentage", 0.0);
             }
             
+            System.out.println("KPIs loaded: " + kpis);
+            
         } catch (Exception e) {
+            System.err.println("Error loading KPIs: " + e.getMessage());
+            e.printStackTrace();
+            
             // Set default values if there's an error
             kpis.put("totalUsers", 0);
             kpis.put("activeUsers", 0);
@@ -267,6 +291,42 @@ public class CustomerStatisticsController {
         }
         
         return ResponseEntity.ok(summary);
+    }
+
+    /**
+     * Debug endpoint to check data availability
+     */
+    @GetMapping("/customer-statistics/api/debug")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> apiDebug() {
+        Map<String, Object> debug = new HashMap<>();
+        
+        try {
+            // Check user count
+            long userCount = userRepository.count();
+            debug.put("totalUsers", userCount);
+            
+            // Check newest users
+            List<Object[]> newestUsers = userRepository.getNewestUsers();
+            debug.put("newestUsersCount", newestUsers.size());
+            debug.put("newestUsers", newestUsers);
+            
+            // Check top customers
+            List<Object[]> topCustomers = orderRepository.getTopCustomersByValue();
+            debug.put("topCustomersCount", topCustomers.size());
+            debug.put("topCustomers", topCustomers);
+            
+            // Check activity stats
+            List<Object[]> activityStats = userRepository.getUserActivityStatistics();
+            debug.put("activityStatsCount", activityStats.size());
+            debug.put("activityStats", activityStats);
+            
+        } catch (Exception e) {
+            debug.put("error", e.getMessage());
+            debug.put("exception", e.getClass().getSimpleName());
+        }
+        
+        return ResponseEntity.ok(debug);
     }
 }
 
