@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Thống kê sản phẩm - OneShop Admin</title>
+    <link rel="stylesheet" href="/assets/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="/assets/css/atlantis.min.css" />
+    <link rel="stylesheet" href="/assets/css/atlantis.css" />
+    <link rel="stylesheet" href="/assets/css/demo.css" />
+    <link rel="stylesheet" href="/assets/css/fonts.min.css" />
+    <link rel="stylesheet" href="/fonts/fontawesome/fontawesome.min.css" />
+    <style>
+      :root {
+        --section-gap: 30px;
+      }
+      body {
+        background: #f4f6f9;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      }
+      .header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 30px;
+        border-radius: 15px;
+        color: #fff;
+        margin-bottom: var(--section-gap);
+        box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+      }
+      .stats-card {
+        background: #fff;
+        border-radius: 15px;
+        padding: 25px;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        height: 180px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+      }
+      .stats-card .icon {
+        font-size: 2.6rem;
+        margin-bottom: 10px;
+      }
+      .stats-card .number {
+        font-size: 2.2rem;
+        font-weight: 800;
+        color: #2c3e50;
+      }
+      .stats-card .label {
+        color: #7f8c8d;
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+        font-weight: 600;
+      }
+      .table-responsive {
+        background: #fff;
+        border-radius: 15px;
+        padding: 25px;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        margin-bottom: var(--section-gap);
+      }
+      .chart-container {
+        background: #fff;
+        border-radius: 15px;
+        padding: 25px;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        margin-bottom: var(--section-gap);
+        min-height: 520px;
+        position: relative;
+        overflow: hidden;
+      }
+      .chart-container canvas {
+        width: 100% !important;
+        height: 450px !important;
+        max-height: 450px;
+        display: block;
+      }
+      .chart-title {
+        font-weight: 700;
+        color: #2c3e50;
+        margin-bottom: 15px;
+      }
+      .nav-tabs {
+        border: none;
+        /* Use previous section margin for top spacing; keep bottom equal */
+        margin-top: 0;
+        margin-bottom: var(--section-gap);
+      }
+      /* Keep spacing above tabs equal to below (one margin source only) */
+      .alert-tables-section { margin-bottom: var(--section-gap) !important; }
+      .nav-tabs .nav-link {
+        border: none;
+        background: #fff;
+        margin-right: 12px;
+        padding: 14px 28px;
+        border-radius: 12px;
+        color: #7f8c8d;
+        font-weight: 700;
+        font-size: 1rem;
+        line-height: 1;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        border: 1px solid rgba(0, 0, 0, 0.05);
+      }
+      .nav-tabs .nav-link i { margin-right: 8px; font-size: 1rem; }
+      .nav-tabs .nav-link.active {
+        color: #fff;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: 1px solid transparent;
+      }
+      /* Show the Products tab before Overview without changing HTML order */
+      .nav-tabs { display: flex; }
+      .nav-tabs .nav-item:nth-child(1) { order: 2; }
+      .nav-tabs .nav-item:nth-child(2) { order: 1; }
+      .qty-low {
+        font-size: 1.25rem;
+        font-weight: 800;
+        white-space: nowrap;
+      }
+      .favorite-desc,
+      .kpi-desc-big {
+        font-size: 0.9rem !important;
+        font-weight: 700;
+        position: relative;
+        top: -2px;
+        margin-top: 0 !important;
+      }
+      .statistics-page .admin-footer {
+        display: none !important;
+      }
+      /* Keep left sidebar width consistent with Products page */
+      .sidebar { width: 250px !important; }
+      .main-panel { margin-left: 250px !important; }
+      @media (min-width: 991px){
+        .sidebar_minimize .main-panel { width: calc(100% - 75px); margin-left: 75px !important; }
+      }
+      /* Force uniform vertical spacing across sections */
+      .row.mb-4 {
+        margin-bottom: var(--section-gap) !important;
+      }
+    </style>
+  </head>
+  <body class="statistics-page">
+    <div class="wrapper">
+      <th:block th:replace="~{admin/fragments/header :: header}"></th:block>
+      <th:block th:replace="~{admin/fragments/navbar :: navbar}"></th:block>
+      <div class="main-panel">
+        <div class="content">
+          <div class="header">
+            <h3 class="mb-1">
+              <i class="fas fa-chart-line"></i> Thống kê sản phẩm
+            </h3>
+            <div class="text-light" style="opacity: 0.9">
+              Tổng quan tồn kho, sản phẩm yêu thích, hạn dùng và khuyến mãi
+            </div>
+          </div>
+
+          <div class="row mb-4">
+            <div class="col-lg-3 col-md-6">
+              <div class="stats-card text-center">
+                <div class="icon text-danger">
+                  <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <div class="number" id="kpiLowStock">
+                  <i class="fas fa-spinner fa-spin"></i>
+                </div>
+                <div class="label">Số lượng còn lại ≤ 10</div>
+              </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+              <div class="stats-card text-center">
+                <div class="icon text-warning">
+                  <i class="fas fa-hourglass-end"></i>
+                </div>
+                <div class="number" id="kpiExpiring">
+                  <i class="fas fa-spinner fa-spin"></i>
+                </div>
+                <div class="label">Hạn dùng ≤ 30 ngày</div>
+              </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+              <div class="stats-card text-center">
+                <div class="icon text-danger"><i class="fas fa-heart"></i></div>
+                <div class="number" id="kpiFavorites">
+                  <i class="fas fa-spinner fa-spin"></i>
+                </div>
+                <div class="label">Được khách hàng ưa chuộng</div>
+              </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+              <div class="stats-card text-center">
+                <div class="icon text-primary">
+                  <i class="fas fa-percent"></i>
+                </div>
+                <div class="number" id="kpiDiscounted">
+                  <i class="fas fa-spinner fa-spin"></i>
+                </div>
+                <div class="label">Đang khuyến mãi</div>
+              </div>
+            </div>
+          </div>
+
+          <div
+            class="alert-tables-section"
+            style="margin-bottom: var(--section-gap)"
+          >
+            <div class="row">
+              <div class="col-lg-6">
+                <div class="table-responsive">
+                  <div class="chart-title">
+                    <i class="fas fa-exclamation-triangle text-danger"></i> Sản
+                    phẩm sắp hết hàng
+                  </div>
+                  <table class="table" id="lowStockTable">
+                    <thead>
+                      <tr>
+                        <th>SẢN PHẨM</th>
+                        <th>SỐ LƯỢNG</th>
+                        <th>TRẠNG THÁI</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td colspan="3" class="text-center">
+                          <i class="fas fa-spinner fa-spin"></i> Đang tải dữ
+                          liệu...
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              <div class="col-lg-6">
+                <div class="table-responsive">
+                  <div class="chart-title">
+                    <i class="fas fa-hourglass-end text-warning"></i> Sản phẩm
+                    sắp hết hạn
+                  </div>
+                  <table class="table" id="expiringSoonTable">
+                    <thead>
+                      <tr>
+                        <th>SẢN PHẨM</th>
+                        <th>HẠN SỬ DỤNG</th>
+                        <th>TRẠNG THÁI</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td colspan="3" class="text-center">
+                          <i class="fas fa-spinner fa-spin"></i> Đang tải dữ
+                          liệu...
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-lg-12">
+                <div class="table-responsive">
+                  <div class="chart-title">
+                    <i class="fas fa-percent text-primary"></i> Sản phẩm đang
+                    khuyến mãi
+                  </div>
+                  <table class="table" id="discountedTable">
+                    <thead>
+                      <tr>
+                        <th>SẢN PHẨM</th>
+                        <th>DANH MỤC</th>
+                        <th>THƯƠNG HIỆU</th>
+                        <th>KHUYẾN MÃI (%)</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td colspan="4" class="text-center">
+                          <i class="fas fa-spinner fa-spin"></i> Đang tải dữ
+                          liệu...
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <ul class="nav nav-tabs" id="statisticsTabs" role="tablist">
+            <li class="nav-item">
+              <a
+                class="nav-link active"
+                id="overview-tab"
+                data-toggle="tab"
+                href="#overview"
+                ><i class="fas fa-tachometer-alt"></i> Sản xuất &amp; Hết hạn</a>
+            </li>
+            <li class="nav-item">
+              <a
+                class="nav-link"
+                id="products-tab"
+                data-toggle="tab"
+                href="#products"
+                role="tab"
+                ><i class="fas fa-box-open"></i> Sản phẩm</a
+              >
+            </li>
+          </ul>
+
+          <div class="tab-content" id="statisticsTabContent">
+            <div
+              class="tab-pane fade show active"
+              id="overview"
+              role="tabpanel"
+            >
+              <div class="row">
+                <div class="col-lg-6">
+                  <div class="chart-container">
+                    <div class="chart-title">
+                      <i class="fas fa-cube"></i> Tồn kho theo danh mục
+                    </div>
+                    <canvas id="inventoryChart"></canvas>
+                  </div>
+                </div>
+                <div class="col-lg-6">
+                  <div class="chart-container">
+                    <div class="chart-title">
+                      <i class="fas fa-heart"></i> Sản phẩm được yêu thích
+                    </div>
+                    <canvas id="favoriteChart"></canvas>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="tab-pane fade" id="products" role="tabpanel">
+              <div class="row">
+                <div class="col-lg-6">
+                  <div class="chart-container">
+                    <div class="chart-title">
+                      <i class="fas fa-industry"></i> Theo tháng sản xuất
+                    </div>
+                    <canvas id="manufactureChart"></canvas>
+                  </div>
+                </div>
+                <div class="col-lg-6">
+                  <div class="chart-container">
+                    <div class="chart-title">
+                      <i class="fas fa-calendar-times"></i> Theo tháng hết hạn
+                    </div>
+                    <canvas id="expiryChart"></canvas>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <th:block th:replace="~{admin/fragments/footer :: footer}"></th:block>
+    </div>
+    <script src="/assets/js/core/jquery.3.2.1.min.js"></script>
+    <script src="/assets/js/core/popper.min.js"></script>
+    <script src="/assets/js/core/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script>
+      $(function () {
+        const charts = {};
+        const baseOpts = {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: "bottom",
+              labels: { usePointStyle: true, font: { size: 12 } },
+            },
+          },
+        };
+        function makeChart(id) {
+          const ctx = document.getElementById(id);
+          if (!ctx || !window.Chart) return null;
+          return new Chart(ctx, {
+            type: "doughnut",
+            data: {
+              labels: [],
+              datasets: [
+                {
+                  data: [],
+                  backgroundColor: [
+                    "#667eea",
+                    "#764ba2",
+                    "#a29bfe",
+                    "#fd79a8",
+                    "#fdcb6e",
+                    "#55efc4",
+                    "#81ecec",
+                    "#74b9ff",
+                  ],
+                  borderWidth: 2,
+                },
+              ],
+            },
+            options: baseOpts,
+          });
+        }
+        charts.inventoryChart = makeChart("inventoryChart");
+        charts.favoriteChart = makeChart("favoriteChart");
+        charts.manufactureChart = makeChart("manufactureChart");
+        charts.expiryChart = makeChart("expiryChart");
+
+        function setChartTitle(canvasId, icon, text){
+          const cv = document.getElementById(canvasId);
+          if (!cv) return;
+          const t = cv.previousElementSibling;
+          if (t && t.classList.contains('chart-title')){
+            t.innerHTML = `<i class="fas ${icon}"></i> ${text}`;
+          }
+        }
+        function loadOverviewCharts() {
+          // Overview tab now shows: Manufacture (left), Expiry (right)
+          setChartTitle('inventoryChart','fa-industry','Theo tháng sản xuất');
+          setChartTitle('favoriteChart','fa-calendar-times','Theo tháng hết hạn');
+          fetch("/admin/statistics/api/manufacture")
+            .then((r) => r.json())
+            .then((d) => {
+              if (charts.inventoryChart && d) {
+                charts.inventoryChart.data.labels = d.map(
+                  (x) => `${String(x[1]).padStart(2, "0")}/${x[0]}`
+                );
+                charts.inventoryChart.data.datasets[0].data = d.map(
+                  (x) => Number(x[2]) || 0
+                );
+                charts.inventoryChart.update();
+              }
+            })
+            .catch(() => {});
+          fetch("/admin/statistics/api/expiry")
+            .then((r) => r.json())
+            .then((d) => {
+              if (charts.favoriteChart && d) {
+                charts.favoriteChart.data.labels = d.map(
+                  (x) => `${String(x[1]).padStart(2, "0")}/${x[0]}`
+                );
+                charts.favoriteChart.data.datasets[0].data = d.map(
+                  (x) => Number(x[2]) || 0
+                );
+                charts.favoriteChart.update();
+              }
+            })
+            .catch(() => {});
+        }
+        function loadProductCharts() {
+          // Products tab now shows: Inventory (left), Favorites (right)
+          setChartTitle('manufactureChart','fa-cube','Tồn kho theo danh mục');
+          setChartTitle('expiryChart','fa-heart','Sản phẩm được yêu thích');
+          fetch("/admin/statistics/api/inventory")
+            .then((r) => r.json())
+            .then((d) => {
+              if (charts.manufactureChart && d) {
+                const agg = {};
+                d.forEach((row) => {
+                  const cat = row[0];
+                  const qty = Number(row[2]) || 0;
+                  agg[cat] = (agg[cat] || 0) + qty;
+                });
+                charts.manufactureChart.data.labels = Object.keys(agg);
+                charts.manufactureChart.data.datasets[0].data = Object.values(agg);
+                charts.manufactureChart.update();
+              }
+            })
+            .catch(() => {});
+          fetch("/admin/statistics/api/favorites")
+            .then((r) => r.json())
+            .then((d) => {
+              if (charts.expiryChart && d) {
+                charts.expiryChart.data.labels = d.map((x) => `${x[0]} - ${x[1]}`);
+                charts.expiryChart.data.datasets[0].data = d.map((x) => Number(x[2]) || 0);
+                charts.expiryChart.update();
+              }
+            })
+            .catch(() => {});
+        }
+        function kpis() {
+          fetch("/admin/statistics/api/kpis")
+            .then((r) => r.json())
+            .then((k) => {
+              [
+                "kpiLowStock",
+                "kpiExpiring",
+                "kpiFavorites",
+                "kpiDiscounted",
+              ].forEach((id, i) => {
+                const key = [
+                  "lowStock",
+                  "expiringSoon",
+                  "favorites",
+                  "discounted",
+                ][i];
+                const el = document.getElementById(id);
+                if (!el) return;
+                el.textContent = (k[key] || 0).toLocaleString("vi-VN");
+              });
+            })
+            .catch(() => {});
+        }
+        function lowStock() {
+          fetch("/admin/statistics/api/low-stock")
+            .then((r) => r.json())
+            .then((rows) => {
+              const tb = document.querySelector("#lowStockTable tbody");
+              if (!tb) return;
+              if (rows && rows.length) {
+                tb.innerHTML = rows
+                  .map((r) => {
+                    const name = r[0] || "N/A";
+                    const q = Number(r[1]) || 0;
+                    const status =
+                      q === 0
+                        ? ["badge-danger", "Hết hàng"]
+                        : q <= 5
+                        ? ["badge-danger", "Rất ít"]
+                        : q <= 10
+                        ? ["badge-warning", "Sắp hết"]
+                        : ["badge-info", "Còn hàng"];
+                    return `<tr><td><strong>${name}</strong></td><td><span class="${
+                      q <= 10 ? "text-primary qty-low" : "text-primary"
+                    }">${q}</span></td><td><span class="badge ${status[0]}">${
+                      status[1]
+                    }</span></td></tr>`;
+                  })
+                  .join("");
+              } else {
+                tb.innerHTML =
+                  '<tr><td colspan="3" class="text-center text-muted">Không có dữ liệu</td></tr>';
+              }
+            })
+            .catch(() => {});
+        }
+        function expiring() {
+          fetch("/admin/statistics/api/expiring-soon")
+            .then((r) => r.json())
+            .then((rows) => {
+              const tb = document.querySelector("#expiringSoonTable tbody");
+              if (!tb) return;
+              if (rows && rows.length) {
+                tb.innerHTML = rows
+                  .map((r) => {
+                    const name = r[0] || "N/A";
+                    const raw = r[1];
+                    let d = raw ? new Date(raw) : null;
+                    if (d && isNaN(d)) {
+                      const p = (raw || "").split(/[\/\-\s]/);
+                      if (p.length >= 3) {
+                        const a = new Date(p[2], p[1] - 1, p[0]);
+                        const b = new Date(p[0], p[1] - 1, p[2]);
+                        d = isNaN(a) ? b : a;
+                      }
+                    }
+                    const ds =
+                      d && !isNaN(d)
+                        ? d.toLocaleDateString("vi-VN")
+                        : raw || "N/A";
+                    let diff = 9999;
+                    if (d && !isNaN(d))
+                      diff = Math.ceil(
+                        (d - new Date()) / (1000 * 60 * 60 * 24)
+                      );
+                    const status =
+                      diff <= 7
+                        ? ["badge-danger", "Rất gấp"]
+                        : diff <= 30
+                        ? ["badge-warning", "Sắp hết hạn"]
+                        : ["badge-info", "Còn hạn"];
+                    return `<tr><td><strong>${name}</strong></td><td>${ds}</td><td><span class="badge ${status[0]}">${status[1]}</span></td></tr>`;
+                  })
+                  .join("");
+              } else {
+                tb.innerHTML =
+                  '<tr><td colspan="3" class="text-center text-muted">Không có dữ liệu</td></tr>';
+              }
+            })
+            .catch(() => {});
+        }
+        function discounted() {
+          fetch("/admin/statistics/api/discount-products")
+            .then((r) => r.json())
+            .then((rows) => {
+              const tb = document.querySelector("#discountedTable tbody");
+              if (!tb) return;
+              if (rows && rows.length) {
+                tb.innerHTML = rows
+                  .map((r) => {
+                    const d = Math.round(Number(r[3]) || 0);
+                    return `<tr><td><strong>${r[0] || "N/A"}</strong></td><td>${
+                      r[1] || ""
+                    }</td><td>${r[2] || ""}</td><td><span class="${
+                      d >= 30 ? "text-danger" : "text-primary"
+                    }" style="font-weight:800;">${d}</span></td></tr>`;
+                  })
+                  .join("");
+              } else {
+                tb.innerHTML =
+                  '<tr><td colspan="4" class="text-center text-muted">Không có sản phẩm đang khuyến mãi</td></tr>';
+              }
+            })
+            .catch(() => {});
+        }
+        loadOverviewCharts();
+        kpis();
+        lowStock();
+        expiring();
+        discounted();
+        $('a[data-toggle="tab"]').on("shown.bs.tab", function (e) {
+          const target = $(e.target).attr("href");
+          if (history.replaceState) {
+            history.replaceState(null, null, target);
+          } else {
+            location.hash = target;
+          }
+          if (target === "#products") {
+            loadProductCharts();
+            setTimeout(() => {
+              Object.values(charts).forEach((c) => c && c.resize());
+            }, 100);
+          }
+        });
+        const hash = location.hash;
+        if (hash === "#products") {
+          $('a[href="#products"]').tab("show");
+          // When landing directly on products tab, load its charts after activation
+          setTimeout(loadProductCharts, 0);
+        }
+        setInterval(() => {
+          loadOverviewCharts();
+          if ($('.nav-link.active').attr('href') === '#products') {
+            loadProductCharts();
+          }
+          lowStock();
+          expiring();
+          discounted();
+          kpis();
+        }, 300000);
+      });
+    </script>
+  </body>
+</html>
+
+
+

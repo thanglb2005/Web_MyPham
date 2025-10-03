@@ -63,5 +63,152 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     List<Product> findActiveProductsOrderByDate();
     
     Optional<Product> findByProductName(String productName);
+
+    // ========== STATISTICS QUERIES ==========
+
+    /**
+     * Get top selling products
+     * Returns: product_id, product_name, total_quantity_sold, total_revenue
+     */
+    @Query(value = "SELECT TOP (?1) p.product_id, p.product_name, " +
+            "SUM(od.quantity) as total_quantity_sold, " +
+            "SUM(od.quantity * od.price) as total_revenue " +
+            "FROM order_details od " +
+            "INNER JOIN products p ON od.product_id = p.product_id " +
+            "INNER JOIN orders o ON od.order_id = o.order_id " +
+            "WHERE o.status IN (1, 2) " +
+            "GROUP BY p.product_id, p.product_name " +
+            "ORDER BY total_quantity_sold DESC", nativeQuery = true)
+    List<Object[]> getTopSellingProducts(@Param("limit") int limit);
+
+    /**
+     * Get favorite products statistics
+     * Returns: category_name, brand_name, favorite_count, total_products
+     */
+    @Query(value = "SELECT c.category_name, b.brand_name, " +
+            "COUNT(CASE WHEN p.favorite = 1 THEN 1 END) as favorite_count, " +
+            "COUNT(p.product_id) as total_products " +
+            "FROM products p " +
+            "INNER JOIN categories c ON p.category_id = c.category_id " +
+            "INNER JOIN brands b ON p.brand_id = b.brand_id " +
+            "GROUP BY c.category_id, c.category_name, b.brand_id, b.brand_name " +
+            "ORDER BY favorite_count DESC", nativeQuery = true)
+    List<Object[]> getFavoriteProductsStatistics();
+
+    /**
+     * Get product inventory statistics
+     * Returns: category_name, brand_name, total_quantity, total_value, avg_price
+     */
+    @Query(value = "SELECT c.category_name, b.brand_name, " +
+            "SUM(p.quantity) as total_quantity, " +
+            "SUM(p.quantity * p.price) as total_value, " +
+            "AVG(p.price) as avg_price " +
+            "FROM products p " +
+            "INNER JOIN categories c ON p.category_id = c.category_id " +
+            "INNER JOIN brands b ON p.brand_id = b.brand_id " +
+            "WHERE p.status = 1 " +
+            "GROUP BY c.category_id, c.category_name, b.brand_id, b.brand_name " +
+            "ORDER BY total_value DESC", nativeQuery = true)
+    List<Object[]> getInventoryStatistics();
+
+    /**
+     * Get products with low stock
+     * Returns: product_name, category_name, brand_name, current_quantity, price
+     */
+    @Query(value = "SELECT p.product_name, c.category_name, b.brand_name, " +
+            "p.quantity, p.price " +
+            "FROM products p " +
+            "INNER JOIN categories c ON p.category_id = c.category_id " +
+            "INNER JOIN brands b ON p.brand_id = b.brand_id " +
+            "WHERE p.quantity < 10 AND p.status = 1 " +
+            "ORDER BY p.quantity ASC", nativeQuery = true)
+    List<Object[]> getLowStockProducts();
+
+    /**
+     * Get products expiring soon
+     * Returns: product_name, category_name, brand_name, expiry_date, quantity
+     */
+    @Query(value = "SELECT p.product_name, c.category_name, b.brand_name, " +
+            "p.expiry_date, p.quantity " +
+            "FROM products p " +
+            "INNER JOIN categories c ON p.category_id = c.category_id " +
+            "INNER JOIN brands b ON p.brand_id = b.brand_id " +
+            "WHERE p.expiry_date BETWEEN CAST(GETDATE() AS DATE) AND CAST(DATEADD(day, 30, GETDATE()) AS DATE) " +
+            "AND p.status = 1 " +
+            "ORDER BY p.expiry_date ASC", nativeQuery = true)
+    List<Object[]> getProductsExpiringSoon();
+
+    /**
+     * Get product discount statistics
+     * Returns: category_name, brand_name, avg_discount, max_discount, products_with_discount
+     */
+    @Query(value = "SELECT c.category_name, b.brand_name, " +
+            "AVG(p.discount) as avg_discount, " +
+            "MAX(p.discount) as max_discount, " +
+            "COUNT(CASE WHEN p.discount > 0 THEN 1 END) as products_with_discount " +
+            "FROM products p " +
+            "INNER JOIN categories c ON p.category_id = c.category_id " +
+            "INNER JOIN brands b ON p.brand_id = b.brand_id " +
+            "WHERE p.status = 1 " +
+            "GROUP BY c.category_id, c.category_name, b.brand_id, b.brand_name " +
+            "ORDER BY avg_discount DESC", nativeQuery = true)
+    List<Object[]> getDiscountStatistics();
+
+    /**
+     * Get product price range statistics
+     * Returns: category_name, brand_name, min_price, max_price, avg_price, product_count
+     */
+    @Query(value = "SELECT c.category_name, b.brand_name, " +
+            "MIN(p.price) as min_price, " +
+            "MAX(p.price) as max_price, " +
+            "AVG(p.price) as avg_price, " +
+            "COUNT(p.product_id) as product_count " +
+            "FROM products p " +
+            "INNER JOIN categories c ON p.category_id = c.category_id " +
+            "INNER JOIN brands b ON p.brand_id = b.brand_id " +
+            "WHERE p.status = 1 " +
+            "GROUP BY c.category_id, c.category_name, b.brand_id, b.brand_name " +
+            "ORDER BY avg_price DESC", nativeQuery = true)
+    List<Object[]> getPriceRangeStatistics();
+
+    /**
+     * Get products by manufacture date statistics
+     * Returns: year, month, product_count, total_value
+     */
+    @Query(value = "SELECT YEAR(p.manufacture_date) as year, " +
+            "MONTH(p.manufacture_date) as month, " +
+            "COUNT(p.product_id) as product_count, " +
+            "SUM(p.quantity * p.price) as total_value " +
+            "FROM products p " +
+            "WHERE p.status = 1 AND p.manufacture_date IS NOT NULL " +
+            "GROUP BY YEAR(p.manufacture_date), MONTH(p.manufacture_date) " +
+            "ORDER BY year DESC, month DESC", nativeQuery = true)
+    List<Object[]> getManufactureDateStatistics();
+
+    /**
+     * Get products by expiry date statistics
+     * Returns: year, month, product_count, total_value
+     */
+    @Query(value = "SELECT YEAR(p.expiry_date) as year, " +
+            "MONTH(p.expiry_date) as month, " +
+            "COUNT(p.product_id) as product_count, " +
+            "SUM(p.quantity * p.price) as total_value " +
+            "FROM products p " +
+            "WHERE p.status = 1 AND p.expiry_date IS NOT NULL " +
+            "GROUP BY YEAR(p.expiry_date), MONTH(p.expiry_date) " +
+            "ORDER BY year ASC, month ASC", nativeQuery = true)
+    List<Object[]> getExpiryDateStatistics();
+
+    /**
+     * List products that currently have a discount (> 0)
+     * Returns: product_name, category_name, brand_name, discount
+     */
+    @Query(value = "SELECT p.product_name, c.category_name, b.brand_name, p.discount " +
+            "FROM products p " +
+            "INNER JOIN categories c ON p.category_id = c.category_id " +
+            "INNER JOIN brands b ON p.brand_id = b.brand_id " +
+            "WHERE p.status = 1 AND p.discount > 0 " +
+            "ORDER BY p.discount DESC, p.product_name ASC", nativeQuery = true)
+    List<Object[]> getDiscountedProducts();
 }
 

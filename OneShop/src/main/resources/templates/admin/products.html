@@ -1139,6 +1139,88 @@
       </div>
     </div>
 
+    <script>
+      (function () {
+        const table = document.getElementById('productsTable');
+        if (!table) return;
+        const thead = table.querySelector('thead');
+        const tbody = table.querySelector('tbody');
+        if (!thead || !tbody) return;
+
+        // Column type map by index
+        const types = ['number', null, 'string', 'string', 'string', 'currency', 'percent', 'number', 'date', 'date', 'boolean', null, 'string', null];
+
+        const original = Array.from(tbody.rows);
+        let state = { index: -1, dir: 0 }; // 0 none, 1 asc, -1 desc
+
+        function parseCell(td, type) {
+          if (!td) return '';
+          const txt = td.innerText.trim();
+          switch (type) {
+            case 'number':
+              return Number(txt.replace(/[^\d.-]/g, '')) || 0;
+            case 'currency':
+              return Number(txt.replace(/[^\d.-]/g, '')) || 0;
+            case 'percent':
+              return Number(txt.replace(/[^\d.-]/g, '')) || 0;
+            case 'date': {
+              const m = txt.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+              if (m) return new Date(+m[3], +m[2] - 1, +m[1]).getTime();
+              const t = Date.parse(txt);
+              return isNaN(t) ? 0 : t;
+            }
+            case 'boolean':
+              return td.querySelector('.favorite-active') ? 1 : 0;
+            default:
+              return txt.toLowerCase();
+          }
+        }
+
+        function resetOrder() {
+          tbody.innerHTML = '';
+          original.forEach(r => tbody.appendChild(r));
+        }
+
+        function sortBy(index, type, dir) {
+          const rows = Array.from(tbody.rows);
+          rows.sort((a, b) => {
+            const av = parseCell(a.cells[index], type);
+            const bv = parseCell(b.cells[index], type);
+            if (av < bv) return -1 * dir;
+            if (av > bv) return 1 * dir;
+            return 0;
+          });
+          tbody.innerHTML = '';
+          rows.forEach(r => tbody.appendChild(r));
+        }
+
+        thead.addEventListener('click', (e) => {
+          const th = e.target.closest('th');
+          if (!th) return;
+          const index = Array.from(th.parentNode.children).indexOf(th);
+          const type = types[index];
+          if (!type) return; // non-sortable column
+
+          if (state.index !== index) { state = { index, dir: 1 }; }
+          else if (state.dir === 1) { state.dir = -1; }
+          else if (state.dir === -1) { state = { index: -1, dir: 0 }; }
+          else { state.dir = 1; }
+
+          Array.from(thead.querySelectorAll('th')).forEach(el => el.classList.remove('sorted-asc','sorted-desc'));
+          if (state.dir === 0) {
+            resetOrder();
+          } else {
+            th.classList.add(state.dir === 1 ? 'sorted-asc' : 'sorted-desc');
+            sortBy(index, type, state.dir);
+          }
+        });
+
+        // pointer cursor on sortable headers
+        Array.from(thead.querySelectorAll('th')).forEach((th, i) => {
+          if (types[i]) th.style.cursor = 'pointer';
+        });
+      })();
+    </script>
     <!-- Add Product Modal -->
     <div class="modal fade" id="addProductModal" tabindex="-1" role="dialog">
       <div class="modal-dialog modal-lg" role="document">
@@ -1540,3 +1622,4 @@
     </script>
   </body>
 </html>
+
