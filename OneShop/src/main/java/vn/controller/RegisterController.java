@@ -47,11 +47,13 @@ public class RegisterController {
                                   Model model) {
         if (!password.equals(confirmPassword)) {
             model.addAttribute("error", "Mật khẩu xác nhận không khớp!");
+            model.addAttribute("user", new User()); // Thêm user object vào model
             return "register";
         }
 
         if (!checkEmail(email)) {
             model.addAttribute("error", "Email này đã được sử dụng!");
+            model.addAttribute("user", new User()); // Thêm user object vào model
             return "register";
         }
 
