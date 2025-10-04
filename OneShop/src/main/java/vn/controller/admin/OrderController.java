@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Controller for Order management in admin panel
@@ -51,11 +52,13 @@ public class OrderController {
         return user;
     }
 
-    // List all orders
+    // List all orders with pagination support
     @GetMapping(value = "/orders")
     public String orders(Model model, Principal principal,
                         @RequestParam(value = "status", required = false) Integer status,
-                        @RequestParam(value = "search", required = false) String search) {
+                        @RequestParam(value = "search", required = false) String search,
+                        @RequestParam(value = "page", defaultValue = "0") int page,
+                        @RequestParam(value = "size", defaultValue = "10") int size) {
         List<Order> orderDetails;
         
         if (status != null) {
@@ -66,19 +69,71 @@ public class OrderController {
         
         // Filter by search term if provided
         if (search != null && !search.trim().isEmpty()) {
+            String searchTerm = search.trim().toLowerCase();
             orderDetails = orderDetails.stream()
-                .filter(order -> 
-                    (order.getUser() != null && order.getUser().getName() != null && 
-                     order.getUser().getName().toLowerCase().contains(search.toLowerCase())) ||
-                    (order.getPhone() != null && order.getPhone().contains(search)) ||
-                    (order.getAddress() != null && order.getAddress().toLowerCase().contains(search.toLowerCase()))
-                )
-                .collect(java.util.stream.Collectors.toList());
+                .filter(order -> {
+                    // Search by customer name
+                    boolean matchesName = order.getUser() != null && 
+                                        order.getUser().getName() != null && 
+                                        order.getUser().getName().toLowerCase().contains(searchTerm);
+                    
+                    // Search by customer email
+                    boolean matchesEmail = order.getUser() != null && 
+                                         order.getUser().getEmail() != null && 
+                                         order.getUser().getEmail().toLowerCase().contains(searchTerm);
+                    
+                    // Search by phone number
+                    boolean matchesPhone = order.getPhone() != null && 
+                                         order.getPhone().contains(search);
+                    
+                    // Search by order ID
+                    boolean matchesOrderId = order.getOrderId().toString().contains(search);
+                    
+                    // Search by address
+                    boolean matchesAddress = order.getAddress() != null && 
+                                           order.getAddress().toLowerCase().contains(searchTerm);
+                    
+                    return matchesName || matchesEmail || matchesPhone || matchesOrderId || matchesAddress;
+                })
+                .collect(Collectors.toList());
         }
         
-        model.addAttribute("orderDetails", orderDetails);
+        // Sort orders by order date descending
+        orderDetails = orderDetails.stream()
+            .sorted((o1, o2) -> {
+                if (o1.getOrderDate() == null && o2.getOrderDate() == null) return 0;
+                if (o1.getOrderDate() == null) return 1;
+                if (o2.getOrderDate() == null) return -1;
+                return o2.getOrderDate().compareTo(o1.getOrderDate());
+            })
+            .collect(Collectors.toList());
+        
+        // Calculate pagination
+        int totalItems = orderDetails.size();
+        int totalPages = (int) Math.ceil((double) totalItems / size);
+        
+        // Ensure page is within bounds
+        if (page >= totalPages) page = Math.max(0, totalPages - 1);
+        
+        // Get paginated results
+        int startIndex = page * size;
+        int endIndex = Math.min(startIndex + size, totalItems);
+        
+        List<Order> paginatedOrders = orderDetails.subList(startIndex, endIndex);
+        
+        // Add pagination attributes
+        model.addAttribute("orderDetails", paginatedOrders);
         model.addAttribute("selectedStatus", status);
         model.addAttribute("searchTerm", search);
+        model.addAttribute("currentPage", page);
+        model.addAttribute("currentSize", size);
+        model.addAttribute("totalPages", totalPages);
+        model.addAttribute("totalItems", totalItems);
+        model.addAttribute("startIndex", startIndex + 1);
+        model.addAttribute("endIndex", endIndex);
+        model.addAttribute("hasPrev", page > 0);
+        model.addAttribute("hasNext", page < totalPages - 1);
+        
         return "admin/orders";
     }
 

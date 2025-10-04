@@ -364,42 +364,57 @@
         font-style: italic;
       }
 
-      /* Table Column Width Adjustments */
+      /* Table Column Width Adjustments - Optimized Layout */
       .table th:nth-child(1),
       .table td:nth-child(1) {
-        width: 80px;
-      } /* ID */
+        width: 60px !important;
+        max-width: 60px;
+      } /* ID - Compact for small numbers */
+      
       .table th:nth-child(2),
       .table td:nth-child(2) {
-        width: 120px;
-      } /* Ngày đặt */
+        width: 110px !important;
+        max-width: 110px;
+      } /* Ngày đặt - Just enough for DD/MM/YYYY */
+      
       .table th:nth-child(3),
       .table td:nth-child(3) {
-        width: 200px;
-        min-width: 150px;
-      } /* Khách hàng */
+        width: 220px !important;
+        min-width: 180px;
+        max-width: 220px;
+      } /* Khách hàng - More space for name + email */
+      
       .table th:nth-child(4),
       .table td:nth-child(4) {
-        width: 150px;
-      } /* Số điện thoại */
+        width: 130px !important;
+        max-width: 130px;
+      } /* Số điện thoại - Optimized for Vietnamese phone */
+      
       .table th:nth-child(5),
       .table td:nth-child(5) {
-        width: 200px;
-        min-width: 150px;
-      } /* Địa chỉ */
+        width: 160px !important;
+        min-width: 120px;
+        max-width: 160px;
+      } /* Địa chỉ - Balance for city names */
+      
       .table th:nth-child(6),
       .table td:nth-child(6) {
-        width: 120px;
-        min-width: 100px;
-      } /* Tổng tiền */
+        width: 130px !important;
+        min-width: 110px;
+        max-width: 130px;
+      } /* Tổng tiền - Space for currency format */
+      
       .table th:nth-child(7),
       .table td:nth-child(7) {
-        width: 100px;
-      } /* Trạng thái */
+        width: 130px !important;
+        max-width: 130px;
+      } /* Trạng thái - Enough for status badges */
+      
       .table th:nth-child(8),
       .table td:nth-child(8) {
-        width: 200px;
-      } /* Thao tác */
+        width: 100px !important;
+        max-width: 100px;
+      } /* Thao tác - Compact action button */
 
       /* Ensure table doesn't break layout */
       .table {
@@ -407,35 +422,164 @@
         word-wrap: break-word;
       }
 
-      /* Table responsive adjustments */
+      /* Enhanced responsive adjustments */
       .table-responsive {
         overflow-x: auto;
         -webkit-overflow-scrolling: touch;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
       }
-
-      /* Ensure proper spacing for all columns */
+      
+      /* Mobile responsive adjustments */
+      @media (max-width: 768px) {
+        .table th:nth-child(1), .table td:nth-child(1) { width: 50px !important; } /* ID */
+        .table th:nth-child(2), .table td:nth-child(2) { width: 90px !important; } /* Ngày */
+        .table th:nth-child(3), .table td:nth-child(3) { width: 160px !important; } /* Khách hàng */
+        .table th:nth-child(4), .table td:nth-child(4) { width: 100px !important; } /* SĐT */
+        .table th:nth-child(5), .table td:nth-child(5) { width: 120px !important; } /* Địa chỉ */
+        .table th:nth-child(6), .table td:nth-child(6) { width: 100px !important; } /* Tổng tiền */
+        .table th:nth-child(7), .table td:nth-child(7) { width: 110px !important; } /* Trạng thái */
+        .table th:nth-child(8), .table td:nth-child(8) { width: 80px !important; } /* Thao tác */
+        
+        .table td, .table th {
+          padding: 6px 4px;
+          font-size: 12px;
+        }
+        
+        .table th {
+          font-size: 11px;
+        }
+      }
+      
+      /* Tablet optimizations */
+      @media (min-width: 769px) and (max-width: 1024px) {
+        .table-container {
+          padding: 10px;
+        }
+        
+        .table td,
+        .table th {
+          padding: 8px 6px;
+          vertical-align: middle;
+          text-align: center;
+          border: none;
+        }
+      }
+      
+      /* Base table alignment for all screens */
       .table td,
       .table th {
-        padding: 8px 6px;
         vertical-align: middle;
         text-align: center;
       }
+      
+      /* Large screen optimizations */
+      @media (min-width: 1400px) {
+        .table th:nth-child(3), .table td:nth-child(3) { 
+          width: 280px !important; /* Extra space for customer info */
+        }
+        .table th:nth-child(5), .table td:nth-child(5) { 
+          width: 200px !important; /* Extra space for address */
+        }
+      }
 
-      /* Text alignment adjustments */
+      /* Enhanced desktop spacing and alignment */
+      @media (min-width: 1025px) {
+        .table td,
+        .table th {
+          padding: 10px 8px;
+          vertical-align: middle;
+          text-align: center;
+          border: none;
+        }
+      }
+
+      /* Text alignment adjustments for better readability */
       .table td:nth-child(3),
       .table th:nth-child(3) {
         text-align: left;
+        padding-left: 12px;
       } /* Khách hàng */
+      
       .table td:nth-child(5),
       .table th:nth-child(5) {
         text-align: left;
+        padding-left: 10px;
       } /* Địa chỉ */
+      
+      /* Improved responsive behavior */
+      .table td:nth-child(6) {
+        font-weight: 600;
+        color: #28a745;
+      } /* Tổng tiền - Highlight amount */
+      
+      .table td:nth-child(7) {
+        text-align: center;
+      } /* Trạng thái - Center badges */
+      
+      .table td:nth-child(8) {
+        text-align: center;
+        padding: 8px;
+      } /* Thao tác - Center action buttons */
 
-      /* Prevent header text wrapping */
+      /* Enhanced header styling */
       .table th {
         white-space: nowrap;
         font-size: 13px;
         font-weight: 600;
+        background-color: #f8f9fa;
+        color: #495057;
+        border-bottom: 2px solid #dee2e6;
+      }
+      
+      /* Improved table containers */
+      .table-container .card-body {
+        padding: 0 !important;
+      }
+      
+      /* Better row hover effects */
+      .table-hover tbody tr:hover {
+        background-color: rgba(0, 123, 255, 0.08) !important;
+        transition: background-color 0.2s ease;
+      }
+      
+      /* Enhanced badge styling */
+      .badge-primary {
+        background-color: #007bff;
+        font-size: 11px;
+        padding: 6px 10px;
+      }
+      
+      /* Improved price display */
+      .price-display {
+        font-weight: 600;
+        color: #28a745 !important;
+        font-size: 13px;
+      }
+      
+      /* Status badge improvements */
+      .status-delivered {
+        background-color: #28a745;
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 500;
+      }
+      
+      /* Action button styling */
+      .btn-view {
+        background-color: #ffc107;
+        border-color: #ffc107;
+        padding: 6px 12px;
+        font-size: 12px;
+        border-radius: 6px;
+      }
+      
+      .btn-view:hover {
+        background-color: #e0a800;
+        border-color: #d39e00;
+        transform: translateY(-1px);
+        transition: all 0.2s ease;
       }
 
       .btn-edit i,
@@ -444,6 +588,117 @@
       .btn-cancel i {
         font-size: 14px;
       }
+
+      /* Page size selector styling */
+      .dataTables_length label {
+        font-weight: 500;
+        color: #495057;
+        margin: 0;
+      }
+
+      .dataTables_length select {
+        border-radius: 4px;
+        border: 1px solid #ced4da;
+        padding: 4px 8px;
+        margin-left: 5px;
+        font-size: 13px;
+        min-width: 70px;
+      }
+
+      .dataTables_length select:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 0 0.1rem rgba(0, 123, 255, 0.25);
+      }
+
+      /* Top bar responsive adjustments */
+      @media (max-width: 768px) {
+        .dataTables_length {
+          display: none;
+        }
+      }
+
+      /* Custom Pagination Styling - giống hình ảnh */
+      .pagination {
+        background: transparent !important;
+        border: none !important;
+      }
+
+      .pagination li.page-item {
+        margin: 0 2px;
+      }
+
+      .pagination .page-link {
+        width: 38px !important;
+        height: 38px !important;
+        border-radius: 50% !important;
+        border: 1px solid #dee2e6 !important;
+        background: white !important;
+        color: #495057 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        font-weight: 500 !important;
+        font-size: 14px !important;
+        padding: 0 !important;
+        transition: all 0.3s ease !important;
+        text-decoration: none !important;
+      }
+
+      .pagination .page-link:hover {
+        background: #f1f3f4 !important;
+        border-color: #adb5bd !important;
+        color: #495057 !important;
+        transform: translateY(-1px) !important;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+      }
+
+      .pagination li.active .page-link {
+        background: #007bff !important;
+        border-color: #007bff !important;
+        color: white !important;
+        font-weight: 600 !important;
+        box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3) !important;
+      }
+
+      .pagination li.disabled .page-link {
+        background: #f8f9fa !important;
+        border-color: #e9ecef !important;
+        color: #adb5bd !important;
+        cursor: not-allowed !important;
+        opacity: 0.6 !important;
+      }
+
+      .pagination li.disabled .page-link:hover {
+        background: #f8f9fa !important;
+        transform: none !important;
+        box-shadow: none !important;
+      }
+
+      /* Style cho các icon arrows */
+.prev-page, .next-page, .first-page, .last-page {
+          font-size: 16px !important;
+          font-weight: 600 !important;
+        }
+
+        /* Animation cho trang hiện tại */
+.pagination li.active .page-link {
+          animation: pulse 0.6s ease-in-out;
+        }
+
+        @keyframes pulse {
+          0% { transform: scale(1); }
+          50% { transform: scale(1.05); }
+          100% { transform: scale(1); }
+        }
+
+        /* Mobile responsive */
+        @media (max-width: 576px) {
+          .pagination .page-link {
+            width: 34px !important;
+            height: 34px !important;
+            font-size: 12px !important;
+          }
+        }
     </style>
   </head>
   <body>
@@ -503,8 +758,24 @@
                     </form>
                   </div>
                   
-                  <!-- Right: Action Buttons -->
+                  <!-- Right: Page Size and Action Buttons -->
                   <div class="col-md-4 text-right">
+                    <!-- Page Size Selector -->
+                    <div class="dataTables_length d-inline-block mr-3">
+                      <label class="mb-0" style="font-size: 14px;">
+                        Hiển thị:
+                        <select class="form-control form-control-sm d-inline-block ml-1" 
+                                id="pageSizeTop" 
+                                style="width: auto;">
+                          <option value="5" th:selected="${currentSize == 5}">5 dòng</option>
+                          <option value="10" th:selected="${currentSize == 10}">10 dòng</option>
+                          <option value="20" th:selected="${currentSize == 20}">20 dòng</option>
+                          <option value="50" th:selected="${currentSize == 50}">50 dòng</option>
+                        </select>
+                      </label>
+                    </div>
+                    
+                    <!-- Action Buttons -->
                     <a href="/admin/order-stats" class="btn btn-info btn-sm">
                       <i class="fas fa-chart-bar"></i>
                       Thống kê
@@ -656,6 +927,80 @@
                         </tbody>
                       </table>
                     </div>
+                    
+                    <!-- Pagination and Row Count Display -->
+                    <div class="row mt-3 align-items-center" style="padding: 15px 20px; background: #f8f9fa; border-top: 1px solid #dee2e6;">
+                      <!-- Left: Row Count Display -->
+                      <div class="col-md-8">
+                        <div class="dataTables_info">
+                          Hiển thị <span th:text="${startIndex}"></span> - <span th:text="${endIndex}"></span> trong tổng số <span th:text="${totalItems}"></span> đơn hàng
+                          <span th:if="${searchTerm != null and searchTerm != ''}" class="text-primary">
+                            (kết quả cho từ khóa "<span th:text="${searchTerm}"></span>")
+                          </span>
+                        </div>
+                      </div>
+                      
+                      <!-- Right: Pagination Controls -->
+                      <div class="col-md-4 text-right">
+                        <nav aria-label="Pagination" th:if="${totalPages >= 1}">
+                          <ul class="pagination pagination-sm mb-0" style="justify-content: flex-end;">
+                            <!-- First Page -->
+                            <li class="page-item" th:classappend="${!hasPrev} ? 'disabled'">
+                              <a class="page-link" th:href="@{/admin/orders(page=0, size=${currentSize}, status=${selectedStatus}, search=${searchTerm})}" 
+                                 th:if="${hasPrev}" title="Trang đầu">
+                                <span aria-hidden="true">&laquo;&laquo;</span>
+                              </a>
+                              <span class="page-link" th:unless="${hasPrev}" title="Trang đầu">
+                                <span aria-hidden="true">&laquo;&laquo;</span>
+                              </span>
+                            </li>
+                            
+                            <!-- Previous Page -->
+                            <li class="page-item" th:classappend="${!hasPrev} ? 'disabled'">
+                              <a class="page-link" th:href="@{/admin/orders(page=${currentPage - 1}, size=${currentSize}, status=${selectedStatus}, search=${searchTerm})}" 
+                                 th:if="${hasPrev}" title="Trang trước">
+                                <span aria-hidden="true">&laquo;</span>
+                              </a>
+                              <span class="page-link" th:unless="${hasPrev}" title="Trang trước">
+                                <span aria-hidden="true">&laquo;</span>
+                              </span>
+                            </li>
+                            
+                            <!-- Current Page -->
+                            <li class="page-item active">
+                              <span class="page-link" th:text="${currentPage + 1}" style="background: #007bff; border-color: #007bff;"></span>
+                            </li>
+                            
+                            <!-- Next Page -->
+                            <li class="page-item" th:classappend="${!hasNext} ? 'disabled'">
+                              <a class="page-link" th:href="@{/admin/orders(page=${currentPage + 1}, size=${currentSize}, status=${selectedStatus}, search=${searchTerm})}" 
+                                 th:if="${hasNext}" title="Trang sau">
+                                <span aria-hidden="true">&raquo;</span>
+                              </a>
+                              <span class="page-link" th:unless="${hasNext}" title="Trang sau">
+                                <span aria-hidden="true">&raquo;</span>
+                              </span>
+                            </li>
+                            
+                            <!-- Last Page -->
+                            <li class="page-item" th:classappend="${!hasNext} ? 'disabled'">
+                              <a class="page-link" th:href="@{/admin/orders(page=${totalPages - 1}, size=${currentSize}, status=${selectedStatus}, search=${searchTerm})}" 
+                                 th:if="${hasNext}" title="Trang cuối">
+                                <span aria-hidden="true">&raquo;&raquo;</span>
+                              </a>
+                              <span class="page-link" th:unless="${hasNext}" title="Trang cuối">
+                                <span aria-hidden="true">&raquo;&raquo;</span>
+                              </span>
+                            </li>
+                          </ul>
+                        </nav>
+                        
+                        <!-- Page count display -->
+                        <small class="text-muted" th:if="${totalPages >= 1}">
+                          Trang <span th:text="${currentPage + 1}"></span>/<span th:text="${totalPages}"></span>
+                        </small>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -725,6 +1070,85 @@
     <script src="/assets/js/plugin/jquery-ui-touch-punch/jquery.ui.touch-punch.min.js"></script>
     <script src="/assets/js/plugin/jquery-scrollbar/jquery.scrollbar.min.js"></script>
     <script src="/assets/js/atlantis.min.js"></script>
+
+    <!-- JavaScript for pagination -->
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        // Handle page size change (both top and bottom)
+        function handlePageSizeChange(selectElement) {
+          selectElement.addEventListener('change', function() {
+            const currentURL = new URL(window.location);
+            currentURL.searchParams.set('size', this.value);
+            currentURL.searchParams.set('page', '0'); // Reset to first page
+            window.location.href = currentURL.toString();
+          });
+        }
+
+        // Setup both page size selectors
+        const pageSizeTop = document.getElementById('pageSizeTop');
+        const pageSizeBottom = document.getElementById('pageSize');
+        
+        if (pageSizeTop) handlePageSizeChange(pageSizeTop);
+        if (pageSizeBottom) handlePageSizeChange(pageSizeBottom);
+
+        // Add keyboard shortcuts for pagination
+        document.addEventListener('keydown', function(e) {
+          const currentPage = parseInt(document.querySelector('.page-item.active span')?.textContent) || 1;
+          const totalPagesElement = document.querySelector('.text-muted');
+          const totalPages = totalPagesElement ? parseInt(totalPagesElement.textContent.split('/')[1]) || 1 : 1;
+          
+          // Left arrow - previous page
+          if (e.key === 'ArrowLeft' && e.ctrlKey && !e.shiftKey) {
+            e.preventDefault();
+            if (currentPage > 1) {
+              const prevLink = Array.from(document.querySelectorAll('.page-link'))
+                .find(link => link.textContent.trim() === '‹' || link.textContent.trim() === '«');
+              if (prevLink) prevLink.click();
+            }
+          }
+          
+          // Right arrow - next page
+          if (e.key === 'ArrowRight' && e.ctrlKey && !e.shiftKey) {
+            e.preventDefault();
+            if (currentPage < totalPages) {
+              const nextLink = Array.from(document.querySelectorAll('.page-link'))
+                .find(link => link.textContent.trim() === '›' || link.textContent.trim() === '»');
+              if (nextLink) nextLink.click();
+            }
+          }
+          
+          // Ctrl+Shift+Left - First page
+          if (e.key === 'ArrowLeft' && e.ctrlKey && e.shiftKey) {
+            e.preventDefault();
+            const firstLink = Array.from(document.querySelectorAll('.page-link'))
+              .find(link => link.textContent.trim() === '‹‹');
+            if (firstLink) firstLink.click();
+          }
+          
+          // Ctrl+Shift+Right - Last page
+          if (e.key === 'ArrowRight' && e.ctrlKey && e.shiftKey) {
+            e.preventDefault();
+            const lastLink = Array.from(document.querySelectorAll('.page-link'))
+              .find(link => link.textContent.trim() === '››');
+            if (lastLink) lastLink.click();
+          }
+        });
+      });
+
+      // Add click animation for pagination buttons
+      document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.page-link:not(.disabled)').forEach(link => {
+          link.addEventListener('click', function(e) {
+            if (!this.parentElement.classList.contains('disabled')) {
+              this.style.transform = 'scale(0.95)';
+              setTimeout(() => {
+                this.style.transform = '';
+              }, 150);
+            }
+          });
+        });
+      });
+    </script>
 
     <script>
       function toggleSidebar() {

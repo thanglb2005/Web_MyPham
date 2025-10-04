@@ -1,0 +1,978 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thống Kê Doanh Thu - OneShop Admin</title>
+    <link rel="stylesheet" href="/assets/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="/assets/css/atlantis.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+    
+    <style>
+        /* Enhanced UI Styles */
+        .metric-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        }
+        .metric-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+        }
+        .metric-card.primary-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .metric-card.success-card {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        }
+        .metric-card.info-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .metric-card.warning-card {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+        
+        .chart-container {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 15px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .chart-icon {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 4rem;
+            opacity: 0.1;
+            color: #667eea;
+        }
+        
+        .btn-filter {
+            border-radius: 25px;
+            padding: 10px 25px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        .btn-filter:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .card {
+            border-radius: 15px;
+            border: none;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+        }
+        
+        .page-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 35px;
+            margin-bottom: 25px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .page-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 100%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(5deg); }
+        }
+        
+        .header-main {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .header-content {
+            flex: 1;
+        }
+        
+        .header-stats {
+            margin-left: 30px;
+        }
+        
+        .page-title {
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin: 0 0 12px 0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .page-title i {
+            font-size: 2rem;
+            color: rgba(255,255,255,0.9);
+        }
+        
+        .page-description {
+            font-size: 1.1rem;
+            opacity: 0.95;
+            margin: 0;
+            line-height: 1.5;
+            font-weight: 400;
+        }
+        
+        .total-revenue-card {
+            background: rgba(255,255,255,0.15);
+            border: 2px solid rgba(255,255,255,0.2);
+            border-radius: 15px;
+            padding: 20px 25px;
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            min-width: 280px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .total-revenue-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.15);
+        }
+        
+        .revenue-icon {
+            width: 50px;
+            height: 50px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+        }
+        
+        .revenue-info {
+            flex: 1;
+        }
+        
+        .revenue-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            margin-bottom: 4px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .revenue-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            line-height: 1.2;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .breadcrumb-nav {
+            background: white;
+            border-radius: 12px;
+            padding: 15px 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+        
+        .breadcrumb {
+            margin: 0;
+            padding: 0;
+            background: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .breadcrumb-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .breadcrumb-item a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            transition: color 0.3s ease;
+            padding: 6px 10px;
+            border-radius: 8px;
+        }
+        
+        .breadcrumb-item a:hover {
+            color: #5a67d8;
+            background: rgba(102, 126, 234, 0.1);
+        }
+        
+        .breadcrumb-item span {
+            color: #666;
+            font-weight: 500;
+            padding: 6px 10px;
+        }
+        
+        .breadcrumb-item.active span {
+            color: #333;
+            font-weight: 600;
+            background: rgba(102, 126, 234, 0.1);
+            border-radius: 8px;
+        }
+        
+        .breadcrumb-separator {
+            color: #ccc;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+        
+        .metric-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+        
+        .stats-section {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .page-description {
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+        
+        .stats-overview .stat-item {
+            text-align: right;
+        }
+        
+        .stat-label {
+            display: block;
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+        
+        .stat-value {
+            display: block;
+            font-size: 1.4rem;
+            font-weight: bold;
+        }
+        
+        .growth-indicator {
+            display: inline-flex;
+            align-items: center;
+            background: rgba(255,255,255,0.2);
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+        }
+        
+        .customer-item, .product-item {
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+        
+        .customer-item:last-child, .product-item:last-child {
+            border-bottom: none;
+        }
+        
+        .chart-placeholder {
+            position: relative;
+            z-index: 2;
+        }
+        
+        .bg-gradient-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+        }
+        
+        .form-control, .form-select {
+            border-radius: 8px !important;
+            border: 1px solid #ddd;
+            transition: all 0.3s ease;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25) !important;
+            border-color: #667eea;
+        }
+        
+        .breadcrumb {
+            background: none;
+            padding: 0;
+        }
+        
+        .breadcrumb-item a {
+            text-decoration: none;
+        }
+        
+        /* Animation cho elements */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .metric-card, .card {
+            animation: fadeInUp 0.6s ease-out;
+        }
+        
+        .metric-card:nth-child(2) { animation-delay: 0.1s; }
+        .metric-card:nth-child(3) { animation-delay: 0.2s; }
+        .metric-card:nth-child(4) { animation-delay: 0.3s; }
+    </style>
+</head>
+<body>
+    <div class="wrapper">
+        <!-- Header -->
+        <th:block th:replace="~{admin/fragments/header :: header}"></th:block>
+        
+        <!-- Sidebar -->
+        <th:block th:replace="~{admin/fragments/navbar :: navbar}"></th:block>
+
+        <!-- Main Panel -->
+        <div class="main-panel">
+            <div class="content">
+                <div class="page-inner">
+                    <!-- Modern Header Section -->
+                    <div class="page-header">
+                        <div class="header-main">
+                            <div class="header-content">
+                                <h1 class="page-title">
+                                    <i class="fas fa-chart-line"></i>
+                                    Thống Kê Doanh Thu
+                                </h1>
+                                <p class="page-description">
+                                    Phân tích doanh số và hiệu suất kinh doanh theo từng khoảng thời gian
+                                </p>
+                            </div>
+                            
+                            <div class="header-stats">
+                                <div class="total-revenue-card">
+                                    <div class="revenue-icon">
+                                        <i class="fas fa-dollar-sign"></i>
+                                    </div>
+                                    <div class="revenue-info">
+                                        <div class="revenue-label">Tổng Doanh Thu Tháng</div>
+                                        <div class="revenue-value" th:text="${currentMonthRevenue}">2,500,000 đ</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Clean Breadcrumb Navigation -->
+                    <nav aria-label="breadcrumb" class="breadcrumb-nav">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item">
+                                <a href="/admin/home">
+                                    <i class="fas fa-home me-1"></i>
+                                    <span>Trang chủ</span>
+                                </a>
+                            </li>
+                            <li class="breadcrumb-separator">›</li>
+                            <li class="breadcrumb-item">
+                                <span>Thống Kê Doanh Số</span>
+                            </li>
+                            <li class="breadcrumb-separator">›</li>
+                            <li class="breadcrumb-item active">
+                                <span>Thống Kê Doanh Thu</span>
+                            </li>
+                        </ol>
+                    </nav>
+
+                    <!-- Content -->
+                    <div class="row">
+                        <!-- Revenue Summary Cards -->
+                        <div class="col-md-12 mb-4">
+                            <div class="row g-4">
+                                <div class="col-md-3">
+                                    <div class="card metric-card primary-card">
+                                        <div class="card-body p-4">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div>
+                                                    <h3 class="mb-1 fw-bold" th:text="${currentMonthRevenue}">2,500,000 đ</h3>
+                                                    <p class="mb-2 opacity-75">Doanh thu tháng này</p>
+                                                    <div class="growth-indicator">
+                                                        <i class="fas fa-arrow-up me-1"></i>
+                                                        <span th:text="${growthRate}">12.5%</span>
+                                                    </div>
+                                                </div>
+                                                <div class="metric-icon">
+                                                    <i class="fas fa-chart-line"></i>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-3">
+                                    <div class="card metric-card success-card">
+                                        <div class="card-body p-4">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div>
+                                                    <h3 class="mb-1 fw-bold" th:text="${todayOrders}">15</h3>
+                                                    <p class="mb-2 opacity-75">Đơn hàng hôm nay</p>
+                                                    <div class="revenue-amount">
+                                                        <span th:text="${todayRevenue}">750,000</span> đ
+                                                    </div>
+                                                </div>
+                                                <div class="metric-icon">
+                                                    <i class="fas fa-shopping-cart"></i>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-3">
+                                    <div class="card metric-card info-card">
+                                        <div class="card-body p-4">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div>
+                                                    <h3 class="mb-1 fw-bold" th:text="${selectedPeriod}" th:switch="${selectedType}">
+                                                        <span th:case="'month'" th:text="'T' + ${currentMonth} + '/' + ${currentYear}">T10/2025</span>
+                                                        <span th:case="'quarter'" th:text="'Q' + ${currentQuarter} + '/' + ${currentYear}">Q4/2025</span>
+                                                        <span th:case="'year'" th:text="${currentYear}">2025</span>
+                                                    </h3>
+                                                    <p class="mb-2 opacity-75">Kỳ được chọn</p>
+                                                    <div class="period-info">
+                                                        <span th:text="${selectedRevenue}">1,500,000</span> đ
+                                                    </div>
+                                                </div>
+                                                <div class="metric-icon">
+                                                    <i class="fas fa-calendar-alt"></i>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-3">
+                                    <div class="card metric-card warning-card">
+                                                        <div class="card-body p-4">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div>
+                                                    <h3 class="mb-1 fw-bold">98%</h3>
+                                                    <p class="mb-2 opacity-75">Tỷ lệ hoàn thành</p>
+                                                    <div class="completion-info">
+                                                        <span>286</span>/<span>292</span> đơn
+                                                    </div>
+                                                </div>
+                                                <div class="metric-icon">
+                                                    <i class="fas fa-check-circle"></i>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Filter Section -->
+                        <div class="col-md-12 mb-4">
+                            <div class="card stats-section">
+                                <div class="card-header bg-white border-0 pb-0">
+                                    <h5 class="card-title mb-0">
+                                        <i class="fas fa-filter text-primary me-2"></i>
+                                        Bộ lọc thống kê
+                                    </h5>
+                                    <p class="text-muted mt-1 mb-0">Chọn khoảng thời gian để xem dữ liệu chi tiết</p>
+                                </div>
+                                <div class="card-body pt-4">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="filter-buttons">
+                                                <button type="button" class="btn btn-filter btn-primary me-2 mb-2" onclick="filterRevenue('month')">
+                                                    <i class="fas fa-calendar me-2"></i>Theo Tháng
+                                                </button>
+                                                <button type="button" class="btn btn-filter btn-outline-secondary me-2 mb-2" onclick="filterRevenue('quarter')">
+                                                    <i class="fas fa-th-large me-2"></i>Theo Quý
+                                                </button>
+                                                <button type="button" class="btn btn-filter btn-outline-warning mb-2" onclick="filterRevenue('year')">
+                                                    <i class="fas fa-chart-line me-2"></i>Theo Năm
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="row">
+                                                <div class="col-md-6 mb-3">
+                                                    <label class="form-label fw-semibold">Năm</label>
+                                                    <select class="form-select form-control" id="yearSelect">
+                                                        <option value="2025">2025</option>
+                                                        <option value="2024">2024</option>
+                                                        <option value="2023">2023</option>
+                                                        <option value="2022">2022</option>
+                                                    </select>
+                                                </div>
+                                                <div class="col-md-6 mb-3 mb-3">
+                                                    <label class="form-label fw-semibold">Tháng</label>
+                                                    <select class="form-select form-control" id="monthSelect">
+                                                        <option value="1">Tháng 1</option>
+                                                        <option value="2">Tháng 2</option>
+                                                        <option value="3">Tháng 3</option>
+                                                        <option value="4">Tháng 4</option>
+                                                        <option value="5">Tháng 5</option>
+                                                        <option value="6">Tháng 6</option>
+                                                        <option value="7">Tháng 7</option>
+                                                        <option value="8">Tháng 8</option>
+                                                        <option value="9">Tháng 9</option>
+                                                        <option value="10" selected>Tháng 10</option>
+                                                        <option value="11">Tháng 11</option>
+                                                        <option value="12">Tháng 12</option>
+                                                    </select>
+                                                </div>
+                                                <div class="col-md-6" id="quarterSelector" style="display: none;">
+                                                    <label class="form-label fw-semibold">Quý</label>
+                                                    <select class="form-select form-control" id="quarterSelect">
+                                                        <option value="1">Quý 1</option>
+                                                        <option value="2">Quý 2</option>
+                                                        <option value="3">Quý 3</option>
+                                                        <option value="4" selected>Quý 4</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Revenue Chart Placeholder -->
+                        <div class="col-md-8 mb-4">
+                            <div class="card">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <h5 class="card-title mb-0">
+                                        <i class="fas fa-chart-bar text-primary me-2"></i>
+                                        Biểu đồ Doanh Thu
+                                    </h5>
+                                    <div class="chart-controls">
+                                        <button class="btn btn-sm btn-outline-primary" onclick="downloadChart()" title="Tải xuống biểu đồ">
+                                            <i class="fas fa-download"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-secondary" onclick="toggleChartType()" title="Chuyển đổi loại biểu đồ">
+                                            <i class="fas fa-chart-bar"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div class="chart-container" style="height: 300px; position: relative;">
+                                        <canvas id="revenueChart" width="400" height="300"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Top Customers -->
+                        <div class="col-md-4 mb-4">
+                            <div class="card">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <h6 class="card-title mb-0">
+                                        <i class="fas fa-users text-success me-2"></i>
+                                        Top Khách Hàng
+                                    </h6>
+                                    <span class="badge bg-success">Top 5</span>
+                                </div>
+                                <div class="card-body">
+                                    <div class="top-customers">
+                                        <div class="customer-item d-flex justify-content-between align-items-center mb-3">
+                                            <div class="customer-info">
+                                                <div class="customer-name fw-semibold">Nguyễn Văn A</div>
+                                                <small class="text-muted">15 đơn hàng</small>
+                                            </div>
+                                            <div class="customer-revenue text-success fw-bold">2,500,000 đ</div>
+                                        </div>
+                                        <div class="customer-item d-flex justify-content-between align-items-center mb-3">
+                                            <div class="customer-info">
+                                                <div class="customer-name fw-semibold">Trần Thị B</div>
+                                                <small class="text-muted">12 đơn hàng</small>
+                                            </div>
+                                            <div class="customer-revenue text-success fw-bold">1,800,000 đ</div>
+                                        </div>
+                                        <div class="customer-item d-flex justify-content-between align-items-center mb-3">
+                                            <div class="customer-info">
+                                                <div class="customer-name fw-semibold">Lê Văn C</div>
+                                                <small class="text-muted">10 đơn hàng</small>
+                                            </div>
+                                            <div class="customer-revenue text-success fw-bold">1,200,000 đ</div>
+                                        </div>
+                                        <div class="text-center">
+                                            <small class="text-muted">Top khách hàng theo doanh thu</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Top Products -->
+                        <div class="col-md-6 mb-4">
+                            <div class="card">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <h6 class="card-title mb-0">
+                                        <i class="fas fa-crown text-warning me-2"></i>
+                                        Top Sản Phẩm
+                                    </h6>
+                                    <span class="badge bg-warning text-dark">TOP 5</span>
+                                </div>
+                                <div class="card-body">
+                                    <div class="top-products">
+                                        <div class="product-item d-flex justify-content-between align-items-center mb-3">
+                                            <div class="product-info">
+                                                <div class="product-name fw-semibold">Kem dưỡng ban đêm</div>
+                                                <small class="text-muted">Đã bán: 156 sản phẩm</small>
+                                            </div>
+                                            <div class="product-revenue text-primary fw-bold">1,200,000 đ</div>
+                                        </div>
+                                        <div class="product-item d-flex justify-content-between align-items-center mb-3">
+                                            <div class="product-info">
+                                                <div class="product-name fw-semibold">Son đỏ ruby</div>
+                                                <small class="text-muted">Đã bán: 98 sản phẩm</small>
+                                            </div>
+                                            <div class="product-revenue text-primary fw-bold">980,000 đ</div>
+                                        </div>
+                                        <div class="product-item d-flex justify-content-between align-items-center mb-3">
+                                            <div class="product-info">
+                                                <div class="product-name fw-semibold">Nước hoa rose</div>
+                                                <small class="text-muted">Đã bán: 45 sản phẩm</small>
+                                            </div>
+                                            <div class="product-revenue text-primary fw-bold">675,000 đ</div>
+                                        </div>
+                                        <div class="text-center">
+                                            <small class="text-muted">Sản phẩm bán chạy nhất</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Summary Stats -->
+                        <div class="col-md-6 mb-4">
+                            <div class="card bg-gradient-primary text-white">
+                                <div class="card-header border-0">
+                                    <h6 class="card-title mb-0">
+                                        <i class="fas fa-info-circle me-2"></i>
+                                        Tóm tất Thống kê
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="summary-stats">
+                                        <div class="stat-row d-flex justify-content-between mb-2">
+                                            <span>Tổng số đơn hàng:</span>
+                                            <span class="fw-bold">1,247</span>
+                                        </div>
+                                        <div class="stat-row d-flex justify-content-between mb-2">
+                                            <span>Doanh thu trung bình:</span>
+                                            <span class="fw-bold">1,200,000 đ</span>
+                                        </div>
+                                        <div class="stat-row d-flex justify-content-between mb-2">
+                                            <span>Tỷ lệ tăng trưởng:</span>
+                                            <span class="fw-bold text-success">+12.5%</span>
+                                        </div>
+                                        <div class="stat-row d-flex justify-content-between mb-2">
+                                            <span>Khách hàng mới:</span>
+                                            <span class="fw-bold text-info">+28</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Footer -->
+            <footer class="footer">
+                <div class="container-fluid">
+                    <nav class="pull-left">
+                        <ul class="nav">
+                            <li class="nav-item">
+                                <a class="nav-link" href="#">OneShop Admin</a>
+                            </li>
+                        </ul>
+                    </nav>
+                    <div class="copyright ml-auto">
+                        2025, made with <i class="fa fa-heart heart text-danger"></i> by <a href="#">OneShop Team</a>
+                    </div>
+                </div>
+            </footer>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/assets/js/core/jquery.3.2.1.min.js"></script>
+    <script src="/assets/js/core/popper.min.js"></script>
+    <script src="/assets/js/core/bootstrap.min.js"></script>
+    <script src="/assets/js/plugin/jquery-ui-1.12.1.custom/jquery-ui.min.js"></script>
+    <script src="/assets/js/plugin/jquery-ui-touch-punch/jquery.ui.touch-punch.min.js"></script>
+    <script src="/assets/js/plugin/jquery-scrollbar/jquery.scrollbar.min.js"></script>
+    <script src="/assets/js/atlantis.min.js"></script>
+    
+    <script>
+        // Global toggleSidebar function (required by header)
+        window.toggleSidebar = function() {
+            const wrapper = document.querySelector(".wrapper");
+            const minibutton = document.querySelector(".toggle-sidebar");
+
+            if (wrapper.classList.contains("sidebar_minimize")) {
+                wrapper.classList.remove("sidebar_minimize");
+                minibutton.classList.remove("toggled");
+                minibutton.innerHTML = '<i class="icon-menu"></i>';
+            } else {
+                wrapper.classList.add("sidebar_minimize");
+                minibutton.classList.add("toggled");
+                minibutton.innerHTML = '<i class="icon-options-vertical"></i>';
+            }
+            window.dispatchEvent(new Event("resize"));
+        };
+
+        // Chart.js Variables
+        let revenueChart;
+        let chartType = 'line'; // 'line', 'bar', 'doughnut'
+        let currentSelectedType = '[[${selectedType}]]';
+
+        // Revenue Chart Data Generator
+        function generateChartData(type) {
+            const now = new Date();
+            let labels = [];
+            let revenueData = [];
+            let orderData = [];
+
+            switch(type) {
+                case 'month':
+                    labels = ['T1', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'T8', 'T9', 'T10', 'T11', 'T12'];
+                    revenueData = [1200000, 1500000, 1800000, 2200000, 2500000, 2800000, 3200000, 2800000, 2400000, 2500000, 2100000, 2400000];
+                    orderData = [45, 52, 68, 78, 85, 92, 105, 89, 76, 85, 79, 88];
+                    break;
+                case 'quarter':
+                    labels = ['Q1', 'Q2', 'Q3', 'Q4'];
+                    revenueData = [6500000, 8500000, 7800000, 9500000];
+                    orderData = [155, 195, 178, 212];
+                    break;
+                case 'year':
+                    labels = ['2021', '2022', '2023', '2024', '2025'];
+                    revenueData = [18500000, 23500000, 28500000, 32000000, 32500000];
+                    orderData = [485, 620, 750, 865, 890];
+                    break;
+                default:
+                    labels = ['T1', 'T2', 'T3', 'T4', 'T5', 'T6'];
+                    revenueData = [1200000, 1500000, 1800000, 2200000, 2500000, 2800000];
+                    orderData = [45, 52, 68, 78, 85, 92];
+            }
+
+            return { labels, revenueData, orderData };
+        }
+
+        // Initialize Chart
+        function initChart() {
+            const ctx = document.getElementById('revenueChart').getContext('2d');
+            const chartData = generateChartData(currentSelectedType);
+
+            if (revenueChart) {
+                revenueChart.destroy();
+            }
+
+            const chartOptions = {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            usePointStyle: true,
+                            font: { size: 12 }
+                        }
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false,
+                        backgroundColor: 'rgba(0,0,0,0.8)',
+                        titleColor: 'white',
+                        bodyColor: 'white',
+                        callbacks: {
+                            label: function(context) {
+                                if (context.dataset.label === 'Doanh thu (VNĐ)') {
+                                    return context.dataset.label + ': ' + new Intl.NumberFormat('vi-VN').format(context.parsed.y) + ' đ';
+                                } else {
+                                    return context.dataset.label + ': ' + context.parsed.y + ' đơn';
+                                }
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        display: true,
+                        title: { display: true, text: 'Thời gian' },
+                        grid: { color: 'rgba(0,0,0,0.1)' }
+                    },
+                    y: {
+                        display: true,
+                        title: { display: true, text: 'Giá trị' },
+                        grid: { color: 'rgba(0,0,0,0.1)' },
+                        ticks: {
+                            callback: function(value) {
+                                return new Intl.NumberFormat('vi-VN').format(value) + 'đ';
+                            }
+                        }
+                    }
+                },
+                interaction: { intersect: false, mode: 'index' }
+            };
+
+            const datasets = [
+                {
+                    label: 'Doanh thu (VNĐ)',
+                    data: chartData.revenueData,
+                    borderColor: 'rgb(102, 126, 234)',
+                    backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.4,
+                    yAxisID: 'y'
+                },
+                {
+                    label: 'Số đơn hàng',
+                    data: chartData.orderData,
+                    borderColor: 'rgb(56, 239, 125)',
+                    backgroundColor: 'rgba(56, 239, 125, 0.1)',
+                    borderWidth: 2,
+                    fill: false,
+                    tension: 0.4,
+                    yAxisID: 'y1'
+                }
+            ];
+
+            revenueChart = new Chart(ctx, {
+                type: chartType,
+                data: {
+                    labels: chartData.labels,
+                    datasets: datasets
+                },
+                options: chartOptions
+            });
+        }
+
+        // Chart Functions
+        function downloadChart() {
+            if (revenueChart) {
+                const link = document.createElement('a');
+                link.download = 'revenue-chart.png';
+                link.href = revenueChart.toBase64Image();
+                link.click();
+            }
+        }
+
+        function toggleChartType() {
+            const chartTypes = ['line', 'bar', 'doughnut'];
+            const currentIndex = chartTypes.indexOf(chartType);
+            const nextIndex = (currentIndex + 1) % chartTypes.length;
+            chartType = chartTypes[nextIndex];
+            
+            initChart();
+            
+            // Update button icon
+            const button = event.target.closest('button');
+            const iconMap = {
+                'line': 'fa-chart-line',
+                'bar': 'fa-chart-bar', 
+                'doughnut': 'fa-chart-pie'
+            };
+            button.innerHTML = `<i class="fas ${iconMap[chartType]}"></i>`;
+        }
+        
+        function filterRevenue(type) {
+            currentSelectedType = type;
+            
+            // Update button states
+            document.querySelectorAll('button[onclick*="filterRevenue"]').forEach(btn => {
+                btn.classList.remove('btn-primary', 'btn-secondary', 'btn-warning');
+                btn.classList.add('btn-outline-primary', 'btn-outline-secondary', 'btn-outline-warning');
+            });
+            
+            const buttonMap = { 'month': 'btn-primary', 'quarter': 'btn-secondary', 'year': 'btn-warning' };
+            const activeBtn = document.querySelector(`button[onclick="filterRevenue('${type}')"]`);
+            if (activeBtn) {
+                activeBtn.classList.remove('btn-outline-primary', 'btn-outline-secondary', 'btn-outline-warning');
+                activeBtn.classList.add(buttonMap[type]);
+            }
+            
+            // Show/hide quarter selector
+            const quarterSelector = document.getElementById('quarterSelector');
+            if (type === 'quarter') {
+                quarterSelector.style.display = 'block';
+            } else {
+                quarterSelector.style.display = 'none';
+            }
+            
+            // Update chart with new data
+            initChart();
+            
+            console.log('Filtered to:', type);
+        }
+
+        // Initialize
+        $(document).ready(function() {
+            console.log('Revenue Statistics page loaded with Chart.js');
+            
+            // Ensure Bootstrap collapse works for sidebar
+            $('[data-toggle="collapse"]').on('click', function(e) {
+                e.preventDefault();
+                var target = $(this).attr('href');
+                $(target).collapse('toggle');
+                
+                // Update active state
+                $('.nav-item').removeClass('active');
+                $(this).closest('.nav-item').addClass('active');
+            });
+            
+            // Initialize button states
+            filterRevenue(currentSelectedType || 'month');
+            
+            // Initialize chart
+            setTimeout(function() {
+                initChart();
+            }, 500);
+            
+            console.log('Revenue Statistics with Chart.js initialized');
+        });
+    </script>
+</body>
+</html>
