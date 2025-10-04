@@ -70,7 +70,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
      * Get top selling products
      * Returns: product_id, product_name, total_quantity_sold, total_revenue
      */
-    @Query(value = "SELECT TOP (?1) p.product_id, p.product_name, " +
+    @Query(value = "SELECT p.product_id, p.product_name, " +
             "SUM(od.quantity) as total_quantity_sold, " +
             "SUM(od.quantity * od.price) as total_revenue " +
             "FROM order_details od " +
@@ -78,7 +78,8 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
             "INNER JOIN orders o ON od.order_id = o.order_id " +
             "WHERE o.status IN (1, 2) " +
             "GROUP BY p.product_id, p.product_name " +
-            "ORDER BY total_quantity_sold DESC", nativeQuery = true)
+            "ORDER BY total_quantity_sold DESC " +
+            "OFFSET 0 ROWS FETCH NEXT :limit ROWS ONLY", nativeQuery = true)
     List<Object[]> getTopSellingProducts(@Param("limit") int limit);
 
     /**
@@ -200,7 +201,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     List<Object[]> getExpiryDateStatistics();
 
     /**
-     * List products that currently have a discount (> 0)
+     * Get list of discounted products
      * Returns: product_name, category_name, brand_name, discount
      */
     @Query(value = "SELECT p.product_name, c.category_name, b.brand_name, p.discount " +
@@ -210,5 +211,60 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
             "WHERE p.status = 1 AND p.discount > 0 " +
             "ORDER BY p.discount DESC, p.product_name ASC", nativeQuery = true)
     List<Object[]> getDiscountedProducts();
+
+
+
+    
+
+    /**
+     * List products that currently have a discount (> 0)
+     * Returns: product_name, category_name, brand_name, discount
+     */
+    
+
+    /** Count new products entered in last 30 days */
+    @Query(value = "SELECT COUNT(*) FROM products p WHERE p.status = 1 AND p.entered_date >= CAST(DATEADD(day, -30, GETDATE()) AS DATE)", nativeQuery = true)
+    int countNewProductsLast30Days();
+
+    /**
+     * Slow moving or unsold products in last 30 days
+     * Returns: product_name, sold_30_days, current_stock
+     */
+    @Query(value = "SELECT p.product_name, " +
+            "ISNULL(SUM(CASE WHEN o.order_date >= DATEADD(day,-30,GETDATE()) AND o.status IN (1,2) THEN od.quantity ELSE 0 END),0) AS sold_30d, " +
+            "p.quantity AS stock " +
+            "FROM products p " +
+            "LEFT JOIN order_details od ON p.product_id = od.product_id " +
+            "LEFT JOIN orders o ON od.order_id = o.order_id " +
+            "WHERE p.status = 1 " +
+            "GROUP BY p.product_name, p.quantity " +
+            "HAVING ISNULL(SUM(CASE WHEN o.order_date >= DATEADD(day,-30,GETDATE()) AND o.status IN (1,2) THEN od.quantity ELSE 0 END),0) <= 5 " +
+            "ORDER BY sold_30d ASC, stock DESC", nativeQuery = true)
+    List<Object[]> getSlowMovingProducts30Days();
+
+    /**
+     * Compare monthly quantities this month vs previous month
+     * Returns: product_name, qty_this_month, qty_prev_month
+     */
+    @Query(value = "SELECT p.product_name, " +
+            "ISNULL(SUM(CASE WHEN YEAR(o.order_date)=YEAR(GETDATE()) AND MONTH(o.order_date)=MONTH(GETDATE()) AND o.status IN (1,2) THEN od.quantity END),0) AS qty_this, " +
+            "ISNULL(SUM(CASE WHEN YEAR(o.order_date)=YEAR(DATEADD(month,-1,GETDATE())) AND MONTH(o.order_date)=MONTH(DATEADD(month,-1,GETDATE())) AND o.status IN (1,2) THEN od.quantity END),0) AS qty_prev " +
+            "FROM products p " +
+            "LEFT JOIN order_details od ON p.product_id = od.product_id " +
+            "LEFT JOIN orders o ON od.order_id = o.order_id " +
+            "GROUP BY p.product_name", nativeQuery = true)
+    List<Object[]> getProductMonthlyTrend();
+
+    /**
+     * Get newest active products
+     * Returns: product_name, category_name, brand_name, entered_date, quantity
+     */
+    @Query(value = "SELECT p.product_name, c.category_name, b.brand_name, p.entered_date, p.quantity " +
+            "FROM products p " +
+            "INNER JOIN categories c ON p.category_id = c.category_id " +
+            "INNER JOIN brands b ON p.brand_id = b.brand_id " +
+            "WHERE p.status = 1 " +
+            "ORDER BY p.entered_date DESC", nativeQuery = true)
+    List<Object[]> getNewestActiveProducts();
 }
 

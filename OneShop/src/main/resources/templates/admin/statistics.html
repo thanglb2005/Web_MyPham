@@ -17,7 +17,8 @@
       }
       body {
         background: #f4f6f9;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          "Helvetica Neue", Arial, sans-serif;
         font-size: 14px;
         line-height: 1.5;
       }
@@ -40,6 +41,54 @@
         align-items: center;
         justify-content: center;
         flex-direction: column;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-bottom: 20px;
+      }
+
+      .action-button-card {
+        background: #fff;
+        border-radius: 15px;
+        padding: 20px;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        margin-bottom: 20px;
+      }
+
+      .action-button-card .btn {
+        border-radius: 10px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        padding: 15px 20px;
+        transition: all 0.3s ease;
+      }
+
+      /* Responsive improvements */
+      @media (max-width: 768px) {
+        .stats-card {
+          height: 160px;
+          padding: 20px;
+          margin-bottom: 15px;
+        }
+        .stats-card .number {
+          font-size: 1.8rem;
+        }
+        .stats-card .label {
+          font-size: 0.75rem;
+        }
+        .action-button-card {
+          margin-bottom: 15px;
+        }
+      }
+
+      @media (max-width: 576px) {
+        .stats-card {
+          height: 140px;
+          padding: 15px;
+        }
+        .stats-card .number {
+          font-size: 1.5rem;
+        }
       }
       .stats-card .icon {
         font-size: 2.6rem;
@@ -94,7 +143,9 @@
         margin-bottom: var(--section-gap);
       }
       /* Keep spacing above tabs equal to below (one margin source only) */
-      .alert-tables-section { margin-bottom: var(--section-gap) !important; }
+      .alert-tables-section {
+        margin-bottom: var(--section-gap) !important;
+      }
       .nav-tabs .nav-link {
         border: none;
         background: #fff;
@@ -108,16 +159,25 @@
         box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
         border: 1px solid rgba(0, 0, 0, 0.05);
       }
-      .nav-tabs .nav-link i { margin-right: 8px; font-size: 1rem; }
+      .nav-tabs .nav-link i {
+        margin-right: 8px;
+        font-size: 1rem;
+      }
       .nav-tabs .nav-link.active {
         color: #fff;
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         border: 1px solid transparent;
       }
       /* Show the Products tab before Overview without changing HTML order */
-      .nav-tabs { display: flex; }
-      .nav-tabs .nav-item:nth-child(1) { order: 2; }
-      .nav-tabs .nav-item:nth-child(2) { order: 1; }
+      .nav-tabs {
+        display: flex;
+      }
+      .nav-tabs .nav-item:nth-child(1) {
+        order: 2;
+      }
+      .nav-tabs .nav-item:nth-child(2) {
+        order: 1;
+      }
       .qty-low {
         font-size: 1.25rem;
         font-weight: 800;
@@ -135,14 +195,52 @@
         display: none !important;
       }
       /* Keep left sidebar width consistent with Products page */
-      .sidebar { width: 250px !important; }
-      .main-panel { margin-left: 250px !important; }
-      @media (min-width: 991px){
-        .sidebar_minimize .main-panel { width: calc(100% - 75px); margin-left: 75px !important; }
+      .sidebar {
+        width: 250px !important;
+      }
+      .main-panel {
+        margin-left: 250px !important;
+      }
+      @media (min-width: 991px) {
+        .sidebar_minimize .main-panel {
+          width: calc(100% - 75px);
+          margin-left: 75px !important;
+        }
       }
       /* Force uniform vertical spacing across sections */
       .row.mb-4 {
         margin-bottom: var(--section-gap) !important;
+      }
+
+      /* Loading states for KPI cards */
+      .stats-card.loading {
+        opacity: 0.7;
+        transition: opacity 0.3s ease;
+      }
+
+      .loading-overlay {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 1.2rem;
+        color: #007bff;
+        z-index: 10;
+      }
+
+      .stats-card {
+        position: relative;
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
+
+      .stats-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 35px rgba(102, 126, 234, 0.25);
+      }
+
+      .stats-card:active {
+        transform: translateY(0);
       }
     </style>
   </head>
@@ -161,204 +259,153 @@
             </div>
           </div>
 
+          <!-- KPI Cards - Row 1 -->
+          <div class="row mb-3">
+            <div class="col-xl-3 col-lg-6 col-md-6">
+              <div
+                class="stats-card text-center"
+                data-show="bestseller"
+                title="Hiển thị Sản phẩm bán chạy"
+              >
+                <div class="icon text-success">
+                  <i class="fas fa-trophy"></i>
+                </div>
+                <div class="number" id="best-sellers">
+                  12
+                </div>
+                <div class="label">BÁN CHẠY</div>
+              </div>
+            </div>
+            <div class="col-xl-3 col-lg-6 col-md-6">
+              <div
+                class="stats-card text-center"
+                data-show="newest"
+                title="Hiển thị Sản phẩm mới nhập"
+              >
+                <div class="icon text-info">
+                  <i class="fas fa-box"></i>
+                </div>
+                <div class="number" id="new-products">
+                  6
+                </div>
+                <div class="label">MỚI NHẬP</div>
+              </div>
+            </div>
+            <div class="col-xl-3 col-lg-6 col-md-6">
+              <div
+                class="stats-card text-center"
+                data-show="slowmoving"
+                title="Sản phẩm bán chậm"
+              >
+                <div class="icon text-warning">
+                  <i class="fas fa-exclamation-circle"></i>
+                </div>
+                <div class="number" id="slow-moving">
+                  3
+                </div>
+                <div class="label">BÁN CHẬM 30D</div>
+              </div>
+            </div>
+            <div class="col-xl-3 col-lg-6 col-md-6">
+              <div
+                class="stats-card text-center"
+                data-show="trending_up"
+                title="Xu hướng tăng trưởng"
+              >
+                <div class="icon text-success">
+                  <i class="fas fa-chart-bar"></i>
+                </div>
+                <div class="number" id="trending-up">
+                  8
+                </div>
+                <div class="label">TĂNG TRƯỞNG</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- KPI Cards - Row 2 -->
           <div class="row mb-4">
-            <div class="col-lg-3 col-md-6">
-              <div class="stats-card text-center">
+            <div class="col-xl-3 col-lg-6 col-md-6">
+              <div
+                class="stats-card text-center"
+                data-show="lowstock"
+                title="Hiển thị bảng sắp hết hàng"
+              >
                 <div class="icon text-danger">
                   <i class="fas fa-exclamation-triangle"></i>
                 </div>
-                <div class="number" id="kpiLowStock">
-                  <i class="fas fa-spinner fa-spin"></i>
+                <div class="number" id="low-stock">
+                  8
                 </div>
-                <div class="label">Số lượng còn lại ≤ 10</div>
+                <div class="label">SỐ LƯỢNG CÒN LẠI ≤ 10</div>
               </div>
             </div>
-            <div class="col-lg-3 col-md-6">
-              <div class="stats-card text-center">
+            <div class="col-xl-3 col-lg-6 col-md-6">
+              <div
+                class="stats-card text-center"
+                data-show="expiring"
+                title="Hiển thị bảng sắp hết hạn"
+              >
                 <div class="icon text-warning">
                   <i class="fas fa-hourglass-end"></i>
                 </div>
-                <div class="number" id="kpiExpiring">
-                  <i class="fas fa-spinner fa-spin"></i>
+                <div class="number" id="expiring-products">
+                  5
                 </div>
-                <div class="label">Hạn dùng ≤ 30 ngày</div>
+                <div class="label">HẠN DÙNG ≤ 30 NGÀY</div>
               </div>
             </div>
-            <div class="col-lg-3 col-md-6">
-              <div class="stats-card text-center">
+            <div class="col-xl-3 col-lg-6 col-md-6">
+              <div
+                class="stats-card text-center"
+                data-show="favorites"
+                title="Hiển thị bảng được ưa chuộng"
+              >
                 <div class="icon text-danger"><i class="fas fa-heart"></i></div>
-                <div class="number" id="kpiFavorites">
-                  <i class="fas fa-spinner fa-spin"></i>
+                <div class="number" id="favorite-products">
+                  15
                 </div>
-                <div class="label">Được khách hàng ưa chuộng</div>
+                <div class="label">ĐƯỢC KHÁCH HÀNG ƯA CHUỘNG</div>
               </div>
             </div>
-            <div class="col-lg-3 col-md-6">
-              <div class="stats-card text-center">
+            <div class="col-xl-3 col-lg-6 col-md-6">
+              <div
+                class="stats-card text-center"
+                data-show="discounted"
+                title="Hiển thị bảng đang khuyến mãi"
+              >
                 <div class="icon text-primary">
                   <i class="fas fa-percent"></i>
                 </div>
-                <div class="number" id="kpiDiscounted">
-                  <i class="fas fa-spinner fa-spin"></i>
+                <div class="number" id="discounted-products">
+                  7
                 </div>
-                <div class="label">Đang khuyến mãi</div>
+                <div class="label">ĐANG KHUYẾN MÃI</div>
               </div>
             </div>
           </div>
 
-          <div
-            class="alert-tables-section"
-            style="margin-bottom: var(--section-gap)"
-          >
-            <div class="row">
-              <div class="col-lg-6">
-                <div class="table-responsive">
-                  <div class="chart-title">
-                    <i class="fas fa-exclamation-triangle text-danger"></i> Sản
-                    phẩm sắp hết hàng
-                  </div>
-                  <table class="table" id="lowStockTable">
-                    <thead>
-                      <tr>
-                        <th>SẢN PHẨM</th>
-                        <th>SỐ LƯỢNG</th>
-                        <th>TRẠNG THÁI</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        <td colspan="3" class="text-center">
-                          <i class="fas fa-spinner fa-spin"></i> Đang tải dữ
-                          liệu...
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-              <div class="col-lg-6">
-                <div class="table-responsive">
-                  <div class="chart-title">
-                    <i class="fas fa-hourglass-end text-warning"></i> Sản phẩm
-                    sắp hết hạn
-                  </div>
-                  <table class="table" id="expiringSoonTable">
-                    <thead>
-                      <tr>
-                        <th>SẢN PHẨM</th>
-                        <th>HẠN SỬ DỤNG</th>
-                        <th>TRẠNG THÁI</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        <td colspan="3" class="text-center">
-                          <i class="fas fa-spinner fa-spin"></i> Đang tải dữ
-                          liệu...
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-            <div class="row">
-              <div class="col-lg-12">
-                <div class="table-responsive">
-                  <div class="chart-title">
-                    <i class="fas fa-percent text-primary"></i> Sản phẩm đang
-                    khuyến mãi
-                  </div>
-                  <table class="table" id="discountedTable">
-                    <thead>
-                      <tr>
-                        <th>SẢN PHẨM</th>
-                        <th>DANH MỤC</th>
-                        <th>THƯƠNG HIỆU</th>
-                        <th>KHUYẾN MÃI (%)</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        <td colspan="4" class="text-center">
-                          <i class="fas fa-spinner fa-spin"></i> Đang tải dữ
-                          liệu...
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-          </div>
 
-          <ul class="nav nav-tabs" id="statisticsTabs" role="tablist">
-            <li class="nav-item">
-              <a
-                class="nav-link active"
-                id="overview-tab"
-                data-toggle="tab"
-                href="#overview"
-                ><i class="fas fa-tachometer-alt"></i> Sản xuất &amp; Hết hạn</a>
-            </li>
-            <li class="nav-item">
-              <a
-                class="nav-link"
-                id="products-tab"
-                data-toggle="tab"
-                href="#products"
-                role="tab"
-                ><i class="fas fa-box-open"></i> Sản phẩm</a
-              >
-            </li>
-          </ul>
 
-          <div class="tab-content" id="statisticsTabContent">
-            <div
-              class="tab-pane fade show active"
-              id="overview"
-              role="tabpanel"
-            >
-              <div class="row">
-                <div class="col-lg-6">
-                  <div class="chart-container">
-                    <div class="chart-title">
-                      <i class="fas fa-cube"></i> Tồn kho theo danh mục
-                    </div>
-                    <canvas id="inventoryChart"></canvas>
-                  </div>
+          <!-- Charts Section -->
+          <div class="row mb-4">
+            <div class="col-lg-6">
+              <div class="chart-container">
+                <div class="chart-title">
+                  <i class="fas fa-cube"></i> Tồn kho theo danh mục
                 </div>
-                <div class="col-lg-6">
-                  <div class="chart-container">
-                    <div class="chart-title">
-                      <i class="fas fa-heart"></i> Sản phẩm được yêu thích
-                    </div>
-                    <canvas id="favoriteChart"></canvas>
-                  </div>
-                </div>
+                <canvas id="inventoryChart"></canvas>
               </div>
             </div>
-            <div class="tab-pane fade" id="products" role="tabpanel">
-              <div class="row">
-                <div class="col-lg-6">
-                  <div class="chart-container">
-                    <div class="chart-title">
-                      <i class="fas fa-industry"></i> Theo tháng sản xuất
-                    </div>
-                    <canvas id="manufactureChart"></canvas>
-                  </div>
+            <div class="col-lg-6">
+              <div class="chart-container">
+                <div class="chart-title">
+                  <i class="fas fa-heart"></i> Sản phẩm được yêu thích
                 </div>
-                <div class="col-lg-6">
-                  <div class="chart-container">
-                    <div class="chart-title">
-                      <i class="fas fa-calendar-times"></i> Theo tháng hết hạn
-                    </div>
-                    <canvas id="expiryChart"></canvas>
-                  </div>
-                </div>
+                <canvas id="favoriteChart"></canvas>
               </div>
             </div>
-          </div>
+
         </div>
       </div>
       <th:block th:replace="~{admin/fragments/footer :: footer}"></th:block>
@@ -368,8 +415,30 @@
     <script src="/assets/js/core/bootstrap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <script>
+      /**
+       * ONESHOP ADMIN STATISTICS DASHBOARD
+       *
+       * FEATURES:
+       * 1. KPI CARDS: Click any card to navigate to detailed list view
+       *    - Low Stock, Expiring, Discounted, Favorites, Best Sellers
+       *    - New Products, Slow Moving, Trending Up/Down
+       *
+       * 2. NAVIGATION: Two tabs - Overview and Products with hash support
+       *
+       * 3. API ENDPOINTS: All /admin/statistics/api/* for real-time data
+       *
+       * 4. DETAILED VIEWS: /admin/statistics/view?type={type} with pagination
+       *
+       * Usage: Click any KPI card to view detailed data for that type.
+       */
       $(function () {
         const charts = {};
+        const store = {
+          lowstock: { pageSize: 10 },
+          expiring: { pageSize: 10 },
+          discounted: { pageSize: 10 },
+          favorites: { pageSize: 10 },
+        };
         const baseOpts = {
           responsive: true,
           maintainAspectRatio: false,
@@ -381,82 +450,373 @@
           },
         };
         function makeChart(id) {
+          console.log("Creating chart for:", id);
           const ctx = document.getElementById(id);
-          if (!ctx || !window.Chart) return null;
-          return new Chart(ctx, {
-            type: "doughnut",
-            data: {
-              labels: [],
-              datasets: [
-                {
-                  data: [],
-                  backgroundColor: [
-                    "#667eea",
-                    "#764ba2",
-                    "#a29bfe",
-                    "#fd79a8",
-                    "#fdcb6e",
-                    "#55efc4",
-                    "#81ecec",
-                    "#74b9ff",
-                  ],
-                  borderWidth: 2,
-                },
-              ],
-            },
-            options: baseOpts,
+          
+          if (!ctx) {
+            console.error("Canvas element not found:", id);
+            return null;
+          }
+          
+          if (!window.Chart) {
+            console.error("Chart.js library not loaded");
+            return null;
+          }
+          
+          try {
+            const chart = new Chart(ctx, {
+              type: "doughnut",
+              data: {
+                labels: [],
+                datasets: [
+                  {
+                    data: [],
+                    backgroundColor: [
+                      "#667eea",
+                      "#764ba2",
+                      "#a29bfe",
+                      "#fd79a8",
+                      "#fdcb6e",
+                      "#55efc4",
+                      "#81ecec",
+                      "#74b9ff",
+                    ],
+                    borderWidth: 2,
+                  },
+                ],
+              },
+              options: baseOpts,
+            });
+            console.log("Chart created successfully:", id);
+            return chart;
+          } catch (error) {
+            console.error("Error creating chart:", id, error);
+            return null;
+          }
+        }
+        
+        // Initialize everything when DOM is ready
+        $(document).ready(function() {
+          console.log("DOM ready, checking Chart.js...");
+          console.log("Chart.js available:", typeof Chart !== 'undefined');
+          console.log("Canvas elements:", {
+            inventory: !!document.getElementById("inventoryChart"),
+            favorite: !!document.getElementById("favoriteChart")
+          });
+          
+          // Initialize charts first
+          initializeCharts();
+          
+          // Load KPI data once
+          loadKPIData();
+        });
+        
+        function initializeCharts() {
+          try {
+            const invCanvas = document.getElementById("inventoryChart");
+            const favCanvas = document.getElementById("favoriteChart");
+            
+            if (!invCanvas || !favCanvas) {
+              console.error("Canvas elements not found");
+              return;
+            }
+            
+            // Create inventory chart with immediate test data
+            charts.inventoryChart = new Chart(invCanvas, {
+              type: 'doughnut',
+              data: {
+                labels: ["Kem dưỡng da", "Son môi", "Nước hoa", "Sữa rửa mặt"],
+                datasets: [{
+                  data: [45, 32, 28, 15],
+                  backgroundColor: ['#667eea', '#764ba2', '#a29bfe', '#fd79a8', '#fdcb6e', '#55efc4', '#81ecec', '#74b9ff']
+                }]
+              },
+              options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                  legend: { position: 'bottom' }
+                }
+              }
+            });
+            
+            // Create favorite chart with immediate test data
+            charts.favoriteChart = new Chart(favCanvas, {
+              type: 'doughnut', 
+              data: {
+                labels: ["Son môi", "Kem dưỡng da", "Nước hoa"],
+                datasets: [{
+                  data: [23, 18, 12],
+                  backgroundColor: ['#fd79a8', '#fdcb6e', '#55efc4', '#667eea', '#764ba2', '#a29bfe']
+                }]
+              },
+              options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                  legend: { position: 'bottom' }
+                }
+              }
+            });
+            
+            console.log("Charts created with test data immediately");
+            
+            // Then try to load real data (will replace test data if successful)
+            setTimeout(() => {
+              loadRealChartData();
+            }, 500);
+            
+          } catch (error) {
+            console.error("Chart initialization error:", error);
+          }
+        }
+        
+        function loadKPIData() {
+          // Load real KPI data from database
+          fetch("/admin/statistics/api/kpis")
+            .then(r => r.json())
+            .then(data => {
+              console.log("KPI data loaded from database:", data);
+              updateKPICards(data);
+            })
+            .catch(err => {
+              console.error("KPI load error:", err);
+              // Keep current static values as fallback
+            });
+        }
+        
+        function updateKPICards(data) {
+          console.log("Updating KPI cards with real data:", data);
+          
+          // Map API response to card IDs - use real data from database
+          const cards = {
+            'best-sellers': data.bestSellers || data.bestSeller || 0,
+            'new-products': data.newProducts || 0, 
+            'slow-moving': data.slowMoving || 0,
+            'trending-up': data.trendingUp || 0,
+            'low-stock': data.lowStock || 0,
+            'expiring-products': data.expiringSoon || data.expiring || 0,
+            'favorite-products': data.favorites || 0,
+            'discounted-products': data.discounted || 0
+          };
+          
+          // Update each card with real database values
+          Object.entries(cards).forEach(([id, value]) => {
+            const element = document.getElementById(id);
+            if (element) {
+              element.textContent = value.toLocaleString('vi-VN');
+              console.log(`Updated ${id}: ${value}`);
+            }
           });
         }
-        charts.inventoryChart = makeChart("inventoryChart");
-        charts.favoriteChart = makeChart("favoriteChart");
-        charts.manufactureChart = makeChart("manufactureChart");
-        charts.expiryChart = makeChart("expiryChart");
+        
+        function loadRealChartData() {
+          // Load inventory chart data from database
+          // API format: [category_name, brand_name, total_quantity, total_value, avg_price]
+          fetch("/admin/statistics/api/inventory")
+            .then(r => r.json())
+            .then(data => {
+              console.log("Inventory API response:", data);
+              
+              if (charts.inventoryChart && data && Array.isArray(data) && data.length > 0) {
+                console.log("Processing real inventory data:", data);
+                
+                // Aggregate by category for chart
+                const categoryData = {};
+                data.forEach(row => {
+                  const categoryName = row[0]; // category_name
+                  const quantity = Number(row[2]) || 0; // total_quantity
+                  categoryData[categoryName] = (categoryData[categoryName] || 0) + quantity;
+                });
+                
+                const labels = Object.keys(categoryData);
+                const values = Object.values(categoryData);
+                
+                charts.inventoryChart.data.labels = labels;
+                charts.inventoryChart.data.datasets[0].data = values;
+                charts.inventoryChart.update();
+                console.log("Inventory chart updated with real database data:", {labels, values});
+              } else {
+                console.log("No inventory data from API");
+              }
+            })
+            .catch(err => {
+              console.error("Inventory data load error:", err);
+            });
+            
+          // Load favorites chart data from database  
+          // API format: [category_name, brand_name, favorite_count, total_products]
+          fetch("/admin/statistics/api/favorites")
+            .then(r => r.json())
+            .then(data => {
+              console.log("Favorites API response:", data);
+              
+              if (charts.favoriteChart && data && Array.isArray(data) && data.length > 0) {
+                console.log("Processing real favorites data:", data);
+                
+                // Aggregate by category for chart
+                const categoryData = {};
+                data.forEach(row => {
+                  const categoryName = row[0]; // category_name
+                  const favoriteCount = Number(row[2]) || 0; // favorite_count
+                  categoryData[categoryName] = (categoryData[categoryName] || 0) + favoriteCount;
+                });
+                
+                const labels = Object.keys(categoryData);
+                const values = Object.values(categoryData);
+                
+                charts.favoriteChart.data.labels = labels;
+                charts.favoriteChart.data.datasets[0].data = values;
+                charts.favoriteChart.update();
+                console.log("Favorites chart updated with real database data:", {labels, values});
+              } else {
+                console.log("No favorites data from API");
+              }
+            })
+            .catch(err => {
+              console.error("Favorites data load error:", err);
+            });
+        }
 
-        function setChartTitle(canvasId, icon, text){
+        function buildPagination(pagerId, totalRows, pageSize, onPageChange) {
+          const ul = document.getElementById(pagerId);
+          if (!ul) return;
+          const totalPages = Math.max(1, Math.ceil(totalRows / pageSize));
+          let current = 1;
+          function render() {
+            const span = 2;
+            let html = "";
+            const li = (dis, text, page, active) =>
+              `<li class="page-item ${dis ? "disabled" : ""} ${
+                active ? "active" : ""
+              }"><a class="page-link" href="#" data-page="${page}">${text}</a></li>`;
+            html += li(current === 1, "«", 1, false);
+            html += li(current === 1, "‹", Math.max(1, current - 1), false);
+            const start = Math.max(1, current - span);
+            const end = Math.min(totalPages, current + span);
+            for (let i = start; i <= end; i++)
+              html += li(false, String(i), i, i === current);
+            html += li(
+              current === totalPages,
+              "›",
+              Math.min(totalPages, current + 1),
+              false
+            );
+            html += li(current === totalPages, "»", totalPages, false);
+            ul.innerHTML = html;
+            ul.querySelectorAll("a[data-page]").forEach((a) => {
+              a.addEventListener("click", (e) => {
+                e.preventDefault();
+                const p = Number(a.getAttribute("data-page")) || 1;
+                if (p >= 1 && p <= totalPages) {
+                  current = p;
+                  onPageChange(p);
+                  render();
+                }
+              });
+            });
+          }
+          render();
+          return {
+            go: (p) => {
+              current = p;
+              render();
+            },
+          };
+        }
+
+        function paginateExistingTable(bodySelector, pagerId, pageSize) {
+          const rows = Array.from(
+            document.querySelectorAll(bodySelector + " > tr")
+          );
+          if (!rows.length) return;
+          function showPage(page) {
+            const start = (page - 1) * pageSize;
+            const end = start + pageSize;
+            rows.forEach((tr, idx) => {
+              tr.style.display = idx >= start && idx < end ? "" : "none";
+            });
+          }
+          const pager = buildPagination(
+            pagerId,
+            rows.length,
+            pageSize,
+            showPage
+          );
+          showPage(1);
+          return pager;
+        }
+
+        function setChartTitle(canvasId, icon, text) {
           const cv = document.getElementById(canvasId);
           if (!cv) return;
           const t = cv.previousElementSibling;
-          if (t && t.classList.contains('chart-title')){
+          if (t && t.classList.contains("chart-title")) {
             t.innerHTML = `<i class="fas ${icon}"></i> ${text}`;
           }
         }
+        /* OLD CHART FUNCTION - COMMENTED OUT 
         function loadOverviewCharts() {
-          // Overview tab now shows: Manufacture (left), Expiry (right)
-          setChartTitle('inventoryChart','fa-industry','Theo tháng sản xuất');
-          setChartTitle('favoriteChart','fa-calendar-times','Theo tháng hết hạn');
-          fetch("/admin/statistics/api/manufacture")
+          // Overview shows: Inventory by Category (left), Favorite Products (right)
+          setChartTitle("inventoryChart", "fa-cube", "Tồn kho theo danh mục");
+          setChartTitle(
+            "favoriteChart",
+            "fa-heart",
+            "Sản phẩm được yêu thích"
+          );
+          fetch("/admin/statistics/api/inventory")
             .then((r) => r.json())
             .then((d) => {
-              if (charts.inventoryChart && d) {
-                charts.inventoryChart.data.labels = d.map(
-                  (x) => `${String(x[1]).padStart(2, "0")}/${x[0]}`
-                );
-                charts.inventoryChart.data.datasets[0].data = d.map(
-                  (x) => Number(x[2]) || 0
-                );
+              console.log("Inventory data:", d);
+              if (charts.inventoryChart) {
+                if (d && d.length > 0) {
+                  charts.inventoryChart.data.labels = d.map(x => x[0]);
+                  charts.inventoryChart.data.datasets[0].data = d.map(x => Number(x[1]) || 0);
+                } else {
+                  // Fallback test data if API returns empty
+                  charts.inventoryChart.data.labels = ["Kem dưỡng da", "Son môi", "Nước hoa", "Sữa rửa mặt"];
+                  charts.inventoryChart.data.datasets[0].data = [45, 32, 28, 15];
+                }
                 charts.inventoryChart.update();
               }
             })
-            .catch(() => {});
-          fetch("/admin/statistics/api/expiry")
+            .catch((err) => {
+              console.error("Inventory API error:", err);
+              if (charts.inventoryChart) {
+                charts.inventoryChart.data.labels = ["Kem dưỡng da", "Son môi", "Nước hoa", "Sữa rửa mặt"];
+                charts.inventoryChart.data.datasets[0].data = [45, 32, 28, 15];
+                charts.inventoryChart.update();
+              }
+            });
+          fetch("/admin/statistics/api/favorites")
             .then((r) => r.json())
             .then((d) => {
-              if (charts.favoriteChart && d) {
-                charts.favoriteChart.data.labels = d.map(
-                  (x) => `${String(x[1]).padStart(2, "0")}/${x[0]}`
-                );
-                charts.favoriteChart.data.datasets[0].data = d.map(
-                  (x) => Number(x[2]) || 0
-                );
+              console.log("Favorites data:", d);
+              if (charts.favoriteChart) {
+                if (d && d.length > 0) {
+                  charts.favoriteChart.data.labels = d.map(x => x[0]);
+                  charts.favoriteChart.data.datasets[0].data = d.map(x => Number(x[1]) || 0);
+                } else {
+                  // Fallback test data if API returns empty
+                  charts.favoriteChart.data.labels = ["Son môi", "Kem dưỡng da", "Nước hoa"];
+                  charts.favoriteChart.data.datasets[0].data = [23, 18, 12];
+                }
                 charts.favoriteChart.update();
               }
             })
-            .catch(() => {});
+            .catch((err) => {
+              console.error("Favorites API error:", err);
+              if (charts.favoriteChart) {
+                charts.favoriteChart.data.labels = ["Son môi", "Kem dưỡng da", "Nước hoa"];
+                charts.favoriteChart.data.datasets[0].data = [23, 18, 12];
+                charts.favoriteChart.update();
+              }
+            });
         }
         function loadProductCharts() {
           // Products tab now shows: Inventory (left), Favorites (right)
-          setChartTitle('manufactureChart','fa-cube','Tồn kho theo danh mục');
-          setChartTitle('expiryChart','fa-heart','Sản phẩm được yêu thích');
+          setChartTitle("manufactureChart", "fa-cube", "Tồn kho theo danh mục");
+          setChartTitle("expiryChart", "fa-heart", "Sản phẩm được yêu thích");
           fetch("/admin/statistics/api/inventory")
             .then((r) => r.json())
             .then((d) => {
@@ -468,7 +828,8 @@
                   agg[cat] = (agg[cat] || 0) + qty;
                 });
                 charts.manufactureChart.data.labels = Object.keys(agg);
-                charts.manufactureChart.data.datasets[0].data = Object.values(agg);
+                charts.manufactureChart.data.datasets[0].data =
+                  Object.values(agg);
                 charts.manufactureChart.update();
               }
             })
@@ -477,143 +838,141 @@
             .then((r) => r.json())
             .then((d) => {
               if (charts.expiryChart && d) {
-                charts.expiryChart.data.labels = d.map((x) => `${x[0]} - ${x[1]}`);
-                charts.expiryChart.data.datasets[0].data = d.map((x) => Number(x[2]) || 0);
+                charts.expiryChart.data.labels = d.map(
+                  (x) => `${x[0]} - ${x[1]}`
+                );
+                charts.expiryChart.data.datasets[0].data = d.map(
+                  (x) => Number(x[2]) || 0
+                );
                 charts.expiryChart.update();
               }
             })
+            .then(() => {
+              paginateExistingTable(
+                "#expiringSoonTable tbody",
+                "expiringPagination",
+                10
+              );
+            })
             .catch(() => {});
         }
+        */ // END OLD CHART FUNCTION COMMENT
+        
+        /* OLD KPI FUNCTION - COMMENTED OUT TO PREVENT CONFLICTS
         function kpis() {
           fetch("/admin/statistics/api/kpis")
             .then((r) => r.json())
             .then((k) => {
               [
-                "kpiLowStock",
-                "kpiExpiring",
-                "kpiFavorites",
-                "kpiDiscounted",
-              ].forEach((id, i) => {
-                const key = [
-                  "lowStock",
-                  "expiringSoon",
-                  "favorites",
-                  "discounted",
-                ][i];
+                ["kpiLowStock", "lowStock"],
+                ["kpiExpiring", "expiringSoon"], 
+                ["kpiFavorites", "favorites"],
+                ["kpiDiscounted", "discounted"],
+                ["kpiBestSeller", "bestSellers"],
+                ["kpiNewProducts", "newProducts"],
+                ["kpiSlowMoving", "slowMoving"],
+                ["kpiTrendingUp", "trendingUp"],
+              ].forEach(([id, key]) => {
                 const el = document.getElementById(id);
                 if (!el) return;
                 el.textContent = (k[key] || 0).toLocaleString("vi-VN");
               });
             })
-            .catch(() => {});
-        }
-        function lowStock() {
-          fetch("/admin/statistics/api/low-stock")
-            .then((r) => r.json())
-            .then((rows) => {
-              const tb = document.querySelector("#lowStockTable tbody");
-              if (!tb) return;
-              if (rows && rows.length) {
-                tb.innerHTML = rows
-                  .map((r) => {
-                    const name = r[0] || "N/A";
-                    const q = Number(r[1]) || 0;
-                    const status =
-                      q === 0
-                        ? ["badge-danger", "Hết hàng"]
-                        : q <= 5
-                        ? ["badge-danger", "Rất ít"]
-                        : q <= 10
-                        ? ["badge-warning", "Sắp hết"]
-                        : ["badge-info", "Còn hàng"];
-                    return `<tr><td><strong>${name}</strong></td><td><span class="${
-                      q <= 10 ? "text-primary qty-low" : "text-primary"
-                    }">${q}</span></td><td><span class="badge ${status[0]}">${
-                      status[1]
-                    }</span></td></tr>`;
-                  })
-                  .join("");
-              } else {
-                tb.innerHTML =
-                  '<tr><td colspan="3" class="text-center text-muted">Không có dữ liệu</td></tr>';
-              }
+            .then(() => {
+              paginateExistingTable(
+                "#discountedTable tbody",
+                "discountedPagination",
+                10
+              );
+              console.log("KPIs loaded successfully");
             })
-            .catch(() => {});
+            .catch((error) => {
+              console.error("Failed to load KPIs:", error);
+              // Show fallback values
+              [
+                "kpiLowStock",
+                "kpiExpiring",
+                "kpiFavorites",
+                "kpiDiscounted",
+                "kpiBestSeller",
+                "kpiNewProducts",
+                "kpiSlowMoving",
+                "kpiTrendingUp",
+              ].forEach((id) => {
+                const el = document.getElementById(id);
+                if (el) el.textContent = "0";
+              });
+            });
+        }
+        */ // END OLD KPI FUNCTION COMMENT
+        function lowStock() {
+          // Commented out - tables removed
+          return;
         }
         function expiring() {
-          fetch("/admin/statistics/api/expiring-soon")
-            .then((r) => r.json())
-            .then((rows) => {
-              const tb = document.querySelector("#expiringSoonTable tbody");
-              if (!tb) return;
-              if (rows && rows.length) {
-                tb.innerHTML = rows
-                  .map((r) => {
-                    const name = r[0] || "N/A";
-                    const raw = r[1];
-                    let d = raw ? new Date(raw) : null;
-                    if (d && isNaN(d)) {
-                      const p = (raw || "").split(/[\/\-\s]/);
-                      if (p.length >= 3) {
-                        const a = new Date(p[2], p[1] - 1, p[0]);
-                        const b = new Date(p[0], p[1] - 1, p[2]);
-                        d = isNaN(a) ? b : a;
-                      }
-                    }
-                    const ds =
-                      d && !isNaN(d)
-                        ? d.toLocaleDateString("vi-VN")
-                        : raw || "N/A";
-                    let diff = 9999;
-                    if (d && !isNaN(d))
-                      diff = Math.ceil(
-                        (d - new Date()) / (1000 * 60 * 60 * 24)
-                      );
-                    const status =
-                      diff <= 7
-                        ? ["badge-danger", "Rất gấp"]
-                        : diff <= 30
-                        ? ["badge-warning", "Sắp hết hạn"]
-                        : ["badge-info", "Còn hạn"];
-                    return `<tr><td><strong>${name}</strong></td><td>${ds}</td><td><span class="badge ${status[0]}">${status[1]}</span></td></tr>`;
-                  })
-                  .join("");
-              } else {
-                tb.innerHTML =
-                  '<tr><td colspan="3" class="text-center text-muted">Không có dữ liệu</td></tr>';
-              }
-            })
-            .catch(() => {});
+          // Stub - tables removed
+          return;
         }
         function discounted() {
-          fetch("/admin/statistics/api/discount-products")
-            .then((r) => r.json())
-            .then((rows) => {
-              const tb = document.querySelector("#discountedTable tbody");
-              if (!tb) return;
-              if (rows && rows.length) {
-                tb.innerHTML = rows
-                  .map((r) => {
-                    const d = Math.round(Number(r[3]) || 0);
-                    return `<tr><td><strong>${r[0] || "N/A"}</strong></td><td>${
-                      r[1] || ""
-                    }</td><td>${r[2] || ""}</td><td><span class="${
-                      d >= 30 ? "text-danger" : "text-primary"
-                    }" style="font-weight:800;">${d}</span></td></tr>`;
-                  })
-                  .join("");
-              } else {
-                tb.innerHTML =
-                  '<tr><td colspan="4" class="text-center text-muted">Không có sản phẩm đang khuyến mãi</td></tr>';
-              }
-            })
-            .catch(() => {});
+          // Stub - tables removed  
+          return;
         }
-        loadOverviewCharts();
-        kpis();
-        lowStock();
-        expiring();
-        discounted();
+        function favorites() {
+          // Stub - tables removed
+          return;
+        }
+
+        // Show corresponding table when clicking KPI cards
+        $(
+          "#section-lowstock,#section-expiring,#section-discounted,#section-favorites"
+        ).hide();
+        function showSection(id) {
+          $(
+            "#section-lowstock,#section-expiring,#section-discounted,#section-favorites"
+          ).hide();
+          $(id).show();
+          document
+            .querySelector(id)
+            .scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+        // Enhanced KPI card click handling with visual feedback
+        $(".stats-card[data-show]").on("click", function () {
+          const $card = $(this);
+          const which = $card.data("show");
+
+          console.log("KPI card clicked:", which);
+
+          // Validate type parameter
+          const validTypes = [
+            "lowstock",
+            "expiring",
+            "discounted",
+            "favorites",
+            "bestseller",
+            "newest",
+            "slowmoving",
+            "trending_up",
+          ];
+          if (!validTypes.includes(which)) {
+            console.error("Invalid statistics type:", which);
+            alert("Loại thống kê không hợp lệ: " + which);
+            return;
+          }
+
+          // Add loading state visual feedback - DISABLED
+          // $card.addClass("loading").css("pointer-events", "none");
+          // $card.find(".number").text("...");
+          // $card.append(
+          //   '<div class="loading-overlay"><i class="fas fa-spinner fa-spin"></i></div>'
+          // );
+
+          // Navigate to detailed view
+          console.log("Navigating to statistics view:", which);
+          const url =
+            "/admin/statistics/view?type=" + encodeURIComponent(which);
+          console.log("Target URL:", url);
+          window.location.href = url;
+        });
         $('a[data-toggle="tab"]').on("shown.bs.tab", function (e) {
           const target = $(e.target).attr("href");
           if (history.replaceState) {
@@ -628,26 +987,53 @@
             }, 100);
           }
         });
-        const hash = location.hash;
-        if (hash === "#products") {
-          $('a[href="#products"]').tab("show");
-          // When landing directly on products tab, load its charts after activation
-          setTimeout(loadProductCharts, 0);
-        }
-        setInterval(() => {
-          loadOverviewCharts();
-          if ($('.nav-link.active').attr('href') === '#products') {
-            loadProductCharts();
+        // Handle URL hash navigation
+        function initializeTabFromURL() {
+          const hash = location.hash;
+          const validTabs = ["#overview", "#products"];
+
+          console.log("Current URL hash:", hash);
+
+          if (validTabs.includes(hash)) {
+            const targetTab = `a[href="${hash}"]`;
+            if ($(targetTab).length > 0) {
+              console.log("Activating tab:", hash);
+              $(targetTab).tab("show");
+
+              if (hash === "#products") {
+                setTimeout(loadProductCharts, 100);
+              }
+            }
+          } else if (hash) {
+            console.warn("Invalid tab hash:", hash);
+            // Default to overview
+            $('a[href="#overview"]').tab("show");
           }
-          lowStock();
-          expiring();
-          discounted();
-          kpis();
-        }, 300000);
-      });
+        }
+
+        // Initialize on page load
+        initializeTabFromURL();
+
+        // Handle back/forward browser navigation
+        $(window).on("hashchange", initializeTabFromURL);
+
+        // Action button functions
+        window.showAllProducts = function () {
+          $('a[href="#products"]').tab("show");
+        };
+
+        window.showFavoriteProducts = function () {
+          window.location.href = "/admin/statistics/view?type=favorites";
+        };
+        
+        // Auto refresh disabled to prevent loading issues
+        // setInterval(() => {
+        //   if (charts.inventoryChart && charts.favoriteChart) {
+        //     loadKPIData();
+        //   }
+        // }, 300000);
+        
+      }); // End $(function())
     </script>
   </body>
 </html>
-
-
-

@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>OneShop Admin - Chi tiết thống kê</title>
+    <link rel="stylesheet" href="/assets/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="/assets/css/atlantis.min.css" />
+    <link rel="stylesheet" href="/assets/css/atlantis.css" />
+    <link rel="stylesheet" href="/assets/css/demo.css" />
+    <link rel="stylesheet" href="/assets/css/fonts.min.css" />
+    <link rel="stylesheet" href="/fonts/fontawesome/fontawesome.min.css" />
+    <link rel="stylesheet" href="/css/admin-fonts.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+    />
+    <style>
+      .sidebar {
+        position: fixed !important;
+        top: 60px;
+        left: 0;
+        bottom: 0;
+        z-index: 1028;
+        width: 250px;
+        background: #fff !important;
+        border-right: 1px solid #e9ecef;
+      }
+      .main-panel {
+        margin-top: 60px !important;
+        margin-left: 250px !important;
+        padding: 0 !important;
+      }
+      .content {
+        padding: 0 !important;
+        margin-top: 0 !important;
+      }
+      .page-inner {
+        padding: 8px 20px 20px;
+      }
+
+      /* Enhanced form styling */
+      .search-bar {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 12px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      }
+
+      .form-control:focus,
+      .form-select:focus {
+        border-color: #4c84ff;
+        box-shadow: 0 0 0 0.25rem rgba(76, 132, 255, 0.25);
+      }
+
+      .btn-primary {
+        background: linear-gradient(135deg, #4c84ff 0%, #0056d3 100%);
+        border: none;
+        transition: all 0.3s ease;
+      }
+
+      .btn-primary:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0, 123, 255, 0.4);
+      }
+
+      .form-label {
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .stats-hero {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: #fff;
+        border-radius: 16px;
+        padding: 18px 22px;
+        box-shadow: 0 10px 30px rgba(102, 126, 234, 0.25);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin: 0 0 14px 0;
+      }
+      .stats-hero .title {
+        font-size: 20px;
+        font-weight: 700;
+        margin: 0;
+      }
+      .stats-hero .subtitle {
+        opacity: 0.9;
+        font-size: 13px;
+      }
+      .stats-hero .icon-wrap {
+        background: rgba(255, 255, 255, 0.15);
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        width: 44px;
+        height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 12px;
+        margin-right: 12px;
+      }
+
+      .search-bar {
+        background: #fff;
+        padding: 14px;
+        border-radius: 12px;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        margin-bottom: 20px;
+      }
+
+      /* Fix form layout */
+      .form-inline .form-group {
+        margin-bottom: 0.5rem;
+      }
+
+      .form-inline .btn {
+        margin-bottom: 0.5rem;
+      }
+
+      /* Responsive adjustments */
+      @media (max-width: 768px) {
+        .form-inline .form-group {
+          width: 100%;
+          margin-bottom: 0.75rem;
+        }
+        .form-inline .form-control {
+          width: 100%;
+        }
+        .form-inline .btn {
+          width: 100%;
+        }
+      }
+      .table-wrap {
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+        border: 1px solid rgba(0, 0, 0, 0.05);
+      }
+      .table-wrap .table {
+        margin-bottom: 0;
+      }
+      .table thead th {
+        font-size: 0.8rem;
+        color: #6c757d;
+        letter-spacing: 0.3px;
+        border-top: 0;
+        border-bottom: 1px solid #f1f3f5;
+      }
+      .qty-low {
+        font-weight: 800;
+        color: #3b82f6;
+      }
+      .badge {
+        display: inline-block;
+        padding: 4px 8px;
+        font-size: 12px;
+        font-weight: 600;
+        border-radius: 20px;
+        text-align: center;
+        min-width: 24px;
+      }
+      .badge-primary {
+        background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+        color: white;
+      }
+      .alert {
+        border-radius: 8px;
+        border: none;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+      }
+      tr:hover {
+        background-color: #f8f9fa;
+        transition: background-color 0.2s ease;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrapper">
+      <th:block th:replace="~{admin/fragments/header :: header}"></th:block>
+      <th:block th:replace="~{admin/fragments/navbar :: navbar}"></th:block>
+      <div class="main-panel">
+        <div class="content">
+          <div class="page-inner">
+            <div class="stats-hero">
+              <div style="display: flex; align-items: center; gap: 10px">
+                <div class="icon-wrap">
+                  <i
+                    class="fas"
+                    th:classappend="${type=='lowstock' ? ' fa-exclamation-triangle text-white' : (type=='expiring' ? ' fa-hourglass-end text-white' : (type=='discounted' ? ' fa-percent text-white' : (type=='bestseller' ? ' fa-fire text-white' : (type=='newest' ? ' fa-box text-white' : (type=='slowmoving' ? ' fa-exclamation-circle text-white' : (type=='trending_up' ? ' fa-arrow-trend-up text-white' : ' fa-heart text-white'))))))}"
+                  ></i>
+                </div>
+                <div>
+                  <div class="title" th:switch="${type}">
+                    <span th:case="'lowstock'">Sản phẩm sắp hết hàng</span>
+                    <span th:case="'expiring'">Sản phẩm sắp hết hạn</span>
+                    <span th:case="'discounted'">Sản phẩm đang khuyến mãi</span>
+                    <span th:case="'favorites'">Được khách hàng ưa chuộng</span>
+                    <span th:case="'bestseller'">Sản phẩm bán chạy</span>
+                    <span th:case="'newest'">Sản phẩm mới nhập</span>
+                    <span th:case="'slowmoving'"
+                      >Sản phẩm bán chậm (30 ngày)</span
+                    >
+                    <span th:case="'trending_up'"
+                      >Đang tăng trưởng (so với tháng trước)</span
+                    >
+                    <span th:case="*" th:text="${title}">Danh sách</span>
+                  </div>
+                  <div class="subtitle">Chỉ để xem tập trung theo tiêu chí</div>
+                </div>
+              </div>
+              <div>
+                <a class="btn btn-outline-light" th:href="@{/admin/statistics}"
+                  ><i class="fas fa-arrow-left"></i> Quay lại thống kê</a
+                >
+              </div>
+            </div>
+
+            <!-- Error Display -->
+            <div th:if="${error}" class="alert alert-danger">
+              <i class="fas fa-exclamation-triangle"></i>
+              <strong>Lỗi xảy ra:</strong>
+              <p th:text="${error}" class="mb-0">No error</p>
+            </div>
+
+            <div class="search-bar">
+              <form method="get" th:action="@{/admin/statistics/view}">
+                <input type="hidden" name="type" th:value="${type}" />
+                <input
+                  th:if="${type != 'bestseller'}"
+                  type="hidden"
+                  name="sortBy"
+                  th:value="${sortBy}"
+                />
+
+                <div class="row align-items-end">
+                  <!-- Bestseller Sort Options -->
+                  <div
+                    th:if="${type=='bestseller'}"
+                    class="col-lg-3 col-md-4 mb-3"
+                  >
+                    <label
+                      class="form-label text-muted"
+                      style="
+                        font-size: 0.85rem;
+                        font-weight: 600;
+                        margin-bottom: 6px;
+                      "
+                    >
+                      <i class="fas fa-sort-amount-down text-primary"></i> Sắp
+                      xếp theo
+                    </label>
+                    <select
+                      class="form-select form-control"
+                      name="sortBy"
+                      id="bestsellerSort"
+                      onchange="this.form.submit()"
+                      style="
+                        height: 38px;
+                        border: 2px solid #e9ecef;
+                        border-radius: 8px;
+                      "
+                    >
+                      <option
+                        value="quantity"
+                        th:selected="${param.sortBy == null or param.sortBy[0] == 'quantity'}"
+                      >
+                        🔢 Số lượng bán
+                      </option>
+                      <option
+                        value="revenue"
+                        th:selected="${param.sortBy != null and param.sortBy[0] == 'revenue'}"
+                      >
+                        💰 Doanh thu
+                      </option>
+                    </select>
+                  </div>
+
+                  <div
+                    th:class="${type=='bestseller'} ? 'col-lg-6 col-md-5 mb-3' : 'col-lg-6 col-md-6 mb-3'"
+                  >
+                    <label
+                      class="form-label text-muted"
+                      style="
+                        font-size: 0.85rem;
+                        font-weight: 600;
+                        margin-bottom: 6px;
+                      "
+                    >
+                      <i class="fas fa-search text-primary"></i> Tìm kiếm
+                    </label>
+                    <input
+                      class="form-control"
+                      type="text"
+                      placeholder="Nhập tên sản phẩm, danh mục hoặc thương hiệu..."
+                      name="search"
+                      th:value="${search}"
+                      style="
+                        height: 38px;
+                        border: 2px solid #e9ecef;
+                        border-radius: 8px;
+                      "
+                    />
+                  </div>
+
+                  <div
+                    th:class="${type=='bestseller'} ? 'col-lg-2 col-md-2 mb-3' : 'col-lg-3 col-md-3 mb-3'"
+                  >
+                    <label
+                      class="form-label text-muted"
+                      style="
+                        font-size: 0.85rem;
+                        font-weight: 600;
+                        margin-bottom: 6px;
+                      "
+                    >
+                      <i class="fas fa-list text-primary"></i> Hiển thị
+                    </label>
+                    <select
+                      class="form-select form-control"
+                      name="size"
+                      style="
+                        height: 38px;
+                        border: 2px solid #e9ecef;
+                        border-radius: 8px;
+                      "
+                    >
+                      <option th:selected="${pageSize == 10}" value="10">
+                        📄 10 mục
+                      </option>
+                      <option th:selected="${pageSize == 20}" value="20">
+                        📄 20 mục
+                      </option>
+                      <option th:selected="${pageSize == 50}" value="50">
+                        📄 50 mục
+                      </option>
+                    </select>
+                  </div>
+
+                  <div
+                    th:class="${type=='bestseller'} ? 'col-lg-1 col-md-1 mb-3' : 'col-lg-3 col-md-3 mb-3'"
+                  >
+                    <label
+                      class="form-label text-muted d-block"
+                      style="
+                        font-size: 0.85rem;
+                        font-weight: 600;
+                        margin-bottom: 6px;
+                        opacity: 0;
+                      "
+                    >
+                      &nbsp;
+                    </label>
+                    <div class="d-flex gap-2">
+                      <button
+                        class="btn btn-primary flex-fill"
+                        type="submit"
+                        style="
+                          height: 38px;
+                          border-radius: 8px;
+                          font-weight: 600;
+                          box-shadow: 0 2px 4px rgba(0, 123, 255, 0.3);
+                        "
+                      >
+                        <i class="fas fa-search"></i>
+                        <span th:if="${type!='bestseller'}">Tìm kiếm</span>
+                      </button>
+                      <a
+                        class="btn btn-outline-secondary flex-fill"
+                        th:href="@{/admin/statistics/view(type=${type})}"
+                        style="
+                          height: 38px;
+                          border-radius: 8px;
+                          border: 2px solid #6c757d;
+                        "
+                      >
+                        <i class="fas fa-sync-alt"></i>
+                        <span th:if="${type!='bestseller'}">Làm mới</span>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </form>
+            </div>
+
+            <!-- Error Display -->
+            <div th:if="${error}" class="alert alert-danger" role="alert">
+              <i class="fas fa-exclamation-triangle"></i>
+              <span th:text="${error}">Có lỗi xảy ra</span>
+            </div>
+
+            <!-- Debug Info (remove in production) -->
+            <!-- Removed debug section that was causing template parsing error -->
+
+            <div class="table-wrap">
+              <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                  <thead>
+                    <!-- Low Stock Headers -->
+                    <tr th:if="${type=='lowstock'}">
+                      <th>TÊN SẢN PHẨM</th>
+                      <th>SỐ LƯỢNG TỒN KHO</th>
+                      <th>TÌNH TRẠNG</th>
+                    </tr>
+
+                    <!-- Expiring Headers -->
+                    <tr th:if="${type=='expiring'}">
+                      <th>TÊN SẢN PHẨM</th>
+                      <th>NGÀY HẾT HẠN</th>
+                      <th>TÌNH TRẠNG</th>
+                    </tr>
+
+                    <!-- Discounted Headers -->
+                    <tr th:if="${type=='discounted'}">
+                      <th>TÊN SẢN PHẨM</th>
+                      <th>THUỘC DANH MỤC</th>
+                      <th>THƯƠNG HIỆU</th>
+                      <th>TỶ LỆ GIẢM GIÁ (%)</th>
+                    </tr>
+
+                    <!-- Favorites Headers -->
+                    <tr th:if="${type=='favorites'}">
+                      <th>DANH MỤC SẢN PHẨM</th>
+                      <th>THƯƠNG HIỆU</th>
+                      <th>SỐ LƯỢT YÊU THÍCH</th>
+                      <th>TỔNG SẢN PHẨM</th>
+                      <th>TỶ LỆ YÊU THÍCH (%)</th>
+                    </tr>
+
+                    <!-- Bestseller Headers -->
+                    <tr th:if="${type=='bestseller'}">
+                      <th>STT</th>
+                      <th>TÊN SẢN PHẨM</th>
+                      <th
+                        th:classappend="${sortBy == null or sortBy == 'quantity'} ? 'table-primary' : ''"
+                      >
+                        <i class="fas fa-cubes"></i> SỐ LƯỢNG ĐÃ BÁN
+                        <i
+                          th:if="${sortBy == null or sortBy == 'quantity'}"
+                          class="fas fa-sort-down text-primary"
+                        ></i>
+                      </th>
+                      <th
+                        th:classappend="${sortBy == 'revenue'} ? 'table-primary' : ''"
+                      >
+                        <i class="fas fa-money-bill-wave"></i> DOANH THU (VNĐ)
+                        <i
+                          th:if="${sortBy == 'revenue'}"
+                          class="fas fa-sort-down text-primary"
+                        ></i>
+                      </th>
+                    </tr>
+
+                    <!-- Newest Headers -->
+                    <tr th:if="${type=='newest'}">
+                      <th>TÊN SẢN PHẨM</th>
+                      <th>THUỘC DANH MỤC</th>
+                      <th>THƯƠNG HIỆU</th>
+                      <th>NGÀY NHẬP KHO</th>
+                      <th>SỐ LƯỢNG NHẬP</th>
+                    </tr>
+
+                    <!-- Slow Moving Headers -->
+                    <tr th:if="${type=='slowmoving'}">
+                      <th>TÊN SẢN PHẨM</th>
+                      <th>ĐÃ BÁN 30 NGÀY</th>
+                      <th>SỐ LƯỢNG TỒN</th>
+                    </tr>
+
+                    <!-- Trending Up Headers -->
+                    <tr th:if="${type=='trending_up'}">
+                      <th>TÊN SẢN PHẨM</th>
+                      <th>DOANH SỐ THÁNG NAY</th>
+                      <th>DOANH SỐ THÁNG TRƯỚC</th>
+                      <th>MỨC TĂNG TRƯỞNG (%)</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr th:if="${#lists.isEmpty(rows)}">
+                      <td
+                        th:colspan="${type=='favorites' ? 5 : (type=='discounted' || type=='newest' ? 5 : (type=='bestseller' ? 4 : (type=='slowmoving' || type=='trending_up' ? 4 : 3)))}"
+                        class="text-center text-muted"
+                      >
+                        Không có dữ liệu
+                      </td>
+                    </tr>
+
+                    <!-- lowstock -->
+                    <tr th:each="r : ${rows}" th:if="${type=='lowstock'}">
+                      <td><strong th:text="${r[0]}"></strong></td>
+                      <td
+                        class="qty-low"
+                        th:text="${#numbers.formatInteger(r[3],0)}"
+                      ></td>
+                      <td><span class="badge badge-danger">Sắp hết</span></td>
+                    </tr>
+
+                    <!-- expiring -->
+                    <tr th:each="r : ${rows}" th:if="${type=='expiring'}">
+                      <td><strong th:text="${r[0]}"></strong></td>
+                      <td th:text="${r[3]}"></td>
+                      <td><span class="badge badge-warning">Cận hạn</span></td>
+                    </tr>
+
+                    <!-- discounted -->
+                    <tr th:each="r : ${rows}" th:if="${type=='discounted'}">
+                      <td><strong th:text="${r[0]}"></strong></td>
+                      <td th:text="${r[1]}"></td>
+                      <td th:text="${r[2]}"></td>
+                      <td>
+                        <span
+                          class="text-primary"
+                          th:text="${#numbers.formatInteger(r[3],0)}"
+                        ></span>
+                      </td>
+                    </tr>
+
+                    <!-- favorites -->
+                    <tr th:each="r : ${rows}" th:if="${type=='favorites'}">
+                      <td th:text="${r[0]}"></td>
+                      <td th:text="${r[1]}"></td>
+                      <td><strong th:text="${r[2]}"></strong></td>
+                      <td th:text="${r[3]}"></td>
+                      <td>
+                        <span class="text-primary" th:text="${r[4]}"></span>
+                      </td>
+                    </tr>
+
+                    <!-- bestseller -->
+                    <tr
+                      th:each="r, stat : ${rows}"
+                      th:if="${type=='bestseller'}"
+                    >
+                      <td>
+                        <span
+                          class="badge badge-primary"
+                          th:text="${stat.index + 1}"
+                          >1</span
+                        >
+                      </td>
+                      <td><strong th:text="${r[0]}">N/A</strong></td>
+                      <td th:text="${r[1]}">0</td>
+                      <td><span th:text="${r[2]}">0</span> VNĐ</td>
+                    </tr>
+
+                    <!-- newest -->
+                    <tr th:each="r : ${rows}" th:if="${type=='newest'}">
+                      <td><strong th:text="${r[0]}"></strong></td>
+                      <td th:text="${r[1]}"></td>
+                      <td th:text="${r[2]}"></td>
+                      <td th:text="${r[3]}"></td>
+                      <td th:text="${#numbers.formatInteger(r[4],0)}"></td>
+                    </tr>
+
+                    <!-- slowmoving -->
+                    <tr th:each="r : ${rows}" th:if="${type=='slowmoving'}">
+                      <td><strong th:text="${r[0]}"></strong></td>
+                      <td th:text="${#numbers.formatInteger(r[1],0)}"></td>
+                      <td th:text="${#numbers.formatInteger(r[2],0)}"></td>
+                    </tr>
+
+                    <!-- trending up -->
+                    <tr th:each="r : ${rows}" th:if="${type=='trending_up'}">
+                      <td><strong th:text="${r[0]}"></strong></td>
+                      <td th:text="${#numbers.formatInteger(r[1],0)}"></td>
+                      <td th:text="${#numbers.formatInteger(r[2],0)}"></td>
+                      <td
+                        class="text-success"
+                        th:text="${#numbers.formatInteger(r[3],0)}"
+                      ></td>
+                    </tr>
+
+                    <!-- trending down -->
+                  </tbody>
+                </table>
+              </div>
+
+              <!-- No Data Display -->
+              <div
+                th:if="${rows == null or #lists.isEmpty(rows)}"
+                class="text-center py-5"
+              >
+                <i class="fas fa-chart-bar fa-3x text-muted mb-3"></i>
+                <h4 class="text-muted">Không có dữ liệu</h4>
+                <p class="text-muted">
+                  Không tìm thấy dữ liệu cho loại thống kê này.
+                </p>
+              </div>
+
+              <nav
+                aria-label="Pagination"
+                class="p-3"
+                th:if="${rows != null and !#lists.isEmpty(rows)}"
+              >
+                <ul class="pagination justify-content-end">
+                  <li
+                    class="page-item"
+                    th:classappend="${currentPage == 0} ? ' disabled'"
+                  >
+                    <a
+                      class="page-link"
+                      th:href="@{/admin/statistics/view(type=${type}, page=0, size=${pageSize}, search=${search})}"
+                      >&laquo;</a
+                    >
+                  </li>
+                  <li
+                    class="page-item"
+                    th:classappend="${currentPage == 0} ? ' disabled'"
+                  >
+                    <a
+                      class="page-link"
+                      th:href="@{/admin/statistics/view(type=${type}, page=${currentPage-1}, size=${pageSize}, search=${search})}"
+                      >&lsaquo;</a
+                    >
+                  </li>
+                  <li
+                    class="page-item"
+                    th:each="p : ${totalPages > 0 ? #numbers.sequence(0, totalPages-1) : {}}"
+                    th:classappend="${p==currentPage} ? ' active'"
+                  >
+                    <a
+                      class="page-link"
+                      th:href="@{/admin/statistics/view(type=${type}, page=${p}, size=${pageSize}, search=${search})}"
+                      th:text="${p+1}"
+                    ></a>
+                  </li>
+                  <li
+                    class="page-item"
+                    th:classappend="${currentPage >= totalPages-1} ? ' disabled'"
+                  >
+                    <a
+                      class="page-link"
+                      th:href="@{/admin/statistics/view(type=${type}, page=${currentPage+1}, size=${pageSize}, search=${search})}"
+                      >&rsaquo;</a
+                    >
+                  </li>
+                  <li
+                    class="page-item"
+                    th:classappend="${currentPage >= totalPages-1} ? ' disabled'"
+                  >
+                    <a
+                      class="page-link"
+                      th:href="@{/admin/statistics/view(type=${type}, page=${totalPages-1}, size=${pageSize}, search=${search})}"
+                      >&raquo;</a
+                    >
+                  </li>
+                </ul>
+              </nav>
+            </div>
+          </div>
+        </div>
+        <th:block th:replace="~{admin/fragments/footer :: footer}"></th:block>
+      </div>
+    </div>
+
+    <script src="/assets/js/core/jquery.3.2.1.min.js"></script>
+    <script src="/assets/js/core/popper.min.js"></script>
+    <script src="/assets/js/core/bootstrap.min.js"></script>
+  </body>
+</html>

@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title th:text="${title} + ' - OneShop Admin'">Thống kê</title>
+    <link rel="stylesheet" href="/assets/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="/assets/css/atlantis.min.css" />
+    <link rel="stylesheet" href="/assets/css/atlantis.css" />
+    <link rel="stylesheet" href="/assets/css/demo.css" />
+    <link rel="stylesheet" href="/assets/css/fonts.min.css" />
+    <link rel="stylesheet" href="/fonts/fontawesome/fontawesome.min.css" />
+    <link rel="stylesheet" href="/css/admin-fonts.css" />
+    <style>
+      /* Keep layout identical to other admin forms */
+      .sidebar { position: fixed !important; top: 60px; left: 0; bottom: 0; z-index: 1028; width: 250px; background: #fff !important; border-right: 1px solid #e9ecef; margin: 0; padding: 0; }
+      .main-panel { margin-top: 60px !important; margin-left: 250px !important; padding: 0 !important; margin-right: 0 !important; }
+      .content { padding: 0 !important; margin: 0 !important; position: relative !important; top: 0 !important; }
+      .page-inner { padding: 20px; margin: 0; }
+      .page-header { display: none !important; }
+      .page-title { color: #333; font-size: 1.8rem; margin: 0; font-weight: 600; }
+      .page-subtitle { color: #6c757d; font-size: 0.9rem; }
+
+      /* Cards */
+      .search-bar { background: #fff; padding: 16px; border-radius: 12px; box-shadow: 0 6px 18px rgba(0,0,0,.06); border: 1px solid rgba(0,0,0,.05); }
+      .table-wrap { background: #fff; padding: 16px; border-radius: 12px; box-shadow: 0 6px 18px rgba(0,0,0,.06); border: 1px solid rgba(0,0,0,.05); }
+      .qty-low { font-weight: 800; color: #3b82f6; }
+
+      /* Hero header similar to statistics page */
+      .stats-hero { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #fff; border-radius: 16px; padding: 22px 24px; box-shadow: 0 10px 30px rgba(102,126,234,.25); display:flex; align-items:center; justify-content: space-between; margin-bottom: 18px; }
+      .stats-hero .title { font-size: 20px; font-weight: 700; margin: 0; }
+      .stats-hero .subtitle { opacity: .9; font-size: 13px; }
+      .stats-hero .icon-wrap { background: rgba(255,255,255,.15); border: 1px solid rgba(255,255,255,.25); width: 44px; height: 44px; display:flex; align-items:center; justify-content:center; border-radius: 12px; margin-right: 12px; }
+      .stats-hero .right { display:flex; align-items:center; gap:8px; }
+    </style>
+  </head>
+  <body>
+    <div class="wrapper">
+      <th:block th:replace="~{admin/fragments/navbar :: navbar}"></th:block>
+      <div class="main-panel">
+        <div class="content">
+          <div class="page-inner">
+            <div class="stats-hero">
+              <div style="display:flex;align-items:center;gap:10px;">
+                <div class="icon-wrap"><i class="fas" th:classappend="${type=='lowstock' ? ' fa-exclamation-triangle' : (type=='expiring' ? ' fa-hourglass-end' : (type=='discounted' ? ' fa-percent' : ' fa-heart'))}"></i></div>
+                <div>
+                  <div class="title" th:text="${title}">Danh s�ch</div>
+                  <div class="subtitle">Ch? d? xem t?p trung theo ti�u ch�</div>
+                </div>
+              </div>
+              <div class="right">
+                <a class="btn btn-outline-light" th:href="@{/admin/statistics}"><i class="fas fa-arrow-left"></i> Quay l?i th?ng k�</a>
+              </div>
+            </div>
+            <div class="page-header">
+              <div>
+                <h4 class="page-title mb-0" th:text="${title}">Danh sách</h4>
+                <div class="page-subtitle">Chế độ xem tập trung theo tiêu chí</div>
+              </div>
+              <div>
+                <a class="btn btn-outline-primary" th:href="@{/admin/statistics}"><i class="fas fa-arrow-left"></i> Quay lại thống kê</a>
+              </div>
+            </div>
+
+            <div class="search-bar mb-3">
+              <form method="get" th:action="@{/admin/statistics/view}" class="form-inline">
+                <input type="hidden" name="type" th:value="${type}" />
+                <div class="form-group mr-2 mb-2">
+                  <input class="form-control" style="min-width:280px" type="text" placeholder="Tìm kiếm..." name="search" th:value="${search}" />
+                </div>
+                <div class="form-group mr-2 mb-2">
+                  <select class="form-control" name="size">
+                    <option th:selected="${pageSize == 10}" value="10">10</option>
+                    <option th:selected="${pageSize == 20}" value="20">20</option>
+                    <option th:selected="${pageSize == 50}" value="50">50</option>
+                  </select>
+                </div>
+                <button class="btn btn-primary mb-2" type="submit"><i class="fas fa-search"></i> Tìm kiếm</button>
+                <a class="btn btn-outline-secondary mb-2 ml-2" th:href="@{/admin/statistics/view(type=${type})}"><i class="fas fa-sync"></i> Làm mới</a>
+              </form>
+            </div>
+
+            <div class="table-wrap">
+              <div class="table-responsive">
+                <table class="table">
+                  <thead>
+                    <tr th:switch="${type}">
+                      <th th:case="'lowstock'">SẢN PHẨM</th>
+                      <th th:case="'lowstock'">SỐ LƯỢNG</th>
+                      <th th:case="'lowstock'">TRẠNG THÁI</th>
+
+                      <th th:case="'expiring'">SẢN PHẨM</th>
+                      <th th:case="'expiring'">HẠN SỬ DỤNG</th>
+                      <th th:case="'expiring'">TRẠNG THÁI</th>
+
+                      <th th:case="'discounted'">SẢN PHẨM</th>
+                      <th th:case="'discounted'">DANH MỤC</th>
+                      <th th:case="'discounted'">THƯƠNG HIỆU</th>
+                      <th th:case="'discounted'">KHUYẾN MÃI (%)</th>
+
+                      <th th:case="'favorites'">DANH MỤC</th>
+                      <th th:case="'favorites'">THƯƠNG HIỆU</th>
+                      <th th:case="'favorites'">YÊU THÍCH</th>
+                      <th th:case="'favorites'">TỔNG SẢN PHẨM</th>
+                      <th th:case="'favorites'">TỶ LỆ (%)</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr th:if="${#lists.isEmpty(rows)}">
+                      <td th:colspan="${type=='favorites' ? 5 : (type=='discounted'?4:3)}" class="text-center text-muted">Không có dữ liệu</td>
+                    </tr>
+                    <!-- lowstock -->
+                    <tr th:each="r : ${rows}" th:if="${type=='lowstock'}">
+                      <td><strong th:text="${r[0]}"></strong></td>
+                      <td><span class="qty-low" th:text="${#numbers.formatInteger(r[3],0)}"></span></td>
+                      <td>
+                        <span class="badge" th:classappend="${(r[3]?:0) == 0 ? ' badge-danger' : ((r[3]?:0) <=5 ? ' badge-danger' : ((r[3]?:0) <=10 ? ' badge-warning' : ' badge-info'))}"
+                              th:text="${(r[3]?:0) == 0 ? 'Hết hàng' : ((r[3]?:0) <=5 ? 'Rất ít' : ((r[3]?:0) <=10 ? 'Sắp hết' : 'Còn hàng'))}"></span>
+                      </td>
+                    </tr>
+                    <!-- expiring -->
+                    <tr th:each="r : ${rows}" th:if="${type=='expiring'}">
+                      <td><strong th:text="${r[0]}"></strong></td>
+                      <td th:text="${r[3]}"></td>
+                      <td>
+                        <span class="badge badge-info">Còn hạn</span>
+                      </td>
+                    </tr>
+                    <!-- discounted -->
+                    <tr th:each="r : ${rows}" th:if="${type=='discounted'}">
+                      <td><strong th:text="${r[0]}"></strong></td>
+                      <td th:text="${r[1]}"></td>
+                      <td th:text="${r[2]}"></td>
+                      <td><span th:text="${#numbers.formatInteger(r[3],0)}" class="text-primary"></span></td>
+                    </tr>
+                    <!-- favorites -->
+                    <tr th:each="r : ${rows}" th:if="${type=='favorites'}">
+                      <td th:text="${r[0]}"></td>
+                      <td th:text="${r[1]}"></td>
+                      <td><strong th:text="${r[2]}"></strong></td>
+                      <td th:text="${r[3]}"></td>
+                      <td><span class="text-primary" th:text="${r[4]}"></span></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <!-- Pagination -->
+              <nav aria-label="Pagination">
+                <ul class="pagination justify-content-end">
+                  <li class="page-item" th:classappend="${currentPage == 0} ? ' disabled'">
+                    <a class="page-link" th:href="@{/admin/statistics/view(type=${type}, page=0, size=${pageSize}, search=${search})}">«</a>
+                  </li>
+                  <li class="page-item" th:classappend="${currentPage == 0} ? ' disabled'">
+                    <a class="page-link" th:href="@{/admin/statistics/view(type=${type}, page=${currentPage-1}, size=${pageSize}, search=${search})}">‹</a>
+                  </li>
+                  <li class="page-item" th:each="p : ${#numbers.sequence(0, totalPages-1)}" th:classappend="${p==currentPage} ? ' active'">
+                    <a class="page-link" th:href="@{/admin/statistics/view(type=${type}, page=${p}, size=${pageSize}, search=${search})}" th:text="${p+1}"></a>
+                  </li>
+                  <li class="page-item" th:classappend="${currentPage >= totalPages-1} ? ' disabled'">
+                    <a class="page-link" th:href="@{/admin/statistics/view(type=${type}, page=${currentPage+1}, size=${pageSize}, search=${search})}">›</a>
+                  </li>
+                  <li class="page-item" th:classappend="${currentPage >= totalPages-1} ? ' disabled'">
+                    <a class="page-link" th:href="@{/admin/statistics/view(type=${type}, page=${totalPages-1}, size=${pageSize}, search=${search})}">»</a>
+                  </li>
+                </ul>
+              </nav>
+            </div>
+          </div>
+        </div>
+        <th:block th:replace="~{admin/fragments/footer :: footer}"></th:block>
+      </div>
+    </div>
+
+    <script src="/assets/js/core/jquery.3.2.1.min.js"></script>
+    <script src="/assets/js/core/popper.min.js"></script>
+    <script src="/assets/js/core/bootstrap.min.js"></script>
+  </body>
+ </html>
