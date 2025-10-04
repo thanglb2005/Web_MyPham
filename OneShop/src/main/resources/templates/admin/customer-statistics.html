@@ -422,63 +422,38 @@
       let statusChart, registrationTrendChart, distributionChart, monthlyRegistrationChart;
       let dailyRegistrationChart, yearlyRegistrationChart;
 
-      // Load KPIs with timeout and better error handling
+      // Safe destroy chart function
+      function safeDestroy(chart) { 
+        try { 
+          chart && chart.destroy && chart.destroy(); 
+        } catch(_){}
+      }
+
       async function loadKPIs() {
         try {
-          console.log('Loading KPIs...');
-          
-          // Create AbortController for timeout
-          const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
-          
-          const response = await fetch('/admin/customer-statistics/api/kpis', {
-            signal: controller.signal,
-            headers: {
-              'Content-Type': 'application/json',
-              'Accept': 'application/json'
-            }
+          const res = await fetch('/admin/customer-statistics/api/kpis', {
+            credentials: 'same-origin',
+            headers: { 'Accept': 'application/json' }
           });
-          
-          clearTimeout(timeoutId);
-          
-          if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-          }
-          
-          const data = await response.json();
-          console.log('KPIs API response:', data);
-          
-          // Update KPI values with fallback
-          const totalUsers = data.totalUsers || 0;
-          const activeUsers = data.activeUsers || 0;
-          const newUsersToday = data.newUsersToday || 0;
-          const newUsersThisMonth = data.newUsersThisMonth || 0;
-          
-          // Update DOM elements
+          if (!res.ok) throw new Error('HTTP ' + res.status);
+          const data = await res.json();
+          console.log('KPIs:', data);
+
           const totalUsersEl = document.getElementById('kpiTotalUsers');
           const activeUsersEl = document.getElementById('kpiActiveUsers');
           const newUsersTodayEl = document.getElementById('kpiNewUsersToday');
           const newUsersThisMonthEl = document.getElementById('kpiNewUsersThisMonth');
-          
-          if (totalUsersEl) totalUsersEl.textContent = totalUsers;
-          if (activeUsersEl) activeUsersEl.textContent = activeUsers;
-          if (newUsersTodayEl) newUsersTodayEl.textContent = newUsersToday;
-          if (newUsersThisMonthEl) newUsersThisMonthEl.textContent = newUsersThisMonth;
-          
-          console.log('KPIs loaded successfully:', { totalUsers, activeUsers, newUsersToday, newUsersThisMonth });
-        } catch (error) {
-          console.error('Error loading KPIs:', error);
-          
-          // Set fallback values
-          const totalUsersEl = document.getElementById('kpiTotalUsers');
-          const activeUsersEl = document.getElementById('kpiActiveUsers');
-          const newUsersTodayEl = document.getElementById('kpiNewUsersToday');
-          const newUsersThisMonthEl = document.getElementById('kpiNewUsersThisMonth');
-          
-          if (totalUsersEl) totalUsersEl.textContent = '0';
-          if (activeUsersEl) activeUsersEl.textContent = '0';
-          if (newUsersTodayEl) newUsersTodayEl.textContent = '0';
-          if (newUsersThisMonthEl) newUsersThisMonthEl.textContent = '0';
+
+          console.log('KPI DOM:', { totalUsersEl, activeUsersEl, newUsersTodayEl, newUsersThisMonthEl });
+
+          if (totalUsersEl) totalUsersEl.innerText = data.totalUsers ?? 0;
+          if (activeUsersEl) activeUsersEl.innerText = data.activeUsers ?? 0;
+          if (newUsersTodayEl) newUsersTodayEl.innerText = data.newUsersToday ?? 0;
+          if (newUsersThisMonthEl) newUsersThisMonthEl.innerText = data.newUsersThisMonth ?? 0;
+        } catch (err) {
+          console.error('loadKPIs error:', err);
+          ['kpiTotalUsers','kpiActiveUsers','kpiNewUsersToday','kpiNewUsersThisMonth']
+            .forEach(id => { const el = document.getElementById(id); if (el) el.innerText = '0'; });
         }
       }
 
@@ -489,6 +464,7 @@
           const data = await response.json();
           
           const ctx = document.getElementById('statusChart').getContext('2d');
+          safeDestroy(statusChart);
           statusChart = new Chart(ctx, {
             type: 'doughnut',
             data: {
@@ -522,6 +498,7 @@
           const data = await response.json();
           
           const ctx = document.getElementById('registrationTrendChart').getContext('2d');
+          safeDestroy(registrationTrendChart);
           registrationTrendChart = new Chart(ctx, {
             type: 'line',
             data: {
@@ -558,6 +535,7 @@
           const data = await response.json();
           
           const ctx = document.getElementById('distributionChart').getContext('2d');
+          safeDestroy(distributionChart);
           distributionChart = new Chart(ctx, {
             type: 'bar',
             data: {
@@ -592,6 +570,7 @@
           const data = await response.json();
           
           const ctx = document.getElementById('monthlyRegistrationChart').getContext('2d');
+          safeDestroy(monthlyRegistrationChart);
           monthlyRegistrationChart = new Chart(ctx, {
             type: 'bar',
             data: {
@@ -626,6 +605,7 @@
           const data = await response.json();
           
           const ctx = document.getElementById('dailyRegistrationChart').getContext('2d');
+          safeDestroy(dailyRegistrationChart);
           dailyRegistrationChart = new Chart(ctx, {
             type: 'line',
             data: {
@@ -662,6 +642,7 @@
           const data = await response.json();
           
           const ctx = document.getElementById('yearlyRegistrationChart').getContext('2d');
+          safeDestroy(yearlyRegistrationChart);
           yearlyRegistrationChart = new Chart(ctx, {
             type: 'bar',
             data: {
@@ -854,28 +835,6 @@
         }
       }
 
-      // Initialize all charts and data
-      async function initializeCustomerStatistics() {
-        // Test KPIs API first
-        console.log('Initializing customer statistics...');
-        const kpisTest = await testKPIsAPI();
-        console.log('KPIs test result:', kpisTest);
-        
-        // Debug data
-        const debugData = await debugData();
-        console.log('Debug info:', debugData);
-        
-        // Load KPIs with better error handling
-        await loadKPIs();
-        
-        // Load other components
-        await loadStatusChart();
-        await loadRegistrationTrendChart();
-        await loadDistributionChart();
-        await loadMonthlyRegistrationChart();
-        await loadNewestUsersTable();
-        await loadTopCustomersTable();
-      }
 
 
       // Enhanced tab switching with better UX
@@ -925,9 +884,20 @@
       }
 
       // Enhanced event listeners with better error handling
-      document.addEventListener('DOMContentLoaded', () => {
-        // Initialize statistics
-        initializeCustomerStatistics();
+      document.addEventListener('DOMContentLoaded', async () => {
+        try {
+          await loadKPIs(); // chạy trước để xóa spinner KPI
+        } catch (e) {
+          console.error(e);
+        }
+
+        // Tải các phần còn lại cho tab Overview nếu cần
+        await Promise.all([
+          loadStatusChart(),
+          loadRegistrationTrendChart(),
+          loadDistributionChart(),
+          loadMonthlyRegistrationChart()
+        ]);
         
         // Add click handlers with better UX
         const overviewTab = document.getElementById('overview-tab');
@@ -964,68 +934,30 @@
           registrationTab.addEventListener('click', async (e) => {
             e.preventDefault();
             switchTab('registration-tab');
-            
-            // Show loading state
+
             const registrationPane = document.getElementById('registration');
-            if (registrationPane) {
-              registrationPane.innerHTML = `
-                <div class="loading-overlay">
-                  <div class="text-center">
-                    <div class="spinner-border text-primary" role="status">
-                      <span class="visually-hidden">Đang tải...</span>
-                    </div>
-                    <p class="mt-3">Đang tải dữ liệu đăng ký...</p>
+            registrationPane.innerHTML = `
+              <div class="row">
+                <div class="col-lg-6">
+                  <div class="chart-container">
+                    <h5 class="chart-title">Đăng ký theo ngày (30 ngày gần đây)</h5>
+                    <canvas id="dailyRegistrationChart"></canvas>
                   </div>
                 </div>
-              `;
-            }
-            
-            try {
-              // Load registration data
-              await Promise.all([
-                loadDailyRegistrationChart(),
-                loadYearlyRegistrationChart()
-              ]);
-              
-              // Restore content
-              if (registrationPane) {
-                registrationPane.innerHTML = `
-                  <div class="row">
-                    <div class="col-lg-6">
-                      <div class="chart-container">
-                        <h5 class="chart-title">Đăng ký theo ngày (30 ngày gần đây)</h5>
-                        <canvas id="dailyRegistrationChart"></canvas>
-                      </div>
-                    </div>
-                    <div class="col-lg-6">
-                      <div class="chart-container">
-                        <h5 class="chart-title">Đăng ký theo năm</h5>
-                        <canvas id="yearlyRegistrationChart"></canvas>
-                      </div>
-                    </div>
+                <div class="col-lg-6">
+                  <div class="chart-container">
+                    <h5 class="chart-title">Đăng ký theo năm</h5>
+                    <canvas id="yearlyRegistrationChart"></canvas>
                   </div>
-                `;
-                
-                // Re-initialize charts
-                await Promise.all([
-                  loadDailyRegistrationChart(),
-                  loadYearlyRegistrationChart()
-                ]);
-              }
+                </div>
+              </div>
+            `;
+
+            try {
+              await Promise.all([loadDailyRegistrationChart(), loadYearlyRegistrationChart()]);
             } catch (error) {
               console.error('Error loading registration data:', error);
-              if (registrationPane) {
-                registrationPane.innerHTML = `
-                  <div class="row">
-                    <div class="col-12">
-                      <div class="alert alert-danger">
-                        <i class="fas fa-exclamation-triangle"></i>
-                        Lỗi tải dữ liệu đăng ký. Vui lòng thử lại.
-                      </div>
-                    </div>
-                  </div>
-                `;
-              }
+              registrationPane.innerHTML = `<div class="alert alert-danger">Lỗi tải dữ liệu đăng ký</div>`;
             }
           });
         }
@@ -1034,100 +966,36 @@
           customersTab.addEventListener('click', async (e) => {
             e.preventDefault();
             switchTab('customers-tab');
-            
-            // Show loading state
+
             const customersPane = document.getElementById('customers');
-            if (customersPane) {
-              customersPane.innerHTML = `
-                <div class="loading-overlay">
-                  <div class="text-center">
-                    <div class="spinner-border text-primary" role="status">
-                      <span class="visually-hidden">Đang tải...</span>
-                    </div>
-                    <p class="mt-3">Đang tải dữ liệu khách hàng...</p>
+            customersPane.innerHTML = `
+              <div class="row">
+                <div class="col-lg-6">
+                  <div class="table-responsive">
+                    <h5 class="chart-title">Khách hàng mới nhất</h5>
+                    <table class="table table-hover">
+                      <thead><tr><th>Tên</th><th>Email</th><th>Ngày đăng ký</th><th>Trạng thái</th></tr></thead>
+                      <tbody id="newestUsersTable"></tbody>
+                    </table>
                   </div>
                 </div>
-              `;
-            }
-            
-            try {
-              // Load customer data
-              await Promise.all([
-                loadNewestUsersTable(),
-                loadTopCustomersTable()
-              ]);
-              
-              // Restore content
-              if (customersPane) {
-                customersPane.innerHTML = `
-                  <div class="row">
-                    <div class="col-lg-6">
-                      <div class="table-responsive">
-                        <h5 class="chart-title">Khách hàng mới nhất</h5>
-                        <table class="table table-hover">
-                          <thead>
-                            <tr>
-                              <th>Tên</th>
-                              <th>Email</th>
-                              <th>Ngày đăng ký</th>
-                              <th>Trạng thái</th>
-                            </tr>
-                          </thead>
-                          <tbody id="newestUsersTable">
-                            <tr>
-                              <td colspan="4" class="text-center">
-                                <i class="fas fa-spinner fa-spin"></i> Đang tải...
-                              </td>
-                            </tr>
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
-                    <div class="col-lg-6">
-                      <div class="table-responsive">
-                        <h5 class="chart-title">Top khách hàng theo giá trị đơn hàng</h5>
-                        <table class="table table-hover">
-                          <thead>
-                            <tr>
-                              <th>Tên</th>
-                              <th>Số đơn</th>
-                              <th>Tổng chi</th>
-                              <th>Trung bình</th>
-                            </tr>
-                          </thead>
-                          <tbody id="topCustomersTable">
-                            <tr>
-                              <td colspan="4" class="text-center">
-                                <i class="fas fa-spinner fa-spin"></i> Đang tải...
-                              </td>
-                            </tr>
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
+                <div class="col-lg-6">
+                  <div class="table-responsive">
+                    <h5 class="chart-title">Top khách hàng theo giá trị đơn hàng</h5>
+                    <table class="table table-hover">
+                      <thead><tr><th>Tên</th><th>Số đơn</th><th>Tổng chi</th><th>Trung bình</th></tr></thead>
+                      <tbody id="topCustomersTable"></tbody>
+                    </table>
                   </div>
-                `;
-                
-                // Re-initialize tables
-                await Promise.all([
-                  loadNewestUsersTable(),
-                  loadTopCustomersTable()
-                ]);
-              }
+                </div>
+              </div>
+            `;
+
+            try {
+              await Promise.all([loadNewestUsersTable(), loadTopCustomersTable()]);
             } catch (error) {
               console.error('Error loading customers data:', error);
-              if (customersPane) {
-                customersPane.innerHTML = `
-                  <div class="row">
-                    <div class="col-12">
-                      <div class="alert alert-danger">
-                        <i class="fas fa-exclamation-triangle"></i>
-                        Lỗi tải dữ liệu khách hàng. Vui lòng thử lại.
-                      </div>
-                    </div>
-                  </div>
-                `;
-              }
+              customersPane.innerHTML = `<div class="alert alert-danger">Lỗi tải dữ liệu khách hàng</div>`;
             }
           });
         }
