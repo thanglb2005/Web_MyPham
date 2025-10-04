@@ -1,0 +1,676 @@
+package vn.service.statistics;
+
+import org.springframework.stereotype.Service;
+import vn.entity.Order;
+import vn.entity.OrderDetail;
+import vn.repository.OrderRepository;
+import vn.repository.OrderDetailRepository;
+
+import java.util.stream.Collectors;
+
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Locale;
+
+/**
+ * Service for revenue statistics
+ */
+@Service
+public class RevenueStatisticsService {
+    
+    private final OrderRepository orderRepository;
+    private final OrderDetailRepository orderDetailRepository;
+    private final NumberFormat currencyFormat;
+
+    public RevenueStatisticsService(OrderRepository orderRepository, OrderDetailRepository orderDetailRepository) {
+        this.orderRepository = orderRepository;
+        this.orderDetailRepository = orderDetailRepository;
+        this.currencyFormat = NumberFormat.getNumberInstance(Locale.forLanguageTag("vi-VN"));
+        ((DecimalFormat) this.currencyFormat).applyPattern("#,###");
+    }
+
+    /**
+     * Get today's revenue statistics
+     * @return Map containing orders count and revenue
+     */
+    public Map<String, Object> getTodayStatistics() {
+        Map<String, Object> result = new HashMap<>();
+        
+        try {
+            // Get today's date
+            LocalDate today = LocalDate.now();
+            System.out.println("Ngày hiện tại: " + today);
+            
+            // Get all daily statistics
+            List<Object[]> dailyStats = orderRepository.getDailyOrderStatistics();
+            System.out.println("Số lượng dữ liệu thống kê theo ngày: " + dailyStats.size());
+            
+            // Debug: In ra vài mẫu dữ liệu để kiểm tra
+            System.out.println("Mẫu dữ liệu thống kê ngày:");
+            for (int i = 0; i < Math.min(dailyStats.size(), 3); i++) {
+                Object[] stat = dailyStats.get(i);
+                System.out.println("Bản ghi " + i + ":");
+                if (stat[0] != null) {
+                    System.out.println("  Ngày: " + stat[0]);
+                    if (stat[0] instanceof Date) {
+                        Date orderDate = (Date) stat[0];
+                        LocalDate orderLocalDate = orderDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+                        System.out.println("  Ngày (LocalDate): " + orderLocalDate);
+                    }
+                } else {
+                    System.out.println("  Ngày: null");
+                }
+                System.out.println("  Số đơn: " + (stat[1] != null ? stat[1] : "null"));
+                System.out.println("  Doanh thu: " + (stat[2] != null ? stat[2] : "null"));
+            }
+            
+            // Find today's statistics if available
+            int orderCount = 0;
+            double revenue = 0.0;
+            boolean foundToday = false;
+            
+            // Truy vấn trực tiếp các đơn hàng của hôm nay
+            List<Order> todayOrders = new ArrayList<>();
+            List<Order> allOrders = orderRepository.findAll();
+            for (Order order : allOrders) {
+                if (order.getOrderDate() != null) {
+                    LocalDate orderDate = order.getOrderDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+                    if (orderDate.equals(today)) {
+                        todayOrders.add(order);
+                    }
+                }
+            }
+            
+            // Tính toán số đơn hàng và doanh thu của ngày hôm nay
+            orderCount = todayOrders.size();
+            for (Order order : todayOrders) {
+                if (order.getAmount() != null) {
+                    revenue += order.getAmount();
+                }
+            }
+            
+            System.out.println("Kết quả tính toán cho ngày hôm nay: " + orderCount + " đơn hàng, doanh thu " + revenue);
+            
+            // Cách cũ dùng kết quả truy vấn thống kê
+            for (Object[] stat : dailyStats) {
+                if (stat[0] != null) {
+                    try {
+                        Date orderDate = (Date) stat[0];
+                        LocalDate orderLocalDate = orderDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+                        
+                        if (orderLocalDate.equals(today)) {
+                            orderCount = stat[1] != null ? ((Number) stat[1]).intValue() : 0;
+                            revenue = stat[2] != null ? ((Number) stat[2]).doubleValue() : 0.0;
+                            foundToday = true;
+                            System.out.println("Tìm thấy dữ liệu thống kê ngày hôm nay: " + orderCount + " đơn hàng, doanh thu " + revenue);
+                            break;
+                        }
+                    } catch (Exception e) {
+                        System.err.println("Lỗi khi xử lý ngày: " + e.getMessage());
+                    }
+                }
+            }
+            
+            result.put("orderCount", orderCount);
+            result.put("formattedOrderCount", String.valueOf(orderCount));
+            result.put("revenue", revenue);
+            result.put("formattedRevenue", formatCurrency(revenue));
+            
+        } catch (Exception e) {
+            System.err.println("Lỗi khi lấy thống kê hôm nay: " + e.getMessage());
+            e.printStackTrace();
+            result.put("orderCount", 0);
+            result.put("formattedOrderCount", "0");
+            result.put("revenue", 0.0);
+            result.put("formattedRevenue", formatCurrency(0.0));
+        }
+        
+        result.put("orderCount", orderCount);
+        result.put("formattedOrderCount", String.valueOf(orderCount));
+        result.put("revenue", revenue);
+        result.put("formattedRevenue", formatCurrency(revenue));
+        
+        return result;
+    }
+
+    /**
+     * Get current month's revenue statistics
+     * @return Map containing revenue and growth rate
+     */
+    public Map<String, Object> getCurrentMonthStatistics() {
+        Map<String, Object> result = new HashMap<>();
+        
+        // Get current month and previous month
+        LocalDate today = LocalDate.now();
+        int currentYear = today.getYear();
+        int currentMonth = today.getMonthValue();
+        
+        try {
+            // Get monthly statistics
+            List<Object[]> monthlyStats = orderRepository.getMonthlyOrderStatistics();
+            
+            // Ghi log để kiểm tra
+            System.out.println("Đang tính thống kê tháng " + currentMonth + "/" + currentYear);
+            System.out.println("Số lượng dữ liệu thống kê theo tháng: " + monthlyStats.size());
+            
+            // Find current month and previous month data
+            double currentMonthRevenue = 0.0;
+            double previousMonthRevenue = 0.0;
+            
+            // In ra chi tiết các bản ghi để debug
+            for (int i = 0; i < Math.min(monthlyStats.size(), 5); i++) {
+                Object[] stat = monthlyStats.get(i);
+                StringBuilder sb = new StringBuilder("Record " + i + ": [");
+                for (Object item : stat) {
+                    sb.append(item != null ? item.toString() : "null").append(", ");
+                }
+                sb.append("]");
+                System.out.println(sb.toString());
+            }
+            
+            // Tìm dữ liệu tháng hiện tại và tháng trước
+            for (Object[] stat : monthlyStats) {
+                try {
+                    if (stat[0] != null && stat[1] != null) {
+                        int year = ((Number) stat[0]).intValue();
+                        int month = ((Number) stat[1]).intValue();
+                        
+                        System.out.println("Đang kiểm tra: Năm=" + year + ", Tháng=" + month);
+                        
+                        if (year == currentYear && month == currentMonth) {
+                            currentMonthRevenue = stat[3] != null ? ((Number) stat[3]).doubleValue() : 0.0;
+                            System.out.println("Tìm thấy dữ liệu tháng hiện tại: " + currentMonthRevenue);
+                        } else if ((year == currentYear && month == currentMonth - 1) || 
+                                (currentMonth == 1 && year == currentYear - 1 && month == 12)) {
+                            previousMonthRevenue = stat[3] != null ? ((Number) stat[3]).doubleValue() : 0.0;
+                            System.out.println("Tìm thấy dữ liệu tháng trước: " + previousMonthRevenue);
+                        }
+                    }
+                } catch (Exception e) {
+                    System.err.println("Lỗi khi xử lý bản ghi: " + e.getMessage());
+                }
+            }
+            
+            // Calculate growth rate
+            double growthRate = 0.0;
+            if (previousMonthRevenue > 0) {
+                growthRate = ((currentMonthRevenue - previousMonthRevenue) / previousMonthRevenue) * 100;
+            }
+            
+            result.put("revenue", currentMonthRevenue);
+            result.put("formattedRevenue", formatCurrency(currentMonthRevenue));
+            result.put("growthRate", formatNumber(growthRate));
+            result.put("isPositiveGrowth", growthRate >= 0);
+            
+        } catch (Exception e) {
+            System.err.println("Lỗi khi lấy thống kê tháng hiện tại: " + e.getMessage());
+            e.printStackTrace();
+            result.put("revenue", 0.0);
+            result.put("formattedRevenue", formatCurrency(0.0));
+            result.put("growthRate", "0.0");
+            result.put("isPositiveGrowth", false);
+        }
+        
+        return result;
+    }
+
+    /**
+     * Get selected period statistics
+     * @param type Period type (month, quarter, year)
+     * @param year Selected year
+     * @param month Selected month (if applicable)
+     * @param quarter Selected quarter (if applicable)
+     * @return Map containing period information and revenue
+     */
+    public Map<String, Object> getSelectedPeriodStatistics(String type, int year, int month, int quarter) {
+        Map<String, Object> result = new HashMap<>();
+        
+        double revenue = 0.0;
+        String periodName = "";
+        
+        switch (type) {
+            case "month":
+                List<Object[]> monthlyStats = orderRepository.getMonthlyOrderStatistics();
+                for (Object[] stat : monthlyStats) {
+                    if (stat[0] != null && stat[1] != null) {
+                        int statYear = ((Number) stat[0]).intValue();
+                        int statMonth = ((Number) stat[1]).intValue();
+                        
+                        if (statYear == year && statMonth == month) {
+                            revenue = ((Number) stat[3]).doubleValue();
+                            break;
+                        }
+                    }
+                }
+                periodName = "Tháng " + month + "/" + year;
+                break;
+                
+            case "quarter":
+                List<Object[]> quarterlyStats = orderRepository.getQuarterlyOrderStatistics();
+                for (Object[] stat : quarterlyStats) {
+                    if (stat[0] != null && stat[1] != null) {
+                        int statYear = ((Number) stat[0]).intValue();
+                        int statQuarter = ((Number) stat[1]).intValue();
+                        
+                        if (statYear == year && statQuarter == quarter) {
+                            revenue = ((Number) stat[3]).doubleValue();
+                            break;
+                        }
+                    }
+                }
+                periodName = "Quý " + quarter + "/" + year;
+                break;
+                
+            case "year":
+                List<Object[]> yearlyStats = orderRepository.getYearlyOrderStatistics();
+                for (Object[] stat : yearlyStats) {
+                    if (stat[0] != null) {
+                        int statYear = ((Number) stat[0]).intValue();
+                        
+                        if (statYear == year) {
+                            revenue = ((Number) stat[2]).doubleValue();
+                            break;
+                        }
+                    }
+                }
+                periodName = "Năm " + year;
+                break;
+        }
+        
+        result.put("periodName", periodName);
+        result.put("revenue", revenue);
+        result.put("formattedRevenue", formatCurrency(revenue));
+        
+        return result;
+    }
+
+    /**
+     * Get order completion rate statistics
+     * @return Map containing completion statistics
+     */
+    public Map<String, Object> getOrderCompletionStats() {
+        Map<String, Object> result = new HashMap<>();
+        
+        try {
+            List<Object[]> completionStats = orderRepository.getOrderCompletionRateStatistics();
+            System.out.println("Số lượng kết quả thống kê hoàn thành đơn hàng: " + completionStats.size());
+            
+            if (!completionStats.isEmpty()) {
+                Object[] stats = completionStats.get(0);
+                
+                // Kiểm tra null trước khi chuyển đổi
+                int totalOrders = stats[0] != null ? ((Number) stats[0]).intValue() : 0;
+                int completedOrders = stats[1] != null ? ((Number) stats[1]).intValue() : 0;
+                int cancelledOrders = stats[2] != null ? ((Number) stats[2]).intValue() : 0;
+                double completionRate = stats[3] != null ? ((Number) stats[3]).doubleValue() : 0.0;
+                
+                System.out.println("Thông tin hoàn thành đơn hàng: Tổng=" + totalOrders 
+                    + ", Hoàn thành=" + completedOrders + ", Hủy=" + cancelledOrders 
+                    + ", Tỷ lệ=" + completionRate + "%");
+                
+                result.put("totalOrders", totalOrders);
+                result.put("completedOrders", completedOrders);
+                result.put("cancelledOrders", cancelledOrders);
+                result.put("completionRate", formatNumber(completionRate));
+                result.put("completionText", completedOrders + "/" + totalOrders);
+            } else {
+                // Không có dữ liệu, đặt giá trị mặc định
+                System.out.println("Không có dữ liệu thống kê hoàn thành đơn hàng, sử dụng giá trị mặc định");
+                result.put("totalOrders", 0);
+                result.put("completedOrders", 0);
+                result.put("cancelledOrders", 0);
+                result.put("completionRate", "0.0");
+                result.put("completionText", "0/0");
+            }
+        } catch (Exception e) {
+            System.err.println("Lỗi khi lấy thống kê hoàn thành đơn hàng: " + e.getMessage());
+            e.printStackTrace();
+            result.put("totalOrders", 0);
+            result.put("completedOrders", 0);
+            result.put("cancelledOrders", 0);
+            result.put("completionRate", "0.0");
+            result.put("completionText", "0/0");
+        }
+        
+        return result;
+    }
+
+    /**
+     * Get top customers by order value
+     * @param limit Maximum number of customers to return
+     * @return List of top customers
+     */
+    public List<Map<String, Object>> getTopCustomersByValue(int limit) {
+        try {
+            List<Object[]> topCustomers = orderRepository.getTopCustomersByValue();
+            System.out.println("Số lượng khách hàng hàng đầu: " + topCustomers.size());
+            
+            if (topCustomers.isEmpty()) {
+                System.out.println("Không có dữ liệu khách hàng hàng đầu");
+                return Collections.emptyList();
+            }
+            
+            return topCustomers.stream()
+                .limit(limit)
+                .map(customer -> {
+                    Map<String, Object> customerMap = new HashMap<>();
+                    try {
+                        customerMap.put("userId", customer[0] != null ? ((Number) customer[0]).longValue() : 0);
+                        customerMap.put("name", customer[1] != null ? (String) customer[1] : "Khách hàng không xác định");
+                        customerMap.put("orderCount", customer[2] != null ? ((Number) customer[2]).intValue() : 0);
+                        customerMap.put("totalSpent", customer[3] != null ? ((Number) customer[3]).doubleValue() : 0.0);
+                        customerMap.put("formattedTotalSpent", formatCurrency(customer[3] != null ? ((Number) customer[3]).doubleValue() : 0.0));
+                        customerMap.put("avgOrderValue", customer[4] != null ? ((Number) customer[4]).doubleValue() : 0.0);
+                    } catch (Exception e) {
+                        System.err.println("Lỗi khi xử lý dữ liệu khách hàng: " + e.getMessage());
+                    }
+                    return customerMap;
+                })
+                .toList();
+        } catch (Exception e) {
+            System.err.println("Lỗi khi lấy danh sách khách hàng hàng đầu: " + e.getMessage());
+            e.printStackTrace();
+            return Collections.emptyList();
+        }
+    }
+
+    /**
+     * Get revenue data for charts by period type
+     * @param type Period type (month, quarter, year)
+     * @param year Selected year
+     * @return Map containing labels, revenue data and order data
+     */
+    public Map<String, Object> getChartData(String type, int year) {
+        Map<String, Object> result = new HashMap<>();
+        
+        try {
+            List<Order> orders = orderRepository.findAll();
+            if (orders.isEmpty()) {
+                System.out.println("CẢNH BÁO: Không tìm thấy đơn hàng nào trong cơ sở dữ liệu");
+            } else {
+                System.out.println("Tìm thấy " + orders.size() + " đơn hàng trong cơ sở dữ liệu");
+                Order firstOrder = orders.get(0);
+                System.out.println("Đơn hàng đầu tiên: ID=" + firstOrder.getOrderId() 
+                    + ", Ngày=" + firstOrder.getOrderDate() 
+                    + ", Giá trị=" + firstOrder.getAmount()
+                    + ", Trạng thái=" + firstOrder.getStatus());
+            }
+            
+            // Lấy dữ liệu thống kê
+            List<Object[]> statsMonthly = orderRepository.getMonthlyOrderStatistics();
+            List<Object[]> statsDaily = orderRepository.getDailyOrderStatistics();
+            List<Object[]> statsYearly = orderRepository.getYearlyOrderStatistics();
+            
+            System.out.println("Dữ liệu thống kê: Ngày=" + statsDaily.size() 
+                + ", Tháng=" + statsMonthly.size() 
+                + ", Năm=" + statsYearly.size());
+            
+            if (statsMonthly.isEmpty() && statsDaily.isEmpty() && statsYearly.isEmpty()) {
+                System.out.println("CẢNH BÁO: Không có dữ liệu thống kê nào");
+            }
+        
+        switch (type) {
+            case "month":
+                // Monthly data for the selected year
+                String[] monthLabels = {"T1", "T2", "T3", "T4", "T5", "T6", "T7", "T8", "T9", "T10", "T11", "T12"};
+                double[] monthRevenueData = new double[12];
+                int[] monthOrderData = new int[12];
+                
+                List<Object[]> statsMonth = orderRepository.getMonthlyOrderStatistics();
+                System.out.println("Số lượng dữ liệu thống kê theo tháng: " + statsMonth.size());
+                
+                // In ra một vài bản ghi để kiểm tra
+                for (int i = 0; i < Math.min(statsMonth.size(), 5); i++) {
+                    Object[] stat = statsMonth.get(i);
+                    System.out.println("Monthly Record " + i + ": ");
+                    for (int j = 0; j < stat.length; j++) {
+                        System.out.println("   Field " + j + ": " + (stat[j] != null ? stat[j].toString() : "null"));
+                    }
+                }
+                
+                // Xử lý dữ liệu thống kê theo tháng
+                for (Object[] stat : statsMonth) {
+                    try {
+                        if (stat[0] != null && stat[1] != null) {
+                            int statYear = ((Number) stat[0]).intValue();
+                            int statMonth = ((Number) stat[1]).intValue();
+                            
+                            if (statYear == year && statMonth >= 1 && statMonth <= 12) {
+                                monthRevenueData[statMonth - 1] = stat[3] != null ? ((Number) stat[3]).doubleValue() : 0.0;
+                                monthOrderData[statMonth - 1] = stat[2] != null ? ((Number) stat[2]).intValue() : 0;
+                                System.out.println("Tìm thấy dữ liệu tháng " + statMonth + ": " + monthRevenueData[statMonth - 1]);
+                            }
+                        }
+                    } catch (Exception e) {
+                        System.err.println("Lỗi khi xử lý dữ liệu thống kê tháng: " + e.getMessage());
+                    }
+                }
+                
+                result.put("labels", monthLabels);
+                result.put("revenueData", monthRevenueData);
+                result.put("orderData", monthOrderData);
+                break;
+                
+            case "quarter":
+                // Quarterly data for the selected year
+                String[] quarterLabels = {"Q1", "Q2", "Q3", "Q4"};
+                double[] quarterRevenueData = new double[4];
+                int[] quarterOrderData = new int[4];
+                
+                List<Object[]> quarterlyStats = orderRepository.getQuarterlyOrderStatistics();
+                for (Object[] stat : quarterlyStats) {
+                    if (stat[0] != null && stat[1] != null) {
+                        int statYear = ((Number) stat[0]).intValue();
+                        int statQuarter = ((Number) stat[1]).intValue();
+                        
+                        if (statYear == year && statQuarter >= 1 && statQuarter <= 4) {
+                            quarterRevenueData[statQuarter - 1] = ((Number) stat[3]).doubleValue();
+                            quarterOrderData[statQuarter - 1] = ((Number) stat[2]).intValue();
+                        }
+                    }
+                }
+                
+                result.put("labels", quarterLabels);
+                result.put("revenueData", quarterRevenueData);
+                result.put("orderData", quarterOrderData);
+                break;
+                
+            case "year":
+                // Yearly data - find actual years in data
+                List<Object[]> yearlyStats = orderRepository.getYearlyOrderStatistics();
+                
+                // If no data, show last 5 years
+                if (yearlyStats.isEmpty()) {
+                    int currentYear = LocalDate.now().getYear();
+                    int startYear = currentYear - 4;
+                    String[] defaultLabels = new String[5];
+                    double[] defaultRevenueData = new double[5];
+                    int[] defaultOrderData = new int[5];
+                    
+                    for (int i = 0; i < 5; i++) {
+                        defaultLabels[i] = String.valueOf(startYear + i);
+                    }
+                    
+                    result.put("labels", defaultLabels);
+                    result.put("revenueData", defaultRevenueData);
+                    result.put("orderData", defaultOrderData);
+                } else {
+                    // Use actual data years
+                    List<String> yearLabels = new ArrayList<>();
+                    List<Double> yearRevenueData = new ArrayList<>();
+                    List<Integer> yearOrderData = new ArrayList<>();
+                    
+                    // First pass: collect all years
+                    for (Object[] stat : yearlyStats) {
+                        if (stat[0] != null) {
+                            int statYear = ((Number) stat[0]).intValue();
+                            yearLabels.add(String.valueOf(statYear));
+                        }
+                    }
+                    
+                    // Sort years chronologically
+                    Collections.sort(yearLabels);
+                    
+                    // Second pass: fill data in sorted order
+                    for (String yearLabel : yearLabels) {
+                        int yearValue = Integer.parseInt(yearLabel);
+                        boolean found = false;
+                        
+                        for (Object[] stat : yearlyStats) {
+                            int statYear = ((Number) stat[0]).intValue();
+                            if (statYear == yearValue) {
+                                yearRevenueData.add(((Number) stat[2]).doubleValue());
+                                yearOrderData.add(((Number) stat[1]).intValue());
+                                found = true;
+                                break;
+                            }
+                        }
+                        
+                        // If year exists in labels but no data found, add zero
+                        if (!found) {
+                            yearRevenueData.add(0.0);
+                            yearOrderData.add(0);
+                        }
+                    }
+                    
+                    result.put("labels", yearLabels.toArray(new String[0]));
+                    result.put("revenueData", yearRevenueData.toArray(new Double[0]));
+                    result.put("orderData", yearOrderData.toArray(new Integer[0]));
+                }
+                break;
+                
+            default:
+                result.put("labels", new String[0]);
+                result.put("revenueData", new double[0]);
+                result.put("orderData", new int[0]);
+        }
+        
+        } catch (Exception e) {
+            System.err.println("Lỗi khi lấy dữ liệu biểu đồ: " + e.getMessage());
+            e.printStackTrace();
+            result.put("labels", new String[0]);
+            result.put("revenueData", new double[0]);
+            result.put("orderData", new int[0]);
+        }
+        
+        return result;
+    }
+
+    /**
+     * Get top selling products
+     * @param limit Maximum number of products to return
+     * @return List of top products
+     */
+    public List<Map<String, Object>> getTopProducts(int limit) {
+        try {
+            List<Object[]> productStats = orderDetailRepository.getProductSalesStatistics();
+            
+            // Ghi log để kiểm tra
+            System.out.println("Số lượng sản phẩm có thống kê bán hàng: " + productStats.size());
+            
+            // In ra vài bản ghi để kiểm tra
+            for (int i = 0; i < Math.min(productStats.size(), 3); i++) {
+                Object[] product = productStats.get(i);
+                System.out.println("Sản phẩm " + i + ":");
+                for (int j = 0; j < product.length; j++) {
+                    System.out.println("  Field " + j + ": " + (product[j] != null ? product[j] : "null"));
+                }
+            }
+            
+            if (productStats.isEmpty()) {
+                System.out.println("CẢNH BÁO: Không có dữ liệu thống kê sản phẩm, thử lấy trực tiếp từ orders và order_details");
+                
+                // Nếu không có dữ liệu thống kê sản phẩm, tạo dữ liệu giả từ order_details
+                List<OrderDetail> allOrderDetails = orderDetailRepository.findAll();
+                if (!allOrderDetails.isEmpty()) {
+                    System.out.println("Tìm thấy " + allOrderDetails.size() + " chi tiết đơn hàng");
+                    // Xử lý dữ liệu và trả về danh sách các sản phẩm phổ biến
+                    Map<Long, Map<String, Object>> productMap = new HashMap<>();
+                    
+                    for (OrderDetail detail : allOrderDetails) {
+                        if (detail.getProduct() != null) {
+                            Long productId = detail.getProduct().getProductId();
+                            String productName = detail.getProduct().getProductName();
+                            int quantity = detail.getQuantity() != null ? detail.getQuantity() : 0;
+                            double price = detail.getPrice() != null ? detail.getPrice() : 0.0;
+                            double subtotal = quantity * price;
+                            
+                            Map<String, Object> product;
+                            if (productMap.containsKey(productId)) {
+                                product = productMap.get(productId);
+                                int currentQuantity = (int) product.get("quantitySold");
+                                double currentRevenue = (double) product.get("revenue");
+                                product.put("quantitySold", currentQuantity + quantity);
+                                product.put("revenue", currentRevenue + subtotal);
+                            } else {
+                                product = new HashMap<>();
+                                product.put("productId", productId);
+                                product.put("name", productName);
+                                product.put("quantitySold", quantity);
+                                product.put("revenue", subtotal);
+                                product.put("avgPrice", price);
+                                product.put("minPrice", price);
+                                product.put("maxPrice", price);
+                                productMap.put(productId, product);
+                            }
+                        }
+                    }
+                    
+                    // Chuyển map thành list và sắp xếp theo doanh thu
+                    List<Map<String, Object>> productList = new ArrayList<>(productMap.values());
+                    productList.sort((p1, p2) -> Double.compare((double) p2.get("revenue"), (double) p1.get("revenue")));
+                    
+                    // Thêm formattedRevenue và giới hạn số lượng sản phẩm
+                    return productList.stream()
+                        .limit(limit)
+                        .peek(product -> product.put("formattedRevenue", formatCurrency((double) product.get("revenue"))))
+                        .collect(Collectors.toList());
+                }
+                
+                return Collections.emptyList();
+            }
+            
+            return productStats.stream()
+                .limit(limit)
+                .map(product -> {
+                    Map<String, Object> productMap = new HashMap<>();
+                    try {
+                        productMap.put("productId", product[0] != null ? ((Number) product[0]).longValue() : 0);
+                        productMap.put("name", product[1] != null ? (String) product[1] : "Không xác định");
+                        productMap.put("quantitySold", product[2] != null ? ((Number) product[2]).intValue() : 0);
+                        productMap.put("revenue", product[3] != null ? ((Number) product[3]).doubleValue() : 0.0);
+                        productMap.put("formattedRevenue", formatCurrency(product[3] != null ? ((Number) product[3]).doubleValue() : 0.0));
+                        productMap.put("avgPrice", product[4] != null ? ((Number) product[4]).doubleValue() : 0.0);
+                        productMap.put("minPrice", product[5] != null ? ((Number) product[5]).doubleValue() : 0.0);
+                        productMap.put("maxPrice", product[6] != null ? ((Number) product[6]).doubleValue() : 0.0);
+                    } catch (Exception e) {
+                        System.err.println("Lỗi khi xử lý dữ liệu sản phẩm: " + e.getMessage());
+                    }
+                    return productMap;
+                })
+                .toList();
+        } catch (Exception e) {
+            System.err.println("Lỗi khi lấy dữ liệu thống kê sản phẩm: " + e.getMessage());
+            e.printStackTrace();
+            return Collections.emptyList();
+        }
+    }
+
+    // Helper methods
+    private String formatCurrency(double value) {
+        return currencyFormat.format(value) + " đ";
+    }
+    
+    private String formatNumber(double value) {
+        return String.format("%.1f", value);
+    }
+}

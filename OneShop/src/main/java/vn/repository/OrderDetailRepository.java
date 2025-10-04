@@ -24,9 +24,10 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long> 
 
     /**
      * Statistics by product sold
-     * Returns: product_name, total_quantity, total_revenue, avg_price, min_price, max_price
+     * Returns: product_id, product_name, total_quantity, total_revenue, avg_price, min_price, max_price
      */
-    @Query(value = "SELECT p.product_name, " +
+    @Query(value = "SELECT p.product_id, " +
+            "p.product_name, " +
             "SUM(od.quantity) as total_quantity, " +
             "SUM(od.quantity * od.price) as total_revenue, " +
             "AVG(od.price) as avg_price, " +
