@@ -25,6 +25,7 @@ import vn.service.statistics.RevenueStatisticsService;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -115,13 +116,33 @@ public class RevenueController {
             model.addAttribute("completionRate", completionStats.get("completionRate"));
             model.addAttribute("completionText", completionStats.get("completionText"));
             
-            // Top customers (limit to 3 for the page)
-            List<Map<String, Object>> topCustomers = revenueStatisticsService.getTopCustomersByValue(3);
-            model.addAttribute("topCustomers", topCustomers);
+            // Thêm dữ liệu tổng số đơn hàng và doanh thu trung bình
+            long totalOrderCount = orderRepository.count();
+            model.addAttribute("totalOrderCount", totalOrderCount);
             
-            // Top products (limit to 3 for the page)
-            List<Map<String, Object>> topProducts = revenueStatisticsService.getTopProducts(3);
-            model.addAttribute("topProducts", topProducts);
+            // Tính doanh thu trung bình
+            double avgRevenue = 0.0;
+            if (totalOrderCount > 0) {
+                List<Order> orderList = orderRepository.findAll();
+                double totalRevenue = 0.0;
+                int validOrders = 0;
+                for (Order order : orderList) {
+                    if (order.getAmount() != null) {
+                        totalRevenue += order.getAmount();
+                        validOrders++;
+                    }
+                }
+                avgRevenue = validOrders > 0 ? totalRevenue / validOrders : 0.0;
+            }
+            
+            // Format giá trị
+            java.text.DecimalFormat df = new java.text.DecimalFormat("#,###");
+            String formattedAvgRevenue = df.format(avgRevenue) + " đ";
+            model.addAttribute("averageRevenue", formattedAvgRevenue);
+            System.out.println("Doanh thu trung bình: " + formattedAvgRevenue);
+            System.out.println("Tổng số đơn hàng: " + totalOrderCount);
+            
+            // Top customers and products have been removed from the UI
             
             return "admin/revenue-statistics";
             
@@ -174,6 +195,16 @@ public class RevenueController {
             }
             
             Map<String, Object> chartData = revenueStatisticsService.getChartData(type, currentYear);
+            
+            // Thêm thông tin debug để frontend có thể hiển thị
+            chartData.put("debug_info", new HashMap<String, Object>() {{
+                put("orderCount", orders.size());
+                put("dataType", "real_data");
+                put("timestamp", System.currentTimeMillis());
+                put("requestedPeriod", type);
+                put("requestedYear", currentYear);
+            }});
+            
             return ResponseEntity.ok(chartData);
         } catch (Exception e) {
             Map<String, Object> errorResponse = new HashMap<>();
@@ -187,6 +218,13 @@ public class RevenueController {
             emptyData.put("revenueData", new double[0]);
             emptyData.put("orderData", new int[0]);
             emptyData.put("error", e.getMessage());
+            emptyData.put("debug_info", new HashMap<String, Object>() {{
+                put("dataType", "fallback_data");
+                put("error", e.getMessage());
+                put("timestamp", System.currentTimeMillis());
+                put("requestedPeriod", type);
+                put("requestedYear", currentYear);
+            }});
             return ResponseEntity.ok(emptyData);
         }
     }
@@ -264,6 +302,100 @@ public class RevenueController {
     /**
      * API endpoint để kiểm tra cấu hình kết nối database
      */
+    /**
+     * API endpoint to get summary statistics
+     */
+    @GetMapping("/api/summary-stats")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> getSummaryStats(
+            @RequestParam(value = "type", defaultValue = "month") String type,
+            @RequestParam(value = "year", required = false) Integer year,
+            @RequestParam(value = "month", required = false) Integer month,
+            @RequestParam(value = "quarter", required = false) Integer quarter) {
+        
+        Map<String, Object> result = new HashMap<>();
+        
+        try {
+            LocalDate today = LocalDate.now();
+            int currentYear = year != null ? year : today.getYear();
+            int currentMonth = month != null ? month : today.getMonthValue();
+            int currentQuarter = quarter != null ? quarter : (currentMonth - 1) / 3 + 1;
+            
+            // Lấy thống kê theo tháng được chọn, hoặc tháng hiện tại nếu không chọn
+            Map<String, Object> currentMonthStats;
+            if (type.equals("month")) {
+                // Nếu đang xem theo tháng, sử dụng tháng được chọn
+                currentMonthStats = revenueStatisticsService.getMonthStatistics(currentMonth, currentYear);
+            } else {
+                // Nếu đang xem theo quý hoặc năm, sử dụng tháng hiện tại của năm được chọn
+                Calendar now = Calendar.getInstance();
+                int thisMonth = now.get(Calendar.MONTH) + 1; // 1-based
+                currentMonthStats = revenueStatisticsService.getMonthStatistics(thisMonth, currentYear);
+            }
+            result.put("currentMonthRevenue", currentMonthStats.get("formattedRevenue"));
+            result.put("growthRate", currentMonthStats.get("growthRate"));
+            result.put("isPositiveGrowth", currentMonthStats.get("isPositiveGrowth"));
+            
+            // Thống kê hôm nay
+            Map<String, Object> todayStats = revenueStatisticsService.getTodayStatistics();
+            result.put("todayOrders", todayStats.get("formattedOrderCount"));
+            result.put("todayRevenue", todayStats.get("formattedRevenue"));
+            
+            // Thống kê cho kỳ được chọn
+            Map<String, Object> periodStats = revenueStatisticsService.getSelectedPeriodStatistics(
+                type, currentYear, currentMonth, currentQuarter);
+            result.put("selectedPeriod", periodStats.get("periodName"));
+            result.put("selectedRevenue", periodStats.get("formattedRevenue"));
+            
+            // Tỷ lệ hoàn thành đơn hàng
+            Map<String, Object> completionStats = revenueStatisticsService.getOrderCompletionStats();
+            result.put("completionRate", completionStats.get("completionRate"));
+            result.put("completionText", completionStats.get("completionText"));
+            
+            // Thêm dữ liệu cho phần tóm tắt thống kê
+            long totalOrderCount = orderRepository.count();
+            result.put("totalOrders", String.valueOf(totalOrderCount));
+            result.put("completedOrders", completionStats.get("completionText"));
+            
+            // Tính doanh thu trung bình
+            double avgRevenue = 0.0;
+            if (totalOrderCount > 0) {
+                List<Order> orderList = orderRepository.findAll();
+                double totalRevenue = 0.0;
+                int validOrders = 0;
+                for (Order order : orderList) {
+                    if (order.getAmount() != null) {
+                        totalRevenue += order.getAmount();
+                        validOrders++;
+                    }
+                }
+                avgRevenue = validOrders > 0 ? totalRevenue / validOrders : 0.0;
+            }
+            
+            // Format giá trị doanh thu trung bình
+            java.text.DecimalFormat df = new java.text.DecimalFormat("#,###");
+            String formattedAvgRevenue = df.format(avgRevenue) + " đ";
+            result.put("averageRevenue", formattedAvgRevenue);
+            
+            // Tổng hợp dữ liệu cho tỷ lệ tăng trưởng
+            Object growthRateObj = currentMonthStats.get("growthRate");
+            Object isPositiveObj = currentMonthStats.get("isPositiveGrowth");
+            String growthRateStr = growthRateObj != null ? growthRateObj.toString() : "0.0";
+            boolean isPositive = isPositiveObj != null && Boolean.TRUE.equals(isPositiveObj);
+            
+            result.put("growthRateDisplay", (isPositive ? "+" : "") + growthRateStr + "%");
+            
+            System.out.println("API summary-stats - Complete result data: " + result);
+            
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            result.put("status", "error");
+            result.put("message", e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(result);
+        }
+    }
+
     @GetMapping("/api/db-config")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> getDatabaseConfig() {

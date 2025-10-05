@@ -1,0 +1,45 @@
+/* 
+ * Period info card styles - Cải thiện hiển thị thông tin kỳ 
+ */
+.period-info {
+    margin-top: 0.5rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.period-info .value {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #4a5568;
+}
+
+/* Nâng cao hiển thị thẻ kỳ */
+#selectedPeriodTitle {
+    color: #3498db;
+    font-weight: 700;
+    transition: all 0.3s ease;
+}
+
+/* Hiệu ứng khi thay đổi loại kỳ */
+#selectedPeriodTitle.month-period {
+    color: #3498db;  /* Màu xanh cho tháng */
+}
+
+#selectedPeriodTitle.quarter-period {
+    color: #9b59b6;  /* Màu tím cho quý */
+}
+
+#selectedPeriodTitle.year-period {
+    color: #e67e22;  /* Màu cam cho năm */
+}
+
+/* Hiệu ứng đổi màu mỗi khi cập nhật */
+@keyframes highlightUpdate {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+.period-update-animation {
+    animation: highlightUpdate 0.5s ease;
+}

@@ -7,34 +7,28 @@
     <link rel="stylesheet" href="/assets/css/bootstrap.min.css" />
     <link rel="stylesheet" href="/assets/css/atlantis.min.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <link rel="stylesheet" href="/admin/css/period-display.css" />
+    <link rel="stylesheet" href="/css/revenue-layout-optimization.css" />
     
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
     
     <style>
-        /* Enhanced UI Styles */
-        .metric-card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        /* Summary Stats Styles */
+        .summary-stats {
             color: white;
-            border-radius: 15px;
-            transition: all 0.3s ease;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
         }
-        .metric-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+        .summary-stats .stat-row .fw-bold {
+            font-weight: bold;
+            text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.5);
         }
-        .metric-card.primary-card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        .summary-stats #growthRateDisplay.text-success {
+            color: #00ff7f !important;
+            font-weight: bold;
         }
-        .metric-card.success-card {
-            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
-        }
-        .metric-card.info-card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
-        .metric-card.warning-card {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        .summary-stats #growthRateDisplay.text-danger {
+            color: #ff5252 !important;
+            font-weight: bold;
         }
         
         .chart-container {
@@ -75,9 +69,24 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            font-size: 4rem;
+            font-size: 5rem;
             opacity: 0.1;
             color: #667eea;
+            transition: all 0.3s ease;
+        }
+        
+        .chart-period-badge {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            opacity: 0.7;
+            color: white;
+            z-index: 10;
+            transition: all 0.3s ease;
         }
         
         /* Đảm bảo canvas luôn ở trên grid */
@@ -461,9 +470,9 @@
                                         <div class="card-body p-4">
                                             <div class="d-flex justify-content-between align-items-center">
                                                 <div>
-                                                    <h3 class="mb-1 fw-bold" th:text="${currentMonthRevenue}">2,500,000 đ</h3>
+                                                    <h3 id="currentMonthRevenueTitle" class="mb-1 fw-bold" th:text="${currentMonthRevenue}">2,500,000 đ</h3>
                                                     <p class="mb-2 opacity-75">Doanh thu tháng này</p>
-                                                    <div class="growth-indicator" th:classappend="${growthRate.startsWith('-')} ? 'text-danger' : 'text-success'">
+                                                    <div id="growthIndicator" class="growth-indicator" th:classappend="${growthRate.startsWith('-')} ? 'text-danger' : 'text-success'">
                                                         <i class="fas" th:classappend="${growthRate.startsWith('-')} ? 'fa-arrow-down' : 'fa-arrow-up'" ></i>
                                                         <span th:text="${growthRate + '%'}">12.5%</span>
                                                     </div>
@@ -481,9 +490,9 @@
                                         <div class="card-body p-4">
                                             <div class="d-flex justify-content-between align-items-center">
                                                 <div>
-                                                    <h3 class="mb-1 fw-bold" th:text="${todayOrders}">15</h3>
+                                                    <h3 id="todayOrdersTitle" class="mb-1 fw-bold" th:text="${todayOrders}">15</h3>
                                                     <p class="mb-2 opacity-75">Đơn hàng hôm nay</p>
-                                                    <div class="revenue-amount">
+                                                    <div id="todayRevenueContainer" class="revenue-amount">
                                                         <span th:text="${todayRevenue}">750,000 đ</span>
                                                     </div>
                                                 </div>
@@ -500,10 +509,10 @@
                                         <div class="card-body p-4">
                                             <div class="d-flex justify-content-between align-items-center">
                                                 <div>
-                                                    <h3 class="mb-1 fw-bold" th:text="${selectedPeriod}">T10/2025</h3>
+                                                    <h3 id="selectedPeriodTitle" class="mb-1 fw-bold" th:text="${selectedPeriod}">T10/2025</h3>
                                                     <p class="mb-2 opacity-75">Kỳ được chọn</p>
                                                     <div class="period-info">
-                                                        <span th:text="${selectedRevenue}">1,500,000 đ</span>
+                                                        <span id="selectedRevenueValue" th:text="${selectedRevenue}">1,500,000 đ</span>
                                                     </div>
                                                 </div>
                                                 <div class="metric-icon">
@@ -549,13 +558,13 @@
                                     <div class="row">
                                         <div class="col-md-6">
                                             <div class="filter-buttons">
-                                                <button type="button" class="btn btn-filter btn-primary me-2 mb-2" onclick="filterRevenue('month')">
+                                                <button type="button" class="btn btn-filter btn-primary me-2 mb-2 view-by-btn" onclick="filterRevenue('month')" data-type="month">
                                                     <i class="fas fa-calendar me-2"></i>Theo Tháng
                                                 </button>
-                                                <button type="button" class="btn btn-filter btn-outline-secondary me-2 mb-2" onclick="filterRevenue('quarter')">
+                                                <button type="button" class="btn btn-filter btn-outline-secondary me-2 mb-2 view-by-btn" onclick="filterRevenue('quarter')" data-type="quarter">
                                                     <i class="fas fa-th-large me-2"></i>Theo Quý
                                                 </button>
-                                                <button type="button" class="btn btn-filter btn-outline-warning mb-2" onclick="filterRevenue('year')">
+                                                <button type="button" class="btn btn-filter btn-outline-warning mb-2 view-by-btn" onclick="filterRevenue('year')" data-type="year">
                                                     <i class="fas fa-chart-line me-2"></i>Theo Năm
                                                 </button>
                                             </div>
@@ -616,7 +625,7 @@
                                         <button class="btn btn-sm btn-outline-primary" onclick="downloadChart()" title="Tải xuống biểu đồ">
                                             <i class="fas fa-download"></i>
                                         </button>
-                                        <button class="btn btn-sm btn-outline-secondary" onclick="toggleChartType()" title="Chuyển đổi loại biểu đồ">
+                                        <button id="toggleChartTypeBtn" class="btn btn-sm btn-outline-secondary" onclick="toggleChartType(event)" title="Chuyển đổi loại biểu đồ">
                                             <i class="fas fa-chart-bar"></i>
                                         </button>
                                     </div>
@@ -624,6 +633,8 @@
                                 <div class="card-body">
                                     <div class="chart-container" id="chartContainer" style="height: 400px; position: relative;">
                                         <canvas id="revenueChart" width="400" height="400"></canvas>
+                                        <i id="chartBackgroundIcon" class="fas fa-chart-line chart-icon"></i>
+                                        <div class="chart-period-badge" id="chartPeriodBadge"></div>
                                         <div class="chart-info mt-3 text-center">
                                             <p class="text-muted mb-2">
                                                 <i class="fas fa-info-circle"></i>
@@ -635,75 +646,9 @@
                             </div>
                         </div>
 
-                        <!-- Top Customers -->
-                        <div class="col-md-4 mb-4">
-                            <div class="card">
-                                <div class="card-header d-flex justify-content-between align-items-center">
-                                    <h6 class="card-title mb-0">
-                                        <i class="fas fa-users text-success me-2"></i>
-                                        Top Khách Hàng
-                                    </h6>
-                                    <span class="badge bg-success">Top 5</span>
-                                </div>
-                                <div class="card-body">
-                                    <div class="top-customers">
-                                        <div th:if="${topCustomers != null && !topCustomers.empty}">
-                                            <div th:each="customer : ${topCustomers}" class="customer-item d-flex justify-content-between align-items-center mb-3">
-                                                <div class="customer-info">
-                                                    <div class="customer-name fw-semibold" th:text="${customer.name}">Nguyễn Văn A</div>
-                                                    <small class="text-muted" th:text="${customer.orderCount + ' đơn hàng'}">15 đơn hàng</small>
-                                                </div>
-                                                <div class="customer-revenue text-success fw-bold" th:text="${customer.formattedTotalSpent}">2,500,000 đ</div>
-                                            </div>
-                                        </div>
-                                        <div th:if="${topCustomers == null || topCustomers.empty}" class="text-center py-4">
-                                            <i class="fas fa-exclamation-circle text-muted mb-2" style="font-size: 2rem;"></i>
-                                            <p class="text-muted">Chưa có dữ liệu khách hàng</p>
-                                        </div>
-                                        <div class="text-center">
-                                            <small class="text-muted">Top khách hàng theo doanh thu</small>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Top Products -->
-                        <div class="col-md-6 mb-4">
-                            <div class="card">
-                                <div class="card-header d-flex justify-content-between align-items-center">
-                                    <h6 class="card-title mb-0">
-                                        <i class="fas fa-crown text-warning me-2"></i>
-                                        Top Sản Phẩm
-                                    </h6>
-                                    <span class="badge bg-warning text-dark">TOP 5</span>
-                                </div>
-                                <div class="card-body">
-                                    <div class="top-products">
-                                        <div th:if="${topProducts != null && !topProducts.empty}">
-                                            <div th:each="product : ${topProducts}" class="product-item d-flex justify-content-between align-items-center mb-3">
-                                                <div class="product-info">
-                                                    <div class="product-name fw-semibold" th:text="${product.name}">Kem dưỡng ban đêm</div>
-                                                    <small class="text-muted" th:text="'Đã bán: ' + ${product.quantitySold} + ' sản phẩm'">Đã bán: 156 sản phẩm</small>
-                                                </div>
-                                                <div class="product-revenue text-primary fw-bold" th:text="${product.formattedRevenue}">1,200,000 đ</div>
-                                            </div>
-                                        </div>
-                                        <div th:if="${topProducts == null || topProducts.empty}" class="text-center py-4">
-                                            <i class="fas fa-exclamation-circle text-muted mb-2" style="font-size: 2rem;"></i>
-                                            <p class="text-muted">Chưa có dữ liệu sản phẩm</p>
-                                        </div>
-                                        <div class="text-center">
-                                            <small class="text-muted">Sản phẩm bán chạy nhất</small>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
                         <!-- Summary Stats -->
-                        <div class="col-md-6 mb-4">
-                            <div class="card bg-gradient-primary text-white">
+                        <div class="col-md-4 mb-4">
+                            <div class="card bg-gradient-primary text-white h-100">
                                 <div class="card-header border-0">
                                     <h6 class="card-title mb-0">
                                         <i class="fas fa-info-circle me-2"></i>
@@ -712,21 +657,22 @@
                                 </div>
                                 <div class="card-body">
                                     <div class="summary-stats">
-                                        <div class="stat-row d-flex justify-content-between mb-2">
+                                        <div class="stat-row d-flex justify-content-between mb-3">
                                             <span>Tổng số đơn hàng:</span>
-                                            <span class="fw-bold" id="totalOrders">...</span>
+                                            <span class="fw-bold" id="totalOrders" th:text="${totalOrderCount}">...</span>
                                         </div>
-                                        <div class="stat-row d-flex justify-content-between mb-2">
+                                        <div class="stat-row d-flex justify-content-between mb-3">
                                             <span>Doanh thu trung bình:</span>
-                                            <span class="fw-bold" id="avgRevenue">...</span>
+                                            <span class="fw-bold" id="avgRevenue" th:text="${averageRevenue}">...</span>
                                         </div>
-                                        <div class="stat-row d-flex justify-content-between mb-2">
+                                        <div class="stat-row d-flex justify-content-between mb-3">
                                             <span>Tỷ lệ tăng trưởng:</span>
-                                            <span class="fw-bold" id="growthRateDisplay">...</span>
+                                            <span class="fw-bold" id="growthRateDisplay" th:text="${growthRate + '%'}" 
+                                                  th:classappend="${isPositiveGrowth ? 'text-success' : 'text-danger'}">...</span>
                                         </div>
-                                        <div class="stat-row d-flex justify-content-between mb-2">
+                                        <div class="stat-row d-flex justify-content-between mb-3">
                                             <span>Đơn hàng đã hoàn thành:</span>
-                                            <span class="fw-bold" id="completedOrders">...</span>
+                                            <span class="fw-bold" id="completedOrders" th:text="${completionText}">...</span>
                                         </div>
                                     </div>
                                 </div>
@@ -762,6 +708,8 @@
     <script src="/assets/js/plugin/jquery-ui-touch-punch/jquery.ui.touch-punch.min.js"></script>
     <script src="/assets/js/plugin/jquery-scrollbar/jquery.scrollbar.min.js"></script>
     <script src="/assets/js/atlantis.min.js"></script>
+    <script src="/admin/js/summary-direct-update.js"></script>
+    <script src="/js/revenue-layout-enhancement.js"></script>
     
     <script>
         // Global toggleSidebar function (required by header)
@@ -802,9 +750,22 @@
                 const data = await response.json();
                 console.log('API returned data:', data);
                 
+                // Hiển thị thông báo về debug_info nếu có
+                if (data.debug_info) {
+                    console.log(`Debug info: ${JSON.stringify(data.debug_info)}`);
+                    
+                    // Hiển thị thông báo cho người dùng nếu dữ liệu không phải là thật
+                    if (data.debug_info.dataType === 'fallback_data') {
+                        showNotification('Đang hiển thị dữ liệu dự phòng do lỗi khi lấy dữ liệu thực tế.', 'warning');
+                    } else if (data.debug_info.orderCount === 0) {
+                        showNotification('Không có dữ liệu đơn hàng nào trong cơ sở dữ liệu.', 'info');
+                    }
+                }
+                
                 // Verify data structure
                 if (!data.labels || !data.revenueData || !data.orderData) {
                     console.warn('API returned incomplete data structure', data);
+                    showNotification('Cấu trúc dữ liệu không đầy đủ từ API.', 'error');
                     return generateFallbackChartData(type);
                 }
                 
@@ -823,10 +784,19 @@
                     orderData: processedOrderData
                 });
                 
+                // Kiểm tra nếu tất cả giá trị là 0
+                const allRevenueZero = processedRevenueData.every(val => val === 0);
+                const allOrdersZero = processedOrderData.every(val => val === 0);
+                
+                if (allRevenueZero && allOrdersZero) {
+                    showNotification('Không có dữ liệu doanh thu hoặc đơn hàng nào trong khoảng thời gian được chọn.', 'info');
+                }
+                
                 return {
                     labels: data.labels,
                     revenueData: processedRevenueData,
-                    orderData: processedOrderData
+                    orderData: processedOrderData,
+                    debug_info: data.debug_info
                 };
             } catch (error) {
                 console.error('Error fetching chart data:', error);
@@ -872,7 +842,17 @@
             }
 
             console.log('Sử dụng dữ liệu fallback cho biểu đồ do API lỗi');
-            return { labels, revenueData, orderData };
+            showNotification('Đang sử dụng dữ liệu trống thay thế do không thể lấy dữ liệu thực tế từ máy chủ.', 'warning');
+            return { 
+                labels, 
+                revenueData, 
+                orderData,
+                debug_info: {
+                    dataType: 'fallback_data',
+                    timestamp: Date.now(),
+                    message: 'Fallback data generated client-side'
+                }
+            };
         }
 
         // Initialize Chart
@@ -1066,6 +1046,9 @@
                 },
                 options: chartOptions
             });
+            
+            // Cập nhật icon nền sau khi tạo biểu đồ
+            updateChartBackgroundIcon();
         }
 
         // Generate colors based on period type
@@ -1140,6 +1123,121 @@
             
             return orderColors.slice(0, length);
         }
+        
+        // Update statistics cards with data from API
+        function updateStatisticsCards(data) {
+            console.log('Updating statistics cards with data:', data);
+            
+            // Đặt timeout ngắn để đảm bảo DOM được cập nhật sau khi dữ liệu được nhận
+            setTimeout(function() {
+                try {
+                    // Update current month revenue card - sử dụng ID trực tiếp
+                    if (data.currentMonthRevenue) {
+                        const currentMonthRevenueEl = document.getElementById('currentMonthRevenueTitle');
+                        if (currentMonthRevenueEl) {
+                            currentMonthRevenueEl.textContent = data.currentMonthRevenue;
+                            console.log('Updated current month revenue to:', data.currentMonthRevenue);
+                        } else {
+                            console.error('Element #currentMonthRevenueTitle not found');
+                        }
+                        
+                        // Cập nhật chỉ số tăng trưởng
+                        const growthRateEl = document.querySelector('.growth-indicator span');
+                        if (growthRateEl && data.growthRate) {
+                            const isNegative = data.growthRate.toString().startsWith('-');
+                            growthRateEl.textContent = (isNegative ? '' : '+') + data.growthRate + '%';
+                            
+                            // Cập nhật icon và màu
+                            const growthIndicator = document.getElementById('growthIndicator');
+                            const growthIcon = document.querySelector('#growthIndicator i');
+                            
+                            if (growthIndicator) {
+                                growthIndicator.classList.remove('text-success', 'text-danger');
+                                growthIndicator.classList.add(data.isPositiveGrowth ? 'text-success' : 'text-danger');
+                            }
+                            
+                            if (growthIcon) {
+                                growthIcon.classList.remove('fa-arrow-up', 'fa-arrow-down');
+                                growthIcon.classList.add(data.isPositiveGrowth ? 'fa-arrow-up' : 'fa-arrow-down');
+                            }
+                        }
+                    }
+                    
+
+                    
+                    // Update today's orders card
+                    if (data.todayOrders && data.todayRevenue) {
+                        const todayOrdersEl = document.getElementById('todayOrdersTitle');
+                        if (todayOrdersEl) {
+                            todayOrdersEl.textContent = data.todayOrders;
+                            console.log('Updated today orders to:', data.todayOrders);
+                        } else {
+                            console.error('Element #todayOrdersTitle not found');
+                        }
+                        
+                        const todayRevenueContainer = document.getElementById('todayRevenueContainer');
+                        if (todayRevenueContainer) {
+                            const span = todayRevenueContainer.querySelector('span');
+                            if (span) {
+                                span.textContent = data.todayRevenue;
+                                console.log('Updated today revenue to:', data.todayRevenue);
+                            }
+                        }
+                    }
+                    
+                    // Update selected period card - sử dụng ID trực tiếp
+                    if (data.selectedPeriod && data.selectedRevenue) {
+                        // Cập nhật tiêu đề kỳ được chọn
+                    // Không cần cập nhật tiêu đề kỳ ở đây nữa vì đã được cập nhật ở updatePeriodBadge
+                    // Chỉ ghi log để kiểm tra
+                    const selectedPeriodEl = document.getElementById('selectedPeriodTitle');
+                    if (selectedPeriodEl) {
+                        // Kiểm tra nếu tiêu đề hiện tại khác với data.selectedPeriod
+                        if (selectedPeriodEl.textContent !== data.selectedPeriod) {
+                            console.log('Note: Title element content differs from API data:', {
+                                currentTitle: selectedPeriodEl.textContent,
+                                apiTitle: data.selectedPeriod
+                            });
+                        } else {
+                            console.log('Title is already up-to-date:', data.selectedPeriod);
+                        }
+                    } else {
+                        console.error('Element #selectedPeriodTitle not found');
+                    }                        // Cập nhật doanh thu của kỳ được chọn
+                        const selectedRevenueEl = document.getElementById('selectedRevenueValue');
+                        if (selectedRevenueEl) {
+                            selectedRevenueEl.textContent = data.selectedRevenue;
+                            console.log('Updated selected period revenue to:', data.selectedRevenue);
+                        } else {
+                            console.error('Element #selectedRevenueValue not found');
+                        }
+                    } else {
+                        console.warn('Missing selected period data:', data);
+                    }
+                } catch (error) {
+                    console.error('Error updating statistics cards:', error);
+                }
+            }, 100); // Chờ 100ms để đảm bảo DOM đã được cập nhật
+            
+            // Update completion rate card
+            if (data.completionRate && data.completionText) {
+                const completionRateEl = document.querySelector('.card.metric-card.warning-card h3.fw-bold');
+                if (completionRateEl) {
+                    completionRateEl.textContent = data.completionRate + '%';
+                    console.log('Updated completion rate to:', data.completionRate + '%');
+                }
+                
+                const completionTextEl = document.querySelector('.completion-info');
+                if (completionTextEl) {
+                    completionTextEl.textContent = data.completionText;
+                    console.log('Updated completion text to:', data.completionText);
+                }
+            } else {
+                console.warn('Missing completion rate data:', data);
+            }
+            
+            console.log('Đã cập nhật các thẻ thống kê thành công');
+        }
 
         // Update Chart Description
         function updateChartDescription() {
@@ -1171,26 +1269,171 @@
             }
         }
 
-        async function toggleChartType() {
+        async function toggleChartType(event) {
+            console.log('Toggle chart type called');
             const chartTypes = ['line', 'bar', 'doughnut'];
             const currentIndex = chartTypes.indexOf(chartType);
             const nextIndex = (currentIndex + 1) % chartTypes.length;
             chartType = chartTypes[nextIndex];
+            console.log('New chart type:', chartType);
             
             await initChart();
             updateChartDescription();
             updateDynamicGrid();
             
             // Update button icon
-            const button = event.target.closest('button');
-            const iconMap = {
-                'line': 'fa-chart-line',
-                'bar': 'fa-chart-bar', 
-                'doughnut': 'fa-chart-pie'
-            };
-            button.innerHTML = `<i class="fas ${iconMap[chartType]}"></i>`;
+            const button = event ? event.target.closest('button') : document.querySelector('button[onclick="toggleChartType()"]');
+            if (button) {
+                const iconMap = {
+                    'line': 'fa-chart-line',
+                    'bar': 'fa-chart-bar', 
+                    'doughnut': 'fa-chart-pie'
+                };
+                button.innerHTML = `<i class="fas ${iconMap[chartType]}"></i>`;
+                console.log('Updated button icon to:', iconMap[chartType]);
+            } else {
+                console.warn('Button element not found');
+            }
+            
+            // Cập nhật icon nền
+            updateChartBackgroundIcon();
         }
         
+        // Cập nhật badge hiển thị kỳ đang chọn
+        function updatePeriodBadge(type, year, month, quarter) {
+            console.log(`Updating period badge for ${type} - year: ${year}, month: ${month}, quarter: ${quarter}`);
+            
+            // Cập nhật các phần tử có thể là badge kỳ trong giao diện
+            let periodText = '';
+            switch (type) {
+                case 'month':
+                    periodText = `Tháng ${month}/${year}`;
+                    break;
+                case 'quarter':
+                    periodText = `Quý ${quarter}/${year}`;
+                    break;
+                case 'year':
+                    periodText = `Năm ${year}`;
+                    break;
+            }
+            
+            // Cập nhật badge trong chart container
+            const periodBadge = document.getElementById('chartPeriodBadge');
+            if (periodBadge) {
+                periodBadge.textContent = periodText;
+                console.log('Updated chart period badge to:', periodText);
+            }
+        }
+        
+        // Hàm cập nhật icon nền biểu đồ và badge
+        function updateChartBackgroundIcon() {
+            console.log('Updating chart background icon. Chart type:', chartType, 'Period type:', currentSelectedType);
+            
+            // Tìm DOM elements
+            const backgroundIcon = document.getElementById('chartBackgroundIcon');
+            const periodBadge = document.getElementById('chartPeriodBadge');
+            
+            // Đảm bảo biến chartType luôn có giá trị
+            if (!chartType) {
+                chartType = 'line';
+            }
+            
+            if (backgroundIcon) {
+                // Tạo phần tử icon mới để thay thế icon cũ
+                const newIcon = document.createElement('i');
+                newIcon.id = 'chartBackgroundIcon';
+                newIcon.className = 'fas chart-icon';
+                
+                // Thêm class icon mới dựa trên loại biểu đồ
+                const iconMap = {
+                    'line': 'fa-chart-line',
+                    'bar': 'fa-chart-bar', 
+                    'doughnut': 'fa-chart-pie'
+                };
+                
+                const iconClass = iconMap[chartType] || 'fa-chart-line';
+                newIcon.classList.add(iconClass);
+                
+                // Thay thế icon cũ bằng icon mới
+                backgroundIcon.parentNode.replaceChild(newIcon, backgroundIcon);
+                
+                console.log('Updated background icon to:', iconClass);
+            } else {
+                console.warn('Background icon element not found');
+                // Tạo mới nếu không tồn tại
+                const chartContainer = document.getElementById('chartContainer');
+                if (chartContainer) {
+                    const newIcon = document.createElement('i');
+                    newIcon.id = 'chartBackgroundIcon';
+                    newIcon.className = 'fas chart-icon';
+                    
+                    const iconMap = {
+                        'line': 'fa-chart-line',
+                        'bar': 'fa-chart-bar', 
+                        'doughnut': 'fa-chart-pie'
+                    };
+                    
+                    newIcon.classList.add(iconMap[chartType] || 'fa-chart-line');
+                    chartContainer.appendChild(newIcon);
+                }
+            }
+            
+            if (periodBadge) {
+                // Nội dung và màu sắc cho badge thể hiện loại thời gian
+                const periodText = {
+                    'month': 'THÁNG',
+                    'quarter': 'QUÝ', 
+                    'year': 'NĂM'
+                };
+                
+                const periodColor = {
+                    'month': '#4CAF50',
+                    'quarter': '#2196F3', 
+                    'year': '#FF9800'
+                };
+                
+                periodBadge.textContent = periodText[currentSelectedType] || '';
+                periodBadge.style.backgroundColor = periodColor[currentSelectedType] || '#999';
+                
+                console.log('Updated period badge to:', periodText[currentSelectedType]);
+            } else {
+                console.warn('Period badge element not found');
+            }
+        }
+        
+        // Cập nhật hiển thị kỳ thời gian
+        function updatePeriodBadge() {
+            console.log('Updating period badge');
+            
+            const year = selectedYear;
+            const month = selectedMonth;
+            const quarter = selectedQuarter;
+            const type = currentSelectedType;
+            
+            // Xác định tiêu đề kỳ theo bộ lọc được chọn
+            let periodText = '';
+            if (type === 'month' && month) {
+                periodText = `Tháng ${month}/${year}`;
+            } else if (type === 'quarter' && quarter) {
+                periodText = `Quý ${quarter}/${year}`;
+            } else {
+                periodText = `Năm ${year}`;
+            }
+            
+            // Cập nhật tiêu đề trực tiếp bằng ID
+            const selectedPeriodEl = document.getElementById('selectedPeriodTitle');
+            if (selectedPeriodEl) {
+                selectedPeriodEl.textContent = periodText;
+                console.log('Direct update of period title to:', periodText);
+            } else {
+                console.error('Selected period element not found with ID: selectedPeriodTitle');
+            }
+            
+
+            
+            return periodText;
+        }
+
         async function filterRevenue(type) {
             currentSelectedType = type;
             
@@ -1215,6 +1458,19 @@
                 quarterSelector.style.display = 'none';
             }
             
+            // Cập nhật tiêu đề kỳ ngay lập tức (vẫn giữ cho tương thích ngược)
+            const periodTitle = updatePeriodBadge();
+            
+            // Kích hoạt sự kiện cho các thành phần khác
+            document.dispatchEvent(new CustomEvent('filterChanged', {
+                detail: {
+                    type: type,
+                    year: selectedYear,
+                    month: selectedMonth,
+                    quarter: selectedQuarter
+                }
+            }));
+            
             // Update URL to reflect the current filter (without page reload)
             const url = new URL(window.location);
             url.searchParams.set('type', type);
@@ -1223,12 +1479,39 @@
             if (type === 'quarter') url.searchParams.set('quarter', selectedQuarter);
             window.history.pushState({}, '', url);
             
-            // Update URL with filter parameters
-            const params = new URLSearchParams(window.location.search);
-            params.set('type', type);
-            params.set('year', selectedYear);
-            if (type === 'month') params.set('month', selectedMonth);
-            if (type === 'quarter') params.set('quarter', selectedQuarter);
+            // Prepare API parameters
+            const apiParams = new URLSearchParams();
+            apiParams.set('type', type);
+            apiParams.set('year', selectedYear);
+            
+            // Luôn gửi cả month và quarter để API có đủ thông tin
+            apiParams.set('month', selectedMonth);
+            apiParams.set('quarter', selectedQuarter);
+            
+            console.log(`Filtering revenue with params: type=${type}, year=${selectedYear}, month=${selectedMonth}, quarter=${selectedQuarter}`);
+            
+            // Cập nhật icon nền
+            updateChartBackgroundIcon();
+            
+            try {
+                // Fetch updated summary statistics
+                console.log(`Fetching summary stats with params: ${apiParams.toString()}`);
+                const summaryResponse = await fetch(`/admin/api/summary-stats?${apiParams.toString()}`);
+                if (summaryResponse.ok) {
+                    const summaryData = await summaryResponse.json();
+                    console.log('Updated summary data:', summaryData);
+                    
+                    // Đảm bảo dữ liệu có tiêu đề kỳ được chọn đúng
+                    summaryData.selectedPeriod = periodTitle;
+                    
+                    // Update the statistics cards
+                    updateStatisticsCards(summaryData);
+                } else {
+                    console.error('Failed to fetch summary stats:', summaryResponse.status);
+                }
+            } catch (error) {
+                console.error('Error fetching summary stats:', error);
+            }
             
             // Update chart with new data from API
             await initChart();
@@ -1241,34 +1524,70 @@
         // Fetch summary statistics
         async function fetchSummaryStats() {
             try {
-                // Update growth rate display
-                const growthRateEl = document.getElementById('growthRateDisplay');
-                const growthRate = '[[${growthRate}]]';
-                if (growthRateEl) {
-                    const isNegative = growthRate.startsWith('-');
-                    growthRateEl.textContent = (isNegative ? '' : '+') + growthRate + '%';
-                    growthRateEl.className = isNegative ? 'fw-bold text-danger' : 'fw-bold text-success';
+                // Prepare API parameters
+                const apiParams = new URLSearchParams();
+                apiParams.set('type', currentSelectedType);
+                apiParams.set('year', selectedYear);
+                if (currentSelectedType === 'month') apiParams.set('month', selectedMonth);
+                if (currentSelectedType === 'quarter') apiParams.set('quarter', selectedQuarter);
+                
+                // Fetch updated summary statistics
+                console.log(`Fetching initial summary stats for ${currentSelectedType}, year=${selectedYear}...`);
+                const summaryResponse = await fetch(`/admin/api/summary-stats?${apiParams.toString()}`);
+                if (summaryResponse.ok) {
+                    const summaryData = await summaryResponse.json();
+                    console.log('Initial summary data:', summaryData);
+                    
+                    // Update the statistics cards
+                    updateStatisticsCards(summaryData);
+                    
+                    // Update growth rate display from the API data
+                    const growthRateEl = document.getElementById('growthRateDisplay');
+                    if (growthRateEl && summaryData.growthRate) {
+                        const isNegative = summaryData.growthRate.toString().startsWith('-');
+                        growthRateEl.textContent = (isNegative ? '' : '+') + summaryData.growthRate + '%';
+                        growthRateEl.className = summaryData.isPositiveGrowth ? 'fw-bold text-success' : 'fw-bold text-danger';
+                    }
+                } else {
+                    console.error('Failed to fetch initial summary stats:', summaryResponse.status);
+                    
+                    // Fallback to Thymeleaf values if API fails
+                    const growthRateEl = document.getElementById('growthRateDisplay');
+                    const growthRate = '[[${growthRate}]]';
+                    if (growthRateEl) {
+                        const isNegative = growthRate.startsWith('-');
+                        growthRateEl.textContent = (isNegative ? '' : '+') + growthRate + '%';
+                        growthRateEl.className = isNegative ? 'fw-bold text-danger' : 'fw-bold text-success';
+                    }
                 }
                 
-                // Fetch order completion stats
+                // Update all summary statistics elements
                 const totalOrders = document.getElementById('totalOrders');
                 const avgRevenue = document.getElementById('avgRevenue');
                 const completedOrders = document.getElementById('completedOrders');
+                const growthRateDisplay = document.getElementById('growthRateDisplay');
                 
-                if (totalOrders && avgRevenue && completedOrders) {
-                    // Use values from controller
-                    const completionText = '[[${completionText}]]';
-                    if (completionText) {
-                        const parts = completionText.split('/');
-                        if (parts.length === 2) {
-                            completedOrders.textContent = parts[0] + '/' + parts[1];
-                            totalOrders.textContent = parts[1];
-                        }
-                    }
-                    
-                    // Default to current month revenue if we don't have average
-                    const monthRevenue = '[[${currentMonthRevenue}]]';
-                    avgRevenue.textContent = monthRevenue || 'Chưa có dữ liệu';
+                console.log('Updating summary statistics:', {
+                    totalOrders: summaryData.totalOrders,
+                    avgRevenue: summaryData.averageRevenue,
+                    completedOrders: summaryData.completedOrders,
+                    growthRateDisplay: summaryData.growthRateDisplay
+                });
+                
+                // Update each element with API data
+                if (totalOrders) {
+                    totalOrders.textContent = summaryData.totalOrders || '0';
+                    console.log('Updated total orders:', totalOrders.textContent);
+                }
+                
+                if (avgRevenue) {
+                    avgRevenue.textContent = summaryData.averageRevenue || '0 đ';
+                    console.log('Updated average revenue:', avgRevenue.textContent);
+                }
+                
+                if (completedOrders) {
+                    completedOrders.textContent = summaryData.completedOrders || '0/0';
+                    console.log('Updated completed orders:', completedOrders.textContent);
                 }
             } catch (error) {
                 console.error('Error fetching summary stats:', error);
@@ -1278,6 +1597,10 @@
         // Initialize
         $(document).ready(async function() {
             console.log('Revenue Statistics page loaded with Chart.js');
+            
+            // Fetch summary statistics data immediately on page load
+            console.log('Fetching summary statistics data...');
+            await fetchSummaryStats();
             
             // Ensure Bootstrap collapse works for sidebar
             $('[data-toggle="collapse"]').on('click', function(e) {
@@ -1313,21 +1636,26 @@
             // Setup year/month/quarter selectors
             $('#yearSelect').val(selectedYear).change(function() {
                 selectedYear = parseInt($(this).val());
+                // Luôn cập nhật dữ liệu khi thay đổi năm
                 filterRevenue(currentSelectedType);
             });
             
             $('#monthSelect').val(selectedMonth).change(function() {
                 selectedMonth = parseInt($(this).val());
-                if (currentSelectedType === 'month') {
-                    filterRevenue('month');
-                }
+                console.log("Month changed to:", selectedMonth);
+                // Cập nhật tiêu đề kỳ ngay lập tức
+                updatePeriodBadge();
+                // Luôn cập nhật dữ liệu khi thay đổi tháng, không chỉ khi đang ở chế độ tháng
+                filterRevenue('month');
             });
             
             $('#quarterSelect').val(selectedQuarter).change(function() {
                 selectedQuarter = parseInt($(this).val());
-                if (currentSelectedType === 'quarter') {
-                    filterRevenue('quarter');
-                }
+                console.log("Quarter changed to:", selectedQuarter);
+                // Cập nhật tiêu đề kỳ ngay lập tức
+                updatePeriodBadge();
+                // Luôn cập nhật dữ liệu khi thay đổi quý, không chỉ khi đang ở chế độ quý
+                filterRevenue('quarter');
             });
             
             // Show/hide quarter selector based on current type
@@ -1360,38 +1688,19 @@
             console.log('Revenue Statistics with Chart.js initialized');
         });
         
-        // Fetch top customers and products data from API
+        // Fetch top customers and products data from API - Removed
         async function fetchTopCustomersAndProducts() {
             try {
-                // Get top customers container
-                const topCustomersContainer = document.querySelector('.top-customers');
-                if (topCustomersContainer) {
-                    const customersResponse = await fetch('/admin/api/top-customers?limit=5');
-                    if (customersResponse.ok) {
-                        const customers = await customersResponse.json();
-                        if (customers && customers.length > 0) {
-                            // Update UI with actual customer data
-                            console.log('Fetched top customers:', customers);
-                        }
-                    }
-                }
-                
-                // Get top products container
-                const topProductsContainer = document.querySelector('.top-products');
-                if (topProductsContainer) {
-                    const productsResponse = await fetch('/admin/api/top-products?limit=5');
-                    if (productsResponse.ok) {
-                        const products = await productsResponse.json();
-                        if (products && products.length > 0) {
-                            // Update UI with actual product data
-                            console.log('Fetched top products:', products);
-                        }
-                    }
-                }
+                // Functionality removed as top customers and products sections were removed
+                console.log('fetchTopCustomersAndProducts: Sections removed from UI');
+                return;
             } catch (error) {
                 console.error('Error fetching top data:', error);
             }
         }
     </script>
+    
+    <!-- Dynamic Period Display Handler -->
+    <script src="/admin/js/period-display-handler.js"></script>
 </body>
 </html>
