@@ -270,9 +270,7 @@
                 <div class="icon text-success">
                   <i class="fas fa-trophy"></i>
                 </div>
-                <div class="number" id="best-sellers">
-                  12
-                </div>
+                <div class="number" id="best-sellers" th:text="${#numbers.formatInteger(bestSellers,0)}">0</div>
                 <div class="label">BÁN CHẠY</div>
               </div>
             </div>
@@ -285,9 +283,7 @@
                 <div class="icon text-info">
                   <i class="fas fa-box"></i>
                 </div>
-                <div class="number" id="new-products">
-                  6
-                </div>
+                <div class="number" id="new-products" th:text="${#numbers.formatInteger(newProducts,0)}">0</div>
                 <div class="label">MỚI NHẬP</div>
               </div>
             </div>
@@ -300,9 +296,7 @@
                 <div class="icon text-warning">
                   <i class="fas fa-exclamation-circle"></i>
                 </div>
-                <div class="number" id="slow-moving">
-                  3
-                </div>
+                <div class="number" id="slow-moving" th:text="${#numbers.formatInteger(slowMoving,0)}">0</div>
                 <div class="label">BÁN CHẬM 30D</div>
               </div>
             </div>
@@ -315,9 +309,7 @@
                 <div class="icon text-success">
                   <i class="fas fa-chart-bar"></i>
                 </div>
-                <div class="number" id="trending-up">
-                  8
-                </div>
+                <div class="number" id="trending-up" th:text="${#numbers.formatInteger(trendingUp,0)}">0</div>
                 <div class="label">TĂNG TRƯỞNG</div>
               </div>
             </div>
@@ -334,9 +326,7 @@
                 <div class="icon text-danger">
                   <i class="fas fa-exclamation-triangle"></i>
                 </div>
-                <div class="number" id="low-stock">
-                  8
-                </div>
+                <div class="number" id="low-stock" th:text="${#numbers.formatInteger(lowStockCount,0)}">0</div>
                 <div class="label">SỐ LƯỢNG CÒN LẠI ≤ 10</div>
               </div>
             </div>
@@ -349,9 +339,7 @@
                 <div class="icon text-warning">
                   <i class="fas fa-hourglass-end"></i>
                 </div>
-                <div class="number" id="expiring-products">
-                  5
-                </div>
+                <div class="number" id="expiring-products" th:text="${#numbers.formatInteger(expiringSoonCount,0)}">0</div>
                 <div class="label">HẠN DÙNG ≤ 30 NGÀY</div>
               </div>
             </div>
@@ -362,9 +350,7 @@
                 title="Hiển thị bảng được ưa chuộng"
               >
                 <div class="icon text-danger"><i class="fas fa-heart"></i></div>
-                <div class="number" id="favorite-products">
-                  15
-                </div>
+                <div class="number" id="favorite-products" th:text="${#numbers.formatInteger(favoritesCount,0)}">0</div>
                 <div class="label">ĐƯỢC KHÁCH HÀNG ƯA CHUỘNG</div>
               </div>
             </div>
@@ -377,9 +363,7 @@
                 <div class="icon text-primary">
                   <i class="fas fa-percent"></i>
                 </div>
-                <div class="number" id="discounted-products">
-                  7
-                </div>
+                <div class="number" id="discounted-products" th:text="${#numbers.formatInteger(discountedCount,0)}">0</div>
                 <div class="label">ĐANG KHUYẾN MÃI</div>
               </div>
             </div>
@@ -387,26 +371,110 @@
 
 
 
-          <!-- Charts Section -->
+          <!-- Inventory Table Section with filters -->
           <div class="row mb-4">
-            <div class="col-lg-6">
-              <div class="chart-container">
-                <div class="chart-title">
-                  <i class="fas fa-cube"></i> Tồn kho theo danh mục
-                </div>
-                <canvas id="inventoryChart"></canvas>
+            <div class="col-12">
+              <div class="search-bar" style="background:#fff;padding:14px;border-radius:12px;border:1px solid rgba(0,0,0,0.05);box-shadow:0 6px 18px rgba(0,0,0,0.06);">
+                <form method="get" th:action="@{/admin/statistics}">
+                  <div class="row g-2 align-items-end">
+                    <div class="col-lg-4 col-md-6">
+                      <label class="form-label text-muted" style="font-size:0.85rem;font-weight:600;margin-bottom:6px">
+                        <i class="fas fa-layer-group text-primary"></i> Danh mục
+                      </label>
+                      <select class="form-select form-control" name="categoryId" style="height:38px;border:2px solid #e9ecef;border-radius:8px">
+                        <option th:selected="${selectedCategoryId == null}" th:value="${null}">Tất cả danh mục</option>
+                        <option th:each="c : ${categories}"
+                                th:value="${c.categoryId}"
+                                th:selected="${selectedCategoryId != null and c.categoryId == selectedCategoryId}"
+                                th:text="${c.categoryName}">Danh mục</option>
+                      </select>
+                    </div>
+                    <div class="col-lg-5 col-md-6">
+                      <label class="form-label text-muted" style="font-size:0.85rem;font-weight:600;margin-bottom:6px">
+                        <i class="fas fa-search text-primary"></i> Tìm kiếm sản phẩm/brand
+                      </label>
+                      <input class="form-control" type="text" name="search" th:value="${searchTerm}"
+                             placeholder="Nhập tên sản phẩm, danh mục hoặc thương hiệu..."
+                             style="height:38px;border:2px solid #e9ecef;border-radius:8px" />
+                    </div>
+                    <div class="col-lg-2 col-md-4">
+                      <label class="form-label text-muted" style="font-size:0.85rem;font-weight:600;margin-bottom:6px">
+                        <i class="fas fa-list text-primary"></i> Hiển thị
+                      </label>
+                      <select class="form-select form-control" name="size" style="height:38px;border:2px solid #e9ecef;border-radius:8px">
+                        <option th:selected="${pageSize == 10}" value="10">📄 10 mục</option>
+                        <option th:selected="${pageSize == 20}" value="20">📄 20 mục</option>
+                        <option th:selected="${pageSize == 50}" value="50">📄 50 mục</option>
+                      </select>
+                    </div>
+                    <div class="col-lg-1 col-md-2">
+                      <label class="form-label text-muted d-block" style="opacity:0">&nbsp;</label>
+                      <button class="btn btn-primary w-100" type="submit" style="height:38px;border-radius:8px;font-weight:600">
+                        Lọc
+                      </button>
+                    </div>
+                  </div>
+                </form>
               </div>
-            </div>
-            <div class="col-lg-6">
-              <div class="chart-container">
-                <div class="chart-title">
-                  <i class="fas fa-heart"></i> Sản phẩm được yêu thích
-                </div>
-                <canvas id="favoriteChart"></canvas>
-              </div>
-            </div>
 
-        </div>
+              <div class="table-responsive">
+                <div class="chart-title"><i class="fas fa-cubes"></i> Tồn kho chi tiết theo danh mục</div>
+                <table class="table table-hover align-middle">
+                  <thead>
+                    <tr>
+                      <th style="width: 22%">DANH MỤC</th>
+                      <th style="width: 35%">TÊN SẢN PHẨM</th>
+                      <th style="width: 18%">THƯƠNG HIỆU</th>
+                      <th class="text-end" style="width: 8%">SỐ LƯỢNG</th>
+                      <th class="text-end" style="width: 8%">ĐƠN GIÁ</th>
+                      <th class="text-end" style="width: 9%">GIÁ TRỊ</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr th:if="${inventoryDetails == null or #lists.isEmpty(inventoryDetails)}">
+                      <td colspan="6" class="text-center text-muted">Không có dữ liệu tồn kho</td>
+                    </tr>
+                    <tr th:each="r, stat : ${inventoryDetails}">
+                      <!-- r: [category_name, product_name, brand_name, quantity, price, total_value] -->
+                      <td th:text="${r[0]}"></td>
+                      <td><strong th:text="${r[1]}"></strong></td>
+                      <td th:text="${r[2]}"></td>
+                      <td class="text-end" th:text="${#numbers.formatInteger(r[3],0)}"></td>
+                      <td class="text-end" th:text="${#numbers.formatInteger(r[4],0)}"></td>
+                      <td class="text-end" th:text="${#numbers.formatInteger(r[5],0)}"></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <!-- Pagination -->
+              <nav aria-label="Pagination" class="p-2" th:if="${totalPages > 0}">
+                <ul class="pagination justify-content-end">
+                  <li class="page-item" th:classappend="${currentPage == 0} ? ' disabled'">
+                    <a class="page-link"
+                       th:href="@{/admin/statistics(page=0, size=${pageSize}, search=${searchTerm}, categoryId=${selectedCategoryId})}">&laquo;</a>
+                  </li>
+                  <li class="page-item" th:classappend="${currentPage == 0} ? ' disabled'">
+                    <a class="page-link"
+                       th:href="@{/admin/statistics(page=${currentPage-1}, size=${pageSize}, search=${searchTerm}, categoryId=${selectedCategoryId})}">&lsaquo;</a>
+                  </li>
+                  <li class="page-item" th:each="p : ${#numbers.sequence(0, totalPages-1)}" th:classappend="${p==currentPage} ? ' active'">
+                    <a class="page-link"
+                       th:text="${p+1}"
+                       th:href="@{/admin/statistics(page=${p}, size=${pageSize}, search=${searchTerm}, categoryId=${selectedCategoryId})}"></a>
+                  </li>
+                  <li class="page-item" th:classappend="${currentPage >= totalPages-1} ? ' disabled'">
+                    <a class="page-link"
+                       th:href="@{/admin/statistics(page=${currentPage+1}, size=${pageSize}, search=${searchTerm}, categoryId=${selectedCategoryId})}">&rsaquo;</a>
+                  </li>
+                  <li class="page-item" th:classappend="${currentPage >= totalPages-1} ? ' disabled'">
+                    <a class="page-link"
+                       th:href="@{/admin/statistics(page=${totalPages-1}, size=${pageSize}, search=${searchTerm}, categoryId=${selectedCategoryId})}">&raquo;</a>
+                  </li>
+                </ul>
+              </nav>
+            </div>
+          </div>
       </div>
       <th:block th:replace="~{admin/fragments/footer :: footer}"></th:block>
     </div>
@@ -414,23 +482,12 @@
     <script src="/assets/js/core/popper.min.js"></script>
     <script src="/assets/js/core/bootstrap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
-    <script>
-      /**
-       * ONESHOP ADMIN STATISTICS DASHBOARD
-       *
-       * FEATURES:
-       * 1. KPI CARDS: Click any card to navigate to detailed list view
-       *    - Low Stock, Expiring, Discounted, Favorites, Best Sellers
-       *    - New Products, Slow Moving, Trending Up/Down
-       *
-       * 2. NAVIGATION: Two tabs - Overview and Products with hash support
-       *
-       * 3. API ENDPOINTS: All /admin/statistics/api/* for real-time data
-       *
-       * 4. DETAILED VIEWS: /admin/statistics/view?type={type} with pagination
-       *
-       * Usage: Click any KPI card to view detailed data for that type.
-       */
+  <script th:inline="javascript">
+  /**
+   * ONESHOP ADMIN STATISTICS DASHBOARD (Server-side render)
+   * - KPI cards và charts được render dữ liệu ngay từ server (Thymeleaf)
+   * - Click KPI card để mở danh sách chi tiết: /admin/statistics/view?type={type}
+   */
       $(function () {
         const charts = {};
         const store = {
@@ -495,188 +552,14 @@
           }
         }
         
-        // Initialize everything when DOM is ready
+        // Initialize everything when DOM is ready (server-side data)
         $(document).ready(function() {
-          console.log("DOM ready, checking Chart.js...");
-          console.log("Chart.js available:", typeof Chart !== 'undefined');
-          console.log("Canvas elements:", {
-            inventory: !!document.getElementById("inventoryChart"),
-            favorite: !!document.getElementById("favoriteChart")
-          });
-          
-          // Initialize charts first
-          initializeCharts();
-          
-          // Load KPI data once
-          loadKPIData();
+          // Charts removed; server-side table only
         });
         
-        function initializeCharts() {
-          try {
-            const invCanvas = document.getElementById("inventoryChart");
-            const favCanvas = document.getElementById("favoriteChart");
-            
-            if (!invCanvas || !favCanvas) {
-              console.error("Canvas elements not found");
-              return;
-            }
-            
-            // Create inventory chart with immediate test data
-            charts.inventoryChart = new Chart(invCanvas, {
-              type: 'doughnut',
-              data: {
-                labels: ["Kem dưỡng da", "Son môi", "Nước hoa", "Sữa rửa mặt"],
-                datasets: [{
-                  data: [45, 32, 28, 15],
-                  backgroundColor: ['#667eea', '#764ba2', '#a29bfe', '#fd79a8', '#fdcb6e', '#55efc4', '#81ecec', '#74b9ff']
-                }]
-              },
-              options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                  legend: { position: 'bottom' }
-                }
-              }
-            });
-            
-            // Create favorite chart with immediate test data
-            charts.favoriteChart = new Chart(favCanvas, {
-              type: 'doughnut', 
-              data: {
-                labels: ["Son môi", "Kem dưỡng da", "Nước hoa"],
-                datasets: [{
-                  data: [23, 18, 12],
-                  backgroundColor: ['#fd79a8', '#fdcb6e', '#55efc4', '#667eea', '#764ba2', '#a29bfe']
-                }]
-              },
-              options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                  legend: { position: 'bottom' }
-                }
-              }
-            });
-            
-            console.log("Charts created with test data immediately");
-            
-            // Then try to load real data (will replace test data if successful)
-            setTimeout(() => {
-              loadRealChartData();
-            }, 500);
-            
-          } catch (error) {
-            console.error("Chart initialization error:", error);
-          }
-        }
+        // Charts removed
         
-        function loadKPIData() {
-          // Load real KPI data from database
-          fetch("/admin/statistics/api/kpis")
-            .then(r => r.json())
-            .then(data => {
-              console.log("KPI data loaded from database:", data);
-              updateKPICards(data);
-            })
-            .catch(err => {
-              console.error("KPI load error:", err);
-              // Keep current static values as fallback
-            });
-        }
-        
-        function updateKPICards(data) {
-          console.log("Updating KPI cards with real data:", data);
-          
-          // Map API response to card IDs - use real data from database
-          const cards = {
-            'best-sellers': data.bestSellers || data.bestSeller || 0,
-            'new-products': data.newProducts || 0, 
-            'slow-moving': data.slowMoving || 0,
-            'trending-up': data.trendingUp || 0,
-            'low-stock': data.lowStock || 0,
-            'expiring-products': data.expiringSoon || data.expiring || 0,
-            'favorite-products': data.favorites || 0,
-            'discounted-products': data.discounted || 0
-          };
-          
-          // Update each card with real database values
-          Object.entries(cards).forEach(([id, value]) => {
-            const element = document.getElementById(id);
-            if (element) {
-              element.textContent = value.toLocaleString('vi-VN');
-              console.log(`Updated ${id}: ${value}`);
-            }
-          });
-        }
-        
-        function loadRealChartData() {
-          // Load inventory chart data from database
-          // API format: [category_name, brand_name, total_quantity, total_value, avg_price]
-          fetch("/admin/statistics/api/inventory")
-            .then(r => r.json())
-            .then(data => {
-              console.log("Inventory API response:", data);
-              
-              if (charts.inventoryChart && data && Array.isArray(data) && data.length > 0) {
-                console.log("Processing real inventory data:", data);
-                
-                // Aggregate by category for chart
-                const categoryData = {};
-                data.forEach(row => {
-                  const categoryName = row[0]; // category_name
-                  const quantity = Number(row[2]) || 0; // total_quantity
-                  categoryData[categoryName] = (categoryData[categoryName] || 0) + quantity;
-                });
-                
-                const labels = Object.keys(categoryData);
-                const values = Object.values(categoryData);
-                
-                charts.inventoryChart.data.labels = labels;
-                charts.inventoryChart.data.datasets[0].data = values;
-                charts.inventoryChart.update();
-                console.log("Inventory chart updated with real database data:", {labels, values});
-              } else {
-                console.log("No inventory data from API");
-              }
-            })
-            .catch(err => {
-              console.error("Inventory data load error:", err);
-            });
-            
-          // Load favorites chart data from database  
-          // API format: [category_name, brand_name, favorite_count, total_products]
-          fetch("/admin/statistics/api/favorites")
-            .then(r => r.json())
-            .then(data => {
-              console.log("Favorites API response:", data);
-              
-              if (charts.favoriteChart && data && Array.isArray(data) && data.length > 0) {
-                console.log("Processing real favorites data:", data);
-                
-                // Aggregate by category for chart
-                const categoryData = {};
-                data.forEach(row => {
-                  const categoryName = row[0]; // category_name
-                  const favoriteCount = Number(row[2]) || 0; // favorite_count
-                  categoryData[categoryName] = (categoryData[categoryName] || 0) + favoriteCount;
-                });
-                
-                const labels = Object.keys(categoryData);
-                const values = Object.values(categoryData);
-                
-                charts.favoriteChart.data.labels = labels;
-                charts.favoriteChart.data.datasets[0].data = values;
-                charts.favoriteChart.update();
-                console.log("Favorites chart updated with real database data:", {labels, values});
-              } else {
-                console.log("No favorites data from API");
-              }
-            })
-            .catch(err => {
-              console.error("Favorites data load error:", err);
-            });
-        }
+        // Removed client-side fetch; charts use server-provided data
 
         function buildPagination(pagerId, totalRows, pageSize, onPageChange) {
           const ul = document.getElementById(pagerId);
@@ -755,156 +638,9 @@
             t.innerHTML = `<i class="fas ${icon}"></i> ${text}`;
           }
         }
-        /* OLD CHART FUNCTION - COMMENTED OUT 
-        function loadOverviewCharts() {
-          // Overview shows: Inventory by Category (left), Favorite Products (right)
-          setChartTitle("inventoryChart", "fa-cube", "Tồn kho theo danh mục");
-          setChartTitle(
-            "favoriteChart",
-            "fa-heart",
-            "Sản phẩm được yêu thích"
-          );
-          fetch("/admin/statistics/api/inventory")
-            .then((r) => r.json())
-            .then((d) => {
-              console.log("Inventory data:", d);
-              if (charts.inventoryChart) {
-                if (d && d.length > 0) {
-                  charts.inventoryChart.data.labels = d.map(x => x[0]);
-                  charts.inventoryChart.data.datasets[0].data = d.map(x => Number(x[1]) || 0);
-                } else {
-                  // Fallback test data if API returns empty
-                  charts.inventoryChart.data.labels = ["Kem dưỡng da", "Son môi", "Nước hoa", "Sữa rửa mặt"];
-                  charts.inventoryChart.data.datasets[0].data = [45, 32, 28, 15];
-                }
-                charts.inventoryChart.update();
-              }
-            })
-            .catch((err) => {
-              console.error("Inventory API error:", err);
-              if (charts.inventoryChart) {
-                charts.inventoryChart.data.labels = ["Kem dưỡng da", "Son môi", "Nước hoa", "Sữa rửa mặt"];
-                charts.inventoryChart.data.datasets[0].data = [45, 32, 28, 15];
-                charts.inventoryChart.update();
-              }
-            });
-          fetch("/admin/statistics/api/favorites")
-            .then((r) => r.json())
-            .then((d) => {
-              console.log("Favorites data:", d);
-              if (charts.favoriteChart) {
-                if (d && d.length > 0) {
-                  charts.favoriteChart.data.labels = d.map(x => x[0]);
-                  charts.favoriteChart.data.datasets[0].data = d.map(x => Number(x[1]) || 0);
-                } else {
-                  // Fallback test data if API returns empty
-                  charts.favoriteChart.data.labels = ["Son môi", "Kem dưỡng da", "Nước hoa"];
-                  charts.favoriteChart.data.datasets[0].data = [23, 18, 12];
-                }
-                charts.favoriteChart.update();
-              }
-            })
-            .catch((err) => {
-              console.error("Favorites API error:", err);
-              if (charts.favoriteChart) {
-                charts.favoriteChart.data.labels = ["Son môi", "Kem dưỡng da", "Nước hoa"];
-                charts.favoriteChart.data.datasets[0].data = [23, 18, 12];
-                charts.favoriteChart.update();
-              }
-            });
-        }
-        function loadProductCharts() {
-          // Products tab now shows: Inventory (left), Favorites (right)
-          setChartTitle("manufactureChart", "fa-cube", "Tồn kho theo danh mục");
-          setChartTitle("expiryChart", "fa-heart", "Sản phẩm được yêu thích");
-          fetch("/admin/statistics/api/inventory")
-            .then((r) => r.json())
-            .then((d) => {
-              if (charts.manufactureChart && d) {
-                const agg = {};
-                d.forEach((row) => {
-                  const cat = row[0];
-                  const qty = Number(row[2]) || 0;
-                  agg[cat] = (agg[cat] || 0) + qty;
-                });
-                charts.manufactureChart.data.labels = Object.keys(agg);
-                charts.manufactureChart.data.datasets[0].data =
-                  Object.values(agg);
-                charts.manufactureChart.update();
-              }
-            })
-            .catch(() => {});
-          fetch("/admin/statistics/api/favorites")
-            .then((r) => r.json())
-            .then((d) => {
-              if (charts.expiryChart && d) {
-                charts.expiryChart.data.labels = d.map(
-                  (x) => `${x[0]} - ${x[1]}`
-                );
-                charts.expiryChart.data.datasets[0].data = d.map(
-                  (x) => Number(x[2]) || 0
-                );
-                charts.expiryChart.update();
-              }
-            })
-            .then(() => {
-              paginateExistingTable(
-                "#expiringSoonTable tbody",
-                "expiringPagination",
-                10
-              );
-            })
-            .catch(() => {});
-        }
-        */ // END OLD CHART FUNCTION COMMENT
+        /* Old client-side fetch logic removed: dashboard now uses server data */
         
-        /* OLD KPI FUNCTION - COMMENTED OUT TO PREVENT CONFLICTS
-        function kpis() {
-          fetch("/admin/statistics/api/kpis")
-            .then((r) => r.json())
-            .then((k) => {
-              [
-                ["kpiLowStock", "lowStock"],
-                ["kpiExpiring", "expiringSoon"], 
-                ["kpiFavorites", "favorites"],
-                ["kpiDiscounted", "discounted"],
-                ["kpiBestSeller", "bestSellers"],
-                ["kpiNewProducts", "newProducts"],
-                ["kpiSlowMoving", "slowMoving"],
-                ["kpiTrendingUp", "trendingUp"],
-              ].forEach(([id, key]) => {
-                const el = document.getElementById(id);
-                if (!el) return;
-                el.textContent = (k[key] || 0).toLocaleString("vi-VN");
-              });
-            })
-            .then(() => {
-              paginateExistingTable(
-                "#discountedTable tbody",
-                "discountedPagination",
-                10
-              );
-              console.log("KPIs loaded successfully");
-            })
-            .catch((error) => {
-              console.error("Failed to load KPIs:", error);
-              // Show fallback values
-              [
-                "kpiLowStock",
-                "kpiExpiring",
-                "kpiFavorites",
-                "kpiDiscounted",
-                "kpiBestSeller",
-                "kpiNewProducts",
-                "kpiSlowMoving",
-                "kpiTrendingUp",
-              ].forEach((id) => {
-                const el = document.getElementById(id);
-                if (el) el.textContent = "0";
-              });
-            });
-        }
-        */ // END OLD KPI FUNCTION COMMENT
+        /* Old KPI fetch removed */
         function lowStock() {
           // Commented out - tables removed
           return;
@@ -1026,12 +762,7 @@
           window.location.href = "/admin/statistics/view?type=favorites";
         };
         
-        // Auto refresh disabled to prevent loading issues
-        // setInterval(() => {
-        //   if (charts.inventoryChart && charts.favoriteChart) {
-        //     loadKPIData();
-        //   }
-        // }, 300000);
+  // Auto refresh disabled
         
       }); // End $(function())
     </script>

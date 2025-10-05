@@ -266,5 +266,46 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
             "WHERE p.status = 1 " +
             "ORDER BY p.entered_date DESC", nativeQuery = true)
     List<Object[]> getNewestActiveProducts();
+
+        /**
+         * Detailed inventory per product for server-side table
+         * Returns: category_name, product_name, brand_name, quantity, price, total_value
+         */
+        @Query(value = "SELECT c.category_name, p.product_name, b.brand_name, p.quantity, p.price, (p.quantity * p.price) AS total_value " +
+                        "FROM products p " +
+                        "INNER JOIN categories c ON p.category_id = c.category_id " +
+                        "INNER JOIN brands b ON p.brand_id = b.brand_id " +
+                        "WHERE p.status = 1 " +
+                        "ORDER BY c.category_name ASC, p.product_name ASC", nativeQuery = true)
+        List<Object[]> getInventoryDetailsPerProduct();
+
+            /**
+             * Pageable searchable inventory details filtered by optional category
+             * Returns rows: category_name, product_name, brand_name, quantity, price, total_value
+             */
+            @Query(value = "SELECT c.category_name, p.product_name, b.brand_name, p.quantity, p.price, (p.quantity * p.price) AS total_value " +
+                    "FROM products p " +
+                    "INNER JOIN categories c ON p.category_id = c.category_id " +
+                    "INNER JOIN brands b ON p.brand_id = b.brand_id " +
+                    "WHERE p.status = 1 " +
+                    "AND (:categoryId IS NULL OR p.category_id = :categoryId) " +
+                    "AND (:search IS NULL OR p.product_name LIKE CONCAT('%', :search, '%') " +
+                    "     OR c.category_name LIKE CONCAT('%', :search, '%') " +
+                    "     OR b.brand_name LIKE CONCAT('%', :search, '%')) " +
+                    "ORDER BY c.category_name ASC, p.product_name ASC",
+                    countQuery = "SELECT COUNT(*) " +
+                            "FROM products p " +
+                            "INNER JOIN categories c ON p.category_id = c.category_id " +
+                            "INNER JOIN brands b ON p.brand_id = b.brand_id " +
+                            "WHERE p.status = 1 " +
+                            "AND (:categoryId IS NULL OR p.category_id = :categoryId) " +
+                            "AND (:search IS NULL OR p.product_name LIKE CONCAT('%', :search, '%') " +
+                            "     OR c.category_name LIKE CONCAT('%', :search, '%') " +
+                            "     OR b.brand_name LIKE CONCAT('%', :search, '%'))",
+                    nativeQuery = true)
+            org.springframework.data.domain.Page<Object[]> getInventoryDetailsPage(
+                    @Param("categoryId") Long categoryId,
+                    @Param("search") String search,
+                    org.springframework.data.domain.Pageable pageable);
 }
 

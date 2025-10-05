@@ -1,22 +1,23 @@
 package vn.controller.admin;
 
 import java.security.Principal;
+// removed unused import: ArrayList
 import java.util.Collections;
+// removed unused import: LinkedHashMap
 import java.util.List;
 import java.util.Map;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 
 import vn.entity.User;
 import vn.repository.OrderDetailRepository;
 import vn.repository.ProductRepository;
+import vn.repository.CategoryRepository;
 import vn.repository.UserRepository;
 import vn.service.statistics.ProductStatisticsService;
 import vn.service.statistics.ProductStatisticsService.ProductStatisticsResult;
@@ -29,99 +30,62 @@ public class StatisticsController {
     private final UserRepository userRepository;
     private final OrderDetailRepository orderDetailRepository;
     private final ProductRepository productRepository;
+    private final CategoryRepository categoryRepository;
     private final ProductStatisticsService productStatisticsService;
 
     @GetMapping("/statistics")
-    public String statistics(Model model, Principal principal) {
+    public String statistics(
+            Model model,
+            Principal principal,
+            @RequestParam(name = "categoryId", required = false) Long categoryId,
+            @RequestParam(name = "search", required = false) String search,
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "10") int size) {
         User user = resolveUser(principal);
         model.addAttribute("user", user);
 
+        // Optional legacy stats (kept for compatibility if used elsewhere)
         List<Object[]> productStats = orderDetailRepository.getProductSalesStatistics();
         model.addAttribute("productStats", productStats);
 
-        model.addAttribute("categoryStats", Collections.emptyList());
-        model.addAttribute("brandStats", Collections.emptyList());
-        model.addAttribute("monthlyStats", Collections.emptyList());
-        model.addAttribute("yearlyStats", Collections.emptyList());
-        model.addAttribute("quarterlyStats", Collections.emptyList());
-        model.addAttribute("userStats", Collections.emptyList());
-        model.addAttribute("favoriteStats", Collections.emptyList());
-        model.addAttribute("inventoryStats", Collections.emptyList());
-        model.addAttribute("lowStock", Collections.emptyList());
-        model.addAttribute("expiringSoon", Collections.emptyList());
-        model.addAttribute("priceRangeStats", Collections.emptyList());
-        model.addAttribute("discountStats", Collections.emptyList());
-        model.addAttribute("manufactureStats", Collections.emptyList());
-        model.addAttribute("expiryStats", Collections.emptyList());
+        // Build KPI values on server-side
+        Map<String, Number> kpis = productStatisticsService.buildKpis();
+        model.addAttribute("bestSellers", kpis.getOrDefault("bestSellers", 0));
+        model.addAttribute("newProducts", kpis.getOrDefault("newProducts", 0));
+        model.addAttribute("slowMoving", kpis.getOrDefault("slowMoving", 0));
+        model.addAttribute("trendingUp", kpis.getOrDefault("trendingUp", 0));
+        model.addAttribute("lowStockCount", kpis.getOrDefault("lowStock", 0));
+        model.addAttribute("expiringSoonCount", kpis.getOrDefault("expiringSoon", 0));
+        model.addAttribute("favoritesCount", kpis.getOrDefault("favorites", 0));
+        model.addAttribute("discountedCount", kpis.getOrDefault("discounted", 0));
+
+    // Filters and pagination for inventory table
+    int safePage = Math.max(page, 0);
+    int safeSize = Math.min(Math.max(size, 5), 100);
+    String normSearch = (search == null || search.trim().isEmpty()) ? null : search.trim();
+
+    var pageable = org.springframework.data.domain.PageRequest.of(safePage, safeSize);
+    var pageResult = productRepository.getInventoryDetailsPage(categoryId, normSearch, pageable);
+
+    model.addAttribute("inventoryDetails", pageResult.getContent());
+    model.addAttribute("currentPage", pageResult.getNumber());
+    model.addAttribute("totalPages", pageResult.getTotalPages());
+    model.addAttribute("pageSize", pageResult.getSize());
+    model.addAttribute("totalElements", pageResult.getTotalElements());
+
+    // Category dropdown
+    model.addAttribute("categories", categoryRepository.findAll());
+    model.addAttribute("selectedCategoryId", categoryId);
+    model.addAttribute("searchTerm", search);
 
         return "admin/statistics";
     }
 
-    @GetMapping("/statistics/api/top-products")
-    @ResponseBody
-    public ResponseEntity<List<Object[]>> apiTopProducts(@RequestParam(defaultValue = "10") int limit) {
-        int safeLimit = Math.max(limit, 1);
-        return ResponseEntity.ok(productRepository.getTopSellingProducts(safeLimit));
-    }
-
-    @GetMapping("/statistics/api/inventory")
-    @ResponseBody
-    public ResponseEntity<List<Object[]>> apiInventory() {
-        return ResponseEntity.ok(productRepository.getInventoryStatistics());
-    }
-
-    @GetMapping("/statistics/api/low-stock")
-    @ResponseBody
-    public ResponseEntity<List<Object[]>> apiLowStock(@RequestParam(defaultValue = "10") int limit) {
-        return ResponseEntity.ok(productStatisticsService.fetchLowStockPreview(Math.max(limit, 1)));
-    }
-
-    @GetMapping("/statistics/api/expiring-soon")
-    @ResponseBody
-    public ResponseEntity<List<Object[]>> apiExpiringSoon(@RequestParam(defaultValue = "10") int limit) {
-        return ResponseEntity.ok(productStatisticsService.fetchExpiringPreview(Math.max(limit, 1)));
-    }
-
-    @GetMapping("/statistics/api/favorites")
-    @ResponseBody
-    public ResponseEntity<List<Object[]>> apiFavorites(@RequestParam(defaultValue = "25") int limit) {
-        return ResponseEntity.ok(productStatisticsService.fetchFavoritesPreview(Math.max(limit, 1)));
-    }
-
-    @GetMapping("/statistics/api/discounts")
-    @ResponseBody
-    public ResponseEntity<List<Object[]>> apiDiscounts() {
-        return ResponseEntity.ok(productRepository.getDiscountStatistics());
-    }
-
-    @GetMapping("/statistics/api/discount-products")
-    @ResponseBody
-    public ResponseEntity<List<Object[]>> apiDiscountProducts(@RequestParam(defaultValue = "20") int limit) {
-        return ResponseEntity.ok(productStatisticsService.fetchDiscountedPreview(Math.max(limit, 1)));
-    }
-
-    @GetMapping("/statistics/api/manufacture")
-    @ResponseBody
-    public ResponseEntity<List<Object[]>> apiManufacture() {
-        return ResponseEntity.ok(productRepository.getManufactureDateStatistics());
-    }
-
-    @GetMapping("/statistics/api/expiry")
-    @ResponseBody
-    public ResponseEntity<List<Object[]>> apiExpiry() {
-        return ResponseEntity.ok(productRepository.getExpiryDateStatistics());
-    }
-
-    @GetMapping("/statistics/api/kpis")
-    @ResponseBody
-    public ResponseEntity<Map<String, Number>> apiKpis() {
-        Map<String, Number> kpis = productStatisticsService.buildKpis();
-        return ResponseEntity.ok(kpis);
-    }
+    // Removed JSON APIs as per request: dashboard now renders server-side only
 
     @GetMapping("/statistics/products")
     public String productStatistics(Model model, Principal principal) {
-        return statistics(model, principal);
+        return statistics(model, principal, null, null, 0, 10);
     }
 
 
