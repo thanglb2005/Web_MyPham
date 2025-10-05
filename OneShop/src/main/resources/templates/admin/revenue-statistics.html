@@ -465,14 +465,19 @@
                         <!-- Revenue Summary Cards -->
                         <div class="col-md-12 mb-4">
                             <div class="row g-4">
-                                <div class="col-md-3">
+                                <div class="col-md-4">
                                     <div class="card metric-card primary-card">
                                         <div class="card-body p-4">
                                             <div class="d-flex justify-content-between align-items-center">
                                                 <div>
-                                                    <h3 id="currentMonthRevenueTitle" class="mb-1 fw-bold" th:text="${currentMonthRevenue}">2,500,000 đ</h3>
-                                                    <p class="mb-2 opacity-75">Doanh thu tháng này</p>
-                                                    <div id="growthIndicator" class="growth-indicator" th:classappend="${growthRate.startsWith('-')} ? 'text-danger' : 'text-success'">
+                                                    <h3 id="currentMonthRevenueTitle" class="mb-1 fw-bold" th:text="${selectedRevenue ?: currentMonthRevenue}">2,500,000 đ</h3>
+                                                    <p class="mb-2 opacity-75" id="periodRevenueText">
+                                                      <span th:if="${selectedType == 'month'}">Doanh thu tháng <span th:text="${currentMonth}">10</span>/<span th:text="${currentYear}">2025</span></span>
+                                                      <span th:if="${selectedType == 'quarter'}">Doanh thu quý <span th:text="${currentQuarter}">3</span>/<span th:text="${currentYear}">2025</span></span>
+                                                      <span th:if="${selectedType == 'year'}">Doanh thu năm <span th:text="${currentYear}">2025</span></span>
+                                                      <span th:if="${selectedType == null}">Doanh thu tháng này</span>
+                                                    </p>
+                                                    <div id="growthIndicator" class="growth-indicator" th:if="${growthRate != null}" th:classappend="${growthRate.startsWith('-')} ? 'text-danger' : 'text-success'">
                                                         <i class="fas" th:classappend="${growthRate.startsWith('-')} ? 'fa-arrow-down' : 'fa-arrow-up'" ></i>
                                                         <span th:text="${growthRate + '%'}">12.5%</span>
                                                     </div>
@@ -485,7 +490,7 @@
                                     </div>
                                 </div>
                                 
-                                <div class="col-md-3">
+                                <div class="col-md-4">
                                     <div class="card metric-card success-card">
                                         <div class="card-body p-4">
                                             <div class="d-flex justify-content-between align-items-center">
@@ -504,7 +509,8 @@
                                     </div>
                                 </div>
                                 
-                                <div class="col-md-3">
+                                <!-- Card "Kỳ được chọn" đã được ẩn theo yêu cầu -->
+                                <div class="col-md-3" style="display:none;">
                                     <div class="card metric-card info-card">
                                         <div class="card-body p-4">
                                             <div class="d-flex justify-content-between align-items-center">
@@ -523,7 +529,7 @@
                                     </div>
                                 </div>
                                 
-                                <div class="col-md-3">
+                                <div class="col-md-4">
                                     <div class="card metric-card warning-card">
                                         <div class="card-body p-4">
                                             <div class="d-flex justify-content-between align-items-center">
@@ -1131,12 +1137,36 @@
             // Đặt timeout ngắn để đảm bảo DOM được cập nhật sau khi dữ liệu được nhận
             setTimeout(function() {
                 try {
-                    // Update current month revenue card - sử dụng ID trực tiếp
-                    if (data.currentMonthRevenue) {
+                    // Update revenue card - hiển thị doanh thu theo kỳ đã chọn
+                    if (data.selectedRevenue) {
+                        const currentMonthRevenueEl = document.getElementById('currentMonthRevenueTitle');
+                        if (currentMonthRevenueEl) {
+                            currentMonthRevenueEl.textContent = data.selectedRevenue;
+                            console.log('Updated revenue display to selected revenue:', data.selectedRevenue);
+                        } else {
+                            console.error('Element #currentMonthRevenueTitle not found');
+                        }
+                        
+                        // Cập nhật cả text mô tả
+                        const periodTextEl = document.getElementById('periodRevenueText');
+                        if (periodTextEl) {
+                            let periodText = '';
+                            if (data.selectedType === 'month') {
+                                periodText = `Doanh thu tháng ${data.currentMonth}/${data.currentYear}`;
+                            } else if (data.selectedType === 'quarter') {
+                                periodText = `Doanh thu quý ${data.currentQuarter}/${data.currentYear}`;
+                            } else if (data.selectedType === 'year') {
+                                periodText = `Doanh thu năm ${data.currentYear}`;
+                            } else {
+                                periodText = 'Doanh thu tháng này';
+                            }
+                            periodTextEl.textContent = periodText;
+                        }
+                    } else if (data.currentMonthRevenue) {
                         const currentMonthRevenueEl = document.getElementById('currentMonthRevenueTitle');
                         if (currentMonthRevenueEl) {
                             currentMonthRevenueEl.textContent = data.currentMonthRevenue;
-                            console.log('Updated current month revenue to:', data.currentMonthRevenue);
+                            console.log('Updated to current month revenue:', data.currentMonthRevenue);
                         } else {
                             console.error('Element #currentMonthRevenueTitle not found');
                         }
@@ -1190,27 +1220,10 @@
                         // Cập nhật tiêu đề kỳ được chọn
                     // Không cần cập nhật tiêu đề kỳ ở đây nữa vì đã được cập nhật ở updatePeriodBadge
                     // Chỉ ghi log để kiểm tra
-                    const selectedPeriodEl = document.getElementById('selectedPeriodTitle');
-                    if (selectedPeriodEl) {
-                        // Kiểm tra nếu tiêu đề hiện tại khác với data.selectedPeriod
-                        if (selectedPeriodEl.textContent !== data.selectedPeriod) {
-                            console.log('Note: Title element content differs from API data:', {
-                                currentTitle: selectedPeriodEl.textContent,
-                                apiTitle: data.selectedPeriod
-                            });
-                        } else {
-                            console.log('Title is already up-to-date:', data.selectedPeriod);
-                        }
-                    } else {
-                        console.error('Element #selectedPeriodTitle not found');
-                    }                        // Cập nhật doanh thu của kỳ được chọn
-                        const selectedRevenueEl = document.getElementById('selectedRevenueValue');
-                        if (selectedRevenueEl) {
-                            selectedRevenueEl.textContent = data.selectedRevenue;
-                            console.log('Updated selected period revenue to:', data.selectedRevenue);
-                        } else {
-                            console.error('Element #selectedRevenueValue not found');
-                        }
+                    // Không cần cập nhật selectedPeriodTitle vì phần này đã bị ẩn
+                    console.log('Selected period from API would be:', data.selectedPeriod);                        // Cập nhật doanh thu của kỳ được chọn
+                        // Không cần cập nhật selectedRevenueValue vì phần này đã bị ẩn
+                        console.log('Selected revenue from API would be:', data.selectedRevenue);
                     } else {
                         console.warn('Missing selected period data:', data);
                     }
@@ -1420,14 +1433,28 @@
                 periodText = `Năm ${year}`;
             }
             
-            // Cập nhật tiêu đề trực tiếp bằng ID
-            const selectedPeriodEl = document.getElementById('selectedPeriodTitle');
-            if (selectedPeriodEl) {
-                selectedPeriodEl.textContent = periodText;
-                console.log('Direct update of period title to:', periodText);
-            } else {
-                console.error('Selected period element not found with ID: selectedPeriodTitle');
+            // Cập nhật tiêu đề trong thẻ doanh thu
+            const periodTextEl = document.getElementById('periodRevenueText');
+            if (periodTextEl) {
+                let revenueText = '';
+                if (type === 'month' && month) {
+                    revenueText = `Doanh thu tháng ${month}/${year}`;
+                } else if (type === 'quarter' && quarter) {
+                    revenueText = `Doanh thu quý ${quarter}/${year}`;
+                } else {
+                    revenueText = `Doanh thu năm ${year}`;
+                }
+                periodTextEl.textContent = revenueText;
+                console.log('Updated revenue card title to:', revenueText);
             }
+            
+            // Chỉ cập nhật tiêu đề trong updatePeriodBadge
+            // Không gọi API ở đây nữa vì nó đã được gọi trong filterRevenue
+            // Tránh trường hợp gọi API nhiều lần liên tiếp khi cập nhật
+            
+            // Không cần cập nhật các phần tử đã bị ẩn
+            // Tiêu đề kỳ được chọn đã bị ẩn theo yêu cầu người dùng
+            console.log('Period title would be:', periodText);
             
 
             
@@ -1436,6 +1463,21 @@
 
         async function filterRevenue(type) {
             currentSelectedType = type;
+            
+            // Cập nhật tiêu đề card doanh thu ngay lập tức
+            const periodTextEl = document.getElementById('periodRevenueText');
+            if (periodTextEl) {
+                let revenueText = '';
+                if (type === 'month') {
+                    revenueText = `Doanh thu tháng ${selectedMonth}/${selectedYear}`;
+                } else if (type === 'quarter') {
+                    revenueText = `Doanh thu quý ${selectedQuarter}/${selectedYear}`;
+                } else {
+                    revenueText = `Doanh thu năm ${selectedYear}`;
+                }
+                periodTextEl.textContent = revenueText;
+                console.log('Updated revenue card title to:', revenueText);
+            }
             
             // Update button states
             document.querySelectorAll('button[onclick*="filterRevenue"]').forEach(btn => {
@@ -1503,9 +1545,26 @@
                     
                     // Đảm bảo dữ liệu có tiêu đề kỳ được chọn đúng
                     summaryData.selectedPeriod = periodTitle;
+                    summaryData.selectedType = currentSelectedType;
+                    summaryData.currentYear = selectedYear;
+                    summaryData.currentMonth = selectedMonth;
+                    summaryData.currentQuarter = selectedQuarter;
                     
                     // Update the statistics cards
                     updateStatisticsCards(summaryData);
+                    
+                    // Cập nhật số liệu doanh thu trong card
+                    const revenueDisplay = summaryData.selectedRevenue || "0 đ";
+                    console.log('Updating revenue display to:', revenueDisplay);
+                    
+                    const revenueValueEl = document.getElementById('currentMonthRevenueTitle');
+                    if (revenueValueEl) {
+                        revenueValueEl.textContent = revenueDisplay;
+                        console.log('Updated revenue value to:', revenueDisplay);
+                    }
+                    
+                    // Cập nhật tiêu đề trong card doanh thu
+                    updatePeriodBadge();
                 } else {
                     console.error('Failed to fetch summary stats:', summaryResponse.status);
                 }
@@ -1538,8 +1597,32 @@
                     const summaryData = await summaryResponse.json();
                     console.log('Initial summary data:', summaryData);
                     
+                    // Đảm bảo dữ liệu phản ánh kỳ đã chọn
+                    summaryData.selectedType = currentSelectedType;
+                    summaryData.currentYear = selectedYear;
+                    summaryData.currentMonth = selectedMonth;
+                    summaryData.currentQuarter = selectedQuarter;
+                    
                     // Update the statistics cards
                     updateStatisticsCards(summaryData);
+                    
+                    // Cập nhật tiêu đề trong card doanh thu
+                    updatePeriodBadge();
+                    
+                    // Cập nhật tiêu đề cho card doanh thu
+                    const periodTextEl = document.getElementById('periodRevenueText');
+                    if (periodTextEl) {
+                        let revenueText = '';
+                        if (currentSelectedType === 'month' && selectedMonth) {
+                            revenueText = `Doanh thu tháng ${selectedMonth}/${selectedYear}`;
+                        } else if (currentSelectedType === 'quarter' && selectedQuarter) {
+                            revenueText = `Doanh thu quý ${selectedQuarter}/${selectedYear}`;
+                        } else {
+                            revenueText = `Doanh thu năm ${selectedYear}`;
+                        }
+                        periodTextEl.textContent = revenueText;
+                        console.log('Updated revenue card title to:', revenueText);
+                    }
                     
                     // Update growth rate display from the API data
                     const growthRateEl = document.getElementById('growthRateDisplay');
