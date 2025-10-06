@@ -142,12 +142,18 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long> 
 
     /**
      * Statistics by user
-     * Returns: user_id, name, total_orders, total_spent, avg_order_value
+     * Returns: user_id, name, total_orders, total_spent, avg_order_value, last_purchase_date, customer_status
      */
     @Query(value = "SELECT u.user_id, u.name, " +
             "COUNT(DISTINCT o.order_id) as total_orders, " +
             "SUM(o.amount) as total_spent, " +
-            "AVG(o.amount) as avg_order_value " +
+            "AVG(o.amount) as avg_order_value, " +
+            "MAX(o.order_date) as last_purchase_date, " +
+            "CASE " +
+            "   WHEN DATEDIFF(day, MAX(o.order_date), GETDATE()) <= 30 THEN N'Khách hàng thường xuyên' " +
+            "   WHEN DATEDIFF(day, MAX(o.order_date), GETDATE()) <= 90 THEN N'Khách hàng thỉnh thoảng' " +
+            "   ELSE N'Khách hàng không hoạt động' " +
+            "END as customer_status " +
             "FROM orders o " +
             "INNER JOIN [user] u ON o.user_id = u.user_id " +
             "WHERE o.status IN (1, 2) " +
