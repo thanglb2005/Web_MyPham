@@ -43,7 +43,7 @@ public class StatisticsController {
             @RequestParam(name = "size", defaultValue = "10") int size) {
         User user = resolveUser(principal);
         model.addAttribute("user", user);
-
+ 
         // Optional legacy stats (kept for compatibility if used elsewhere)
         List<Object[]> productStats = orderDetailRepository.getProductSalesStatistics();
         model.addAttribute("productStats", productStats);
@@ -87,14 +87,9 @@ public class StatisticsController {
     public String productStatistics(Model model, Principal principal) {
         return statistics(model, principal, null, null, 0, 10);
     }
-
-
-
-
-
     @GetMapping("/statistics/view")
     public String statisticsListView(
-            @RequestParam String type,
+            @RequestParam String type, // Xác định loại thống kê
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) String search,

@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+  <meta http-equiv="content-type" content="text/html;charset=utf-8" />
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
+    <meta name="author" content="mironcoder" />
+    <meta name="email" content="mironcoder@gmail.com" />
+    <meta name="profile" content="https://themeforest.net/user/mironcoder" />
+    <meta name="template" content="greeny" />
+    <meta name="title" content="greeny - Ecommerce Food Store HTML Template" />
+    <meta
+      name="keywords"
+      content="organic, food, shop, ecommerce, store, html, bootstrap, template, agriculture, vegetables, products, farm, grocery, natural, online"
+    />
+    <title>OneShop - Sản phẩm</title>
+    <link rel="icon" href="/assets/img/icon.png" />
+    <link rel="stylesheet" href="/fonts/flaticon/flaticon.css" />
+    <link rel="stylesheet" href="/fonts/icofont/icofont.min.css" />
+    <link rel="stylesheet" href="/fonts/fontawesome/fontawesome.min.css" />
+    <link rel="stylesheet" href="/vendor/venobox/venobox.min.css" />
+    <link rel="stylesheet" href="/vendor/slickslider/slick.min.css" />
+    <link rel="stylesheet" href="/vendor/niceselect/nice-select.min.css" />
+    <link rel="stylesheet" href="/vendor/bootstrap/bootstrap.min.css" />
+    <link rel="stylesheet" href="/css/main.css" />
+  </head>
+  <body>
+    <header th:replace="~{/web/fragments/header :: header}"></header>
+
+    <section
+      class="inner-section single-banner"
+      style="background: url(/images/single-banner.jpg) no-repeat center"
+    >
+      <div class="container">
+        <h2>Sản phẩm</h2>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a th:href="@{/}">Trang chủ</a></li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="inner-section shop-part">
+      <div class="container">
+        <div class="row content-reverse">
+          <div class="col-lg-3">
+            <!-- Search Widget -->
+            <div class="shop-widget">
+              <h6 class="shop-widget-title">Tìm kiếm sản phẩm</h6>
+              <form
+                th:action="@{/searchProduct}"
+                method="get"
+                class="shop-widget-form"
+              >
+                <input
+                  type="text"
+                  name="productName"
+                  placeholder="Tìm kiếm..."
+                />
+                <button type="submit"><i class="icofont-search"></i></button>
+              </form>
+            </div>
+
+            <!-- Category Filter Widget -->
+            <div class="shop-widget">
+              <h6 class="shop-widget-title">Danh mục sản phẩm</h6>
+              <ul class="shop-widget-list shop-widget-scroll">
+                <li>
+                  <div class="shop-widget-content">
+                    <a th:href="@{/products}">
+                      <label style="color: #0d6efd; font-weight: 600"
+                        >Tất cả sản phẩm</label
+                      >
+                    </a>
+                  </div>
+                </li>
+                <li th:each="item : ${coutnProductByCategory}">
+                  <div class="shop-widget-content">
+                    <a th:href="@{/productByCategory(id=${item[0]})}">
+                      <label
+                        for="cate1"
+                        style="color: #0d6efd; cursor: pointer"
+                      >
+                        [[${item[1]}]]
+                      </label>
+                    </a>
+                  </div>
+                  <span class="shop-widget-number">([[${item[2]}]])</span>
+                </li>
+              </ul>
+            </div>
+
+            <!-- Price Range Widget -->
+            <div class="shop-widget">
+              <h6 class="shop-widget-title">Khoảng giá</h6>
+              <ul class="shop-widget-list">
+                <li>
+                  <div class="shop-widget-content">
+                    <a th:href="@{/products}">
+                      <label style="cursor: pointer">Tất cả</label>
+                    </a>
+                  </div>
+                </li>
+                <li>
+                  <div class="shop-widget-content">
+                    <a href="javascript:void(0);">
+                      <label style="cursor: pointer">Dưới 100.000đ</label>
+                    </a>
+                  </div>
+                </li>
+                <li>
+                  <div class="shop-widget-content">
+                    <a href="javascript:void(0);">
+                      <label style="cursor: pointer">100.000đ - 300.000đ</label>
+                    </a>
+                  </div>
+                </li>
+                <li>
+                  <div class="shop-widget-content">
+                    <a href="javascript:void(0);">
+                      <label style="cursor: pointer">300.000đ - 500.000đ</label>
+                    </a>
+                  </div>
+                </li>
+                <li>
+                  <div class="shop-widget-content">
+                    <a href="javascript:void(0);">
+                      <label style="cursor: pointer">Trên 500.000đ</label>
+                    </a>
+                  </div>
+                </li>
+              </ul>
+            </div>
+
+            <!-- Promo Banner -->
+            <div class="shop-widget-promo">
+              <div class="promo-content">
+                <h6>Ưu đãi đặc biệt!</h6>
+                <p>Giảm giá lên đến 50% cho sản phẩm mới</p>
+                <a th:href="@{/products}" class="btn btn-inline">
+                  <span>Mua ngay</span>
+                </a>
+              </div>
+            </div>
+
+            <!-- Hot Products Widget -->
+            <div class="shop-widget">
+              <h6 class="shop-widget-title">Sản phẩm hot</h6>
+              <div
+                class="shop-widget-group"
+                th:if="${bestSaleProduct20 != null}"
+              >
+                <div
+                  class="shop-widget-card"
+                  th:each="item, iterStat : ${bestSaleProduct20}"
+                  th:if="${iterStat.index < 3}"
+                >
+                  <div class="shop-widget-img">
+                    <a th:href="@{/productDetail(id=${item.productId})}">
+                      <img
+                        th:if="${item.productImage != null and !#strings.isEmpty(item.productImage)}"
+                        th:src="@{'/loadImage?imageName='+${item.productImage}}"
+                        alt="product"
+                      />
+                      <img
+                        th:unless="${item.productImage != null and !#strings.isEmpty(item.productImage)}"
+                        src="/assets/img/examples/product1.jpg"
+                        alt="product"
+                      />
+                    </a>
+                  </div>
+                  <div class="shop-widget-meta">
+                    <h6>
+                      <a th:href="@{/productDetail(id=${item.productId})}">
+                        [[${item.productName}]]
+                      </a>
+                    </h6>
+                    <div class="product-rating">
+                      <i class="active icofont-star"></i>
+                      <i class="active icofont-star"></i>
+                      <i class="active icofont-star"></i>
+                      <i class="active icofont-star"></i>
+                      <i class="icofont-star"></i>
+                    </div>
+                    <h6 class="product-price">
+                      <span>
+                        [[${#numbers.formatDecimal(item.price * (1 -
+                        item.discount/100.0), 1, 'DEFAULT', 0, 'DEFAULT')}]] đ
+                      </span>
+                    </h6>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-lg-9">
+            <!-- Shop Toolbar -->
+            <div class="row">
+              <div class="col-lg-12">
+                <div class="top-filter">
+                  <div class="filter-show">
+                    <label class="filter-label">
+                      Hiển thị
+                      <span th:text="${products.numberOfElements}"></span> trong
+                      tổng số
+                      <span th:text="${products.totalElements}"></span> sản phẩm
+                    </label>
+                  </div>
+                  <div class="filter-short">
+                    <label class="filter-label">Sắp xếp:</label>
+                    <select class="custom-select filter-select" id="sortSelect">
+                      <option value="default" selected>Mặc định</option>
+                      <option value="name-asc">Tên A-Z</option>
+                      <option value="name-desc">Tên Z-A</option>
+                      <option value="price-asc">Giá thấp đến cao</option>
+                      <option value="price-desc">Giá cao đến thấp</option>
+                      <option value="newest">Mới nhất</option>
+                      <option value="discount">Giảm giá nhiều nhất</option>
+                    </select>
+                  </div>
+                  <div class="filter-action">
+                    <button
+                      class="filter-btn"
+                      data-view="grid"
+                      title="Grid View"
+                    >
+                      <i class="fas fa-th"></i>
+                    </button>
+                    <button
+                      class="filter-btn active"
+                      data-view="list"
+                      title="List View"
+                    >
+                      <i class="fas fa-list"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Products Grid -->
+            <div
+              class="row row-cols-2 row-cols-md-3 row-cols-lg-3 row-cols-xl-4"
+              id="product-container"
+            >
+              <div class="col" th:each="item : ${products}">
+                <div class="product-card">
+                  <div class="product-media">
+                    <div class="product-label">
+                      <label
+                        class="label-text new"
+                        th:if="${item.enteredDate != null}"
+                        >New</label
+                      >
+                      <label class="label-text sale"
+                        >- [[${item.discount + '%'}]]</label
+                      >
+                    </div>
+                    <button
+                      class="product-wish wish"
+                      title="Thêm vào yêu thích"
+                    >
+                      <i class="fas fa-heart"></i>
+                    </button>
+                    <a
+                      class="product-image"
+                      th:href="@{/productDetail(id=${item.productId})}"
+                    >
+                      <img
+                        th:if="${item.productImage != null and !#strings.isEmpty(item.productImage)}"
+                        th:src="@{'/loadImage?imageName='+${item.productImage}}"
+                        alt="product"
+                      />
+                      <img
+                        th:unless="${item.productImage != null and !#strings.isEmpty(item.productImage)}"
+                        src="/assets/img/examples/product1.jpg"
+                        alt="product"
+                      />
+                    </a>
+                    <div class="product-widget">
+                      <a
+                        title="Yêu thích"
+                        href="javascript:void(0);"
+                        class="fas fa-heart wish"
+                      ></a>
+                      <a
+                        title="Xem nhanh"
+                        th:href="@{/productDetail(id=${item.productId})}"
+                        class="fas fa-eye"
+                      ></a>
+                    </div>
+                  </div>
+                  <div class="product-content">
+                    <div class="product-rating">
+                      <i class="active icofont-star"></i>
+                      <i class="active icofont-star"></i>
+                      <i class="active icofont-star"></i>
+                      <i class="active icofont-star"></i>
+                      <i class="icofont-star"></i>
+                      <a href="javascript:void(0);">(4.0)</a>
+                    </div>
+                    <h6 class="product-name">
+                      <a th:href="@{/productDetail(id=${item.productId})}"
+                        >[[${item.productName}]]</a
+                      >
+                    </h6>
+                    <h6 class="product-price">
+                      <del th:if="${item.discount > 0}"
+                        >[[${#numbers.formatDecimal(item.price, 1, 'DEFAULT', 0,
+                        'DEFAULT')}]] đ</del
+                      >
+                      <span
+                        >[[${#numbers.formatDecimal(item.price * (1 -
+                        item.discount/100.0), 1, 'DEFAULT', 0, 'DEFAULT')}]]
+                        đ</span
+                      >
+                    </h6>
+                    <a
+                      class="product-add"
+                      title="Thêm vào giỏ hàng"
+                      th:href="@{/addToCart(productId=${item.productId})}"
+                      th:if="${item.quantity > 0}"
+                    >
+                      <i class="fas fa-shopping-basket"></i>
+                      <span>Thêm giỏ hàng</span>
+                    </a>
+                    <button
+                      class="product-add disabled"
+                      disabled
+                      th:unless="${item.quantity > 0}"
+                    >
+                      <span>Hết hàng</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-lg-12">
+                <div class="bottom-paginate">
+                  <ul class="pagination">
+                    <li
+                      th:each="pageNumber : ${pageNumbers}"
+                      th:if="${products.totalPages > 0}"
+                      class="page-item"
+                    >
+                      <a
+                        class="page-link"
+                        th:href="@{/products(size=${products.size}, page=${pageNumber})}"
+                        th:class="${pageNumber==products.number + 1} ? 'page-link active'"
+                        >[[${pageNumber}]]</a
+                      >
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer th:replace="~{/web/fragments/footer :: footer}"></footer>
+
+    <script src="/vendor/bootstrap/jquery-1.12.4.min.js"></script>
+    <script src="/vendor/bootstrap/popper.min.js"></script>
+    <script src="/vendor/bootstrap/bootstrap.min.js"></script>
+    <script src="/vendor/countdown/countdown.min.js"></script>
+    <script src="/vendor/niceselect/nice-select.min.js"></script>
+    <script src="/vendor/slickslider/slick.min.js"></script>
+    <script src="/vendor/venobox/venobox.min.js"></script>
+    <script src="/js/nice-select.js"></script>
+    <script src="/js/countdown.js"></script>
+    <script src="/js/accordion.js"></script>
+    <script src="/js/venobox.js"></script>
+    <script src="/js/slick.js"></script>
+    <script src="/js/main.js"></script>
+
+    <script>
+      $(document).ready(function () {
+        // Sort functionality
+        $("#sortSelect").on("change", function () {
+          var sortValue = $(this).val();
+          var currentUrl = new URL(window.location.href);
+
+          // Add sort parameter to URL and reload
+          if (sortValue !== "default") {
+            currentUrl.searchParams.set("sort", sortValue);
+          } else {
+            currentUrl.searchParams.delete("sort");
+          }
+
+          window.location.href = currentUrl.toString();
+        });
+
+        // View mode toggle
+        $(".filter-btn").on("click", function () {
+          var view = $(this).data("view");
+          $(".filter-btn").removeClass("active");
+          $(this).addClass("active");
+
+          var container = $("#product-container");
+
+          if (view === "list") {
+            container.removeClass(
+              "row-cols-2 row-cols-md-3 row-cols-lg-3 row-cols-xl-4"
+            );
+            container.addClass("row-cols-1");
+            container.find(".product-card").addClass("list-view");
+          } else {
+            container.removeClass("row-cols-1");
+            container.addClass(
+              "row-cols-2 row-cols-md-3 row-cols-lg-3 row-cols-xl-4"
+            );
+            container.find(".product-card").removeClass("list-view");
+          }
+        });
+
+        // Price range filters (can be enhanced with backend integration)
+        $(".shop-widget-list a").on("click", function (e) {
+          var text = $(this).find("label").text();
+          if (text.includes("đ")) {
+            e.preventDefault();
+            console.log("Price filter clicked:", text);
+            // Add your price filtering logic here
+          }
+        });
+
+        // Add to cart with feedback
+        $(".product-add").on("click", function (e) {
+          if (!$(this).hasClass("disabled")) {
+            // Optional: Add animation or notification here
+            var productName = $(this)
+              .closest(".product-card")
+              .find(".product-name a")
+              .text();
+            console.log("Added to cart:", productName);
+          }
+        });
+
+        // Smooth scroll for product cards
+        $(".product-card").hover(
+          function () {
+            $(this).css("transform", "translateY(-5px)");
+          },
+          function () {
+            $(this).css("transform", "translateY(0)");
+          }
+        );
+      });
+    </script>
+  </body>
+</html>

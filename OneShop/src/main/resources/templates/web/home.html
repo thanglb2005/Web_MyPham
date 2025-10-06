@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>OneShop - Trang chủ</title>
+    <link rel="icon" href="/assets/img/icon.png" />
+    <link rel="stylesheet" href="/fonts/flaticon/flaticon.css" />
+    <link rel="stylesheet" href="/fonts/icofont/icofont.min.css" />
+    <link rel="stylesheet" href="/fonts/fontawesome/fontawesome.min.css" />
+    <link rel="stylesheet" href="/vendor/venobox/venobox.min.css" />
+    <link rel="stylesheet" href="/vendor/slickslider/slick.min.css" />
+    <link rel="stylesheet" href="/vendor/niceselect/nice-select.min.css" />
+    <link rel="stylesheet" href="/vendor/bootstrap/bootstrap.min.css" />
+    <link rel="stylesheet" href="/css/main.css" />
+    <link rel="stylesheet" href="/css/index.css" />
+  </head>
+  <body>
+    <header th:replace="~{/web/fragments/header :: header}"></header>
+
+    <!-- Banner slider -->
+    <section class="home-index-slider slider-arrow slider-dots">
+      <div class="banner-part banner-1">
+        <div class="container">
+          <div class="row align-items-center">
+            <div class="col-md-6 col-lg-6">
+              <div class="banner-content">
+                <h1>Mỹ phẩm cao cấp - Giao hàng tận nhà miễn phí</h1>
+                <p>
+                  OneShop mang đến những sản phẩm mỹ phẩm chất lượng cao, an
+                  toàn và hiệu quả. Chúng tôi cam kết mang đến vẻ đẹp tự nhiên
+                  cho bạn.
+                </p>
+                <div class="banner-btn">
+                  <a class="btn btn-inline" th:href="@{/products}">
+                    <i class="fas fa-shopping-basket"></i
+                    ><span>Mua sắm ngay</span>
+                  </a>
+                  <a class="btn btn-outline" href="#categories">
+                    <i class="icofont-sale-discount"></i><span>Khuyến mãi</span>
+                  </a>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6 col-lg-6">
+              <div class="banner-img">
+                <img
+                  src="/loadImage?imageName=SonChanelCam.png"
+                  alt="OneShop"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Suggest by category -->
+    <section
+      class="section suggest-part"
+      th:if="${coutnProductByCategory} != null"
+    >
+      <div class="container">
+        <ul class="suggest-slider slider-arrow">
+          <li th:each="item : ${coutnProductByCategory}">
+            <a
+              class="suggest-card"
+              th:href="@{/productByCategory(id=${item[0]})}"
+            >
+              <img src="/assets/img/examples/product2.jpg" alt="suggest" />
+              <h5>[[${item[1]}]] <span>([[${item[2]}]] sản phẩm)</span></h5>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- Best sellers -->
+    <section class="section recent-part" th:if="${bestSaleProduct20} != null">
+      <div class="container">
+        <div class="row">
+          <div class="col-lg-12">
+            <div class="section-heading"><h2>Sản phẩm bán chạy</h2></div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col">
+            <ul class="new-slider slider-arrow">
+              <li th:each="item : ${bestSaleProduct20}">
+                <div class="product-card">
+                  <div class="product-media">
+                    <div class="product-label">
+                      <label class="label-text new">bán chạy</label>
+                      <label class="label-text sale"
+                        >- [[${item.discount}]]%</label
+                      >
+                    </div>
+                    <button class="product-wish wish">
+                      <i class="fas fa-heart"></i>
+                    </button>
+                    <a
+                      class="product-image"
+                      th:href="@{/productDetail(id=${item.productId})}"
+                    >
+                      <img
+                        th:if="${item.productImage != null and !#strings.isEmpty(item.productImage)}"
+                        th:src="@{'/loadImage?imageName='+${item.productImage}}"
+                        alt="product"
+                      />
+                      <img
+                        th:unless="${item.productImage != null and !#strings.isEmpty(item.productImage)}"
+                        src="/assets/img/examples/product1.jpg"
+                        alt="product"
+                      />
+                    </a>
+                    <div class="product-widget">
+                      <a
+                        title="Chi tiết"
+                        th:href="@{/productDetail(id=${item.productId})}"
+                        class="fas fa-eye"
+                      ></a>
+                    </div>
+                  </div>
+                  <div class="product-content">
+                    <div class="product-rating">
+                      <i class="active icofont-star"></i
+                      ><i class="active icofont-star"></i
+                      ><i class="active icofont-star"></i
+                      ><i class="active icofont-star"></i
+                      ><i class="icofont-star"></i>
+                    </div>
+                    <h6 class="product-name">
+                      <a th:href="@{/productDetail(id=${item.productId})}"
+                        >[[${item.productName}]]</a
+                      >
+                    </h6>
+                    <h6 class="product-price">
+                      <del
+                        >[[${#numbers.formatDecimal(item.price, 1, 'DEFAULT', 0,
+                        'DEFAULT')}]] đ</del
+                      >
+                      <span
+                        >[[${#numbers.formatDecimal(item.price * (1 -
+                        item.discount/100.0), 1, 'DEFAULT', 0, 'DEFAULT')}]]
+                        đ</span
+                      >
+                    </h6>
+                  </div>
+                </div>
+              </li>
+            </ul>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-lg-12">
+            <div class="section-btn-25">
+              <a th:href="@{/products}" class="btn btn-outline"
+                ><i class="fas fa-eye"></i><span>Xem thêm</span></a
+              >
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- New products -->
+    <section class="section newitem-part" th:if="${productList} != null">
+      <div class="container">
+        <div class="row">
+          <div class="col">
+            <div class="section-heading"><h2>Sản phẩm mới</h2></div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col">
+            <ul class="new-slider slider-arrow">
+              <li th:each="item : ${productList}">
+                <div class="product-card">
+                  <div class="product-media">
+                    <div class="product-label">
+                      <label class="label-text new">mới</label>
+                      <label class="label-text sale"
+                        >- [[${item.discount}]]%</label
+                      >
+                    </div>
+                    <button class="product-wish wish">
+                      <i class="fas fa-heart"></i>
+                    </button>
+                    <a
+                      class="product-image"
+                      th:href="@{/productDetail(id=${item.productId})}"
+                    >
+                      <img
+                        th:if="${item.productImage != null and !#strings.isEmpty(item.productImage)}"
+                        th:src="@{'/loadImage?imageName='+${item.productImage}}"
+                        alt="product"
+                      />
+                      <img
+                        th:unless="${item.productImage != null and !#strings.isEmpty(item.productImage)}"
+                        src="/assets/img/examples/product1.jpg"
+                        alt="product"
+                      />
+                    </a>
+                    <div class="product-widget">
+                      <a
+                        title="Chi tiết"
+                        th:href="@{/productDetail(id=${item.productId})}"
+                        class="fas fa-eye"
+                      ></a>
+                    </div>
+                  </div>
+                  <div class="product-content">
+                    <div class="product-rating">
+                      <i class="active icofont-star"></i
+                      ><i class="active icofont-star"></i
+                      ><i class="active icofont-star"></i
+                      ><i class="active icofont-star"></i
+                      ><i class="icofont-star"></i>
+                    </div>
+                    <h6 class="product-name">
+                      <a th:href="@{/productDetail(id=${item.productId})}"
+                        >[[${item.productName}]]</a
+                      >
+                    </h6>
+                    <h6 class="product-price">
+                      <del
+                        >[[${#numbers.formatDecimal(item.price, 1, 'DEFAULT', 0,
+                        'DEFAULT')}]] đ</del
+                      >
+                      <span
+                        >[[${#numbers.formatDecimal(item.price * (1 -
+                        item.discount/100.0), 1, 'DEFAULT', 0, 'DEFAULT')}]]
+                        đ</span
+                      >
+                    </h6>
+                  </div>
+                </div>
+              </li>
+            </ul>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col">
+            <div class="section-btn-25">
+              <a th:href="@{/products}" class="btn btn-outline"
+                ><i class="fas fa-eye"></i><span>Xem thêm</span></a
+              >
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Featured products -->
+    <section class="section feature-part" th:if="${bestSaleProduct20} != null">
+      <div class="container">
+        <div class="row">
+          <div class="col-lg-12">
+            <div class="section-heading"><h2>Mặt hàng nổi bật</h2></div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col">
+            <ul class="new-slider slider-arrow">
+              <li th:each="item : ${bestSaleProduct20}">
+                <div class="product-card">
+                  <div class="product-media">
+                    <div class="product-label">
+                      <label class="label-text feat">nổi bật</label>
+                      <label class="label-text sale"
+                        >- [[${item.discount}]]%</label
+                      >
+                    </div>
+                    <button class="product-wish wish">
+                      <i class="fas fa-heart"></i>
+                    </button>
+                    <a
+                      class="product-image"
+                      th:href="@{/productDetail(id=${item.productId})}"
+                    >
+                      <img
+                        th:if="${item.productImage != null and !#strings.isEmpty(item.productImage)}"
+                        th:src="@{'/loadImage?imageName='+${item.productImage}}"
+                        alt="product"
+                      />
+                      <img
+                        th:unless="${item.productImage != null and !#strings.isEmpty(item.productImage)}"
+                        src="/assets/img/examples/product3.jpg"
+                        alt="product"
+                      />
+                    </a>
+                    <div class="product-widget">
+                      <a
+                        title="Chi tiết"
+                        th:href="@{/productDetail(id=${item.productId})}"
+                        class="fas fa-eye"
+                      ></a>
+                    </div>
+                  </div>
+                  <div class="product-content">
+                    <div class="product-rating">
+                      <i class="active icofont-star"></i
+                      ><i class="active icofont-star"></i
+                      ><i class="active icofont-star"></i
+                      ><i class="active icofont-star"></i
+                      ><i class="icofont-star"></i>
+                    </div>
+                    <h6 class="product-name">
+                      <a th:href="@{/productDetail(id=${item.productId})}"
+                        >[[${item.productName}]]</a
+                      >
+                    </h6>
+                    <h6 class="product-price">
+                      <del
+                        >[[${#numbers.formatDecimal(item.price, 1, 'DEFAULT', 0,
+                        'DEFAULT')}]] đ</del
+                      >
+                      <span
+                        >[[${#numbers.formatDecimal(item.price * (1 -
+                        item.discount/100.0), 1, 'DEFAULT', 0, 'DEFAULT')}]]
+                        đ</span
+                      >
+                    </h6>
+                  </div>
+                </div>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Newsletter -->
+    <section
+      class="news-part"
+      style="background: url(/assets/img/blogpost.jpg) no-repeat center"
+    >
+      <div class="container">
+        <div class="row align-items-center">
+          <div class="col-md-5 col-lg-6 col-xl-7">
+            <div class="news-text">
+              <h2>Nhận ưu đãi 20% cho người đăng ký</h2>
+              <p>Đăng ký nhận tin để không bỏ lỡ khuyến mãi.</p>
+            </div>
+          </div>
+          <div class="col-md-7 col-lg-6 col-xl-5">
+            <form class="news-form">
+              <input type="text" placeholder="Nhập email của bạn" /><button>
+                <span><i class="icofont-ui-email"></i>Gửi</span>
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Intro icons -->
+    <section class="intro-part">
+      <div class="container">
+        <div class="row intro-content">
+          <div class="col-sm-6 col-lg-3">
+            <div class="intro-wrap">
+              <div class="intro-icon"><i class="fas fa-truck"></i></div>
+              <div class="intro-content">
+                <h5>Giao hàng nhanh</h5>
+                <p>Miễn phí đơn hàng đủ điều kiện.</p>
+              </div>
+            </div>
+          </div>
+          <div class="col-sm-6 col-lg-3">
+            <div class="intro-wrap">
+              <div class="intro-icon"><i class="fas fa-sync-alt"></i></div>
+              <div class="intro-content">
+                <h5>Đổi trả dễ dàng</h5>
+                <p>Trong vòng 7 ngày.</p>
+              </div>
+            </div>
+          </div>
+          <div class="col-sm-6 col-lg-3">
+            <div class="intro-wrap">
+              <div class="intro-icon"><i class="fas fa-headset"></i></div>
+              <div class="intro-content">
+                <h5>Hỗ trợ 24/7</h5>
+                <p>Tư vấn tận tâm.</p>
+              </div>
+            </div>
+          </div>
+          <div class="col-sm-6 col-lg-3">
+            <div class="intro-wrap">
+              <div class="intro-icon"><i class="fas fa-lock"></i></div>
+              <div class="intro-content">
+                <h5>Thanh toán an toàn</h5>
+                <p>Bảo mật nhiều lớp.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer th:replace="~{/web/fragments/footer :: footer}"></footer>
+
+    <script src="/vendor/bootstrap/jquery-3.6.0.min.js"></script>
+    <script src="/vendor/bootstrap/bootstrap.bundle.min.js"></script>
+    <script src="/vendor/countdown/countdown.min.js"></script>
+    <script src="/vendor/niceselect/nice-select.min.js"></script>
+    <script src="/vendor/slickslider/slick.min.js"></script>
+    <script src="/vendor/venobox/venobox.min.js"></script>
+    <script src="/js/nice-select.js"></script>
+    <script src="/js/countdown.js"></script>
+    <script src="/js/accordion.js"></script>
+    <script src="/js/venobox.js"></script>
+    <script src="/js/slick.js"></script>
+    <script src="/js/main.js"></script>
+  </body>
+</html>
