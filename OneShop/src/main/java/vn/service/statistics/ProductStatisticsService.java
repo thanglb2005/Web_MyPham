@@ -51,77 +51,11 @@ public class ProductStatisticsService {
         this.productRepository = productRepository;
     }
 
-    public ProductStatisticsResult fetchList(String type, int page, int size, String search) {
-        int safeSize = Math.max(size, 1);
-        int safePage = Math.max(page, 0);
-        String normalized = normalizeSearch(search);
-        return fallbackList(type, safePage, safeSize, normalized, search);
-    }
-
     public ProductStatisticsResult fetchList(String type, int page, int size, String search, String sortBy) {
         int safeSize = Math.max(size, 1);
         int safePage = Math.max(page, 0);
         String normalized = normalizeSearch(search);
         return fallbackList(type, safePage, safeSize, normalized, search, sortBy);
-    }
-
-    public List<Object[]> fetchLowStockPreview(int limit) {
-        int safeLimit = Math.max(limit, 1);
-        try {
-            return productRepository.getLowStockProducts().stream()
-                    .limit(safeLimit)
-                    .map(r -> new Object[]{r[0], r[3]}) // [name, qty]
-                    .collect(Collectors.toList());
-        } catch (Exception ex) {
-            LOGGER.warn("Low-stock preview failed: {}", ex.getMessage());
-            return Collections.emptyList();
-        }
-    }
-
-    public List<Object[]> fetchExpiringPreview(int limit) {
-        int safeLimit = Math.max(limit, 1);
-        try {
-            return productRepository.getProductsExpiringSoon().stream()
-                    .limit(safeLimit)
-                    .map(r -> new Object[]{r[0], r[3]}) // [name, expiry]
-                    .collect(Collectors.toList());
-        } catch (Exception ex) {
-            LOGGER.warn("Expiring preview failed: {}", ex.getMessage());
-            return Collections.emptyList();
-        }
-    }
-
-    public List<Object[]> fetchDiscountedPreview(int limit) {
-        int safeLimit = Math.max(limit, 1);
-        try {
-            return productRepository.getDiscountedProducts().stream()
-                    .limit(safeLimit)
-                    .map(r -> new Object[]{r[0], r[1], r[2], r[3]})
-                    .collect(Collectors.toList());
-        } catch (Exception ex) {
-            LOGGER.warn("Discounted preview failed: {}", ex.getMessage());
-            return Collections.emptyList();
-        }
-    }
-
-    public List<Object[]> fetchFavoritesPreview(int limit) {
-        int safeLimit = Math.max(limit, 1);
-        try {
-            return productRepository.getFavoriteProductsStatistics().stream()
-                    .limit(safeLimit)
-                    .map(r -> {
-                        Number fav = r[2] instanceof Number ? (Number) r[2] : 0;
-                        Number total = r[3] instanceof Number ? (Number) r[3] : 0;
-                        int rate = (total != null && total.doubleValue() > 0)
-                                ? (int) Math.round((fav.doubleValue() / total.doubleValue()) * 100)
-                                : 0;
-                        return new Object[]{r[0], r[1], fav, total, rate};
-                    })
-                    .collect(Collectors.toList());
-        } catch (Exception ex) {
-            LOGGER.warn("Favorites preview failed: {}", ex.getMessage());
-            return Collections.emptyList();
-        }
     }
 
     public Map<String, Number> buildKpis() {
@@ -170,10 +104,6 @@ public class ProductStatisticsService {
             case "trending_down" -> "Dang giam suc";
             default -> "Thong ke san pham";
         };
-    }
-
-    private ProductStatisticsResult fallbackList(String type, int page, int size, String normalizedSearch, String rawSearch) {
-        return fallbackList(type, page, size, normalizedSearch, rawSearch, "quantity");
     }
 
     private ProductStatisticsResult fallbackList(String type, int page, int size, String normalizedSearch, String rawSearch, String sortBy) {
