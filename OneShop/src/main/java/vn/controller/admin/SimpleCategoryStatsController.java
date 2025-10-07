@@ -36,3 +36,4 @@ public class SimpleCategoryStatsController {
         return "admin/category-stats-simple";
     }
 }
+
