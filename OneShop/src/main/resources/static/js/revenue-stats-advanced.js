@@ -23,6 +23,30 @@ function formatPercentage(value) {
     return formatted + '%';
 }
 
+// Hàm debug để kiểm tra tính toán
+function debugReportSummary() {
+    console.log('=== DEBUG REPORT SUMMARY ===');
+    const table = document.getElementById('report-table');
+    if (!table) {
+        console.log('No report table found');
+        return;
+    }
+    
+    const rows = table.querySelectorAll('tbody tr');
+    console.log('Found', rows.length, 'data rows');
+    
+    rows.forEach((row, index) => {
+        const cells = row.querySelectorAll('td');
+        console.log(`Row ${index + 1}:`, Array.from(cells).map(cell => cell.textContent.trim()));
+    });
+    
+    // Chạy lại createReportSummary
+    createReportSummary();
+}
+
+// Thêm hàm vào window để có thể gọi từ console
+window.debugReportSummary = debugReportSummary;
+
 document.addEventListener('DOMContentLoaded', function() {
     // Thêm hiệu ứng khi trang tải xong
     animateDashboard();
@@ -45,7 +69,14 @@ document.addEventListener('DOMContentLoaded', function() {
     setupChartTypeToggle();
     
     // ===== 1.5. Tạo tóm tắt báo cáo =====
+    // Chạy ngay lập tức
     createReportSummary();
+    
+    // Chạy lại sau 1 giây để đảm bảo dữ liệu đã load đầy đủ
+    setTimeout(() => {
+        console.log('Re-running createReportSummary after delay...');
+        createReportSummary();
+    }, 1000);
     
     // ===== 2. Xử lý xuất báo cáo sang Excel =====
     const exportExcelBtn = document.getElementById('export-excel');
@@ -152,85 +183,161 @@ document.addEventListener('DOMContentLoaded', function() {
  * Xuất dữ liệu báo cáo sang Excel
  */
 function exportToExcel() {
-    const table = document.getElementById('report-table');
-    if (!table) return;
-    
-    // Lấy tiêu đề báo cáo
-    const reportTitle = document.querySelector('.card-title').textContent;
-    const fileName = 'Bao_Cao_' + reportTitle.replace(/\s+/g, '_') + '_' + formatDate(new Date()) + '.xlsx';
-    
-    // Tạo workbook
-    const ws = XLSX.utils.table_to_sheet(table);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Báo cáo");
-    
-    // Tự động điều chỉnh độ rộng cột
-    const colWidths = [];
-    const data = XLSX.utils.sheet_to_json(ws, { header: 1 });
-    
-    // Xử lý độ rộng cột
-    data.forEach(row => {
-        row.forEach((cell, i) => {
-            const cellValue = String(cell);
-            colWidths[i] = Math.max(colWidths[i] || 0, cellValue.length);
+    try {
+        console.log('Bắt đầu xuất Excel...');
+        
+        // Kiểm tra thư viện XLSX
+        if (typeof XLSX === 'undefined') {
+            alert('Thư viện XLSX chưa được tải. Vui lòng thử lại sau.');
+            return;
+        }
+        
+        const table = document.getElementById('report-table');
+        if (!table) {
+            alert('Không tìm thấy bảng dữ liệu để xuất.');
+            return;
+        }
+        
+        console.log('Tìm thấy bảng dữ liệu');
+        
+        // Lấy tiêu đề báo cáo
+        const reportTitleElement = document.querySelector('.card-title');
+        const reportTitle = reportTitleElement ? reportTitleElement.textContent : 'Bao_Cao';
+        const fileName = 'Bao_Cao_' + reportTitle.replace(/\s+/g, '_') + '_' + formatDate(new Date()) + '.xlsx';
+        
+        console.log('Tên file:', fileName);
+        
+        // Tạo workbook
+        const ws = XLSX.utils.table_to_sheet(table);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Báo cáo");
+        
+        // Tự động điều chỉnh độ rộng cột
+        const colWidths = [];
+        const data = XLSX.utils.sheet_to_json(ws, { header: 1 });
+        
+        // Xử lý độ rộng cột
+        data.forEach(row => {
+            row.forEach((cell, i) => {
+                if (cell !== null && cell !== undefined) {
+                    const cellValue = String(cell);
+                    colWidths[i] = Math.max(colWidths[i] || 0, cellValue.length);
+                }
+            });
         });
-    });
-    
-    ws['!cols'] = colWidths.map(width => ({ wch: width + 2 }));
-    
-    // Tải xuống file Excel
-    XLSX.writeFile(wb, fileName);
+        
+        ws['!cols'] = colWidths.map(width => ({ wch: width + 2 }));
+        
+        console.log('Bắt đầu tải xuống file Excel...');
+        
+        // Tải xuống file Excel
+        XLSX.writeFile(wb, fileName);
+        
+        console.log('Xuất Excel thành công!');
+        
+        // Thông báo thành công
+        setTimeout(() => {
+            alert('Xuất file Excel thành công!');
+        }, 500);
+        
+    } catch (error) {
+        console.error('Lỗi khi xuất Excel:', error);
+        alert('Có lỗi xảy ra khi xuất file Excel: ' + error.message);
+    }
 }
 
 /**
  * Xuất dữ liệu báo cáo sang PDF
  */
 function exportToPDF() {
-    const table = document.getElementById('report-table');
-    if (!table) return;
-    
-    // Lấy tiêu đề báo cáo
-    const reportTitle = document.querySelector('.card-title').textContent;
-    const fileName = 'Bao_Cao_' + reportTitle.replace(/\s+/g, '_') + '_' + formatDate(new Date()) + '.pdf';
-    
-    // Tạo PDF
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF('l', 'mm', 'a4');
-    
-    // Thêm tiêu đề
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(16);
-    doc.text(reportTitle, doc.internal.pageSize.getWidth() / 2, 20, { align: 'center' });
-    
-    // Thêm ngày xuất báo cáo
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(10);
-    doc.text('Ngày xuất báo cáo: ' + formatDisplayDate(new Date()), doc.internal.pageSize.getWidth() / 2, 27, { align: 'center' });
-    
-    // Chuyển đổi bảng sang PDF
-    doc.autoTable({
-        html: '#report-table',
-        startY: 35,
-        styles: {
-            fontSize: 9,
-            cellPadding: 2,
-            overflow: 'linebreak'
-        },
-        columnStyles: {
-            0: { cellWidth: 'auto' }
-        },
-        headStyles: {
-            fillColor: [41, 128, 185],
-            textColor: 255,
-            fontStyle: 'bold'
-        },
-        alternateRowStyles: {
-            fillColor: [245, 245, 245]
+    try {
+        console.log('Bắt đầu xuất PDF...');
+        
+        // Kiểm tra thư viện jsPDF
+        if (typeof window.jspdf === 'undefined') {
+            alert('Thư viện jsPDF chưa được tải. Vui lòng thử lại sau.');
+            return;
         }
-    });
-    
-    // Lưu file PDF
-    doc.save(fileName);
+        
+        const table = document.getElementById('report-table');
+        if (!table) {
+            alert('Không tìm thấy bảng dữ liệu để xuất.');
+            return;
+        }
+        
+        console.log('Tìm thấy bảng dữ liệu');
+        
+        // Lấy tiêu đề báo cáo
+        const reportTitleElement = document.querySelector('.card-title');
+        const reportTitle = reportTitleElement ? reportTitleElement.textContent : 'Bao_Cao';
+        const fileName = 'Bao_Cao_' + reportTitle.replace(/\s+/g, '_') + '_' + formatDate(new Date()) + '.pdf';
+        
+        console.log('Tên file:', fileName);
+        
+        // Tạo PDF
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF('l', 'mm', 'a4');
+        
+        console.log('Tạo đối tượng jsPDF thành công');
+        
+        // Thêm tiêu đề
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(16);
+        doc.text(reportTitle, doc.internal.pageSize.getWidth() / 2, 20, { align: 'center' });
+        
+        // Thêm ngày xuất báo cáo
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(10);
+        doc.text('Ngay xuat bao cao: ' + formatDisplayDate(new Date()), doc.internal.pageSize.getWidth() / 2, 27, { align: 'center' });
+        
+        console.log('Thêm tiêu đề thành công');
+        
+        // Chuyển đổi bảng sang PDF
+        doc.autoTable({
+            html: '#report-table',
+            startY: 35,
+            styles: {
+                fontSize: 9,
+                cellPadding: 2,
+                overflow: 'linebreak',
+                font: 'helvetica'
+            },
+            columnStyles: {
+                0: { cellWidth: 'auto' }
+            },
+            headStyles: {
+                fillColor: [41, 128, 185],
+                textColor: 255,
+                fontStyle: 'bold'
+            },
+            alternateRowStyles: {
+                fillColor: [245, 245, 245]
+            },
+            didDrawPage: function(data) {
+                // Thêm số trang
+                const pageCount = doc.internal.getNumberOfPages();
+                doc.setFont('helvetica', 'normal');
+                doc.setFontSize(8);
+                doc.text('Trang ' + data.pageNumber + '/' + pageCount, 20, doc.internal.pageSize.getHeight() - 10);
+            }
+        });
+        
+        console.log('Tạo bảng PDF thành công');
+        
+        // Lưu file PDF
+        doc.save(fileName);
+        
+        console.log('Xuất PDF thành công!');
+        
+        // Thông báo thành công
+        setTimeout(() => {
+            alert('Xuất file PDF thành công!');
+        }, 500);
+        
+    } catch (error) {
+        console.error('Lỗi khi xuất PDF:', error);
+        alert('Có lỗi xảy ra khi xuất file PDF: ' + error.message);
+    }
 }
 
 /**
@@ -591,8 +698,31 @@ function createReportSummary() {
     
     if (!reportTable || !reportSummary) return;
     
-    // Lấy loại báo cáo hiện tại
-    const reportType = document.querySelector('th[th\\:if]')?.getAttribute('th:if')?.match(/reportType == '([^']+)'/)?.[1];
+    // Xác định loại báo cáo dựa trên tiêu đề cột
+    let reportType = 'default';
+    const headers = reportTable.querySelectorAll('thead th');
+    if (headers.length > 0) {
+        const headerText = Array.from(headers).map(h => h.textContent.trim()).join(' ');
+        console.log('Header text:', headerText);
+        
+        if (headerText.includes('Sản phẩm')) {
+            reportType = 'products';
+        } else if (headerText.includes('Khách hàng') || headerText.includes('Tên') && headerText.includes('Trạng thái')) {
+            reportType = 'users';
+        } else if (headerText.includes('Danh mục')) {
+            reportType = 'categories';
+        } else if (headerText.includes('Thương hiệu')) {
+            reportType = 'brands';
+        } else if (headerText.includes('Năm')) {
+            reportType = 'years';
+        } else if (headerText.includes('Tháng')) {
+            reportType = 'months';
+        } else if (headerText.includes('Quý')) {
+            reportType = 'quarters';
+        }
+    }
+    
+    console.log('Detected report type:', reportType);
     
     // Lấy tất cả các hàng dữ liệu
     const rows = Array.from(reportTable.querySelectorAll('tbody tr'));
@@ -602,6 +732,8 @@ function createReportSummary() {
         reportSummary.style.display = 'none';
         return;
     }
+    
+    console.log('Found', rows.length, 'data rows');
     
     // Dữ liệu cho biểu đồ
     const chartLabels = [];
@@ -613,41 +745,72 @@ function createReportSummary() {
     let totalPriceSum = 0;
     
     // Duyệt qua từng hàng để tính toán tổng
-    rows.forEach(row => {
+    rows.forEach((row, index) => {
         const cells = row.querySelectorAll('td');
+        console.log(`Row ${index + 1} has ${cells.length} cells:`, Array.from(cells).map(c => c.textContent.trim()));
         
-        if (reportType === 'products') {
-            // Đối với báo cáo sản phẩm: cells[2] = số lượng, cells[3] = doanh thu
-            const quantity = parseInt(cells[2].textContent.trim(), 10) || 0;
-            const revenue = parseFloat(cells[3].textContent.replace(/[^\d]/g, '')) || 0;
-            const avgPrice = parseFloat(cells[4].textContent.replace(/[^\d]/g, '')) || 0;
-            
-            totalQuantity += quantity;
-            totalRevenue += revenue;
-            totalPriceSum += avgPrice;
-        } else if (reportType === 'users') {
-            // Đối với báo cáo khách hàng: cells[2] = số đơn hàng, cells[3] = tổng chi tiêu
-            const orderCount = parseInt(cells[2].textContent.trim(), 10) || 0;
-            const totalSpent = parseFloat(cells[3].textContent.replace(/[^\d]/g, '')) || 0;
-            const avgOrderValue = parseFloat(cells[4].textContent.replace(/[^\d]/g, '')) || 0;
-            
-            totalQuantity += orderCount; // Số đơn hàng thay vì số lượng sản phẩm
-            totalRevenue += totalSpent;
-            totalPriceSum += avgOrderValue;
-        } else {
-            // Đối với các loại báo cáo khác: cells[2] = số lượng, cells[3] = doanh thu
-            const quantity = parseInt(cells[2].textContent.trim(), 10) || 0;
-            const revenue = parseFloat(cells[3].textContent.replace(/[^\d]/g, '')) || 0;
-            const avgPrice = parseFloat(cells[4].textContent.replace(/[^\d]/g, '')) || 0;
-            
-            totalQuantity += quantity;
-            totalRevenue += revenue;
-            totalPriceSum += avgPrice;
+        if (cells.length >= 3) {
+            if (reportType === 'products') {
+                // Đối với báo cáo sản phẩm: cells[2] = số lượng, cells[3] = doanh thu, cells[4] = giá TB
+                const quantity = parseInt(cells[2]?.textContent?.replace(/[^\d]/g, '') || '0', 10);
+                const revenue = parseFloat(cells[3]?.textContent?.replace(/[^\d]/g, '') || '0');
+                const avgPrice = parseFloat(cells[4]?.textContent?.replace(/[^\d]/g, '') || '0');
+                
+                totalQuantity += quantity;
+                totalRevenue += revenue;
+                totalPriceSum += avgPrice;
+                
+                console.log(`Products row ${index + 1}:`, { quantity, revenue, avgPrice });
+                
+            } else if (reportType === 'users') {
+                // Đối với báo cáo khách hàng: cells[2] = số đơn hàng, cells[3] = tổng chi tiêu
+                const orderCount = parseInt(cells[2]?.textContent?.replace(/[^\d]/g, '') || '0', 10);
+                const totalSpent = parseFloat(cells[3]?.textContent?.replace(/[^\d]/g, '') || '0');
+                const avgOrderValue = parseFloat(cells[4]?.textContent?.replace(/[^\d]/g, '') || '0');
+                
+                totalQuantity += orderCount; // Số đơn hàng
+                totalRevenue += totalSpent;
+                totalPriceSum += avgOrderValue;
+                
+                console.log(`Users row ${index + 1}:`, { orderCount, totalSpent, avgOrderValue });
+                
+            } else {
+                // Đối với các loại báo cáo khác (categories, brands, v.v.)
+                if (cells.length >= 7) {
+                    // Cấu trúc: [#, Tên, Số lượng, Doanh thu, Giá TB, Giá thấp, Giá cao]
+                    const quantity = parseInt(cells[2]?.textContent?.replace(/[^\d]/g, '') || '0', 10);
+                    const revenue = parseFloat(cells[3]?.textContent?.replace(/[^\d]/g, '') || '0');
+                    const avgPrice = parseFloat(cells[4]?.textContent?.replace(/[^\d]/g, '') || '0');
+                    
+                    totalQuantity += quantity;
+                    totalRevenue += revenue;
+                    totalPriceSum += avgPrice;
+                    
+                    console.log(`Other report row ${index + 1}:`, { quantity, revenue, avgPrice });
+                } else {
+                    // Fallback cho dữ liệu ít cột hơn
+                    const quantity = parseInt(cells[1]?.textContent?.replace(/[^\d]/g, '') || '0', 10);
+                    const revenue = parseFloat(cells[2]?.textContent?.replace(/[^\d]/g, '') || '0');
+                    
+                    totalQuantity += quantity;
+                    totalRevenue += revenue;
+                    
+                    console.log(`Fallback row ${index + 1}:`, { quantity, revenue });
+                }
+            }
         }
     });
     
-    // Tính giá trung bình
-    const avgPrice = totalItems > 0 ? totalPriceSum / totalItems : 0;
+    // Tính giá trung bình dựa trên tổng doanh thu và tổng số lượng
+    const avgPrice = totalQuantity > 0 ? totalRevenue / totalQuantity : 0;
+    
+    console.log('Calculation summary:', {
+        totalItems,
+        totalQuantity,
+        totalRevenue,
+        avgPrice,
+        totalPriceSum
+    });
     
     // Cập nhật các giá trị trong thẻ tóm tắt
     document.getElementById('summary-total-items').textContent = totalItems;
@@ -689,12 +852,32 @@ function createReportSummary() {
             ((activeCustomers + occasionalCustomers) / totalItems * 100).toFixed(1) + '%' : '0%';
         document.getElementById('summary-avg-price').textContent = retentionRate;
     } else {
-        document.querySelector('#report-summary .col-md-3:nth-child(1) .card-category').textContent = 'Tổng số mục';
-        document.querySelector('#report-summary .col-md-3:nth-child(2) .card-category').textContent = 'Tổng doanh thu';
-        document.querySelector('#report-summary .col-md-3:nth-child(3) .card-category').textContent = 'Tổng số lượng';
-        document.querySelector('#report-summary .col-md-3:nth-child(4) .card-category').textContent = 'Giá trung bình';
+        // Cập nhật tiêu đề cho các thẻ
+        const titleElements = document.querySelectorAll('#report-summary .card-title');
+        if (titleElements.length >= 4) {
+            titleElements[0].textContent = 'Tổng số mục';
+            titleElements[1].textContent = 'Tổng doanh thu';
+            titleElements[2].textContent = 'Tổng số lượng';
+            titleElements[3].textContent = 'Giá trung bình';
+        }
+        
+        // Cập nhật các footer nếu có
+        const categoryElements = document.querySelectorAll('#report-summary .card-footer small');
+        if (categoryElements.length >= 4) {
+            categoryElements[0].innerHTML = '<i class="fas fa-info-circle"></i> Mục đã phân tích';
+            categoryElements[1].innerHTML = '<i class="fas fa-calendar"></i> ' + new Date().toLocaleDateString('vi-VN');
+            categoryElements[2].innerHTML = '<i class="fas fa-box"></i> Sản phẩm đã bán';
+            categoryElements[3].innerHTML = '<i class="fas fa-calculator"></i> Giá trị trung bình';
+        }
+        
+        // Cập nhật giá trị hiển thị
         document.getElementById('summary-total-quantity').textContent = totalQuantity.toLocaleString('vi-VN');
         document.getElementById('summary-avg-price').textContent = formatCurrency(avgPrice);
+        
+        console.log('Updated display values:', {
+            totalQuantity: totalQuantity.toLocaleString('vi-VN'),
+            avgPrice: formatCurrency(avgPrice)
+        });
     }
     
     // Hiển thị phần tóm tắt

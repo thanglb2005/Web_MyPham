@@ -13,6 +13,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <!-- Animate.css để thêm hiệu ứng -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
     <!-- Enhanced Chart Icons Styling -->
@@ -739,9 +740,18 @@
                                             <button id="export-excel" class="btn btn-success mr-2 btn-modern">
                                                 <i class="fas fa-file-excel"></i> Xuất Excel
                                             </button>
-                                            <button id="export-pdf" class="btn btn-danger btn-modern">
-                                                <i class="fas fa-file-pdf"></i> Xuất PDF
-                                            </button>
+                                            <div class="btn-group">
+                                                <button id="export-pdf" class="btn btn-danger btn-modern">
+                                                    <i class="fas fa-file-pdf"></i> Xuất PDF
+                                                </button>
+                                                <button type="button" class="btn btn-danger dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                    <span class="sr-only">Tùy chọn</span>
+                                                </button>
+                                                <div class="dropdown-menu dropdown-menu-right">
+                                                    <a class="dropdown-item" href="#" id="export-pdf-text">PDF (Text - nhanh)</a>
+                                                    <a class="dropdown-item" href="#" id="export-pdf-image">PDF (Hình ảnh - font đẹp)</a>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
 
@@ -840,7 +850,7 @@
                                         <table class="table table-striped table-hover" id="report-table">
                                             <thead>
                                                 <!-- Headers for regular reports -->
-                                                <tr th:if="${reportType != 'users'}">
+                                                <tr th:if="${reportType != null and reportType != 'users'}">
                                                     <th>#</th>
                                                     <th th:if="${reportType == 'products'}">Sản phẩm</th>
                                                     <th th:if="${reportType == 'categories'}">Danh mục</th>
@@ -853,6 +863,15 @@
                                                     <th>Giá trung bình</th>
                                                     <th>Giá thấp nhất</th>
                                                     <th>Giá cao nhất</th>
+                                                </tr>
+                                                
+                                                <!-- Default headers when no report type is specified -->
+                                                <tr th:if="${reportType == null}">
+                                                    <th>#</th>
+                                                    <th>Mục</th>
+                                                    <th>Số lượng</th>
+                                                    <th>Doanh thu</th>
+                                                    <th>Giá trung bình</th>
                                                 </tr>
                                                 
                                                 <!-- Headers for user report -->
@@ -899,7 +918,7 @@
                                                 </tr>
                                                 
                                                 <!-- For other report types (categories, brands, years, months, quarters) -->
-                                                <tr th:each="item, iState : ${reportData}" th:if="${reportType != 'products' && reportType != 'users'}">
+                                                <tr th:each="item, iState : ${reportData}" th:if="${reportType != null and reportType != 'products' && reportType != 'users'}">
                                                     <td th:text="${iState.index + 1}"></td>
                                                     <td th:text="${item[0]}"></td>
                                                     <td th:text="${item[1]}"></td>
@@ -907,6 +926,15 @@
                                                     <td th:text="${#numbers.formatDecimal(item[3], 1, 'DEFAULT', 0, 'DEFAULT')} + ' ₫'"></td>
                                                     <td th:text="${#numbers.formatDecimal(item[4], 1, 'DEFAULT', 0, 'DEFAULT')} + ' ₫'"></td>
                                                     <td th:text="${#numbers.formatDecimal(item[5], 1, 'DEFAULT', 0, 'DEFAULT')} + ' ₫'"></td>
+                                                </tr>
+                                                
+                                                <!-- Default data when no report is loaded -->
+                                                <tr th:if="${reportData == null or #lists.isEmpty(reportData)}">
+                                                    <td>1</td>
+                                                    <td>Dữ liệu mẫu</td>
+                                                    <td>10</td>
+                                                    <td>1,000,000 ₫</td>
+                                                    <td>100,000 ₫</td>
                                                 </tr>
                                             </tbody>
                                         </table>
@@ -1030,6 +1058,360 @@
     
     <!-- Advanced Revenue Statistics Features -->
     <script src="/js/revenue-stats-advanced.js"></script>
+    <!-- Debug script for export functionality -->
+    <script src="/js/export-debug.js"></script>
+    
+    <script>
+    // Override export functions with improved versions
+    function exportToExcelImproved() {
+        try {
+            console.log('Bắt đầu xuất Excel (improved version)...');
+            
+            // Kiểm tra thư viện XLSX
+            if (typeof XLSX === 'undefined') {
+                alert('Thư viện XLSX chưa được tải. Vui lòng thử lại sau.');
+                return;
+            }
+            
+            const table = document.getElementById('report-table');
+            if (!table) {
+                alert('Không tìm thấy bảng dữ liệu để xuất.');
+                console.log('Available tables:', document.querySelectorAll('table'));
+                return;
+            }
+            
+            console.log('Tìm thấy bảng dữ liệu');
+            
+            // Kiểm tra xem bảng có dữ liệu không
+            const rows = table.querySelectorAll('tbody tr');
+            if (rows.length === 0) {
+                alert('Bảng không có dữ liệu để xuất.');
+                return;
+            }
+            
+            console.log('Bảng có', rows.length, 'dòng dữ liệu');
+            
+            // Lấy tiêu đề báo cáo
+            const reportTitleElement = document.querySelector('.card-title');
+            const reportTitle = reportTitleElement ? reportTitleElement.textContent : 'Bao_Cao';
+            const fileName = 'Bao_Cao_' + reportTitle.replace(/\s+/g, '_') + '_' + new Date().toISOString().slice(0,10) + '.xlsx';
+            
+            console.log('Tên file:', fileName);
+            
+            // Tạo workbook
+            const ws = XLSX.utils.table_to_sheet(table);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Báo cáo");
+            
+            console.log('Bắt đầu tải xuống file Excel...');
+            
+            // Tải xuống file Excel
+            XLSX.writeFile(wb, fileName);
+            
+            console.log('Xuất Excel thành công!');
+            alert('Xuất file Excel thành công!');
+            
+        } catch (error) {
+            console.error('Lỗi khi xuất Excel:', error);
+            alert('Có lỗi xảy ra khi xuất file Excel: ' + error.message);
+        }
+    }
+    
+    function exportToPDFImproved() {
+        try {
+            console.log('Bắt đầu xuất PDF (improved version)...');
+            
+            // Kiểm tra thư viện jsPDF
+            if (typeof window.jspdf === 'undefined') {
+                alert('Thư viện jsPDF chưa được tải. Vui lòng thử lại sau.');
+                return;
+            }
+            
+            const table = document.getElementById('report-table');
+            if (!table) {
+                alert('Không tìm thấy bảng dữ liệu để xuất.');
+                console.log('Available tables:', document.querySelectorAll('table'));
+                return;
+            }
+            
+            console.log('Tìm thấy bảng dữ liệu');
+            
+            // Kiểm tra xem bảng có dữ liệu không
+            const rows = table.querySelectorAll('tbody tr');
+            if (rows.length === 0) {
+                alert('Bảng không có dữ liệu để xuất.');
+                return;
+            }
+            
+            console.log('Bảng có', rows.length, 'dòng dữ liệu');
+            
+            // Lấy tiêu đề báo cáo
+            const reportTitleElement = document.querySelector('.card-title');
+            const reportTitle = reportTitleElement ? reportTitleElement.textContent : 'Bao_Cao';
+            const fileName = 'Bao_Cao_' + reportTitle.replace(/\s+/g, '_') + '_' + new Date().toISOString().slice(0,10) + '.pdf';
+            
+            console.log('Tên file:', fileName);
+            
+            // Tạo PDF
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('l', 'mm', 'a4');
+            
+            console.log('Tạo đối tượng jsPDF thành công');
+            
+            // Chuyển đổi tiêu đề và nội dung tiếng Việt sang dạng không dấu để tránh lỗi font
+            const convertVietnameseText = (text) => {
+                const vietnameseMap = {
+                    'à': 'a', 'á': 'a', 'ạ': 'a', 'ả': 'a', 'ã': 'a',
+                    'â': 'a', 'ầ': 'a', 'ấ': 'a', 'ậ': 'a', 'ẩ': 'a', 'ẫ': 'a',
+                    'ă': 'a', 'ằ': 'a', 'ắ': 'a', 'ặ': 'a', 'ẳ': 'a', 'ẵ': 'a',
+                    'è': 'e', 'é': 'e', 'ẹ': 'e', 'ẻ': 'e', 'ẽ': 'e',
+                    'ê': 'e', 'ề': 'e', 'ế': 'e', 'ệ': 'e', 'ể': 'e', 'ễ': 'e',
+                    'ì': 'i', 'í': 'i', 'ị': 'i', 'ỉ': 'i', 'ĩ': 'i',
+                    'ò': 'o', 'ó': 'o', 'ọ': 'o', 'ỏ': 'o', 'õ': 'o',
+                    'ô': 'o', 'ồ': 'o', 'ố': 'o', 'ộ': 'o', 'ổ': 'o', 'ỗ': 'o',
+                    'ơ': 'o', 'ờ': 'o', 'ớ': 'o', 'ợ': 'o', 'ở': 'o', 'ỡ': 'o',
+                    'ù': 'u', 'ú': 'u', 'ụ': 'u', 'ủ': 'u', 'ũ': 'u',
+                    'ư': 'u', 'ừ': 'u', 'ứ': 'u', 'ự': 'u', 'ử': 'u', 'ữ': 'u',
+                    'ỳ': 'y', 'ý': 'y', 'ỵ': 'y', 'ỷ': 'y', 'ỹ': 'y',
+                    'đ': 'd', 'Đ': 'D',
+                    'À': 'A', 'Á': 'A', 'Ạ': 'A', 'Ả': 'A', 'Ã': 'A',
+                    'Â': 'A', 'Ầ': 'A', 'Ấ': 'A', 'Ậ': 'A', 'Ẩ': 'A', 'Ẫ': 'A',
+                    'Ă': 'A', 'Ằ': 'A', 'Ắ': 'A', 'Ặ': 'A', 'Ẳ': 'A', 'Ẵ': 'A',
+                    'È': 'E', 'É': 'E', 'Ẹ': 'E', 'Ẻ': 'E', 'Ẽ': 'E',
+                    'Ê': 'E', 'Ề': 'E', 'Ế': 'E', 'Ệ': 'E', 'Ể': 'E', 'Ễ': 'E',
+                    'Ì': 'I', 'Í': 'I', 'Ị': 'I', 'Ỉ': 'I', 'Ĩ': 'I',
+                    'Ò': 'O', 'Ó': 'O', 'Ọ': 'O', 'Ỏ': 'O', 'Õ': 'O',
+                    'Ô': 'O', 'Ồ': 'O', 'Ố': 'O', 'Ộ': 'O', 'Ổ': 'O', 'Ỗ': 'O',
+                    'Ơ': 'O', 'Ờ': 'O', 'Ớ': 'O', 'Ợ': 'O', 'Ở': 'O', 'Ỡ': 'O',
+                    'Ù': 'U', 'Ú': 'U', 'Ụ': 'U', 'Ủ': 'U', 'Ũ': 'U',
+                    'Ư': 'U', 'Ừ': 'U', 'Ứ': 'U', 'Ự': 'U', 'Ử': 'U', 'Ữ': 'U',
+                    'Ỳ': 'Y', 'Ý': 'Y', 'Ỵ': 'Y', 'Ỷ': 'Y', 'Ỹ': 'Y'
+                };
+                
+                return text.replace(/[àáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđĐÀÁẠẢÃÂẦẤẬẨẪĂẰẮẶẲẴÈÉẸẺẼÊỀẾỆỂỄÌÍỊỈĨÒÓỌỎÕÔỒỐỘỔỖƠỜỚỢỞỠÙÚỤỦŨƯỪỨỰỬỮỲÝỴỶỸ]/g, 
+                    match => vietnameseMap[match] || match);
+            };
+            
+            // Thêm tiêu đề (chuyển đổi tiếng Việt)
+            const convertedTitle = convertVietnameseText(reportTitle);
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(16);
+            doc.text(convertedTitle, doc.internal.pageSize.getWidth() / 2, 20, { align: 'center' });
+            
+            // Thêm ngày xuất báo cáo
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(10);
+            doc.text('Ngay xuat bao cao: ' + new Date().toLocaleDateString('vi-VN'), doc.internal.pageSize.getWidth() / 2, 27, { align: 'center' });
+            
+            console.log('Thêm tiêu đề thành công');
+            
+            // Tạo bảng tạm thời với nội dung đã chuyển đổi
+            const originalTable = document.getElementById('report-table');
+            const tempTable = originalTable.cloneNode(true);
+            
+            // Chuyển đổi nội dung trong bảng
+            const allCells = tempTable.querySelectorAll('th, td');
+            allCells.forEach(cell => {
+                if (cell.textContent) {
+                    cell.textContent = convertVietnameseText(cell.textContent);
+                }
+            });
+            
+            // Thêm bảng tạm vào DOM để autoTable có thể đọc
+            tempTable.style.display = 'none';
+            tempTable.id = 'temp-report-table';
+            document.body.appendChild(tempTable);
+            
+            // Chuyển đổi bảng sang PDF
+            doc.autoTable({
+                html: '#temp-report-table',
+                startY: 35,
+                styles: {
+                    fontSize: 9,
+                    cellPadding: 2,
+                    overflow: 'linebreak',
+                    font: 'helvetica',
+                    textColor: [0, 0, 0]
+                },
+                headStyles: {
+                    fillColor: [41, 128, 185],
+                    textColor: [255, 255, 255],
+                    fontStyle: 'bold',
+                    fontSize: 10
+                },
+                alternateRowStyles: {
+                    fillColor: [245, 245, 245]
+                },
+                margin: { top: 35, bottom: 20, left: 10, right: 10 },
+                didDrawPage: function(data) {
+                    // Thêm số trang
+                    const pageNumber = data.pageNumber;
+                    const totalPages = doc.internal.getNumberOfPages();
+                    doc.setFont('helvetica', 'normal');
+                    doc.setFontSize(8);
+                    doc.text('Trang ' + pageNumber + '/' + totalPages, 20, doc.internal.pageSize.getHeight() - 10);
+                }
+            });
+            
+            // Xóa bảng tạm
+            document.body.removeChild(tempTable);
+            
+            console.log('Tạo bảng PDF thành công');
+            
+            // Lưu file PDF
+            doc.save(fileName);
+            
+            console.log('Xuất PDF thành công!');
+            alert('Xuất file PDF thành công!');
+            
+        } catch (error) {
+            console.error('Lỗi khi xuất PDF:', error);
+            alert('Có lỗi xảy ra khi xuất file PDF: ' + error.message);
+        }
+    }
+    
+    function exportToPDFAsImage() {
+        try {
+            console.log('Bắt đầu xuất PDF bằng hình ảnh...');
+            
+            // Kiểm tra thư viện
+            if (typeof window.jspdf === 'undefined' || typeof html2canvas === 'undefined') {
+                alert('Thư viện jsPDF hoặc html2canvas chưa được tải. Vui lòng thử lại sau.');
+                return;
+            }
+            
+            const table = document.getElementById('report-table');
+            if (!table) {
+                alert('Không tìm thấy bảng dữ liệu để xuất.');
+                return;
+            }
+            
+            const rows = table.querySelectorAll('tbody tr');
+            if (rows.length === 0) {
+                alert('Bảng không có dữ liệu để xuất.');
+                return;
+            }
+            
+            // Tạo container cho việc chụp ảnh
+            const container = document.createElement('div');
+            container.style.background = 'white';
+            container.style.padding = '20px';
+            container.style.fontFamily = 'Arial, sans-serif';
+            
+            // Lấy tiêu đề báo cáo
+            const reportTitleElement = document.querySelector('.card-title');
+            const reportTitle = reportTitleElement ? reportTitleElement.textContent : 'Báo cáo';
+            
+            // Thêm tiêu đề
+            const titleDiv = document.createElement('div');
+            titleDiv.innerHTML = `
+                <h2 style="text-align: center; margin-bottom: 10px; color: #333;">${reportTitle}</h2>
+                <p style="text-align: center; color: #666; margin-bottom: 20px;">Ngày xuất báo cáo: ${new Date().toLocaleDateString('vi-VN')}</p>
+            `;
+            container.appendChild(titleDiv);
+            
+            // Clone bảng
+            const tableClone = table.cloneNode(true);
+            tableClone.style.width = '100%';
+            tableClone.style.border = '1px solid #ddd';
+            tableClone.style.borderCollapse = 'collapse';
+            
+            // Styling cho bảng
+            const headers = tableClone.querySelectorAll('th');
+            headers.forEach(th => {
+                th.style.backgroundColor = '#2980b9';
+                th.style.color = 'white';
+                th.style.padding = '10px';
+                th.style.border = '1px solid #ddd';
+                th.style.textAlign = 'center';
+            });
+            
+            const cells = tableClone.querySelectorAll('td');
+            cells.forEach(td => {
+                td.style.padding = '8px';
+                td.style.border = '1px solid #ddd';
+                td.style.textAlign = 'center';
+            });
+            
+            container.appendChild(tableClone);
+            
+            // Thêm container tạm thời vào body
+            container.style.position = 'absolute';
+            container.style.left = '-9999px';
+            container.style.top = '0';
+            document.body.appendChild(container);
+            
+            // Chụp ảnh
+            html2canvas(container, {
+                scale: 2,
+                useCORS: true,
+                logging: false,
+                backgroundColor: '#ffffff',
+                width: 800,
+                height: container.offsetHeight
+            }).then(canvas => {
+                // Xóa container tạm
+                document.body.removeChild(container);
+                
+                // Tạo PDF
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF('l', 'mm', 'a4');
+                
+                const imgData = canvas.toDataURL('image/png');
+                const imgWidth = 277; // A4 landscape width - margins
+                const imgHeight = (canvas.height * imgWidth) / canvas.width;
+                
+                // Thêm hình ảnh vào PDF
+                doc.addImage(imgData, 'PNG', 10, 10, imgWidth, imgHeight);
+                
+                // Thêm footer
+                doc.setFont('helvetica', 'normal');
+                doc.setFontSize(8);
+                doc.text('© OneShop ' + new Date().getFullYear(), 10, doc.internal.pageSize.getHeight() - 5);
+                
+                const fileName = 'Bao_Cao_' + reportTitle.replace(/\s+/g, '_') + '_' + new Date().toISOString().slice(0,10) + '.pdf';
+                doc.save(fileName);
+                
+                console.log('Xuất PDF bằng hình ảnh thành công!');
+                alert('Xuất file PDF thành công (với font tiếng Việt đẹp)!');
+                
+            }).catch(error => {
+                document.body.removeChild(container);
+                console.error('Lỗi khi chụp ảnh:', error);
+                alert('Có lỗi xảy ra khi chụp ảnh: ' + error.message);
+            });
+            
+        } catch (error) {
+            console.error('Lỗi khi xuất PDF bằng hình ảnh:', error);
+            alert('Có lỗi xảy ra: ' + error.message);
+        }
+    }
+    
+    // Thêm event listeners cho các nút mới
+    document.addEventListener('DOMContentLoaded', function() {
+        const pdfTextBtn = document.getElementById('export-pdf-text');
+        const pdfImageBtn = document.getElementById('export-pdf-image');
+        
+        if (pdfTextBtn) {
+            pdfTextBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                exportToPDFImproved();
+            });
+        }
+        
+        if (pdfImageBtn) {
+            pdfImageBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                exportToPDFAsImage();
+            });
+        }
+    });
+    
+    // Override original functions
+    window.exportToExcel = exportToExcelImproved;
+    window.exportToPDF = exportToPDFImproved; // Mặc định vẫn là text
+    window.exportToPDFAsImage = exportToPDFAsImage;
+    </script>
     
     <!-- Custom Charts JS -->
     <script th:if="${reportData == null}">
