@@ -1618,7 +1618,7 @@ tbody tr td:last-child {
   background: var(--green);
 }
 .label-text.sale {
-  background: var(--orange);
+  background: #ff6b35;
 }
 .label-text.feat {
   background: var(--purple);
@@ -1879,7 +1879,7 @@ tbody tr td:last-child {
   background: var(--green);
 }
 .label-text.sale {
-  background: var(--orange);
+  background: #ff6b35;
 }
 .label-text.feat {
   background: var(--purple);
@@ -2116,7 +2116,7 @@ tbody tr td:last-child {
   background: var(--green);
 }
 .standard-label.sale {
-  background: var(--orange);
+  background: #ff6b35;
 }
 .standard-label.feat {
   background: var(--purple);
@@ -4780,7 +4780,7 @@ tbody tr td:last-child {
   background: var(--green);
 }
 .view-label.sale {
-  background: var(--orange);
+  background: #ff6b35;
 }
 .view-label.feat {
   background: var(--purple);

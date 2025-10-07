@@ -20,16 +20,18 @@
 
     <!-- Banner slider -->
     <section class="home-index-slider slider-arrow slider-dots">
+      <!-- Banner 1 - Green Nature Theme -->
       <div class="banner-part banner-1">
+        <div class="sale-badge">SALE UP TO 50%</div>
         <div class="container">
           <div class="row align-items-center">
             <div class="col-md-6 col-lg-6">
               <div class="banner-content">
-                <h1>Mỹ phẩm cao cấp - Giao hàng tận nhà miễn phí</h1>
+                <h1>Mỹ phẩm thiên nhiên - An toàn cho làn da</h1>
                 <p>
-                  OneShop mang đến những sản phẩm mỹ phẩm chất lượng cao, an
+                  OneShop mang đến những sản phẩm mỹ phẩm thiên nhiên, an
                   toàn và hiệu quả. Chúng tôi cam kết mang đến vẻ đẹp tự nhiên
-                  cho bạn.
+                  và bền vững cho bạn.
                 </p>
                 <div class="banner-btn">
                   <a class="btn btn-inline" th:href="@{/products}">
@@ -52,11 +54,115 @@
             </div>
           </div>
         </div>
+        <!-- Product showcase -->
+        <div class="banner-products">
+          <div class="banner-product-item">
+            <img src="/loadImage?imageName=kemCeraVe.png" alt="Kem dưỡng">
+            <h6>Kem dưỡng</h6>
+          </div>
+          <div class="banner-product-item">
+            <img src="/loadImage?imageName=SonYSLDoCam.jpg" alt="Son môi">
+            <h6>Son môi</h6>
+          </div>
+        </div>
+      </div>
+
+      <!-- Banner 2 - Mint Green Theme -->
+      <div class="banner-part banner-2">
+        <div class="sale-badge">NEW COLLECTION</div>
+        <div class="container">
+          <div class="row align-items-center">
+            <div class="col-md-6 col-lg-6">
+              <div class="banner-content">
+                <h1>Vẻ đẹp tự nhiên - Natural Beauty</h1>
+                <p>
+                  Khám phá bộ sưu tập mới với những sản phẩm mỹ phẩm thiên nhiên,
+                  mang đến vẻ đẹp tự nhiên và khỏe mạnh cho phụ nữ hiện đại.
+                </p>
+                <div class="banner-btn">
+                  <a class="btn btn-inline" th:href="@{/products}">
+                    <i class="fas fa-star"></i
+                    ><span>Khám phá ngay</span>
+                  </a>
+                  <a class="btn btn-outline" href="#categories">
+                    <i class="fas fa-th-large"></i><span>Danh mục</span>
+                  </a>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6 col-lg-6">
+              <div class="banner-img">
+                <img
+                  src="/loadImage?imageName=kemLaRoche.png"
+                  alt="Kem dưỡng cao cấp"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Product showcase -->
+        <div class="banner-products">
+          <div class="banner-product-item">
+            <img src="/loadImage?imageName=kemEucerin.png" alt="Serum">
+            <h6>Serum</h6>
+          </div>
+          <div class="banner-product-item">
+            <img src="/loadImage?imageName=kemSebamed.png" alt="Toner">
+            <h6>Toner</h6>
+          </div>
+        </div>
+      </div>
+
+      <!-- Banner 3 - Forest Green Theme -->
+      <div class="banner-part banner-3">
+        <div class="sale-badge">BEST SELLER</div>
+        <div class="container">
+          <div class="row align-items-center">
+            <div class="col-md-6 col-lg-6">
+              <div class="banner-content">
+                <h1>Sản phẩm thiên nhiên bán chạy</h1>
+                <p>
+                  Những sản phẩm thiên nhiên được yêu thích nhất với chất lượng vượt trội,
+                  được tin dùng bởi hàng triệu khách hàng trên toàn quốc.
+                </p>
+                <div class="banner-btn">
+                  <a class="btn btn-inline" th:href="@{/products}">
+                    <i class="fas fa-fire"></i
+                    ><span>Xem ngay</span>
+                  </a>
+                  <a class="btn btn-outline" href="#best-sellers">
+                    <i class="fas fa-trophy"></i><span>Bán chạy</span>
+                  </a>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6 col-lg-6">
+              <div class="banner-img">
+                <img
+                  src="/loadImage?imageName=kemOlay.png"
+                  alt="Sản phẩm bán chạy"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Product showcase -->
+        <div class="banner-products">
+          <div class="banner-product-item">
+            <img src="/loadImage?imageName=SonYSLDoTuoi.jpg" alt="Son YSL">
+            <h6>Son YSL</h6>
+          </div>
+          <div class="banner-product-item">
+            <img src="/loadImage?imageName=kemNamZO.png" alt="Kem chống nắng">
+            <h6>Kem chống nắng</h6>
+          </div>
+        </div>
       </div>
     </section>
 
     <!-- Suggest by category -->
     <section
+      id="categories"
       class="section suggest-part"
       th:if="${coutnProductByCategory} != null"
     >
@@ -76,7 +182,7 @@
     </section>
 
     <!-- Best sellers -->
-    <section class="section recent-part" th:if="${bestSaleProduct20} != null">
+    <section id="best-sellers" class="section recent-part" th:if="${bestSaleProduct20} != null">
       <div class="container">
         <div class="row">
           <div class="col-lg-12">
@@ -412,5 +518,6 @@
     <script src="/js/venobox.js"></script>
     <script src="/js/slick.js"></script>
     <script src="/js/main.js"></script>
+    <script src="/js/smooth-scroll.js"></script>
   </body>
 </html>

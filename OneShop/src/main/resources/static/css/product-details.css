@@ -34,7 +34,7 @@
   background: #0d6efd;
 }
 .details-label.sale {
-  background: var(--orange);
+  background: #ff6b35;
 }
 .details-label.feat {
   background: var(--purple);
