@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
  * @author OneShop Team
  */
 @Entity
-@Table(name = "roles")
+@Table(name = "role")
 @Data
 @AllArgsConstructor
 @NoArgsConstructor

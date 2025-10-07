@@ -5,7 +5,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URISyntaxException;
 
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -50,7 +49,7 @@ public class LoadImageController {
             // Try module root (…/OneShop) if app runs from monorepo root
             resolveFromModuleRoot(pathUploadImage, imageName),
             // Explicit monorepo subpath fallback
-            new File(workingDir + File.separator + "Web_MyPham" + File.separator + "OneShop" + File.separator + pathUploadImage + File.separator + imageName)
+            new File(workingDir + File.separator + "DoAn_Web_MyPham" + File.separator + "Web_MyPham" + File.separator + "OneShop" + File.separator + pathUploadImage + File.separator + imageName)
         };
 
         File file = null;
@@ -122,7 +121,7 @@ public class LoadImageController {
         try {
             // Attempt to locate module root by checking if current working dir ends with monorepo root
             String workingDir = System.getProperty("user.dir");
-            File moduleRoot = new File(workingDir, "Web_MyPham" + File.separator + "OneShop");
+            File moduleRoot = new File(workingDir, "DoAn_Web_MyPham" + File.separator + "Web_MyPham" + File.separator + "OneShop");
             File candidate = new File(moduleRoot, uploadPath + File.separator + imageName);
             return candidate;
         } catch (Exception ignore) {

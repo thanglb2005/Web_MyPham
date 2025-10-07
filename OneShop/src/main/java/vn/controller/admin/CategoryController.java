@@ -202,12 +202,19 @@ public class CategoryController {
      */
     private String saveUploadedFile(MultipartFile file, String categoryName) {
         try {
-            // Create upload directory if not exists (with working directory)
             String workingDir = System.getProperty("user.dir");
-            File uploadDir = new File(workingDir + File.separatorChar + uploadPath);
-            if (!uploadDir.exists()) {
-                System.out.println("Creating upload directory at: " + uploadDir.getAbsolutePath());
-                uploadDir.mkdirs();
+
+            // Determine best upload directory (be resilient to working dir at repo root)
+            File primary = new File(workingDir + File.separatorChar + uploadPath); // e.g., D:/DoAnWebMyPham/upload/images
+            File moduleRoot = new File(workingDir + File.separator + "DoAn_Web_MyPham" + File.separator + "Web_MyPham" + File.separator + "OneShop");
+            File secondary = new File(moduleRoot, uploadPath); // e.g., D:/DoAnWebMyPham/DoAn_Web_MyPham/Web_MyPham/OneShop/upload/images
+
+            // Prefer module upload folder (inside OneShop) if available; fallback to primary root folder
+            File targetDir = (moduleRoot.exists() ? secondary : primary);
+
+            if (!targetDir.exists()) {
+                System.out.println("Creating upload directory at: " + targetDir.getAbsolutePath());
+                targetDir.mkdirs();
             }
             
             // Get file extension
@@ -220,12 +227,12 @@ public class CategoryController {
             // Create filename based on category name
             String fileName = slugify(categoryName) + extension;
             
-            // Save file using Greeny's approach (with working directory)
-            File convFile = new File(workingDir + File.separatorChar + uploadPath + File.separatorChar + fileName);
+            // Save file
+            File convFile = new File(targetDir, fileName);
             System.out.println("Saving file to: " + convFile.getAbsolutePath());
-            FileOutputStream fos = new FileOutputStream(convFile);
-            fos.write(file.getBytes());
-            fos.close();
+            try (FileOutputStream fos = new FileOutputStream(convFile)) {
+                fos.write(file.getBytes());
+            }
             
             // Return only filename for database storage
             return fileName;

@@ -254,8 +254,8 @@ public class ProductController {
 
             // Determine best upload directory (be resilient to working dir at repo root)
             File primary = new File(workingDir + File.separatorChar + uploadPath); // e.g., D:/DoAnWebMyPham/upload/images
-            File moduleRoot = new File(workingDir + File.separator + "Web_MyPham" + File.separator + "OneShop");
-            File secondary = new File(moduleRoot, uploadPath); // e.g., D:/DoAnWebMyPham/Web_MyPham/OneShop/upload/images
+            File moduleRoot = new File(workingDir + File.separator + "DoAn_Web_MyPham" + File.separator + "Web_MyPham" + File.separator + "OneShop");
+            File secondary = new File(moduleRoot, uploadPath); // e.g., D:/DoAnWebMyPham/DoAn_Web_MyPham/Web_MyPham/OneShop/upload/images
 
             // Prefer module upload folder (inside OneShop) if available; fallback to primary root folder
             File targetDir = (moduleRoot.exists() ? secondary : primary);
