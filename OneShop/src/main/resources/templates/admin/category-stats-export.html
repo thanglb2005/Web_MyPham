@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Xuất thống kê danh mục - OneShop Admin</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .header { text-align: center; margin-bottom: 30px; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; font-weight: bold; }
+        .number { text-align: right; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>THỐNG KÊ DANH MỤC SẢN PHẨM</h1>
+        <p>Ngày xuất: <span th:text="${#dates.format(#dates.createNow(), 'dd/MM/yyyy HH:mm')}"></span></p>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>STT</th>
+                <th>Danh mục</th>
+                <th>Số sản phẩm</th>
+                <th>Doanh thu (VNĐ)</th>
+                <th>Lượt yêu thích</th>
+                <th>Đánh giá TB</th>
+                <th>Số đánh giá</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="stat, iterStat : ${stats}">
+                <td th:text="${iterStat.index + 1}">1</td>
+                <td th:text="${stat[0]}">Category Name</td>
+                <td class="number" th:text="${stat[1]}">0</td>
+                <td class="number" th:text="${#numbers.formatDecimal(stat[2], 0, 'COMMA', 0, 'POINT')}">0</td>
+                <td class="number" th:text="${stat[3]}">0</td>
+                <td class="number" th:text="${stat[4] != null ? #numbers.formatDecimal(stat[4], 1, 'COMMA', 1, 'POINT') : '-'}">0.0</td>
+                <td class="number" th:text="${stat[5]}">0</td>
+            </tr>
+        </tbody>
+    </table>
+</body>
+</html>

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Simple Category Statistics - OneShop Admin</title>
+    <link rel="stylesheet" href="/assets/css/bootstrap.min.css" />
+    <style>
+        body { background: #f4f6f9; }
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; border-radius: 15px; margin-bottom: 30px; }
+        .stats-card { background: white; border-radius: 15px; padding: 25px; box-shadow: 0 8px 25px rgba(0,0,0,0.08); margin-bottom: 20px; text-align: center; }
+        .stats-card .number { font-size: 2.5rem; font-weight: bold; color: #2c3e50; }
+        .stats-card .label { color: #7f8c8d; font-size: 0.9rem; text-transform: uppercase; }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="header">
+            <h1><i class="fas fa-chart-pie"></i> Thống kê danh mục - Phiên bản đơn giản</h1>
+            <p>Hiển thị thông tin cơ bản về danh mục sản phẩm</p>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4">
+                <div class="stats-card">
+                    <div class="number" th:text="${totalCategories}">0</div>
+                    <div class="label">Tổng danh mục</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stats-card">
+                    <div class="number">5</div>
+                    <div class="label">Loại thống kê</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stats-card">
+                    <div class="number">100%</div>
+                    <div class="label">Hoạt động</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-12">
+                <div class="stats-card">
+                    <h3>Danh sách danh mục</h3>
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Tên danh mục</th>
+                                <th>Hình ảnh</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="category : ${categories}">
+                                <td th:text="${category.categoryId}">1</td>
+                                <td th:text="${category.categoryName}">Category Name</td>
+                                <td th:text="${category.categoryImage}">Image</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center">
+            <a href="/admin/home" class="btn btn-primary">Quay lại Admin</a>
+            <a href="/admin/category-statistics" class="btn btn-success">Xem thống kê đầy đủ</a>
+        </div>
+    </div>
+</body>
+</html>

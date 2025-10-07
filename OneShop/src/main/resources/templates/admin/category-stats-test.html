@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Test Category Statistics - OneShop Admin</title>
+    <link rel="stylesheet" href="/assets/css/bootstrap.min.css" />
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="row">
+            <div class="col-12">
+                <h1 th:text="${message}">Test Page</h1>
+                <p>Total Categories: <span th:text="${totalCategories}">0</span></p>
+                
+                <h3>Categories List:</h3>
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Image</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="category : ${categories}">
+                            <td th:text="${category.categoryId}">1</td>
+                            <td th:text="${category.categoryName}">Category Name</td>
+                            <td th:text="${category.categoryImage}">Image</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <a href="/admin/home" class="btn btn-primary">Back to Admin</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
