@@ -5,6 +5,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URISyntaxException;
 
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -41,13 +42,37 @@ public class LoadImageController {
         System.out.println("Content-Type: " + contentType);
         // Build absolute path to handle working directory issues
         String workingDir = System.getProperty("user.dir");
-        File file = new File(workingDir + File.separatorChar + pathUploadImage + File.separatorChar + imageName);
         System.out.println("Working dir: " + workingDir);
-        System.out.println("Looking for file at: " + file.getAbsolutePath());
-        System.out.println("File exists: " + file.exists());
+
+        // Candidate locations to look for the image (to be resilient to working dir changes)
+        File[] candidates = new File[] {
+            new File(workingDir + File.separatorChar + pathUploadImage + File.separatorChar + imageName),
+            // Try module root (…/OneShop) if app runs from monorepo root
+            resolveFromModuleRoot(pathUploadImage, imageName),
+            // Explicit monorepo subpath fallback
+            new File(workingDir + File.separator + "Web_MyPham" + File.separator + "OneShop" + File.separator + pathUploadImage + File.separator + imageName)
+        };
+
+        File file = null;
+        for (File cand : candidates) {
+            if (cand != null) {
+                System.out.println("Looking for file at: " + cand.getAbsolutePath());
+                if (cand.exists() && cand.isFile()) {
+                    file = cand;
+                    break;
+                }
+            }
+        }
+        System.out.println("File exists: " + (file != null));
         
-        // Debug: List all files in upload directory
-        File uploadDir = new File(workingDir + File.separatorChar + pathUploadImage);
+        // Debug: List all files in detected upload directory (first valid parent)
+        File uploadDir = null;
+        if (file != null) {
+            uploadDir = file.getParentFile();
+        } else {
+            // Fallback to primary configured upload dir under working dir
+            uploadDir = new File(workingDir + File.separatorChar + pathUploadImage);
+        }
         System.out.println("Upload directory: " + uploadDir.getAbsolutePath());
         System.out.println("Upload directory exists: " + uploadDir.exists());
         if (uploadDir.exists() && uploadDir.isDirectory()) {
@@ -61,7 +86,7 @@ public class LoadImageController {
         }
         
         InputStream inputStream = null;
-        if (file.exists()) {
+        if (file != null && file.exists()) {
             try {
                 inputStream = new FileInputStream(file);
                 if (inputStream != null) {
@@ -90,6 +115,18 @@ public class LoadImageController {
             System.out.println("ERROR in LoadImageController: " + e.getMessage());
             e.printStackTrace();
             return new byte[0];
+        }
+    }
+
+    private File resolveFromModuleRoot(String uploadPath, String imageName) {
+        try {
+            // Attempt to locate module root by checking if current working dir ends with monorepo root
+            String workingDir = System.getProperty("user.dir");
+            File moduleRoot = new File(workingDir, "Web_MyPham" + File.separator + "OneShop");
+            File candidate = new File(moduleRoot, uploadPath + File.separator + imageName);
+            return candidate;
+        } catch (Exception ignore) {
+            return null;
         }
     }
 }

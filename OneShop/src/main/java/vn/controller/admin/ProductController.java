@@ -250,33 +250,40 @@ public class ProductController {
      */
     private String saveUploadedFile(MultipartFile file, String productName) {
         try {
-            // Create upload directory if not exists
             String workingDir = System.getProperty("user.dir");
-            File uploadDir = new File(workingDir + File.separatorChar + uploadPath);
-            if (!uploadDir.exists()) {
-                System.out.println("Creating upload directory at: " + uploadDir.getAbsolutePath());
-                uploadDir.mkdirs();
+
+            // Determine best upload directory (be resilient to working dir at repo root)
+            File primary = new File(workingDir + File.separatorChar + uploadPath); // e.g., D:/DoAnWebMyPham/upload/images
+            File moduleRoot = new File(workingDir + File.separator + "Web_MyPham" + File.separator + "OneShop");
+            File secondary = new File(moduleRoot, uploadPath); // e.g., D:/DoAnWebMyPham/Web_MyPham/OneShop/upload/images
+
+            // Prefer module upload folder (inside OneShop) if available; fallback to primary root folder
+            File targetDir = (moduleRoot.exists() ? secondary : primary);
+
+            if (!targetDir.exists()) {
+                System.out.println("Creating upload directory at: " + targetDir.getAbsolutePath());
+                targetDir.mkdirs();
             }
-            
+
             // Get file extension
             String originalFilename = file.getOriginalFilename();
             String extension = "";
             if (originalFilename != null && originalFilename.contains(".")) {
                 extension = originalFilename.substring(originalFilename.lastIndexOf("."));
             }
-            
+
             // Create filename based on product name
             String fileName = slugify(productName) + "_" + System.currentTimeMillis() + extension;
-            
+
             // Save file
-            File convFile = new File(workingDir + File.separatorChar + uploadPath + File.separatorChar + fileName);
+            File convFile = new File(targetDir, fileName);
             System.out.println("Saving file to: " + convFile.getAbsolutePath());
-            FileOutputStream fos = new FileOutputStream(convFile);
-            fos.write(file.getBytes());
-            fos.close();
-            
+            try (FileOutputStream fos = new FileOutputStream(convFile)) {
+                fos.write(file.getBytes());
+            }
+
             return fileName;
-            
+
         } catch (IOException e) {
             System.out.println("Error saving file: " + e.getMessage());
             e.printStackTrace();

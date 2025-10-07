@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.Comparator;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -82,8 +83,11 @@ public class ShopController {
     }
 
     @GetMapping(value = "/searchProduct")
-    public String showSearch(@RequestParam("productName") Optional<String> keyword, Model model) {
-        String kw = keyword.orElse("");
+    public String showSearch(@RequestParam(value = "productName", required = false) String productName,
+                             @RequestParam(value = "keyword", required = false) String keyword,
+                             @RequestParam(value = "q", required = false) String q,
+                             Model model) {
+        String kw = (productName != null) ? productName : (keyword != null ? keyword : (q != null ? q : ""));
         List<Product> results = kw.isEmpty() ? productService.findAll() : productService.searchProduct(kw);
         model.addAttribute("products", new PageImpl<>(results));
         model.addAttribute("pageNumbers", List.of(1));
@@ -103,6 +107,35 @@ public class ShopController {
             }
         }
         
+        return "web/shop";
+    }
+
+    @GetMapping(value = "/promotions")
+    public String promotions(Model model) {
+        // Filter products with discount > 0 and sort by discount desc
+        List<Product> discounted = productService.findAll().stream()
+                .filter(p -> p.getDiscount() != null && p.getDiscount() > 0)
+                .sorted(Comparator.comparingInt(Product::getDiscount).reversed())
+                .collect(Collectors.toList());
+
+        model.addAttribute("products", new PageImpl<>(discounted));
+        model.addAttribute("pageNumbers", List.of(1));
+        model.addAttribute("categories", categoryService.getAllCategories());
+        model.addAttribute("coutnProductByCategory", productService.listCategoryByProductName());
+        model.addAttribute("promotionView", true);
+
+        // Add best selling products for sidebar widget
+        List<Object[]> bestSaleRaw = productService.bestSaleProduct20();
+        if (bestSaleRaw != null && !bestSaleRaw.isEmpty()) {
+            List<Long> ids = bestSaleRaw.stream()
+                    .map(obj -> Long.valueOf(String.valueOf(obj[0])))
+                    .collect(Collectors.toList());
+            if (!ids.isEmpty()) {
+                List<Product> bestProducts = productService.findByInventoryIds(ids);
+                model.addAttribute("bestSaleProduct20", bestProducts);
+            }
+        }
+
         return "web/shop";
     }
 

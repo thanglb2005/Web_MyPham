@@ -13,10 +13,14 @@
             <a th:href="@{/}" class="header-logo">
               <img src="/images/logo/logo.png" alt="logo" />
             </a>
-            <form th:action="@{/searchProduct}" class="header-form">
+            <form
+              th:action="@{/searchProduct}"
+              method="get"
+              class="header-form"
+            >
               <input
                 type="text"
-                name="keyword"
+                name="productName"
                 th:value="${keyword}"
                 placeholder="Tìm kiếm..."
                 autocomplete="off"
