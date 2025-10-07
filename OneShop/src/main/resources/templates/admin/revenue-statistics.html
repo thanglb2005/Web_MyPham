@@ -1421,8 +1421,15 @@
             fetch('/admin/api/monthly-revenue-data')
                 .then(response => response.json())
                 .then(data => {
-                    // Sau khi có dữ liệu, vẽ biểu đồ
-                    drawRevenueChart(data.data);
+                    console.log('Dữ liệu doanh thu:', data);
+                    // Sau khi có dữ liệu, vẽ biểu đồ với dữ liệu revenues từ API
+                    if (data && data.revenues) {
+                        drawRevenueChart(data.revenues);
+                    } else {
+                        console.error('Dữ liệu API không đúng định dạng:', data);
+                        var defaultData = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+                        drawRevenueChart(defaultData);
+                    }
                 })
                 .catch(error => {
                     console.error('Lỗi khi tải dữ liệu doanh thu:', error);
@@ -1438,6 +1445,15 @@
                 // Lấy loại biểu đồ từ nút đã chọn
                 var activeButton = document.querySelector('.chart-type.active');
                 var chartType = activeButton ? activeButton.getAttribute('data-type') : 'bar';
+                
+                // Log dữ liệu để debug
+                console.log('Dữ liệu doanh thu cho biểu đồ:', revenueData);
+                
+                // Đảm bảo revenueData là một mảng
+                if (!Array.isArray(revenueData)) {
+                    console.error('Dữ liệu không phải là mảng, sử dụng dữ liệu mặc định');
+                    revenueData = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+                }
                 
                 // Tạo biểu đồ với dữ liệu thực từ API
                 var gradientFill = ctx.createLinearGradient(0, 0, 0, 400);
