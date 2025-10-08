@@ -52,7 +52,12 @@ public class ChatWebSocketController {
             Map<String, Object> message = new HashMap<>();
             message.put("roomId", roomId);
             message.put("sender", senderName);
-            message.put("messageContent", sanitizeContent(content));
+            // For IMAGE messages, keep URL as-is; for TEXT, sanitize
+            if ("IMAGE".equalsIgnoreCase(messageType)) {
+                message.put("messageContent", content);
+            } else {
+                message.put("messageContent", sanitizeContent(content));
+            }
             message.put("messageType", messageType);
             message.put("sentAt", System.currentTimeMillis());
             message.put("timestamp", LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm")));
@@ -189,6 +194,17 @@ public class ChatWebSocketController {
                 roomOpenEvent.put("customerName", userName);
                 roomOpenEvent.put("createdAt", System.currentTimeMillis());
                 messagingTemplate.convertAndSend("/topic/rooms", roomOpenEvent);
+
+                // Persist a lightweight system message to tag this room with customer name for vendor lists
+                Map<String, Object> tagMsg = new HashMap<>();
+                tagMsg.put("roomId", roomId);
+                tagMsg.put("sender", "system");
+                tagMsg.put("senderType", "system");
+                tagMsg.put("messageType", "SYSTEM");
+                tagMsg.put("messageContent", "");
+                tagMsg.put("customerName", userName);
+                tagMsg.put("sentAt", System.currentTimeMillis());
+                chatHistoryService.appendMessage(roomId, tagMsg);
             }
 
             // If a vendor joins and there is no assigned vendor, assign and notify

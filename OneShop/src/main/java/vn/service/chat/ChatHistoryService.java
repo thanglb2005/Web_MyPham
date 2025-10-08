@@ -71,7 +71,8 @@ public class ChatHistoryService {
         if (roomId == null || roomId.isEmpty()) return false;
         try {
             long n = chatMessageRepository.deleteByRoomId(roomId);
-            return n > 0;
+            // Idempotent: consider success even if there was nothing to delete
+            return n >= 0;
         } catch (Exception e) {
             return false;
         }

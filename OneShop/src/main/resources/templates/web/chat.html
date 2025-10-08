@@ -6,6 +6,11 @@
     <title>Chat Tư Vấn - OneShop</title>
     <link rel="stylesheet" th:href="@{/vendor/bootstrap/bootstrap.min.css}" />
     <link rel="stylesheet" th:href="@{/vendor/fontawesome/css/all.min.css}" />
+    <!-- FontAwesome CDN backup -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
     <link rel="stylesheet" th:href="@{/css/main.css}" />
     <script th:inline="javascript">
       // Server suggested identity and preloaded messages to keep room stable across reload/login
@@ -351,28 +356,116 @@
         border-color: var(--chat-primary);
       }
 
-      .send-button {
+      .input-buttons {
+        display: flex;
+        gap: 8px;
+        align-items: flex-end;
+      }
+
+      .image-button {
+        background: linear-gradient(135deg, #10b981, #059669);
+        color: white;
+        border: none;
+        border-radius: 12px;
         width: 44px;
         height: 44px;
-        border-radius: 50%;
-        background: var(--chat-primary);
-        border: none;
-        color: white;
         display: flex;
         align-items: center;
         justify-content: center;
-        transition: all 0.2s;
         cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 16px;
+        box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+      }
+
+      .image-button:hover {
+        background: linear-gradient(135deg, #059669, #047857);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+      }
+
+      .image-button:active {
+        transform: translateY(0);
+      }
+
+      .send-button {
+        background: linear-gradient(135deg, var(--chat-primary), #1d4ed8);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        width: 48px;
+        height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 18px;
+        box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
       }
 
       .send-button:hover:not(:disabled) {
-        background: var(--chat-primary-light);
-        transform: scale(1.05);
+        background: linear-gradient(135deg, #1d4ed8, #1e40af);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
       }
 
       .send-button:disabled {
-        opacity: 0.5;
+        background: linear-gradient(135deg, #94a3b8, #64748b);
         cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+        opacity: 0.7;
+      }
+
+      .send-button:active {
+        transform: translateY(0);
+      }
+
+      /* FontAwesome fallback - only show emoji if FontAwesome fails to load */
+      .fa-image:not([class*="fa-"]):before {
+        content: "📷";
+      }
+      .fa-paper-plane:not([class*="fa-"]):before {
+        content: "➤";
+      }
+      .fa-hand-wave:not([class*="fa-"]):before {
+        content: "👋";
+      }
+      .fa-tag:not([class*="fa-"]):before {
+        content: "🏷️";
+      }
+      .fa-box:not([class*="fa-"]):before {
+        content: "📦";
+      }
+      .fa-comments:not([class*="fa-"]):before {
+        content: "💬";
+      }
+      .fa-trash:not([class*="fa-"]):before {
+        content: "🗑️";
+      }
+      .fa-sign-out-alt:not([class*="fa-"]):before {
+        content: "🚪";
+      }
+      .fa-users:not([class*="fa-"]):before {
+        content: "👥";
+      }
+      .fa-bolt:not([class*="fa-"]):before {
+        content: "⚡";
+      }
+
+      .quick-action-btn {
+        transition: all 0.3s ease;
+        border-radius: 8px !important;
+        font-weight: 500;
+      }
+
+      .quick-action-btn:hover {
+        background: var(--chat-primary) !important;
+        color: white !important;
+        border-color: var(--chat-primary) !important;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(37, 99, 235, 0.2);
       }
 
       .connection-status {
@@ -528,19 +621,19 @@
               Hành động nhanh
             </h5>
             <button
-              class="btn btn-sm btn-outline-primary mb-2 w-100"
+              class="btn btn-sm btn-outline-primary mb-2 w-100 quick-action-btn"
               onclick="sendQuickMessage('Xin chào! Tôi cần tư vấn sản phẩm.')"
             >
               <i class="fas fa-hand-wave"></i> Chào hỏi
             </button>
             <button
-              class="btn btn-sm btn-outline-primary mb-2 w-100"
+              class="btn btn-sm btn-outline-primary mb-2 w-100 quick-action-btn"
               onclick="sendQuickMessage('Tôi muốn hỏi về giá sản phẩm.')"
             >
               <i class="fas fa-tag"></i> Hỏi giá
             </button>
             <button
-              class="btn btn-sm btn-outline-primary mb-2 w-100"
+              class="btn btn-sm btn-outline-primary mb-2 w-100 quick-action-btn"
               onclick="sendQuickMessage('Sản phẩm này có còn hàng không?')"
             >
               <i class="fas fa-box"></i> Tồn kho
@@ -559,6 +652,12 @@
           <!-- Input Area -->
           <div class="chat-input-area">
             <form id="chatForm" class="input-group">
+              <input
+                type="file"
+                id="imageInput"
+                accept="image/*"
+                style="display: none"
+              />
               <textarea
                 id="messageInput"
                 class="message-input"
@@ -566,9 +665,24 @@
                 rows="1"
                 autocomplete="off"
               ></textarea>
-              <button type="submit" class="send-button" id="sendButton">
-                <i class="fas fa-paper-plane"></i>
-              </button>
+              <div class="input-buttons">
+                <button
+                  type="button"
+                  class="image-button"
+                  id="imageButton"
+                  title="Gửi ảnh"
+                >
+                  <i class="fas fa-image"></i>
+                </button>
+                <button
+                  type="submit"
+                  class="send-button"
+                  id="sendButton"
+                  title="Gửi tin nhắn"
+                >
+                  <i class="fas fa-paper-plane"></i>
+                </button>
+              </div>
             </form>
           </div>
         </div>
@@ -812,15 +926,20 @@
               minute: "2-digit",
             });
 
+            const isImage = (msg.messageType || "").toUpperCase() === "IMAGE";
+            const contentHtml = isImage
+              ? `<a href="${msg.messageContent}" target="_blank"><img src="${msg.messageContent}" style="max-width:240px;border-radius:8px"/></a>`
+              : `${
+                  !isMe ? `<div class="message-sender">${msg.sender}</div>` : ""
+                }
+                 <div class="message-content">${escapeHtml(
+                   msg.messageContent || ""
+                 )}</div>`;
+
             messageEl.innerHTML = `
               <div class="message-avatar">${avatarLetter}</div>
               <div class="message-bubble">
-                ${
-                  !isMe ? `<div class="message-sender">${msg.sender}</div>` : ""
-                }
-                <div class="message-content">${escapeHtml(
-                  msg.messageContent || ""
-                )}</div>
+                ${contentHtml}
                 <div class="message-time">${timeStr}</div>
               </div>
             `;
@@ -850,6 +969,21 @@
           }
         }
 
+        // Image button wiring
+        document
+          .getElementById("imageButton")
+          .addEventListener("click", function () {
+            document.getElementById("imageInput").click();
+          });
+        document
+          .getElementById("imageInput")
+          .addEventListener("change", function (e) {
+            const file = e.target.files && e.target.files[0];
+            if (file)
+              uploadAndSendImage(file).catch(() => alert("Tải ảnh thất bại"));
+            e.target.value = "";
+          });
+
         function sendMessage(text) {
           if (!stompClient || !stompClient.connected || !text.trim()) return;
 
@@ -860,6 +994,38 @@
               roomId: currentRoom,
               messageContent: text.trim(),
               messageType: "TEXT",
+              userType: "customer",
+              senderName: userName,
+            })
+          );
+        }
+
+        async function uploadAndSendImage(file) {
+          if (!file) return;
+          const form = new FormData();
+          form.append("file", file);
+          const res = await fetch("/api/chat/uploadImage", {
+            method: "POST",
+            body: form,
+          });
+          if (!res.ok) {
+            alert("Tải ảnh thất bại");
+            return;
+          }
+          const data = await res.json();
+          if (!data.success || !data.url) {
+            alert("Tải ảnh thất bại");
+            return;
+          }
+
+          // Send IMAGE message with URL
+          stompClient.send(
+            "/app/chat.send",
+            {},
+            JSON.stringify({
+              roomId: currentRoom,
+              messageContent: data.url, // URL to the image
+              messageType: "IMAGE",
               userType: "customer",
               senderName: userName,
             })

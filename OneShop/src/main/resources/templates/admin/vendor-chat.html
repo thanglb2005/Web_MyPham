@@ -6,6 +6,11 @@
     <title>Quản Lý Chat - Vendor Dashboard</title>
     <link rel="stylesheet" th:href="@{/vendor/bootstrap/bootstrap.min.css}" />
     <link rel="stylesheet" th:href="@{/vendor/fontawesome/css/all.min.css}" />
+    <!-- FontAwesome CDN backup -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
     <style>
       :root {
         --vendor-primary: #2563eb;
@@ -373,19 +378,23 @@
       }
 
       .quick-reply-btn {
-        padding: 6px 12px;
-        background: var(--vendor-light);
+        padding: 8px 16px;
+        background: linear-gradient(135deg, var(--vendor-light), #f1f5f9);
         border: 1px solid var(--vendor-border);
-        border-radius: 16px;
+        border-radius: 20px;
         font-size: 12px;
         cursor: pointer;
-        transition: all 0.2s;
+        transition: all 0.3s ease;
+        font-weight: 500;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
       }
 
       .quick-reply-btn:hover {
-        background: var(--vendor-primary);
+        background: linear-gradient(135deg, var(--vendor-primary), #1d4ed8);
         color: white;
         border-color: var(--vendor-primary);
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
       }
 
       .input-group {
@@ -411,28 +420,127 @@
         border-color: var(--vendor-primary);
       }
 
-      .send-button {
+      .input-buttons {
+        display: flex;
+        gap: 8px;
+        align-items: flex-end;
+      }
+
+      .image-button {
+        background: linear-gradient(135deg, #10b981, #059669);
+        color: white;
+        border: none;
+        border-radius: 12px;
         width: 44px;
         height: 44px;
-        border-radius: 50%;
-        background: var(--vendor-primary);
-        border: none;
-        color: white;
         display: flex;
         align-items: center;
         justify-content: center;
-        transition: all 0.2s;
         cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 16px;
+        box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+      }
+
+      .image-button:hover {
+        background: linear-gradient(135deg, #059669, #047857);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+      }
+
+      .image-button:active {
+        transform: translateY(0);
+      }
+
+      .send-button {
+        background: linear-gradient(135deg, var(--vendor-primary), #1d4ed8);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        width: 48px;
+        height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 18px;
+        box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
       }
 
       .send-button:hover:not(:disabled) {
-        background: #1d4ed8;
-        transform: scale(1.05);
+        background: linear-gradient(135deg, #1d4ed8, #1e40af);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
       }
 
       .send-button:disabled {
-        opacity: 0.5;
+        background: linear-gradient(135deg, #94a3b8, #64748b);
         cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+        opacity: 0.7;
+      }
+
+      .send-button:active {
+        transform: translateY(0);
+      }
+
+      /* FontAwesome fallback - only show emoji if FontAwesome fails to load */
+      .fa-image:not([class*="fa-"]):before {
+        content: "📷";
+      }
+      .fa-paper-plane:not([class*="fa-"]):before {
+        content: "➤";
+      }
+      .fa-exchange-alt:not([class*="fa-"]):before {
+        content: "🔄";
+      }
+      .fa-times:not([class*="fa-"]):before {
+        content: "✖️";
+      }
+      .fa-trash:not([class*="fa-"]):before {
+        content: "🗑️";
+      }
+      .fa-comments:not([class*="fa-"]):before {
+        content: "💬";
+      }
+      .fa-search:not([class*="fa-"]):before {
+        content: "🔍";
+      }
+      .fa-info-circle:not([class*="fa-"]):before {
+        content: "ℹ️";
+      }
+
+      .action-btn {
+        transition: all 0.3s ease;
+        border-radius: 8px;
+        font-weight: 500;
+        font-size: 12px;
+      }
+
+      .transfer-btn:hover {
+        background: linear-gradient(135deg, #f59e0b, #d97706) !important;
+        color: white !important;
+        border-color: #f59e0b !important;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
+      }
+
+      .close-btn:hover {
+        background: linear-gradient(135deg, #ef4444, #dc2626) !important;
+        color: white !important;
+        border-color: #ef4444 !important;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+      }
+
+      .delete-btn:hover {
+        background: linear-gradient(135deg, #8b5cf6, #7c3aed) !important;
+        color: white !important;
+        border-color: #8b5cf6 !important;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(139, 92, 246, 0.3);
       }
 
       .empty-state {
@@ -534,13 +642,25 @@
           </div>
 
           <div class="chat-actions">
-            <button onclick="transferChat()">
+            <button
+              onclick="transferChat()"
+              class="action-btn transfer-btn"
+              title="Chuyển chat"
+            >
               <i class="fas fa-exchange-alt"></i> Chuyển
             </button>
-            <button onclick="closeChat()">
+            <button
+              onclick="closeChat()"
+              class="action-btn close-btn"
+              title="Đóng chat"
+            >
               <i class="fas fa-times"></i> Đóng
             </button>
-            <button id="clearHistoryBtn" title="Xóa lịch sử phòng">
+            <button
+              id="clearHistoryBtn"
+              title="Xóa lịch sử phòng"
+              class="action-btn delete-btn"
+            >
               <i class="fas fa-trash"></i> Xóa lịch sử
             </button>
           </div>
@@ -595,6 +715,12 @@
           </div>
 
           <form id="chatForm" class="input-group">
+            <input
+              type="file"
+              id="imageInput"
+              accept="image/*"
+              style="display: none"
+            />
             <textarea
               id="messageInput"
               class="message-input"
@@ -602,9 +728,24 @@
               rows="1"
               autocomplete="off"
             ></textarea>
-            <button type="submit" class="send-button" id="sendButton">
-              <i class="fas fa-paper-plane"></i>
-            </button>
+            <div class="input-buttons">
+              <button
+                type="button"
+                class="image-button"
+                id="imageButton"
+                title="Gửi ảnh"
+              >
+                <i class="fas fa-image"></i>
+              </button>
+              <button
+                type="submit"
+                class="send-button"
+                id="sendButton"
+                title="Gửi tin nhắn"
+              >
+                <i class="fas fa-paper-plane"></i>
+              </button>
+            </div>
           </form>
         </div>
       </div>
@@ -837,12 +978,17 @@
               minute: "2-digit",
             });
 
+            const isImage = (msg.messageType || "").toUpperCase() === "IMAGE";
+            const contentHtml = isImage
+              ? `<a href="${msg.messageContent}" target="_blank"><img src="${msg.messageContent}" style="max-width:240px;border-radius:8px"/></a>`
+              : `<div class=\"message-content\">${escapeHtml(
+                  msg.messageContent || ""
+                )}</div>`;
+
             messageEl.innerHTML = `
                         <div class="message-avatar">${avatarLetter}</div>
                         <div class="message-bubble">
-                            <div class="message-content">${escapeHtml(
-                              msg.messageContent || ""
-                            )}</div>
+                            ${contentHtml}
                             <div class="message-time">${timeStr}</div>
                         </div>
                     `;
@@ -876,6 +1022,36 @@
               roomId: currentRoom,
               messageContent: text.trim(),
               messageType: "TEXT",
+              userType: "vendor",
+              senderName: vendorName,
+            })
+          );
+        }
+
+        async function uploadAndSendImage(file) {
+          if (!file) return;
+          const form = new FormData();
+          form.append("file", file);
+          const res = await fetch("/api/chat/uploadImage", {
+            method: "POST",
+            body: form,
+          });
+          if (!res.ok) {
+            alert("Tải ảnh thất bại");
+            return;
+          }
+          const data = await res.json();
+          if (!data.success || !data.url) {
+            alert("Tải ảnh thất bại");
+            return;
+          }
+          stompClient.send(
+            "/app/chat.send",
+            {},
+            JSON.stringify({
+              roomId: currentRoom,
+              messageContent: data.url,
+              messageType: "IMAGE",
               userType: "vendor",
               senderName: vendorName,
             })
