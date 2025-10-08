@@ -6,9 +6,10 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication
 @EnableScheduling
-public class OneShopApplication {
-
-	public static void main(String[] args) {
+public class OneShopApplication 
+{
+	public static void main(String[] args) 
+	{
 		SpringApplication.run(OneShopApplication.class, args);
 	}
 }

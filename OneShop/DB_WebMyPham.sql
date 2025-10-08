@@ -1,23 +1,27 @@
-﻿-- Tạo database
+﻿/* ===============================
+   RESET DATABASE
+   =============================== */
 IF DB_ID('WebMyPham') IS NOT NULL
+BEGIN
+    ALTER DATABASE WebMyPham SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
     DROP DATABASE WebMyPham;
+END;
 GO
 CREATE DATABASE WebMyPham;
 GO
-
 USE WebMyPham;
 GO
 
--- Bảng categories
-IF OBJECT_ID('categories', 'U') IS NOT NULL DROP TABLE categories;
-CREATE TABLE categories (
-    category_id BIGINT IDENTITY(1,1) PRIMARY KEY,
-    category_image NVARCHAR(255) NULL,
-    category_name NVARCHAR(255) NULL
+/* ===============================
+   TABLE: categories
+   =============================== */
+IF OBJECT_ID('dbo.categories', 'U') IS NOT NULL DROP TABLE dbo.categories;
+CREATE TABLE dbo.categories (
+    category_id     BIGINT IDENTITY(1,1) PRIMARY KEY,
+    category_image  NVARCHAR(255),
+    category_name   NVARCHAR(255) NOT NULL
 );
-
-INSERT INTO categories(category_image, category_name) 
-VALUES 
+INSERT INTO dbo.categories(category_image, category_name) VALUES
 (NULL, N'Son môi'),
 (NULL, N'Kem dưỡng da'),
 (NULL, N'Nước hoa'),
@@ -30,73 +34,85 @@ VALUES
 (NULL, N'Serum dưỡng da');
 GO
 
--- Bảng user
-IF OBJECT_ID('[user]', 'U') IS NOT NULL DROP TABLE [user];
-CREATE TABLE [user] (
-    user_id BIGINT IDENTITY(1,1) PRIMARY KEY,
-    avatar NVARCHAR(255),
-    email NVARCHAR(255) UNIQUE,
-    name NVARCHAR(255),
-    password NVARCHAR(255),
-    register_date DATE,
-    status BIT
+/* ===============================
+   TABLE: user
+   =============================== */
+IF OBJECT_ID('dbo.[user]', 'U') IS NOT NULL DROP TABLE dbo.[user];
+CREATE TABLE dbo.[user] (
+    user_id        BIGINT IDENTITY(1,1) PRIMARY KEY,
+    avatar         NVARCHAR(255),
+    email          NVARCHAR(255) UNIQUE NOT NULL,
+    name           NVARCHAR(255) NOT NULL,
+    password       NVARCHAR(255) NOT NULL,
+    register_date  DATE DEFAULT (GETDATE()),
+    status         BIT  DEFAULT 1
 );
-
--- Mật khẩu dạng text "123456"
-INSERT INTO [user](avatar, email, name, password, register_date, status)
+-- 8 user (đã thêm shipper)
+INSERT INTO dbo.[user](avatar, email, name, password, register_date, status)
 VALUES 
 ('user.png','chi@gmail.com',N'Trần Thảo Chi','123456','2025-09-04',1),
 ('user.png','dong@gmail.com',N'Trần Hữu Đồng','123456','2025-09-04',1),
-('user.png','user@gmail.com','User Demo','123456','2025-09-04',1),
-('user.png','admin@mypham.com','Admin Mỹ Phẩm','123456','2025-09-04',1),
-('user.png','vendor1@mypham.com',N'Nguyễn Văn An','123456','2025-10-07',1),
-('user.png','vendor2@mypham.com',N'Trần Thị Bình','123456','2025-10-07',1),
-('user.png','vendor3@mypham.com',N'Lê Minh Châu','123456','2025-10-07',1);
+('user.png','user@gmail.com',N'User Demo','123456','2025-09-04',1),
+('user.png','admin@mypham.com',N'Admin Mỹ Phẩm','123456','2025-09-04',1),
+('user.png','vendor@mypham.com',N'Nguyễn Văn An','123456','2025-10-07',1),
+('user.png','vendor1@mypham.com',N'Trần Thị Bình','123456','2025-10-07',1),
+('user.png','vendor2@mypham.com',N'Lê Quốc Cường','123456','2025-10-07',1),
+('user.png','shipper@mypham.com',N'Phạm Văn Giao','123456','2025-10-08',1);
 GO
 
--- Bảng role
-IF OBJECT_ID('role', 'U') IS NOT NULL DROP TABLE role;
-CREATE TABLE role (
+/* ===============================
+   TABLE: role
+   =============================== */
+IF OBJECT_ID('dbo.role', 'U') IS NOT NULL DROP TABLE dbo.role;
+CREATE TABLE dbo.role (
     id BIGINT IDENTITY(1,1) PRIMARY KEY,
-    name NVARCHAR(255)
+    name NVARCHAR(255) UNIQUE NOT NULL
 );
-
-INSERT INTO role(name)
-VALUES ('ROLE_USER'),('ROLE_ADMIN'),('ROLE_VENDOR');
+INSERT INTO dbo.role(name)
+VALUES 
+('ROLE_USER'),
+('ROLE_ADMIN'),
+('ROLE_VENDOR'),
+('ROLE_SHIPPER'); -- Thêm role mới
 GO
 
--- Bảng users_roles
-IF OBJECT_ID('users_roles', 'U') IS NOT NULL DROP TABLE users_roles;
-CREATE TABLE users_roles (
+/* ===============================
+   TABLE: users_roles
+   =============================== */
+IF OBJECT_ID('dbo.users_roles', 'U') IS NOT NULL DROP TABLE dbo.users_roles;
+CREATE TABLE dbo.users_roles (
     user_id BIGINT NOT NULL,
     role_id BIGINT NOT NULL,
-    CONSTRAINT FK_users_roles_user FOREIGN KEY(user_id) REFERENCES [user](user_id),
-    CONSTRAINT FK_users_roles_role FOREIGN KEY(role_id) REFERENCES role(id)
+    CONSTRAINT PK_users_roles PRIMARY KEY(user_id, role_id),
+    CONSTRAINT FK_users_roles_user FOREIGN KEY(user_id) REFERENCES dbo.[user](user_id),
+    CONSTRAINT FK_users_roles_role FOREIGN KEY(role_id) REFERENCES dbo.role(id)
 );
-
-INSERT INTO users_roles(user_id, role_id)
+-- Gán role cho user
+INSERT INTO dbo.users_roles(user_id, role_id)
 VALUES 
-(1,1),  -- chi@gmail.com - ROLE_USER
-(2,1),  -- dong@gmail.com - ROLE_USER
-(3,1),  -- user@gmail.com - ROLE_USER
-(4,2),  -- admin@mypham.com - ROLE_ADMIN
-(5,3),  -- vendor1@mypham.com - ROLE_VENDOR
-(6,3),  -- vendor2@mypham.com - ROLE_VENDOR
-(7,3);  -- vendor3@mypham.com - ROLE_VENDOR
+(1,1),  -- user thường
+(2,1),
+(3,1),
+(4,2),  -- admin
+(5,3),  -- vendor
+(6,3),
+(7,3),
+(8,4);  -- shipper
 GO
 
--- Bảng brands
-IF OBJECT_ID('brands', 'U') IS NOT NULL DROP TABLE brands;
-CREATE TABLE brands (
+/* ===============================
+   TABLE: brands
+   =============================== */
+IF OBJECT_ID('dbo.brands', 'U') IS NOT NULL DROP TABLE dbo.brands;
+CREATE TABLE dbo.brands (
     brand_id BIGINT IDENTITY(1,1) PRIMARY KEY,
     brand_name NVARCHAR(255) NOT NULL,
-    brand_image NVARCHAR(255) NULL,
-    description NVARCHAR(1000) NULL,
-    origin NVARCHAR(255) NULL,
+    brand_image NVARCHAR(255),
+    description NVARCHAR(1000),
+    origin NVARCHAR(255),
     status BIT DEFAULT 1
 );
-
-INSERT INTO brands(brand_name, brand_image, description, origin, status) 
+INSERT INTO dbo.brands(brand_name, brand_image, description, origin, status)
 VALUES 
 (N'Maybelline', 'maybelline.jpg', N'Thương hiệu mỹ phẩm nổi tiếng từ Mỹ', N'Mỹ', 1),
 (N'Innisfree', 'innisfree.jpg', N'Mỹ phẩm thiên nhiên từ đảo Jeju', N'Hàn Quốc', 1),
@@ -104,106 +120,111 @@ VALUES
 (N'Nivea', 'nivea.jpg', N'Thương hiệu dưỡng da lâu đời từ Đức', N'Đức', 1);
 GO
 
--- Bảng products 
-IF OBJECT_ID('products', 'U') IS NOT NULL DROP TABLE products;
-CREATE TABLE products (
+/* ===============================
+   TABLE: products
+   =============================== */
+IF OBJECT_ID('dbo.products', 'U') IS NOT NULL DROP TABLE dbo.products;
+CREATE TABLE dbo.products (
     product_id BIGINT IDENTITY(1,1) PRIMARY KEY,
     description NVARCHAR(1000),
-    discount INT NOT NULL,
-    entered_date DATETIME,
-    price FLOAT NOT NULL,
+    discount INT CHECK (discount >= 0 AND discount <= 90),
+    entered_date DATETIME DEFAULT GETDATE(),
+    price DECIMAL(18,2) NOT NULL CHECK (price > 0),
     product_image NVARCHAR(255),
-    product_name NVARCHAR(255),
-    quantity INT NOT NULL,
-    status BIT NULL,
-    category_id BIGINT NULL,
-    brand_id BIGINT NULL,
-    manufacture_date DATE NULL,
-    expiry_date DATE NULL,
-    favorite BIT NOT NULL,
-    CONSTRAINT FK_products_categories FOREIGN KEY(category_id) REFERENCES categories(category_id),
-    CONSTRAINT FK_products_brands FOREIGN KEY(brand_id) REFERENCES brands(brand_id)
+    product_name NVARCHAR(255) NOT NULL,
+    quantity INT NOT NULL CHECK (quantity >= 0),
+    status BIT DEFAULT 1,
+    category_id BIGINT,
+    brand_id BIGINT,
+    manufacture_date DATE,
+    expiry_date DATE,
+    favorite BIT DEFAULT 0,
+    CONSTRAINT FK_products_categories FOREIGN KEY(category_id) REFERENCES dbo.categories(category_id),
+    CONSTRAINT FK_products_brands FOREIGN KEY(brand_id) REFERENCES dbo.brands(brand_id)
 );
-
-INSERT INTO products(description, discount, entered_date, price, product_image, product_name, quantity, status, category_id, brand_id, manufacture_date, expiry_date, favorite)
+INSERT INTO dbo.products(description, discount, price, product_image, product_name, quantity, category_id, brand_id, manufacture_date, expiry_date)
 VALUES
-(N'Son môi cao cấp, giữ màu lâu, không chì', 10, '2025-09-04', 250000, 'son.jpg', N'Son đỏ Ruby', 100, 1, 1, 1, '2025-01-15', '2028-01-15', 0),
-(N'Kem dưỡng trắng da ban đêm, an toàn cho mọi loại da', 5, '2025-09-04', 350000, 'kem.jpg', N'Kem dưỡng ban đêm', 50, 1, 2, 2, '2025-03-20', '2027-03-20', 0),
-(N'Nước hoa hương hoa hồng sang trọng, lưu hương 12h', 0, '2025-09-04', 1200000, 'nuochoa.jpg', N'Nước hoa Rose', 30, 1, 3, 3, '2025-05-10', '2030-05-10', 0);
+(N'Son môi cao cấp, giữ màu lâu, không chì', 10, 250000, 'son.jpg', N'Son đỏ Ruby', 100, 1, 1, '2025-01-15', '2028-01-15'),
+(N'Kem dưỡng trắng da ban đêm, an toàn cho mọi loại da', 5, 350000, 'kem.jpg', N'Kem dưỡng ban đêm', 50, 2, 2, '2025-03-20', '2027-03-20'),
+(N'Nước hoa hương hoa hồng sang trọng, lưu hương 12h', 0, 1200000, 'nuochoa.jpg', N'Nước hoa Rose', 30, 3, 3, '2025-05-10', '2030-05-10');
 GO
 
--- Bảng orders
-IF OBJECT_ID('orders', 'U') IS NOT NULL DROP TABLE orders;
-CREATE TABLE orders (
+/* ===============================
+   TABLE: orders
+   =============================== */
+IF OBJECT_ID('dbo.orders', 'U') IS NOT NULL DROP TABLE dbo.orders;
+CREATE TABLE dbo.orders (
     order_id BIGINT IDENTITY(1,1) PRIMARY KEY,
     address NVARCHAR(255),
-    amount FLOAT,
-    order_date DATETIME,
+    amount DECIMAL(18,2),
+    order_date DATETIME DEFAULT GETDATE(),
     phone NVARCHAR(50),
     status INT NOT NULL,
-    user_id BIGINT NULL,
-    CONSTRAINT FK_orders_user FOREIGN KEY(user_id) REFERENCES [user](user_id)
+    user_id BIGINT,
+    shipper_id BIGINT NULL, -- shipper giao hàng
+    CONSTRAINT FK_orders_user FOREIGN KEY(user_id) REFERENCES dbo.[user](user_id),
+    CONSTRAINT FK_orders_shipper FOREIGN KEY(shipper_id) REFERENCES dbo.[user](user_id)
 );
-
-INSERT INTO orders(address, amount, order_date, phone, status, user_id)
+INSERT INTO dbo.orders(address, amount, phone, status, user_id, shipper_id)
 VALUES
-(N'Hà Nội', 500000, '2025-09-05', '0911111111', 1, 1),
-(N'Đà Nẵng', 1200000, '2025-09-05', '0922222222', 2, 2);
+(N'Hà Nội', 500000, '0911111111', 1, 1, 8),
+(N'Đà Nẵng', 1200000, '0922222222', 2, 2, 8);
 GO
 
--- Bảng order_details
-IF OBJECT_ID('order_details', 'U') IS NOT NULL DROP TABLE order_details;
-CREATE TABLE order_details (
+/* ===============================
+   TABLE: order_details
+   =============================== */
+IF OBJECT_ID('dbo.order_details', 'U') IS NOT NULL DROP TABLE dbo.order_details;
+CREATE TABLE dbo.order_details (
     order_detail_id BIGINT IDENTITY(1,1) PRIMARY KEY,
-    price FLOAT,
+    price DECIMAL(18,2),
     quantity INT NOT NULL,
-    order_id BIGINT NULL,
-    product_id BIGINT NULL,
-    CONSTRAINT FK_orderdetails_orders FOREIGN KEY(order_id) REFERENCES orders(order_id),
-    CONSTRAINT FK_orderdetails_products FOREIGN KEY(product_id) REFERENCES products(product_id)
+    order_id BIGINT,
+    product_id BIGINT,
+    CONSTRAINT FK_orderdetails_orders FOREIGN KEY(order_id) REFERENCES dbo.orders(order_id),
+    CONSTRAINT FK_orderdetails_products FOREIGN KEY(product_id) REFERENCES dbo.products(product_id)
 );
-
-INSERT INTO order_details(price, quantity, order_id, product_id)
+INSERT INTO dbo.order_details(price, quantity, order_id, product_id)
 VALUES
-(250000, 2, 1, 1),  -- 2 x Son đỏ Ruby
-(1200000, 1, 2, 3); -- 1 x Nước hoa Rose
+(250000, 2, 1, 1),
+(1200000, 1, 2, 3);
 GO
 
--- Bảng comments
-IF OBJECT_ID('comments', 'U') IS NOT NULL DROP TABLE comments;
-CREATE TABLE comments (
+/* ===============================
+   TABLE: comments
+   =============================== */
+IF OBJECT_ID('dbo.comments', 'U') IS NOT NULL DROP TABLE dbo.comments;
+CREATE TABLE dbo.comments (
     id BIGINT IDENTITY(1,1) PRIMARY KEY,
     content NVARCHAR(255),
-    rate_date DATETIME,
-    rating FLOAT,
+    rate_date DATETIME DEFAULT GETDATE(),
+    rating DECIMAL(2,1) CHECK (rating BETWEEN 1 AND 5),
     order_detail_id BIGINT,
     product_id BIGINT,
     user_id BIGINT,
-    CONSTRAINT FK_comments_orderdetail FOREIGN KEY(order_detail_id) REFERENCES order_details(order_detail_id),
-    CONSTRAINT FK_comments_product FOREIGN KEY(product_id) REFERENCES products(product_id),
-    CONSTRAINT FK_comments_user FOREIGN KEY(user_id) REFERENCES [user](user_id)
+    CONSTRAINT FK_comments_orderdetail FOREIGN KEY(order_detail_id) REFERENCES dbo.order_details(order_detail_id),
+    CONSTRAINT FK_comments_product FOREIGN KEY(product_id) REFERENCES dbo.products(product_id),
+    CONSTRAINT FK_comments_user FOREIGN KEY(user_id) REFERENCES dbo.[user](user_id)
 );
-
-INSERT INTO comments(content, rate_date, rating, order_detail_id, product_id, user_id)
+INSERT INTO dbo.comments(content, rating, order_detail_id, product_id, user_id)
 VALUES
-(N'Son màu đẹp, lâu trôi', '2025-09-06', 5, 1, 1, 1),
-(N'Nước hoa mùi thơm dễ chịu, sang trọng', '2025-09-06', 4, 2, 3, 2);
+(N'Son màu đẹp, lâu trôi', 5, 1, 1, 1),
+(N'Nước hoa mùi thơm dễ chịu, sang trọng', 4, 2, 3, 2);
 GO
 
--- Bảng favorites
-IF OBJECT_ID('favorites', 'U') IS NOT NULL DROP TABLE favorites;
-CREATE TABLE favorites (
+/* ===============================
+   TABLE: favorites
+   =============================== */
+IF OBJECT_ID('dbo.favorites', 'U') IS NOT NULL DROP TABLE dbo.favorites;
+CREATE TABLE dbo.favorites (
     favorite_id BIGINT IDENTITY(1,1) PRIMARY KEY,
     product_id BIGINT,
     user_id BIGINT,
-    CONSTRAINT FK_favorites_product FOREIGN KEY(product_id) REFERENCES products(product_id),
-    CONSTRAINT FK_favorites_user FOREIGN KEY(user_id) REFERENCES [user](user_id)
+    CONSTRAINT FK_favorites_product FOREIGN KEY(product_id) REFERENCES dbo.products(product_id),
+    CONSTRAINT FK_favorites_user FOREIGN KEY(user_id) REFERENCES dbo.[user](user_id)
 );
-
-INSERT INTO favorites(product_id, user_id)
+INSERT INTO dbo.favorites(product_id, user_id)
 VALUES
-(1, 1), -- user 1 thích Son đỏ Ruby
-(3, 2); -- user 2 thích Nước hoa Rose
+(1, 1),
+(3, 2);
 GO
-
--- (Đã loại bỏ schema chat để dùng WebSocket thuần, không lưu DB)
