@@ -42,7 +42,18 @@ public class ChatViewController {
         if (userObj instanceof User) {
             // FORCE one room per logged-in account
             User u = (User) userObj;
-            roomId = "user-" + u.getUserId();
+            // If a vendorId is explicitly requested, create a per-pair room (user-seller)
+            String vendorParam = request.getParameter("vendorId");
+            if (vendorParam != null && !vendorParam.isEmpty()) {
+                String vendorIdOnlyDigits = vendorParam.replaceAll("[^0-9]", "");
+                if (!vendorIdOnlyDigits.isEmpty()) {
+                    roomId = "user-" + u.getUserId() + "-seller-" + vendorIdOnlyDigits;
+                } else {
+                    roomId = "user-" + u.getUserId();
+                }
+            } else {
+                roomId = "user-" + u.getUserId();
+            }
             userName = safeName(u.getName(), u.getEmail());
         } else {
             // Guest: reuse cookie if present, else random

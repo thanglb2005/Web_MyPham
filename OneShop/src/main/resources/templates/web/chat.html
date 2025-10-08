@@ -483,11 +483,13 @@
             <div class="status-dot"></div>
             <span>Đang kết nối...</span>
           </div>
+          <!-- Hidden for customers: only seller/admin can clear on their UI -->
           <button
             type="button"
             id="clearHistoryBtn"
             class="btn btn-outline-secondary btn-sm"
             title="Xóa lịch sử trò chuyện"
+            style="display: none"
           >
             <i class="fas fa-trash"></i>
             Xóa lịch sử
@@ -683,9 +685,12 @@
             if (!confirm("Bạn có chắc muốn xóa toàn bộ lịch sử trò chuyện?"))
               return;
             try {
+              // Use POST alias to avoid DELETE being blocked by proxies/CSRF
               const res = await fetch(
-                `/api/chat/history?roomId=${encodeURIComponent(currentRoom)}`,
-                { method: "DELETE" }
+                `/api/chat/history/clear?roomId=${encodeURIComponent(
+                  currentRoom
+                )}`,
+                { method: "POST" }
               );
               const ok = res.ok ? (await res.json()).success !== false : false;
               if (ok) {

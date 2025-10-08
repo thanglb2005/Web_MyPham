@@ -7,6 +7,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import jakarta.servlet.http.HttpSession;
+import vn.entity.User;
 import vn.service.chat.ChatHistoryService;
 import vn.entity.ChatMessage;
 import vn.repository.ChatMessageRepository;
@@ -58,9 +60,12 @@ public class ChatHistoryController {
     }
 
     @DeleteMapping("/api/chat/history")
-    public ResponseEntity<Map<String, Object>> clearHistory(@RequestParam("roomId") String roomId) {
+    public ResponseEntity<Map<String, Object>> clearHistory(@RequestParam("roomId") String roomId, HttpSession session) {
         if (roomId == null || roomId.isEmpty()) {
             return ResponseEntity.badRequest().body(Collections.singletonMap("success", false));
+        }
+        if (!isVendorOrAdmin(session)) {
+            return ResponseEntity.status(403).body(Collections.singletonMap("success", false));
         }
         boolean ok = chatHistoryService.deleteRoomHistory(roomId);
         return ResponseEntity.ok(Collections.singletonMap("success", ok));
@@ -68,7 +73,41 @@ public class ChatHistoryController {
 
     // Optional: POST alias in case DELETE is restricted by some proxies
     @PostMapping("/api/chat/history/clear")
-    public ResponseEntity<Map<String, Object>> clearHistoryPost(@RequestParam("roomId") String roomId) {
-        return clearHistory(roomId);
+    public ResponseEntity<Map<String, Object>> clearHistoryPost(@RequestParam("roomId") String roomId, HttpSession session) {
+        return clearHistory(roomId, session);
+    }
+
+    /**
+     * Convenience endpoint: clear chat by userId + vendorId pair.
+     * Maps to roomId pattern: user-{userId}-seller-{vendorId}
+     */
+    @PostMapping("/api/chat/history/clearByPair")
+    public ResponseEntity<Map<String, Object>> clearByPair(
+            @RequestParam("userId") Long userId,
+            @RequestParam("vendorId") Long vendorId,
+            HttpSession session
+    ) {
+        if (userId == null || vendorId == null) {
+            return ResponseEntity.badRequest().body(Collections.singletonMap("success", false));
+        }
+        if (!isVendorOrAdmin(session)) {
+            return ResponseEntity.status(403).body(Collections.singletonMap("success", false));
+        }
+        String roomId = "user-" + userId + "-seller-" + vendorId;
+        boolean ok = chatHistoryService.deleteRoomHistory(roomId);
+        return ResponseEntity.ok(Collections.singletonMap("success", ok));
+    }
+
+    private boolean isVendorOrAdmin(HttpSession session) {
+        Object userObj = session.getAttribute("user");
+        if (!(userObj instanceof User)) return false;
+        User user = (User) userObj;
+        try {
+            return user.getRoles().stream().anyMatch(r ->
+                "ROLE_VENDOR".equals(r.getName()) || "ROLE_ADMIN".equals(r.getName())
+            );
+        } catch (Exception e) {
+            return false;
+        }
     }
 }
