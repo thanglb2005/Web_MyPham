@@ -35,8 +35,7 @@ VALUES
 (N'Cetaphil', 'cetaphil.png', N'Dược mỹ phẩm dịu nhẹ cho da nhạy cảm', N'Mỹ', 1),
 (N'La Roche-Posay', 'la_roche_posay.png', N'Dược mỹ phẩm cho da nhạy cảm', N'Pháp', 1);
 GO
-USE WebMyPham;
-GO
+
 
 /* =========================
    10 TONER / NƯỚC HOA HỒNG
@@ -119,10 +118,10 @@ VALUES
 GO
 
 
-/* =================
-   10 SỮA RỬA MẶT
-   ================= */
 
+/* =================
+   10 SỮA RỬA MẶT (FIX)
+   ================= */
 INSERT INTO products(
   description, discount, entered_date, price, product_image, product_name,
   quantity, status, category_id, brand_id, manufacture_date, expiry_date, favorite
@@ -131,73 +130,74 @@ VALUES
 -- 1. CeraVe Foaming Facial Cleanser
 (N'Sữa rửa mặt CeraVe Foaming giúp làm sạch sâu mà không làm khô da', 0, GETDATE(), 280000,
  N'cerave_foaming.png', N'CeraVe Foaming Facial Cleanser 236ml', 100, 1,
- (SELECT category_id FROM categories WHERE category_name=N'Sữa rửa mặt'),
- (SELECT brand_id FROM brands WHERE brand_name=N'CeraVe'),
+ (SELECT MIN(category_id) FROM categories WHERE category_name=N'Sữa rửa mặt'),
+ (SELECT MIN(brand_id)    FROM brands    WHERE brand_name =N'CeraVe'),
  DATEFROMPARTS(2025,5,1), DATEFROMPARTS(2028,5,1), 0),
 
 -- 2. Simple Kind To Skin Refreshing Facial Wash
 (N'Sữa rửa mặt Simple làm sạch dịu nhẹ, không gây khô căng, phù hợp da nhạy cảm', 0, GETDATE(), 91000,
  N'simple_refreshing_wash.png', N'Simple Kind To Skin Refreshing Facial Wash 150ml', 150, 1,
- (SELECT category_id FROM categories WHERE category_name=N'Sữa rửa mặt'),
- (SELECT brand_id FROM brands WHERE brand_name=N'Simple'),
+ (SELECT MIN(category_id) FROM categories WHERE category_name=N'Sữa rửa mặt'),
+ (SELECT MIN(brand_id)    FROM brands    WHERE brand_name =N'Simple'),
  DATEFROMPARTS(2025,6,1), DATEFROMPARTS(2027,6,1), 0),
 
 -- 3. The Face Shop Rice Water Bright Cleanser
 (N'Sữa rửa mặt chiết xuất nước gạo giúp làm sáng và làm sạch nhẹ nhàng', 0, GETDATE(), 30000,
  N'tfs_rice_water.png', N'The Face Shop Rice Water Bright Cleanser 150ml', 200, 1,
- (SELECT category_id FROM categories WHERE category_name=N'Sữa rửa mặt'),
- (SELECT brand_id FROM brands WHERE brand_name=N'The Face Shop'),
+ (SELECT MIN(category_id) FROM categories WHERE category_name=N'Sữa rửa mặt'),
+ (SELECT MIN(brand_id)    FROM brands    WHERE brand_name =N'The Face Shop'),
  DATEFROMPARTS(2025,7,1), DATEFROMPARTS(2028,7,1), 0),
 
 -- 4. Anua Heartleaf Pore Deep Cleansing Foam
 (N'Sữa rửa mặt Anua chứa heartleaf giúp kiểm soát dầu & se khít lỗ chân lông', 0, GETDATE(), 220000,
  N'anua_heartleaf.png', N'Anua Heartleaf Pore Deep Cleansing Foam 150ml', 120, 1,
- (SELECT category_id FROM categories WHERE category_name=N'Sữa rửa mặt'),
- (SELECT brand_id FROM brands WHERE brand_name=N'Anua'),
+ (SELECT MIN(category_id) FROM categories WHERE category_name=N'Sữa rửa mặt'),
+ (SELECT MIN(brand_id)    FROM brands    WHERE brand_name =N'Anua'),
  DATEFROMPARTS(2025,6,15), DATEFROMPARTS(2028,6,15), 0),
 
 -- 5. Cocoon Winter Melon Cleanser
 (N'Gel rửa mặt Cocoon bí đao thuần chay, dịu nhẹ cho da nhạy cảm', 0, GETDATE(), 105000,
  N'cocoon_winter_melon.png', N'Cocoon Winter Melon Cleanser 140ml', 180, 1,
- (SELECT category_id FROM categories WHERE category_name=N'Sữa rửa mặt'),
- (SELECT brand_id FROM brands WHERE brand_name=N'Cocoon'),
+ (SELECT MIN(category_id) FROM categories WHERE category_name=N'Sữa rửa mặt'),
+ (SELECT MIN(brand_id)    FROM brands    WHERE brand_name =N'Cocoon'),
  DATEFROMPARTS(2025,5,10), DATEFROMPARTS(2027,5,10), 0),
 
 -- 6. SVR Sebiaclear Gel Moussant
 (N'Gel rửa mặt SVR làm sạch dầu, giảm mụn nhẹ nhàng', 0, GETDATE(), 180000,
  N'svr_sebiaclear.png', N'SVR Sebiaclear Gel Moussant 200ml', 90, 1,
- (SELECT category_id FROM categories WHERE category_name=N'Sữa rửa mặt'),
- (SELECT brand_id FROM brands WHERE brand_name=N'SVR'),
+ (SELECT MIN(category_id) FROM categories WHERE category_name=N'Sữa rửa mặt'),
+ (SELECT MIN(brand_id)    FROM brands    WHERE brand_name =N'SVR'),
  DATEFROMPARTS(2025,6,1), DATEFROMPARTS(2028,6,1), 0),
 
 -- 7. Cetaphil Gentle Skin Cleanser
 (N'Sữa rửa mặt Cetaphil dịu nhẹ, không tạo bọt mạnh, phù hợp da nhạy cảm', 0, GETDATE(), 150000,
  N'cetaphil_gentle.png', N'Cetaphil Gentle Skin Cleanser 236ml', 140, 1,
- (SELECT category_id FROM categories WHERE category_name=N'Sữa rửa mặt'),
- (SELECT brand_id FROM brands WHERE brand_name=N'Cetaphil'),
+ (SELECT MIN(category_id) FROM categories WHERE category_name=N'Sữa rửa mặt'),
+ (SELECT MIN(brand_id)    FROM brands    WHERE brand_name =N'Cetaphil'),
  DATEFROMPARTS(2025,7,1), DATEFROMPARTS(2028,7,1), 0),
 
 -- 8. La Roche-Posay Toleriane Hydrating Gentle Cleanser
 (N'Sữa rửa mặt La Roche-Posay dịu nhẹ, bảo vệ hàng rào da', 0, GETDATE(), 320000,
  N'laroche_toleriane.png', N'La Roche-Posay Toleriane Hydrating Gentle Cleanser 200ml', 95, 1,
- (SELECT category_id FROM categories WHERE category_name=N'Sữa rửa mặt'),
- (SELECT brand_id FROM brands WHERE brand_name=N'La Roche-Posay'),
+ (SELECT MIN(category_id) FROM categories WHERE category_name=N'Sữa rửa mặt'),
+ (SELECT MIN(brand_id)    FROM brands    WHERE brand_name =N'La Roche-Posay'),
  DATEFROMPARTS(2025,6,1), DATEFROMPARTS(2028,6,1), 0),
 
 -- 9. Bioderma Sébium Gel Moussant
 (N'Gel rửa mặt Bioderma giúp kiểm soát dầu & giảm mụn nhẹ nhàng', 0, GETDATE(), 210000,
  N'bioderma_sebium.png', N'Bioderma Sébium Gel Moussant 200ml', 100, 1,
- (SELECT category_id FROM categories WHERE category_name=N'Sữa rửa mặt'),
- (SELECT brand_id FROM brands WHERE brand_name=N'Bioderma'),
+ (SELECT MIN(category_id) FROM categories WHERE category_name=N'Sữa rửa mặt'),
+ (SELECT MIN(brand_id)    FROM brands    WHERE brand_name =N'Bioderma'),
  DATEFROMPARTS(2025,5,15), DATEFROMPARTS(2028,5,15), 0),
 
 -- 10. La Roche-Posay Effaclar Purifying Foaming Gel
 (N'Sữa rửa mặt Effaclar giúp làm sạch sâu dành cho da dầu, hỗ trợ giảm mụn', 0, GETDATE(), 350000,
  N'laroche_effaclar.png', N'La Roche-Posay Effaclar Purifying Foaming Gel 200ml', 80, 1,
- (SELECT category_id FROM categories WHERE category_name=N'Sữa rửa mặt'),
- (SELECT brand_id FROM brands WHERE brand_name=N'La Roche-Posay'),
+ (SELECT MIN(category_id) FROM categories WHERE category_name=N'Sữa rửa mặt'),
+ (SELECT MIN(brand_id)    FROM brands    WHERE brand_name =N'La Roche-Posay'),
  DATEFROMPARTS(2025,6,10), DATEFROMPARTS(2028,6,10), 0);
 GO
+
 
 
 /* ==========
@@ -279,3 +279,24 @@ VALUES
  (SELECT brand_id FROM brands WHERE brand_name=N'Klairs'),
  DATEFROMPARTS(2025,6,1), DATEFROMPARTS(2028,6,1), 0);
 GO
+SELECT brand_name, COUNT(*) AS cnt
+FROM brands
+GROUP BY brand_name
+HAVING COUNT(*) > 1;
+
+SELECT category_name, COUNT(*) AS cnt
+FROM categories
+GROUP BY category_name
+HAVING COUNT(*) > 1;
+;WITH d AS (
+  SELECT brand_id,
+         ROW_NUMBER() OVER (PARTITION BY brand_name ORDER BY brand_id) AS rn
+  FROM brands
+  WHERE brand_name = N'La Roche-Posay'
+)
+DELETE FROM brands WHERE brand_id IN (SELECT brand_id FROM d WHERE rn > 1);
+ALTER TABLE brands
+ADD CONSTRAINT UQ_brands_brand_name UNIQUE (brand_name);
+
+ALTER TABLE categories
+ADD CONSTRAINT UQ_categories_category_name UNIQUE (category_name);
