@@ -23,6 +23,11 @@ public class BrandServiceImpl implements BrandService {
     }
     
     @Override
+    public Page<Brand> findAll(Pageable pageable) {
+        return brandRepository.findAll(pageable);
+    }
+    
+    @Override
     public Optional<Brand> findById(Long id) {
         return brandRepository.findById(id);
     }

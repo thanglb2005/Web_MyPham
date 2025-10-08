@@ -1,0 +1,1044 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản Lý Thương Hiệu - OneShop Admin</title>
+    
+    <!-- CSS Libraries -->
+    <link rel="stylesheet" href="/assets/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/assets/css/atlantis.min.css">
+    <link rel="stylesheet" href="/fonts/fontawesome/fontawesome.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="/assets/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/assets/css/atlantis.css">
+    <link rel="stylesheet" href="/assets/css/demo.css">
+    <link rel="stylesheet" href="/assets/css/fonts.min.css">
+    <link rel="stylesheet" href="/assets/css/atlantis.min.css">
+    <link rel="stylesheet" href="/css/admin-fonts.css">
+    
+    <style>
+        /* Fixed Sidebar */
+        .sidebar {
+            position: fixed !important;
+            top: 60px;
+            left: 0;
+            bottom: 0;
+            z-index: 1028;
+            width: 250px;
+            background: white !important;
+            border-right: 1px solid #e9ecef;
+            margin: 0;
+            padding: 0;
+        }
+        
+        /* Main Content Adjustment */
+        .main-panel {
+            margin-top: 60px !important;
+            margin-left: 250px !important;
+            padding: 0;
+            margin-right: 0;
+        }
+        
+        .content {
+            padding: 0;
+            margin: 0;
+            position: relative;
+            top: 0;
+        }
+        
+        .page-inner {
+            padding: 20px;
+            margin: 0;
+        }
+        
+        .page-header {
+            padding: 15px 20px;
+            margin: 0;
+            background: white;
+            border-bottom: 1px solid #e9ecef;
+            position: relative;
+            top: 0;
+        }
+        
+        .page-title {
+            color: #333;
+            font-size: 1.8rem;
+            margin: 0;
+            font-weight: 600;
+        }
+        
+        /* Action Bar Styling */
+        .action-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.05);
+        }
+        
+        /* Search Form */
+        .search-form {
+            display: flex;
+            align-items: center;
+        }
+        
+        .search-box {
+            position: relative;
+        }
+        
+        .search-box i {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6c757d;
+        }
+        
+        .search-box input {
+            padding-left: 35px;
+            border-radius: 30px;
+            width: 250px;
+            border: 1px solid #e9ecef;
+            height: 38px;
+            box-shadow: none;
+            transition: all 0.3s;
+        }
+        
+        .search-box input:focus {
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+            border-color: #80bdff;
+            outline: none;
+        }
+        
+        /* Table Styles */
+        .table-container {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.05);
+        }
+        
+        .card {
+            border: none;
+            box-shadow: none;
+            margin-bottom: 0;
+        }
+        
+        .table {
+            margin-bottom: 0;
+        }
+        
+        .table th {
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+            color: #495057;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        .table td {
+            vertical-align: middle;
+            color: #495057;
+            font-size: 14px;
+            border-top: 1px solid #e9ecef;
+        }
+        
+        /* Brand Image Thumbnail */
+        .brand-image {
+            width: 60px;
+            height: 60px;
+            object-fit: contain;
+            border-radius: 4px;
+            background-color: #f8f9fa;
+            box-shadow: 0 0 3px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Status Badge */
+        .badge-active {
+            background-color: #2ecc71;
+            color: white;
+            font-weight: 500;
+            padding: 6px 12px;
+        }
+        
+        .badge-inactive {
+            background-color: #e74c3c;
+            color: white;
+            font-weight: 500;
+            padding: 6px 12px;
+        }
+        
+        /* Action Buttons */
+        .btn-action-group .btn {
+            padding: 0.3rem 0.5rem;
+            margin-right: 5px;
+        }
+        
+        /* Modal Styles */
+        .modal-header {
+            border-bottom: 1px solid #e9ecef;
+            background-color: #f8f9fa;
+        }
+        
+        .modal-footer {
+            border-top: 1px solid #e9ecef;
+            background-color: #f8f9fa;
+        }
+        
+        /* Form Styles */
+        .form-control-icon {
+            position: relative;
+        }
+        
+        .form-control-icon i {
+            position: absolute;
+            top: 50%;
+            right: 10px;
+            transform: translateY(-50%);
+            color: #6c757d;
+        }
+        
+        .image-preview {
+            width: 100%;
+            height: 150px;
+            border: 1px dashed #ced4da;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+        
+        .image-preview img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+        
+        .image-preview.empty {
+            background-color: #f8f9fa;
+            color: #6c757d;
+        }
+        
+        /* Pagination */
+        .pagination-container {
+            margin-top: 20px;
+        }
+        
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #6c757d;
+        }
+        
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            opacity: 0.5;
+        }
+        
+        /* Alert Messages */
+        .alert-container {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            z-index: 9999;
+            min-width: 300px;
+        }
+        
+        .brand-alert {
+            margin-bottom: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            animation: slideIn 0.5s forwards;
+            display: none;
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        .sortable-header {
+            cursor: pointer;
+        }
+        
+        .sortable-header i {
+            margin-left: 5px;
+            opacity: 0.5;
+        }
+        
+        /* Align text in cells */
+        .table td:nth-child(1),
+        .table th:nth-child(1) {
+            text-align: center;
+        } /* ID */
+        .table td:nth-child(2),
+        .table th:nth-child(2) {
+            text-align: center;
+        } /* Image */
+        .table td:nth-child(3),
+        .table th:nth-child(3) {
+            text-align: left;
+        } /* Brand Name */
+        .table td:nth-child(4),
+        .table th:nth-child(4) {
+            text-align: left;
+        } /* Origin */
+        .table td:nth-child(5),
+        .table th:nth-child(5) {
+            text-align: center;
+        } /* Status */
+        
+        /* Sidebar Minimize */
+        .sidebar_minimize .sidebar .sidebar-wrapper .nav-item a i {
+            margin-right: unset;
+        }
+        .sidebar_minimize .sidebar .sidebar-wrapper .nav-item a .badge,
+        .sidebar_minimize .sidebar .sidebar-wrapper .nav-item a span,
+        .sidebar_minimize .sidebar .sidebar-wrapper .nav-item a .caret,
+        .sidebar_minimize .sidebar .sidebar-wrapper .nav-item a p {
+            display: none;
+            transition: all 0.3s;
+        }
+        .sidebar_minimize
+        .sidebar
+        .sidebar-wrapper
+        .nav-item.submenu
+        .nav-collapse,
+        .sidebar_minimize
+        .sidebar
+        .sidebar-wrapper
+        .nav-item.active
+        .nav-collapse {
+            display: none;
+        }
+        .sidebar_minimize .sidebar .sidebar-wrapper .nav-section .text-section {
+            display: none;
+        }
+        /* Force hide all text content when minimized */
+        .sidebar_minimize .sidebar .sidebar-wrapper .user .info,
+        .sidebar_minimize .sidebar .sidebar-wrapper .user .info span,
+        .sidebar_minimize .sidebar .sidebar-wrapper .user .info .user-level,
+        .sidebar_minimize .sidebar .sidebar-wrapper .nav-item a span,
+        .sidebar_minimize .sidebar .sidebar-wrapper .nav-item a p,
+        .sidebar_minimize .sidebar .sidebar-wrapper .nav-item a .caret,
+        .sidebar_minimize .sidebar .sidebar-wrapper .nav-item a .badge,
+        .sidebar_minimize .sidebar .sidebar-wrapper .nav-section .text-section {
+            display: none !important;
+            opacity: 0 !important;
+            visibility: hidden !important;
+        }
+        /* Keep only icons visible */
+        .sidebar_minimize .sidebar .sidebar-wrapper .nav-item a i {
+            display: block !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+            margin: 0 !important;
+            text-align: center !important;
+        }
+        .sidebar_minimize .sidebar .sidebar-wrapper .user [class^="avatar-"] {
+            display: block !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+        }
+        
+        /* Show text when hovering over minimized sidebar */
+        @media screen and (min-width: 992px) {
+            .sidebar_minimize .sidebar:hover {
+                width: 250px !important;
+                min-width: 250px !important;
+                max-width: 250px !important;
+            }
+            .sidebar_minimize .sidebar:hover .sidebar-wrapper {
+                width: 250px !important;
+                min-width: 250px !important;
+                max-width: 250px !important;
+            }
+            .sidebar_minimize .sidebar:hover .sidebar-wrapper .user {
+                padding-left: 15px !important;
+                padding-right: 15px !important;
+            }
+            .sidebar_minimize .sidebar:hover .sidebar-wrapper .user [class^="avatar-"] {
+                float: left !important;
+                margin-right: 11px !important;
+            }
+            .sidebar_minimize .sidebar:hover .sidebar-wrapper .user .info,
+            .sidebar_minimize .sidebar:hover .sidebar-wrapper .user .info span,
+            .sidebar_minimize
+            .sidebar:hover
+            .sidebar-wrapper
+            .user
+            .info
+            .user-level {
+                display: block !important;
+                opacity: 1 !important;
+                visibility: visible !important;
+            }
+            .sidebar_minimize .sidebar:hover .sidebar-wrapper .nav-item a i {
+                margin-right: 15px !important;
+            }
+            .sidebar_minimize .sidebar:hover .sidebar-wrapper .nav-item a .badge,
+            .sidebar_minimize .sidebar:hover .sidebar-wrapper .nav-item a span,
+            .sidebar_minimize .sidebar:hover .sidebar-wrapper .nav-item a .caret,
+            .sidebar_minimize .sidebar:hover .sidebar-wrapper .nav-item a p {
+                display: block !important;
+                opacity: 1 !important;
+                visibility: visible !important;
+            }
+            .sidebar_minimize .sidebar:hover .sidebar-wrapper .nav-item.submenu .nav-collapse,
+            .sidebar_minimize .sidebar:hover .sidebar-wrapper .nav-item.active .nav-collapse {
+                display: block !important;
+                opacity: 1 !important;
+                visibility: visible !important;
+            }
+            .sidebar_minimize .sidebar:hover .sidebar-wrapper .nav-section .text-section {
+                display: block !important;
+                opacity: 1 !important;
+                visibility: visible !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="wrapper">
+        <!-- Header -->
+        <th:block th:replace="~{admin/fragments/header :: header}"></th:block>
+        
+        <!-- Navbar -->
+        <th:block th:replace="~{admin/fragments/navbar :: navbar}"></th:block>
+        
+        <div class="main-panel">
+            <div class="content">
+                <!-- Page Header -->
+                <div class="page-header">
+                    <h2 class="page-title">Quản Lý Thương Hiệu</h2>
+                </div>
+                
+                <div class="page-inner">
+                    <!-- Alert Messages Container -->
+                    <div class="alert-container">
+                        <div id="addSuccessAlert" class="alert alert-success brand-alert" role="alert">
+                            <i class="fas fa-check-circle mr-2"></i> Thêm thương hiệu thành công!
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        
+                        <div id="updateSuccessAlert" class="alert alert-success brand-alert" role="alert">
+                            <i class="fas fa-check-circle mr-2"></i> Cập nhật thương hiệu thành công!
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        
+                        <div id="deleteSuccessAlert" class="alert alert-success brand-alert" role="alert">
+                            <i class="fas fa-check-circle mr-2"></i> Xóa thương hiệu thành công!
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        
+                        <div id="toggleSuccessAlert" class="alert alert-success brand-alert" role="alert">
+                            <i class="fas fa-check-circle mr-2"></i> Cập nhật trạng thái thành công!
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        
+                        <div id="errorAlert" class="alert alert-danger brand-alert" role="alert">
+                            <i class="fas fa-exclamation-circle mr-2"></i> Có lỗi xảy ra. Vui lòng thử lại!
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Content Section -->
+                    <div class="content-section">
+                        <!-- Action Bar -->
+                        <div class="action-bar">
+                            <div class="d-flex align-items-center">
+                                <!-- Search Form -->
+                                <form method="get" class="search-form mr-3">
+                                    <input type="hidden" name="page" value="0">
+                                    <input type="hidden" name="size" th:value="${pageSize}">
+                                    <input type="hidden" name="sortBy" th:value="${sortBy}">
+                                    <input type="hidden" name="sortDir" th:value="${sortDir}">
+                                    <div class="search-box">
+                                        <i class="fas fa-search"></i>
+                                        <input 
+                                            type="text" 
+                                            name="search" 
+                                            class="form-control" 
+                                            placeholder="Tìm kiếm theo tên..."
+                                            th:value="${search}"
+                                        >
+                                    </div>
+                                </form>
+                                
+                                <!-- Page Size Selector -->
+                                <form method="get" class="d-flex align-items-center ml-2">
+                                    <input type="hidden" name="page" value="0">
+                                    <input type="hidden" name="sortBy" th:value="${sortBy}">
+                                    <input type="hidden" name="sortDir" th:value="${sortDir}">
+                                    <input type="hidden" name="search" th:value="${search}">
+                                    <label for="pageSize" class="mb-0 mr-2">Hiển thị:</label>
+                                    <select name="size" id="pageSize" class="form-control form-control-sm" onchange="this.form.submit()">
+                                        <option value="5" th:selected="${pageSize == 5}">5 dòng</option>
+                                        <option value="10" th:selected="${pageSize == 10}">10 dòng</option>
+                                        <option value="20" th:selected="${pageSize == 20}">20 dòng</option>
+                                        <option value="50" th:selected="${pageSize == 50}">50 dòng</option>
+                                    </select>
+                                </form>
+                            </div>
+                            
+                            <!-- Add Brand Button -->
+                            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addBrandModal">
+                                <i class="fas fa-plus"></i>
+                                Thêm thương hiệu mới
+                            </button>
+                        </div>
+                        
+                        <!-- Brands Table -->
+                        <div class="table-container">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-tags"></i>
+                                        Danh sách thương hiệu
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-hover table-striped">
+                                            <thead>
+                                                <tr>
+                                                    <th class="sortable-header" onclick="sortTable('brandId')">
+                                                        ID
+                                                        <i th:if="${sortBy == 'brandId' && sortDir == 'asc'}" class="fas fa-sort-up"></i>
+                                                        <i th:if="${sortBy == 'brandId' && sortDir == 'desc'}" class="fas fa-sort-down"></i>
+                                                        <i th:if="${sortBy != 'brandId'}" class="fas fa-sort"></i>
+                                                    </th>
+                                                    <th>Hình ảnh</th>
+                                                    <th class="sortable-header" onclick="sortTable('brandName')">
+                                                        Tên thương hiệu
+                                                        <i th:if="${sortBy == 'brandName' && sortDir == 'asc'}" class="fas fa-sort-up"></i>
+                                                        <i th:if="${sortBy == 'brandName' && sortDir == 'desc'}" class="fas fa-sort-down"></i>
+                                                        <i th:if="${sortBy != 'brandName'}" class="fas fa-sort"></i>
+                                                    </th>
+                                                    <th class="sortable-header" onclick="sortTable('origin')">
+                                                        Xuất xứ
+                                                        <i th:if="${sortBy == 'origin' && sortDir == 'asc'}" class="fas fa-sort-up"></i>
+                                                        <i th:if="${sortBy == 'origin' && sortDir == 'desc'}" class="fas fa-sort-down"></i>
+                                                        <i th:if="${sortBy != 'origin'}" class="fas fa-sort"></i>
+                                                    </th>
+                                                    <th class="sortable-header" onclick="sortTable('status')">
+                                                        Trạng thái
+                                                        <i th:if="${sortBy == 'status' && sortDir == 'asc'}" class="fas fa-sort-up"></i>
+                                                        <i th:if="${sortBy == 'status' && sortDir == 'desc'}" class="fas fa-sort-down"></i>
+                                                        <i th:if="${sortBy != 'status'}" class="fas fa-sort"></i>
+                                                    </th>
+                                                    <th>Thao tác</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <!-- Display brands if exists -->
+                                                <tr th:if="${brands != null && !brands.empty}" th:each="brand : ${brands}">
+                                                    <td th:text="${brand.brandId}"></td>
+                                                    <td>
+                                                        <img th:if="${brand.brandImage != null}" th:src="@{'/images/' + ${brand.brandImage}}" class="brand-image" alt="Brand Image">
+                                                        <div th:if="${brand.brandImage == null}" class="brand-image d-flex align-items-center justify-content-center">
+                                                            <i class="fas fa-image text-muted"></i>
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <span th:text="${brand.brandName}" class="font-weight-bold"></span>
+                                                    </td>
+                                                    <td th:text="${brand.origin}"></td>
+                                                    <td>
+                                                        <span th:if="${brand.status}" class="badge badge-active">Hoạt động</span>
+                                                        <span th:unless="${brand.status}" class="badge badge-inactive">Tạm dừng</span>
+                                                    </td>
+                                                    <td>
+                                                        <div class="btn-action-group">
+                                                            <!-- View Button -->
+                                                            <button class="btn btn-info btn-sm view-brand" th:data-id="${brand.brandId}" data-toggle="modal" data-target="#viewBrandModal">
+                                                                <i class="fas fa-eye"></i>
+                                                            </button>
+                                                            
+                                                            <!-- Edit Button -->
+                                                            <button class="btn btn-warning btn-sm edit-brand" th:data-id="${brand.brandId}" data-toggle="modal" data-target="#editBrandModal">
+                                                                <i class="fas fa-edit"></i>
+                                                            </button>
+                                                            
+                                                            <!-- Toggle Status Button -->
+                                                            <button class="btn btn-primary btn-sm toggle-status" 
+                                                                th:data-id="${brand.brandId}" 
+                                                                th:data-status="${brand.status}"
+                                                                data-toggle="modal" 
+                                                                data-target="#toggleStatusModal">
+                                                                <i th:if="${brand.status}" class="fas fa-toggle-on"></i>
+                                                                <i th:unless="${brand.status}" class="fas fa-toggle-off"></i>
+                                                            </button>
+                                                            
+                                                            <!-- Delete Button -->
+                                                            <button class="btn btn-danger btn-sm delete-brand" th:data-id="${brand.brandId}" data-toggle="modal" data-target="#deleteBrandModal">
+                                                                <i class="fas fa-trash-alt"></i>
+                                                            </button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                                
+                                                <!-- Empty state if no brands -->
+                                                <tr th:if="${brands == null || brands.empty}">
+                                                    <td colspan="6" class="empty-state">
+                                                        <i class="fas fa-tag"></i>
+                                                        <h3>Chưa có thương hiệu nào</h3>
+                                                        <p>Hãy thêm thương hiệu đầu tiên để bắt đầu quản lý</p>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    
+                                    <!-- Pagination -->
+                                    <div class="pagination-container d-flex justify-content-between align-items-center mt-4" th:if="${totalPages > 0}">
+                                        <div>
+                                            <span>Hiển thị <strong th:text="${brands.size()}"></strong> / <strong th:text="${totalItems}"></strong> thương hiệu</span>
+                                        </div>
+                                        
+                                        <nav>
+                                            <ul class="pagination">
+                                                <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled' : ''">
+                                                    <a class="page-link" th:href="@{/admin/brands(page=${0}, size=${pageSize}, sortBy=${sortBy}, sortDir=${sortDir}, search=${search})}" aria-label="First">
+                                                        <span aria-hidden="true">&laquo;&laquo;</span>
+                                                    </a>
+                                                </li>
+                                                <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled' : ''">
+                                                    <a class="page-link" th:href="@{/admin/brands(page=${currentPage - 1}, size=${pageSize}, sortBy=${sortBy}, sortDir=${sortDir}, search=${search})}" aria-label="Previous">
+                                                        <span aria-hidden="true">&laquo;</span>
+                                                    </a>
+                                                </li>
+                                                
+                                                <li class="page-item" th:each="i : ${#numbers.sequence(0, totalPages - 1)}" 
+                                                    th:if="${i >= currentPage - 2 && i <= currentPage + 2}"
+                                                    th:classappend="${i == currentPage} ? 'active' : ''">
+                                                    <a class="page-link" th:href="@{/admin/brands(page=${i}, size=${pageSize}, sortBy=${sortBy}, sortDir=${sortDir}, search=${search})}" th:text="${i + 1}"></a>
+                                                </li>
+                                                
+                                                <li class="page-item" th:classappend="${currentPage >= totalPages - 1} ? 'disabled' : ''">
+                                                    <a class="page-link" th:href="@{/admin/brands(page=${currentPage + 1}, size=${pageSize}, sortBy=${sortBy}, sortDir=${sortDir}, search=${search})}" aria-label="Next">
+                                                        <span aria-hidden="true">&raquo;</span>
+                                                    </a>
+                                                </li>
+                                                <li class="page-item" th:classappend="${currentPage >= totalPages - 1} ? 'disabled' : ''">
+                                                    <a class="page-link" th:href="@{/admin/brands(page=${totalPages - 1}, size=${pageSize}, sortBy=${sortBy}, sortDir=${sortDir}, search=${search})}" aria-label="Last">
+                                                        <span aria-hidden="true">&raquo;&raquo;</span>
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                        </nav>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Add Brand Modal -->
+    <div class="modal fade" id="addBrandModal" tabindex="-1" role="dialog" aria-labelledby="addBrandModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addBrandModalLabel">
+                        <i class="fas fa-plus-circle"></i>
+                        Thêm thương hiệu mới
+                    </h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="addBrandForm" th:action="@{/admin/addBrand}" method="post" enctype="multipart/form-data">
+                        <div class="form-group">
+                            <label for="brandName">Tên thương hiệu <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="brandName" name="brandName" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="origin">Xuất xứ</label>
+                            <input type="text" class="form-control" id="origin" name="origin">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="description">Mô tả</label>
+                            <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="status">Trạng thái</label>
+                            <select class="form-control" id="status" name="status">
+                                <option value="true" selected>Hoạt động</option>
+                                <option value="false">Tạm dừng</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="brandImageFile">Hình ảnh thương hiệu</label>
+                            <input type="file" class="form-control-file" id="brandImageFile" name="brandImageFile" accept="image/*" onchange="previewImage(this, 'addImagePreview')">
+                            <div id="addImagePreview" class="image-preview empty">
+                                <i class="fas fa-image"></i>
+                                <span>Chưa có hình ảnh</span>
+                            </div>
+                        </div>
+                        
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy</button>
+                            <button type="submit" class="btn btn-primary">Lưu thương hiệu</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Edit Brand Modal -->
+    <div class="modal fade" id="editBrandModal" tabindex="-1" role="dialog" aria-labelledby="editBrandModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editBrandModalLabel">
+                        <i class="fas fa-edit"></i>
+                        Chỉnh sửa thương hiệu
+                    </h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="editBrandForm" th:action="@{/admin/updateBrand}" method="post" enctype="multipart/form-data">
+                        <input type="hidden" id="editBrandId" name="brandId">
+                        
+                        <div class="form-group">
+                            <label for="editBrandName">Tên thương hiệu <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="editBrandName" name="brandName" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="editOrigin">Xuất xứ</label>
+                            <input type="text" class="form-control" id="editOrigin" name="origin">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="editDescription">Mô tả</label>
+                            <textarea class="form-control" id="editDescription" name="description" rows="3"></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="editStatus">Trạng thái</label>
+                            <select class="form-control" id="editStatus" name="status">
+                                <option value="true">Hoạt động</option>
+                                <option value="false">Tạm dừng</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="editBrandImageFile">Hình ảnh thương hiệu</label>
+                            <input type="file" class="form-control-file" id="editBrandImageFile" name="brandImageFile" accept="image/*" onchange="previewImage(this, 'editImagePreview')">
+                            <small class="form-text text-muted">Để trống nếu không thay đổi hình ảnh.</small>
+                            <div id="editImagePreview" class="image-preview">
+                                <!-- Image will be displayed here -->
+                            </div>
+                        </div>
+                        
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy</button>
+                            <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- View Brand Modal -->
+    <div class="modal fade" id="viewBrandModal" tabindex="-1" role="dialog" aria-labelledby="viewBrandModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="viewBrandModalLabel">
+                        <i class="fas fa-info-circle"></i>
+                        Chi tiết thương hiệu
+                    </h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="text-center mb-4">
+                        <div id="viewImagePreview" class="image-preview mx-auto" style="width: 150px; height: 150px;">
+                            <!-- Image will be displayed here -->
+                        </div>
+                    </div>
+                    
+                    <table class="table table-bordered">
+                        <tr>
+                            <th style="width: 30%">ID:</th>
+                            <td id="viewBrandId"></td>
+                        </tr>
+                        <tr>
+                            <th>Tên thương hiệu:</th>
+                            <td id="viewBrandName"></td>
+                        </tr>
+                        <tr>
+                            <th>Xuất xứ:</th>
+                            <td id="viewOrigin"></td>
+                        </tr>
+                        <tr>
+                            <th>Mô tả:</th>
+                            <td id="viewDescription"></td>
+                        </tr>
+                        <tr>
+                            <th>Trạng thái:</th>
+                            <td id="viewStatus"></td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Delete Brand Modal -->
+    <div class="modal fade" id="deleteBrandModal" tabindex="-1" role="dialog" aria-labelledby="deleteBrandModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title" id="deleteBrandModalLabel">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        Xác nhận xóa thương hiệu
+                    </h5>
+                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p>Bạn có chắc chắn muốn xóa thương hiệu này không?</p>
+                    <p class="font-weight-bold" id="deleteBrandName"></p>
+                    <p class="text-danger">Lưu ý: Thao tác này không thể hoàn tác.</p>
+                </div>
+                <div class="modal-footer">
+                    <form id="deleteBrandForm" method="post">
+                        <input type="hidden" name="_method" value="delete">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy</button>
+                        <button type="submit" class="btn btn-danger">Xác nhận xóa</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Toggle Status Modal -->
+    <div class="modal fade" id="toggleStatusModal" tabindex="-1" role="dialog" aria-labelledby="toggleStatusModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="toggleStatusModalLabel">
+                        <i class="fas fa-toggle-on"></i>
+                        Thay đổi trạng thái
+                    </h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p>Bạn có chắc chắn muốn thay đổi trạng thái của thương hiệu này?</p>
+                    <p id="toggleStatusName" class="font-weight-bold"></p>
+                    <p id="toggleStatusMessage"></p>
+                </div>
+                <div class="modal-footer">
+                    <form id="toggleStatusForm" method="post">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy</button>
+                        <button type="submit" class="btn btn-primary">Xác nhận</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Core JS -->
+    <script src="/assets/js/core/jquery.3.2.1.min.js"></script>
+    <script src="/assets/js/core/popper.min.js"></script>
+    <script src="/assets/js/core/bootstrap.min.js"></script>
+    
+    <!-- Optional JS -->
+    <script src="/assets/js/plugin/jquery-ui-1.12.1.custom/jquery-ui.min.js"></script>
+    <script src="/assets/js/plugin/jquery-scrollbar/jquery.scrollbar.min.js"></script>
+    <script src="/assets/js/atlantis.min.js"></script>
+    <script src="/assets/js/plugin/bootstrap-notify/bootstrap-notify.min.js"></script>
+    
+    <script>
+        // Check URL parameters for success/error messages
+        $(document).ready(function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            
+            if (urlParams.get('success') === 'added') {
+                showAlert('addSuccessAlert', 3000);
+            } else if (urlParams.get('success') === 'updated') {
+                showAlert('updateSuccessAlert', 3000);
+            } else if (urlParams.get('success') === 'deleted') {
+                showAlert('deleteSuccessAlert', 3000);
+            } else if (urlParams.get('success') === 'toggled') {
+                showAlert('toggleSuccessAlert', 3000);
+            } else if (urlParams.get('error')) {
+                showAlert('errorAlert', 5000);
+            }
+            
+            // Edit brand
+            $('.edit-brand').on('click', function() {
+                const brandId = $(this).data('id');
+                
+                // Fetch brand data
+                $.get(`/admin/getBrandData/${brandId}`, function(brand) {
+                    $('#editBrandId').val(brand.brandId);
+                    $('#editBrandName').val(brand.brandName);
+                    $('#editOrigin').val(brand.origin);
+                    $('#editDescription').val(brand.description);
+                    $('#editStatus').val(brand.status.toString());
+                    
+                    // Show current image
+                    const imagePreview = $('#editImagePreview');
+                    if (brand.brandImage) {
+                        imagePreview.html(`<img src="/images/${brand.brandImage}" alt="Brand Image">`);
+                        imagePreview.removeClass('empty');
+                    } else {
+                        imagePreview.html(`<i class="fas fa-image"></i><span>Chưa có hình ảnh</span>`);
+                        imagePreview.addClass('empty');
+                    }
+                });
+            });
+            
+            // View brand
+            $('.view-brand').on('click', function() {
+                const brandId = $(this).data('id');
+                
+                // Fetch brand data
+                $.get(`/admin/getBrandData/${brandId}`, function(brand) {
+                    $('#viewBrandId').text(brand.brandId);
+                    $('#viewBrandName').text(brand.brandName);
+                    $('#viewOrigin').text(brand.origin || 'Không có');
+                    $('#viewDescription').text(brand.description || 'Không có mô tả');
+                    $('#viewStatus').html(brand.status ? 
+                        '<span class="badge badge-success">Hoạt động</span>' : 
+                        '<span class="badge badge-danger">Tạm dừng</span>');
+                    
+                    // Show image
+                    const imagePreview = $('#viewImagePreview');
+                    if (brand.brandImage) {
+                        imagePreview.html(`<img src="/images/${brand.brandImage}" alt="Brand Image">`);
+                        imagePreview.removeClass('empty');
+                    } else {
+                        imagePreview.html(`<i class="fas fa-image"></i><span>Không có hình ảnh</span>`);
+                        imagePreview.addClass('empty');
+                    }
+                });
+            });
+            
+            // Delete brand
+            $('.delete-brand').on('click', function() {
+                const brandId = $(this).data('id');
+                
+                // Fetch brand data for confirmation
+                $.get(`/admin/getBrandData/${brandId}`, function(brand) {
+                    $('#deleteBrandName').text(brand.brandName);
+                    $('#deleteBrandForm').attr('action', `/admin/deleteBrand/${brandId}`);
+                });
+            });
+            
+            // Toggle status
+            $('.toggle-status').on('click', function() {
+                const brandId = $(this).data('id');
+                const currentStatus = $(this).data('status');
+                
+                // Fetch brand data for confirmation
+                $.get(`/admin/getBrandData/${brandId}`, function(brand) {
+                    $('#toggleStatusName').text(brand.brandName);
+                    
+                    if (currentStatus) {
+                        $('#toggleStatusMessage').html('Trạng thái hiện tại: <span class="badge badge-success">Hoạt động</span><br>Sẽ chuyển sang: <span class="badge badge-danger">Tạm dừng</span>');
+                    } else {
+                        $('#toggleStatusMessage').html('Trạng thái hiện tại: <span class="badge badge-danger">Tạm dừng</span><br>Sẽ chuyển sang: <span class="badge badge-success">Hoạt động</span>');
+                    }
+                    
+                    $('#toggleStatusForm').attr('action', `/admin/toggleBrandStatus/${brandId}`);
+                });
+            });
+        });
+        
+        // Preview image before upload
+        function previewImage(input, previewId) {
+            const preview = document.getElementById(previewId);
+            
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    preview.innerHTML = `<img src="${e.target.result}" alt="Preview">`;
+                    preview.classList.remove('empty');
+                }
+                
+                reader.readAsDataURL(input.files[0]);
+            } else {
+                preview.innerHTML = `<i class="fas fa-image"></i><span>Chưa có hình ảnh</span>`;
+                preview.classList.add('empty');
+            }
+        }
+        
+        // Show alert
+        function showAlert(alertId, duration) {
+            $(`#${alertId}`).css('display', 'block');
+            
+            // Hide alert after duration
+            setTimeout(function() {
+                $(`#${alertId}`).fadeOut('slow');
+            }, duration);
+        }
+        
+        // Sort table
+        function sortTable(column) {
+            let currentUrl = new URL(window.location.href);
+            let sortDir = 'asc';
+            
+            // If already sorting by this column, toggle direction
+            if (currentUrl.searchParams.get('sortBy') === column) {
+                sortDir = currentUrl.searchParams.get('sortDir') === 'asc' ? 'desc' : 'asc';
+            }
+            
+            currentUrl.searchParams.set('sortBy', column);
+            currentUrl.searchParams.set('sortDir', sortDir);
+            
+            window.location.href = currentUrl.toString();
+        }
+    </script>
+</body>
+</html>

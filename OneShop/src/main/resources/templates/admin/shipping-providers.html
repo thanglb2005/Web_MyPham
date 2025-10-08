@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Quản Lý Nhà Vận Chuyển - OneShop Admin</title>
+    
+    <!-- CSS Libraries -->
+    <link rel="stylesheet" href="/assets/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="/assets/css/atlantis.min.css" />
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css" />
+    <style>
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .pagination li {
+            margin: 0 5px;
+        }
+
+        .btn-circle {
+            width: 30px;
+            height: 30px;
+            text-align: center;
+            padding: 6px 0;
+            font-size: 12px;
+            line-height: 1.428571429;
+            border-radius: 15px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="wrapper">
+        <div class="main-header">
+            <!-- Logo Header -->
+            <div class="logo-header" data-background-color="blue">
+                <a href="/admin/dashboard" class="logo">
+                    <img src="/assets/img/logo.svg" alt="navbar brand" class="navbar-brand" />
+                </a>
+                <button class="navbar-toggler sidenav-toggler ml-auto" type="button" data-toggle="collapse"
+                    data-target="collapse" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon">
+                        <i class="icon-menu"></i>
+                    </span>
+                </button>
+                <button class="topbar-toggler more">
+                    <i class="icon-options-vertical"></i>
+                </button>
+                <div class="nav-toggle">
+                    <button class="btn btn-toggle toggle-sidebar">
+                        <i class="icon-menu"></i>
+                    </button>
+                </div>
+            </div>
+            <!-- End Logo Header -->
+
+            <!-- Navbar Header -->
+            <div th:replace="admin/fragments/header :: header"></div>
+            <!-- End Navbar -->
+        </div>
+
+        <!-- Sidebar -->
+        <div th:replace="admin/fragments/navbar :: navbar"></div>
+        <!-- End Sidebar -->
+
+        <div class="main-panel">
+            <div class="content">
+                <div class="panel-header bg-primary-gradient">
+                    <div class="page-inner py-5">
+                        <div class="d-flex align-items-left align-items-md-center flex-column flex-md-row">
+                            <div>
+                                <h2 class="text-white pb-2 fw-bold">Quản Lý Nhà Vận Chuyển</h2>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="page-inner mt--5">
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="card">
+                                    <div class="card-body"
+            
+            <!-- Messages -->
+            <div class="alert alert-success" th:if="${param.success == 'added'}">
+                Thêm nhà vận chuyển thành công!
+            </div>
+            <div class="alert alert-success" th:if="${param.success == 'updated'}">
+                Cập nhật nhà vận chuyển thành công!
+            </div>
+            <div class="alert alert-success" th:if="${param.success == 'deleted'}">
+                Xóa nhà vận chuyển thành công!
+            </div>
+            <div class="alert alert-success" th:if="${param.success == 'toggled'}">
+                Thay đổi trạng thái nhà vận chuyển thành công!
+            </div>
+            <div class="alert alert-danger" th:if="${param.error == 'true'}">
+                Có lỗi xảy ra. Vui lòng thử lại!
+            </div>
+            <div class="alert alert-danger" th:if="${param.error == 'notfound'}">
+                Không tìm thấy nhà vận chuyển!
+            </div>
+            <div class="alert alert-danger" th:if="${param.error == 'duplicate'}">
+                Tên nhà vận chuyển đã tồn tại!
+            </div>
+            
+            <!-- Card -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Danh sách nhà vận chuyển</h6>
+                    <div>
+                        <button class="btn btn-primary btn-sm" data-toggle="modal" data-target="#addProviderModal">
+                            <i class="fas fa-plus"></i> Thêm mới
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Search box -->
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <form th:action="@{/admin/shipping-providers}" method="get">
+                                <div class="input-group">
+                                    <input type="text" class="form-control" placeholder="Tìm kiếm nhà vận chuyển..." 
+                                        name="search" th:value="${search}">
+                                    <div class="input-group-append">
+                                        <button class="btn btn-primary" type="submit">
+                                            <i class="fas fa-search"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    
+                    <!-- Table -->
+                    <div class="table-responsive">
+                        <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Hình ảnh</th>
+                                    <th>
+                                        <a th:href="@{'/admin/shipping-providers?sortBy=providerName&sortDir=' + ${reverseSortDir}}">
+                                            Tên nhà vận chuyển
+                                            <i class="fas" th:classappend="${sortBy == 'providerName' ? (sortDir == 'asc' ? 'fa-sort-up' : 'fa-sort-down') : 'fa-sort'}"></i>
+                                        </a>
+                                    </th>
+                                    <th>Điện thoại</th>
+                                    <th>Email</th>
+                                    <th>Phí vận chuyển</th>
+                                    <th>Thời gian giao hàng</th>
+                                    <th>Trạng thái</th>
+                                    <th>Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="provider : ${providers}">
+                                    <td th:text="${provider.providerId}"></td>
+                                    <td>
+                                        <img th:if="${provider.logo != null}" th:src="@{'/images/' + ${provider.logo}}" width="50" height="50" class="provider-logo" alt="Provider Logo">
+                                        <div th:if="${provider.logo == null}" class="provider-logo d-flex align-items-center justify-content-center" style="width: 50px; height: 50px; background-color: #f8f9fa;">
+                                            <i class="fas fa-truck text-muted"></i>
+                                        </div>
+                                    </td>
+                                    <td th:text="${provider.providerName}"></td>
+                                    <td th:text="${provider.contactPhone}"></td>
+                                    <td th:text="${provider.contactEmail}"></td>
+                                    <td th:text="${#numbers.formatDecimal(provider.shippingFees, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'"></td>
+                                    <td th:text="${provider.deliveryTimeRange}"></td>
+                                    <td>
+                                        <span th:if="${provider.status}" class="badge badge-success">Hoạt động</span>
+                                        <span th:unless="${provider.status}" class="badge badge-danger">Ngừng hoạt động</span>
+                                    </td>
+                                    <td class="text-center">
+                                        <button class="btn btn-info btn-circle btn-sm edit-provider" 
+                                                th:data-id="${provider.providerId}" 
+                                                th:data-logo="${provider.logo}" 
+                                                data-toggle="modal" 
+                                                data-target="#editProviderModal" title="Sửa">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <form th:action="@{'/admin/toggleShippingProviderStatus/' + ${provider.providerId}}" 
+                                              method="post" style="display:inline;">
+                                            <button type="submit" class="btn btn-warning btn-circle btn-sm" 
+                                                    th:title="${provider.status ? 'Vô hiệu hóa' : 'Kích hoạt'}">
+                                                <i class="fas" th:classappend="${provider.status ? 'fa-power-off' : 'fa-check'}"></i>
+                                            </button>
+                                        </form>
+                                        <button class="btn btn-danger btn-circle btn-sm delete-provider" 
+                                                th:data-id="${provider.providerId}" 
+                                                th:data-name="${provider.providerName}" 
+                                                data-toggle="modal" data-target="#deleteProviderModal" title="Xóa">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Pagination -->
+                    <div th:if="${totalPages > 0}">
+                        <ul class="pagination">
+                            <li class="page-item" th:classappend="${currentPage == 0 ? 'disabled' : ''}">
+                                <a class="page-link" th:href="@{/admin/shipping-providers(page=0, size=${pageSize}, sortBy=${sortBy}, sortDir=${sortDir}, search=${search})}">&laquo;</a>
+                            </li>
+                            <li class="page-item" th:classappend="${currentPage == 0 ? 'disabled' : ''}">
+                                <a class="page-link" th:href="@{/admin/shipping-providers(page=${currentPage - 1}, size=${pageSize}, sortBy=${sortBy}, sortDir=${sortDir}, search=${search})}">&lt;</a>
+                            </li>
+                            <li class="page-item" th:each="i : ${#numbers.sequence(0, totalPages - 1)}" 
+                                th:if="${i >= currentPage - 2 && i <= currentPage + 2}"
+                                th:classappend="${currentPage == i ? 'active' : ''}">
+                                <a class="page-link" th:href="@{/admin/shipping-providers(page=${i}, size=${pageSize}, sortBy=${sortBy}, sortDir=${sortDir}, search=${search})}"
+                                   th:text="${i + 1}"></a>
+                            </li>
+                            <li class="page-item" th:classappend="${currentPage == totalPages - 1 ? 'disabled' : ''}">
+                                <a class="page-link" th:href="@{/admin/shipping-providers(page=${currentPage + 1}, size=${pageSize}, sortBy=${sortBy}, sortDir=${sortDir}, search=${search})}">&gt;</a>
+                            </li>
+                            <li class="page-item" th:classappend="${currentPage == totalPages - 1 ? 'disabled' : ''}">
+                                <a class="page-link" th:href="@{/admin/shipping-providers(page=${totalPages - 1}, size=${pageSize}, sortBy=${sortBy}, sortDir=${sortDir}, search=${search})}">&raquo;</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Add Provider Modal -->
+        <div class="modal fade" id="addProviderModal" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <form th:action="@{/admin/addShippingProvider}" method="post" th:object="${provider}" enctype="multipart/form-data">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Thêm Nhà Vận Chuyển Mới</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="form-group">
+                                <label>Logo</label>
+                                <input type="file" class="form-control-file" name="logoFile" accept="image/*">
+                                <small class="form-text text-muted">Chọn hình ảnh logo nhà vận chuyển (tùy chọn)</small>
+                            </div>
+                            <div class="form-group">
+                                <label>Tên nhà vận chuyển <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" th:field="*{providerName}" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Điện thoại liên hệ <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" th:field="*{contactPhone}" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Email liên hệ</label>
+                                <input type="email" class="form-control" th:field="*{contactEmail}">
+                            </div>
+                            <div class="form-group">
+                                <label>Địa chỉ</label>
+                                <textarea class="form-control" th:field="*{address}" rows="2"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label>Phí vận chuyển (VNĐ) <span class="text-danger">*</span></label>
+                                <input type="number" class="form-control" th:field="*{shippingFees}" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Thời gian giao hàng (VD: 2-3 ngày)</label>
+                                <input type="text" class="form-control" th:field="*{deliveryTimeRange}">
+                            </div>
+                            <div class="form-group">
+                                <label>Trạng thái</label>
+                                <select class="form-control" th:field="*{status}">
+                                    <option value="true">Hoạt động</option>
+                                    <option value="false">Ngừng hoạt động</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Mô tả</label>
+                                <textarea class="form-control" th:field="*{description}" rows="3"></textarea>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy</button>
+                            <button type="submit" class="btn btn-primary">Thêm mới</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Edit Provider Modal -->
+        <div class="modal fade" id="editProviderModal" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <form th:action="@{/admin/updateShippingProvider}" method="post" id="editProviderForm" enctype="multipart/form-data">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Cập Nhật Nhà Vận Chuyển</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <input type="hidden" id="edit-provider-id" name="providerId">
+                            <div class="form-group">
+                                <label>Logo hiện tại</label>
+                                <div class="mt-2 mb-2">
+                                    <img id="edit-provider-logo-preview" src="" alt="Logo" style="max-width: 100px; max-height: 100px; display: none;">
+                                    <div id="edit-provider-no-logo" class="d-flex align-items-center justify-content-center" style="width: 100px; height: 100px; background-color: #f8f9fa; display: none;">
+                                        <i class="fas fa-truck text-muted fa-2x"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Thay đổi logo</label>
+                                <input type="file" class="form-control-file" name="logoFile" accept="image/*">
+                                <small class="form-text text-muted">Để trống nếu không muốn thay đổi logo</small>
+                            </div>
+                            <div class="form-group">
+                                <label>Tên nhà vận chuyển <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="edit-provider-name" name="providerName" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Điện thoại liên hệ <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="edit-provider-phone" name="contactPhone" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Email liên hệ</label>
+                                <input type="email" class="form-control" id="edit-provider-email" name="contactEmail">
+                            </div>
+                            <div class="form-group">
+                                <label>Địa chỉ</label>
+                                <textarea class="form-control" id="edit-provider-address" name="address" rows="2"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label>Phí vận chuyển (VNĐ) <span class="text-danger">*</span></label>
+                                <input type="number" class="form-control" id="edit-provider-fees" name="shippingFees" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Thời gian giao hàng (VD: 2-3 ngày)</label>
+                                <input type="text" class="form-control" id="edit-provider-time" name="deliveryTimeRange">
+                            </div>
+                            <div class="form-group">
+                                <label>Trạng thái</label>
+                                <select class="form-control" id="edit-provider-status" name="status">
+                                    <option value="true">Hoạt động</option>
+                                    <option value="false">Ngừng hoạt động</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Mô tả</label>
+                                <textarea class="form-control" id="edit-provider-desc" name="description" rows="3"></textarea>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy</button>
+                            <button type="submit" class="btn btn-primary">Cập nhật</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Delete Provider Modal -->
+        <div class="modal fade" id="deleteProviderModal" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Xác nhận xóa</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Bạn có chắc chắn muốn xóa nhà vận chuyển <strong id="delete-provider-name"></strong>?</p>
+                    </div>
+                    <div class="modal-footer">
+                        <form id="deleteProviderForm" method="post">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy</button>
+                            <button type="submit" class="btn btn-danger">Xóa</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- JavaScript for edit and delete operations -->
+        <script>
+            $(document).ready(function() {
+                // Edit provider
+                $('.edit-provider').click(function() {
+                    var id = $(this).data('id');
+                    $.ajax({
+                        url: '/admin/getShippingProviderData/' + id,
+                        type: 'GET',
+                        success: function(data) {
+                            $('#edit-provider-id').val(data.providerId);
+                            $('#edit-provider-name').val(data.providerName);
+                            $('#edit-provider-phone').val(data.contactPhone);
+                            $('#edit-provider-email').val(data.contactEmail);
+                            $('#edit-provider-address').val(data.address);
+                            $('#edit-provider-fees').val(data.shippingFees);
+                            $('#edit-provider-time').val(data.deliveryTimeRange);
+                            $('#edit-provider-status').val(data.status.toString());
+                            $('#edit-provider-desc').val(data.description);
+                            
+                            // Handle logo preview
+                            if (data.logo && data.logo !== "") {
+                                $("#edit-provider-logo-preview").attr("src", "/images/" + data.logo);
+                                $("#edit-provider-logo-preview").show();
+                                $("#edit-provider-no-logo").hide();
+                            } else {
+                                $("#edit-provider-logo-preview").hide();
+                                $("#edit-provider-no-logo").show();
+                            }
+                        },
+                        error: function() {
+                            alert('Không thể tải thông tin nhà vận chuyển!');
+                        }
+                    });
+                });
+                
+                // Delete provider
+                $('.delete-provider').click(function() {
+                    var id = $(this).data('id');
+                    var name = $(this).data('name');
+                    $('#delete-provider-name').text(name);
+                    $('#deleteProviderForm').attr('action', '/admin/deleteShippingProvider/' + id);
+                });
+            });
+        </script>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <footer class="footer">
+                <div class="container-fluid">
+                    <nav class="pull-left">
+                        <ul class="nav">
+                            <li class="nav-item">
+                                <a class="nav-link" href="/admin/dashboard">
+                                    OneShop Admin
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                    <div class="copyright ml-auto">
+                        2025, made with <i class="fa fa-heart heart text-danger"></i> by <a href="#">OneShop Team</a>
+                    </div>
+                </div>
+            </footer>
+        </div>
+    </div>
+    
+    <!--   Core JS Files   -->
+    <script src="/assets/js/core/jquery.3.2.1.min.js"></script>
+    <script src="/assets/js/core/popper.min.js"></script>
+    <script src="/assets/js/core/bootstrap.min.js"></script>
+
+    <!-- jQuery UI -->
+    <script src="/assets/js/plugin/jquery-ui-1.12.1.custom/jquery-ui.min.js"></script>
+    <script src="/assets/js/plugin/jquery-ui-touch-punch/jquery.ui.touch-punch.min.js"></script>
+
+    <!-- jQuery Scrollbar -->
+    <script src="/assets/js/plugin/jquery-scrollbar/jquery.scrollbar.min.js"></script>
+
+    <!-- Atlantis JS -->
+    <script src="/assets/js/atlantis.min.js"></script>
+</body>
+</html>

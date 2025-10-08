@@ -11,6 +11,8 @@ public interface BrandService {
     
     List<Brand> findAll();
     
+    Page<Brand> findAll(Pageable pageable);
+    
     Optional<Brand> findById(Long id);
     
     Brand save(Brand brand);
