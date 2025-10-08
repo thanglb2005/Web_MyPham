@@ -7,6 +7,14 @@
     <link rel="stylesheet" th:href="@{/vendor/bootstrap/bootstrap.min.css}" />
     <link rel="stylesheet" th:href="@{/vendor/fontawesome/css/all.min.css}" />
     <link rel="stylesheet" th:href="@{/css/main.css}" />
+    <script th:inline="javascript">
+      // Server suggested identity and preloaded messages to keep room stable across reload/login
+      window.CHAT_INIT = {
+        roomId: /*[[${chatRoomId}]]*/ null,
+        userName: /*[[${chatUserName}]]*/ null,
+        messages: /*[[${chatInitMessages}]]*/ [],
+      };
+    </script>
     <style>
       :root {
         --chat-primary: #2563eb;
@@ -453,18 +461,34 @@
   <body>
     <div class="chat-container">
       <!-- Chat Header -->
-      <div class="chat-header-main" style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
+      <div
+        class="chat-header-main"
+        style="
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 12px;
+        "
+      >
         <div class="chat-title">
           <i class="fas fa-comments"></i>
           <h3>Chat Tư Vấn Trực Tuyến</h3>
         </div>
 
-        <div class="chat-controls" style="display:flex;align-items:center;gap:12px;">
+        <div
+          class="chat-controls"
+          style="display: flex; align-items: center; gap: 12px"
+        >
           <div class="connection-status" id="connectionStatus">
             <div class="status-dot"></div>
             <span>Đang kết nối...</span>
           </div>
-          <button type="button" id="clearHistoryBtn" class="btn btn-outline-secondary btn-sm" title="Xóa lịch sử trò chuyện">
+          <button
+            type="button"
+            id="clearHistoryBtn"
+            class="btn btn-outline-secondary btn-sm"
+            title="Xóa lịch sử trò chuyện"
+          >
             <i class="fas fa-trash"></i>
             Xóa lịch sử
           </button>
@@ -525,13 +549,7 @@
         <!-- Chat Content -->
         <div class="chat-content">
           <!-- Messages Area -->
-          <div class="chat-messages" id="messages">
-            <!-- Welcome message -->
-            <div class="system-message">
-              <i class="fas fa-info-circle"></i>
-              Chào mừng bạn đến với hệ thống chat tư vấn OneShop
-            </div>
-          </div>
+          <div class="chat-messages" id="messages"></div>
 
           <!-- Typing Indicator -->
           <div class="typing-indicator" id="typingIndicator"></div>
@@ -562,14 +580,57 @@
     <script>
       (function () {
         let stompClient = null;
-        // Persist room and name across reload/login using localStorage (fallback to random)
+        // Persist room and name across reload/login using localStorage + cookie + server-suggested
         const qp = new URLSearchParams(window.location.search);
-        const storedRoom = localStorage.getItem('oneshop.chat.roomId');
-        const storedName = localStorage.getItem('oneshop.chat.userName');
-        let currentRoom = qp.get('room') || storedRoom || ("support-" + Math.floor(Math.random() * 1e6));
-        let userName = qp.get('user') || storedName || ("khach_" + Math.floor(Math.random() * 1000));
-        localStorage.setItem('oneshop.chat.roomId', currentRoom);
-        localStorage.setItem('oneshop.chat.userName', userName);
+        const sInit = window.CHAT_INIT || {};
+        function getCookie(name) {
+          const m = document.cookie.match(
+            new RegExp(
+              "(?:^|; )" +
+                name.replace(/([.$?*|{}()\[\]\\\/\+^])/g, "\\$1") +
+                "=([^;]*)"
+            )
+          );
+          return m ? decodeURIComponent(m[1]) : null;
+        }
+        const storedRoom = localStorage.getItem("oneshop.chat.roomId");
+        const storedName = localStorage.getItem("oneshop.chat.userName");
+        const cookieRoom = getCookie("oneshop_chat_room");
+        const cookieName = getCookie("oneshop_chat_name");
+        // Precedence: query > server-init > cookie > localStorage > random
+        let currentRoom =
+          qp.get("room") ||
+          sInit.roomId ||
+          cookieRoom ||
+          storedRoom ||
+          "support-" + Math.floor(Math.random() * 1e6);
+        let userName =
+          qp.get("user") ||
+          sInit.userName ||
+          cookieName ||
+          storedName ||
+          "khach_" + Math.floor(Math.random() * 1000);
+        // If server provided identity and no query override, force-persist it
+        if (!qp.get("room") && sInit.roomId) {
+          currentRoom = sInit.roomId;
+        }
+        if (!qp.get("user") && sInit.userName) {
+          userName = sInit.userName;
+        }
+        persistIdentity(currentRoom, userName);
+
+        // Ensure URL carries room/user so reload always has highest-priority identity
+        try {
+          const url = new URL(window.location.href);
+          const params = url.searchParams;
+          if (params.get("room") !== currentRoom)
+            params.set("room", currentRoom);
+          if (params.get("user") !== userName) params.set("user", userName);
+          const newUrl = url.pathname + "?" + params.toString();
+          if (window.history && window.history.replaceState) {
+            window.history.replaceState({}, "", newUrl);
+          }
+        } catch (e) {}
         let isConnected = false;
         let typingTimer = null;
         let seenKeys = new Set();
@@ -595,25 +656,51 @@
           sendBtn.disabled = !connected;
         }
 
-        // Clear history handler
-        document.getElementById('clearHistoryBtn').addEventListener('click', async function () {
-          if (!currentRoom) return;
-          if (!confirm('Bạn có chắc muốn xóa toàn bộ lịch sử trò chuyện?')) return;
+        function persistIdentity(room, name) {
           try {
-            const res = await fetch(`/api/chat/history?roomId=${encodeURIComponent(currentRoom)}`, { method: 'DELETE' });
-            const ok = res.ok ? (await res.json()).success !== false : false;
-            if (ok) {
-              // Reset UI state
-              seenKeys.clear();
-              const messages = document.getElementById('messages');
-              messages.innerHTML = '<div class="system-message"><i class="fas fa-trash"></i> Lịch sử trò chuyện đã được xóa.</div>';
-            } else {
-              alert('Không thể xóa lịch sử. Vui lòng thử lại.');
+            localStorage.setItem("oneshop.chat.roomId", room);
+            localStorage.setItem("oneshop.chat.userName", name);
+          } catch (e) {}
+          try {
+            document.cookie =
+              "oneshop_chat_room=" +
+              encodeURIComponent(room) +
+              "; path=/; max-age=" +
+              60 * 60 * 24 * 30;
+            document.cookie =
+              "oneshop_chat_name=" +
+              encodeURIComponent(name) +
+              "; path=/; max-age=" +
+              60 * 60 * 24 * 30;
+          } catch (e) {}
+        }
+
+        // Clear history handler
+        document
+          .getElementById("clearHistoryBtn")
+          .addEventListener("click", async function () {
+            if (!currentRoom) return;
+            if (!confirm("Bạn có chắc muốn xóa toàn bộ lịch sử trò chuyện?"))
+              return;
+            try {
+              const res = await fetch(
+                `/api/chat/history?roomId=${encodeURIComponent(currentRoom)}`,
+                { method: "DELETE" }
+              );
+              const ok = res.ok ? (await res.json()).success !== false : false;
+              if (ok) {
+                // Reset UI state
+                seenKeys.clear();
+                const messages = document.getElementById("messages");
+                messages.innerHTML =
+                  '<div class="system-message"><i class="fas fa-trash"></i> Lịch sử trò chuyện đã được xóa.</div>';
+              } else {
+                alert("Không thể xóa lịch sử. Vui lòng thử lại.");
+              }
+            } catch (e) {
+              alert("Có lỗi khi xóa lịch sử.");
             }
-          } catch (e) {
-            alert('Có lỗi khi xóa lịch sử.');
-          }
-        });
+          });
 
         function connect(callback) {
           updateConnectionStatus(false, "Đang kết nối...");
@@ -626,7 +713,15 @@
             function (frame) {
               console.log("Connected: " + frame);
               updateConnectionStatus(true, "Đã kết nối");
-              // Load history then subscribe
+              // If server already provided messages, render them immediately
+              if (Array.isArray((window.CHAT_INIT || {}).messages)) {
+                seenKeys.clear();
+                window.CHAT_INIT.messages.forEach(appendMessage);
+                const container = document.getElementById("messages");
+                container.scrollTop = container.scrollHeight;
+              }
+
+              // Then load latest from API to ensure we don't miss anything, subscribe after
               loadHistory(currentRoom, 50).finally(() => {
                 subscribeRoom(currentRoom);
                 // Announce join so vendors see this new room
@@ -680,7 +775,11 @@
         }
 
         function messageKey(msg) {
-          return [msg.sender||"", msg.sentAt||"", msg.messageContent||""].join("|");
+          return [
+            msg.sender || "",
+            msg.sentAt || "",
+            msg.messageContent || "",
+          ].join("|");
         }
 
         function appendMessage(msg) {
@@ -785,7 +884,11 @@
 
         async function loadHistory(roomId, limit) {
           try {
-            const res = await fetch(`/api/chat/history?roomId=${encodeURIComponent(roomId)}&limit=${limit||50}`);
+            const res = await fetch(
+              `/api/chat/history?roomId=${encodeURIComponent(roomId)}&limit=${
+                limit || 50
+              }`
+            );
             if (!res.ok) return;
             const items = await res.json();
             seenKeys.clear();
@@ -849,13 +952,7 @@
         // No manual join needed on customer side
 
         // Initialize connection
-        connect(function () {
-          appendMessage({
-            sender: "system",
-            messageContent: `Chào mừng ${userName} đến với phòng chat ${currentRoom}!`,
-            sentAt: Date.now(),
-          });
-        });
+        connect();
 
         // Handle page unload
         window.addEventListener("beforeunload", function () {

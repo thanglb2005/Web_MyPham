@@ -6,6 +6,8 @@ import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 import vn.service.chat.ChatHistoryService;
+import vn.entity.ChatMessage;
+import vn.repository.ChatMessageRepository;
 
 import java.security.Principal;
 import java.time.LocalDateTime;
@@ -24,6 +26,8 @@ public class ChatWebSocketController {
     private SimpMessagingTemplate messagingTemplate;
     @Autowired
     private ChatHistoryService chatHistoryService;
+    @Autowired
+    private ChatMessageRepository chatMessageRepository;
     
     // In-memory storage for active users (room-based)
     private final Map<String, Map<String, String>> activeUsers = new ConcurrentHashMap<>();
@@ -62,8 +66,28 @@ public class ChatWebSocketController {
 
             // Broadcast to room
             messagingTemplate.convertAndSend("/topic/room/" + roomId, message);
-            // Persist message to history
+            // Persist message to history (file/DB service)
             chatHistoryService.appendMessage(roomId, message);
+            // Persist message to database for durable history
+            try {
+                ChatMessage m = new ChatMessage();
+                m.setRoomId(roomId);
+                m.setSender(senderName);
+                m.setSenderType(senderType);
+                m.setMessageType(messageType);
+                m.setContent(String.valueOf(message.getOrDefault("messageContent", "")));
+                Object sentAtObj = message.get("sentAt");
+                long sentAt = sentAtObj instanceof Number ? ((Number) sentAtObj).longValue() : System.currentTimeMillis();
+                m.setSentAt(sentAt);
+                if ("customer".equalsIgnoreCase(senderType)) {
+                    m.setCustomerName(senderName);
+                }
+                String vendor = assignedVendorByRoom.get(roomId);
+                if (vendor != null && !vendor.isEmpty()) {
+                    m.setVendorName(vendor);
+                }
+                chatMessageRepository.save(m);
+            } catch (Exception ignored) {}
             
             // Update vendor dashboard room summary events for real-world workflow
             if ("customer".equalsIgnoreCase(senderType)) {
@@ -187,6 +211,19 @@ public class ChatWebSocketController {
                 systemMsg.put("sentAt", System.currentTimeMillis());
                 messagingTemplate.convertAndSend("/topic/room/" + roomId, systemMsg);
                 chatHistoryService.appendMessage(roomId, systemMsg);
+                try {
+                    ChatMessage m = new ChatMessage();
+                    m.setRoomId(roomId);
+                    m.setSender("system");
+                    m.setSenderType("system");
+                    m.setMessageType("SYSTEM");
+                    m.setContent(String.valueOf(systemMsg.getOrDefault("messageContent", "")));
+                    Object sentAtObj = systemMsg.get("sentAt");
+                    long sentAt = sentAtObj instanceof Number ? ((Number) sentAtObj).longValue() : System.currentTimeMillis();
+                    m.setSentAt(sentAt);
+                    m.setVendorName(userName);
+                    chatMessageRepository.save(m);
+                } catch (Exception ignored) {}
             }
 
             System.out.println(String.format("[JOIN] User: %s (%s) joined room: %s (newRoom=%s)", userName, userType, roomId, isNewRoom));

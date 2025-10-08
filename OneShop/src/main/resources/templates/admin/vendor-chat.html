@@ -478,8 +478,16 @@
     </style>
   </head>
   <body>
-    <div class="vendor-header" style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
-      <h4 class="vendor-title" style="margin:0;">
+    <div
+      class="vendor-header"
+      style="
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      "
+    >
+      <h4 class="vendor-title" style="margin: 0">
         <i class="fas fa-headset"></i>
         Quản Lý Chat Khách Hàng
       </h4>
@@ -626,14 +634,16 @@
 
           // Optional vendorName/room overrides via query
           // Persist vendor name across reloads
-          const savedVendor = localStorage.getItem('oneshop.vendor.name');
+          const savedVendor = localStorage.getItem("oneshop.vendor.name");
           const qpVendor = getQueryParam("vn") || getQueryParam("vendorName");
           vendorName = qpVendor || savedVendor || vendorName;
-          localStorage.setItem('oneshop.vendor.name', vendorName);
+          localStorage.setItem("oneshop.vendor.name", vendorName);
           const qpRoom = getQueryParam("room");
           if (qpRoom) currentRoom = qpRoom;
           if (!currentRoom) {
-            const savedRoom = localStorage.getItem('oneshop.vendor.currentRoom');
+            const savedRoom = localStorage.getItem(
+              "oneshop.vendor.currentRoom"
+            );
             if (savedRoom) currentRoom = savedRoom;
           }
 
@@ -642,18 +652,27 @@
             function (frame) {
               console.log("Vendor connected");
               isConnected = true;
-              // Only subscribe when a room is chosen (by query or click).
-              // Load recent history then subscribe to realtime.
-              if (currentRoom) {
-                loadHistory(currentRoom, 50).finally(() => {
-                  subscribeRoom(currentRoom);
-                  stompClient.send(
-                    "/app/chat.join",
-                    {},
-                    JSON.stringify({ roomId: currentRoom, userType: "vendor", senderName: vendorName })
-                  );
-                });
-              }
+              // Load recent rooms from DB first so dashboard recovers after reload
+              loadRoomsList(100).then(() => {
+                if (currentRoom) {
+                  loadHistory(currentRoom, 50).finally(() => {
+                    subscribeRoom(currentRoom);
+                    stompClient.send(
+                      "/app/chat.join",
+                      {},
+                      JSON.stringify({
+                        roomId: currentRoom,
+                        userType: "vendor",
+                        senderName: vendorName,
+                      })
+                    );
+                  });
+                } else {
+                  // Pick first room if any
+                  const first = document.querySelector("#roomsList .room-item");
+                  if (first) onRoomItemClick.call(first);
+                }
+              });
               // Subscribe to global room events so vendors see new rooms instantly
               if (window._roomsGlobalSub)
                 window._roomsGlobalSub.unsubscribe &&
@@ -667,7 +686,9 @@
                       addOrActivateRoom(data.roomId, data.customerName);
                       // Auto-open the first incoming room if none selected yet
                       if (!currentRoom) {
-                        const item = document.querySelector(`[data-room="${data.roomId}"]`);
+                        const item = document.querySelector(
+                          `[data-room="${data.roomId}"]`
+                        );
                         if (item) onRoomItemClick.call(item);
                       }
                       break;
@@ -680,7 +701,9 @@
                         data.sentAt
                       );
                       if (!currentRoom) {
-                        const item = document.querySelector(`[data-room="${data.roomId}"]`);
+                        const item = document.querySelector(
+                          `[data-room="${data.roomId}"]`
+                        );
                         if (item) onRoomItemClick.call(item);
                       }
                       break;
@@ -704,6 +727,52 @@
               setTimeout(() => connect(), 3000);
             }
           );
+        }
+
+        async function loadRoomsList(limit) {
+          try {
+            const res = await fetch(`/api/chat/rooms?limit=${limit || 100}`);
+            if (!res.ok) return;
+            const rooms = await res.json();
+            const roomsList = document.getElementById("roomsList");
+            if (!roomsList) return;
+            roomsList.innerHTML = "";
+            rooms.forEach((r) => {
+              const displayName = (
+                r.customerName ||
+                r.lastMessageBy ||
+                "KH"
+              ).toString();
+              const avatar = displayName.trim().charAt(0).toUpperCase();
+              const item = document.createElement("div");
+              item.className = "room-item";
+              item.setAttribute("data-room", r.roomId);
+              const preview = (r.lastMessage || "").toString();
+              const timeStr = r.sentAt
+                ? new Date(r.sentAt).toLocaleTimeString("vi-VN", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })
+                : "";
+              item.innerHTML = `
+                <div class="room-avatar">${avatar}</div>
+                <div class="room-info">
+                  <div class="room-name">${displayName || r.roomId}</div>
+                  <div class="room-last-message">${
+                    preview.length > 100
+                      ? preview.substring(0, 100) + "..."
+                      : preview
+                  }</div>
+                </div>
+                <div class="room-meta">
+                  <div class="room-time">${timeStr}</div>
+                </div>`;
+              item.addEventListener("click", onRoomItemClick);
+              roomsList.appendChild(item);
+            });
+          } catch (e) {
+            console.warn("loadRoomsList failed", e);
+          }
         }
 
         function subscribeRoom(roomId) {
@@ -733,7 +802,11 @@
         }
 
         function messageKey(msg) {
-          return [msg.sender || "", msg.sentAt || "", msg.messageContent || ""].join("|");
+          return [
+            msg.sender || "",
+            msg.sentAt || "",
+            msg.messageContent || "",
+          ].join("|");
         }
 
         function appendMessage(msg) {
@@ -837,7 +910,11 @@
 
         async function loadHistory(roomId, limit) {
           try {
-            const res = await fetch(`/api/chat/history?roomId=${encodeURIComponent(roomId)}&limit=${limit||50}`);
+            const res = await fetch(
+              `/api/chat/history?roomId=${encodeURIComponent(roomId)}&limit=${
+                limit || 50
+              }`
+            );
             if (!res.ok) return;
             const items = await res.json();
             // reset seen keys for new room
@@ -953,7 +1030,9 @@
           const newRoom = this.dataset.room;
           if (newRoom !== currentRoom) {
             currentRoom = newRoom;
-            try { localStorage.setItem('oneshop.vendor.currentRoom', currentRoom); } catch (e) {}
+            try {
+              localStorage.setItem("oneshop.vendor.currentRoom", currentRoom);
+            } catch (e) {}
             // clear previous state and load history first
             seenKeys.clear();
 
@@ -1090,30 +1169,41 @@
 
         // Initialize connection
         // Clear History button
-        document.getElementById('clearHistoryBtn').addEventListener('click', async function () {
-          if (!currentRoom) { alert('Chưa chọn phòng chat.'); return; }
-          if (!confirm('Bạn có chắc muốn xóa lịch sử phòng này?')) return;
-          try {
-            const res = await fetch(`/api/chat/history?roomId=${encodeURIComponent(currentRoom)}`, { method: 'DELETE' });
-            const ok = res.ok ? (await res.json()).success !== false : false;
-            if (ok) {
-              // Clear messages UI
-              seenKeys.clear();
-              const messagesContainer = document.getElementById('chatMessages');
-              messagesContainer.innerHTML = `<div class=\"system-message\" style=\"text-align: center; margin: 20px 0; padding: 8px 16px; background: var(--vendor-warning); color: white; border-radius: 16px; font-size: 12px;\"><i class=\"fas fa-trash\"></i> Lịch sử đã được xóa.</div>`;
-              // Update room preview
-              const item = document.querySelector(`[data-room=\"${currentRoom}\"]`);
-              if (item) {
-                const lastMsgEl = item.querySelector('.room-last-message');
-                if (lastMsgEl) lastMsgEl.textContent = 'Đã xóa lịch sử';
-              }
-            } else {
-              alert('Không thể xóa lịch sử.');
+        document
+          .getElementById("clearHistoryBtn")
+          .addEventListener("click", async function () {
+            if (!currentRoom) {
+              alert("Chưa chọn phòng chat.");
+              return;
             }
-          } catch (e) {
-            alert('Có lỗi khi xóa lịch sử.');
-          }
-        });
+            if (!confirm("Bạn có chắc muốn xóa lịch sử phòng này?")) return;
+            try {
+              const res = await fetch(
+                `/api/chat/history?roomId=${encodeURIComponent(currentRoom)}`,
+                { method: "DELETE" }
+              );
+              const ok = res.ok ? (await res.json()).success !== false : false;
+              if (ok) {
+                // Clear messages UI
+                seenKeys.clear();
+                const messagesContainer =
+                  document.getElementById("chatMessages");
+                messagesContainer.innerHTML = `<div class=\"system-message\" style=\"text-align: center; margin: 20px 0; padding: 8px 16px; background: var(--vendor-warning); color: white; border-radius: 16px; font-size: 12px;\"><i class=\"fas fa-trash\"></i> Lịch sử đã được xóa.</div>`;
+                // Update room preview
+                const item = document.querySelector(
+                  `[data-room=\"${currentRoom}\"]`
+                );
+                if (item) {
+                  const lastMsgEl = item.querySelector(".room-last-message");
+                  if (lastMsgEl) lastMsgEl.textContent = "Đã xóa lịch sử";
+                }
+              } else {
+                alert("Không thể xóa lịch sử.");
+              }
+            } catch (e) {
+              alert("Có lỗi khi xóa lịch sử.");
+            }
+          });
         connect();
       })();
     </script>
