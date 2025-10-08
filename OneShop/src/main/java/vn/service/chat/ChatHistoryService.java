@@ -57,6 +57,9 @@ public class ChatHistoryService {
             map.put("messageType", m.getMessageType());
             map.put("messageContent", m.getContent());
             map.put("sentAt", m.getSentAt());
+            if (m.getCustomerName() != null) {
+                map.put("customerName", m.getCustomerName());
+            }
             out.add(map);
         }
         out.sort(Comparator.comparingLong(o -> asLong(o.get("sentAt"))));

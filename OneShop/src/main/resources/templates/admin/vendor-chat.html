@@ -13,39 +13,88 @@
     />
     <style>
       :root {
+        /* Professional blue admin colors */
         --vendor-primary: #2563eb;
+        --vendor-primary-light: #3b82f6;
         --vendor-success: #10b981;
         --vendor-warning: #f59e0b;
         --vendor-danger: #ef4444;
         --vendor-dark: #1e293b;
         --vendor-light: #f8fafc;
         --vendor-border: #e2e8f0;
-        --vendor-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        --vendor-shadow: 0 8px 25px rgba(37, 99, 235, 0.1);
+        --vendor-gradient: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+        --vendor-accent: #1e40af;
+        --vendor-bg: linear-gradient(135deg, #fefeff 0%, #f8fafc 100%);
       }
 
       body {
-        background: #f1f5f9;
-        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: var(--vendor-bg);
+        font-family: "Lora", serif;
+        position: relative;
+      }
+
+      body::before {
+        content: "";
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-image: radial-gradient(
+            circle at 15% 85%,
+            rgba(37, 99, 235, 0.03) 0%,
+            transparent 50%
+          ),
+          radial-gradient(
+            circle at 85% 15%,
+            rgba(29, 78, 216, 0.03) 0%,
+            transparent 50%
+          );
+        pointer-events: none;
+        z-index: -1;
       }
 
       .vendor-header {
-        background: white;
-        padding: 1rem 2rem;
+        background: linear-gradient(
+          135deg,
+          rgba(255, 255, 255, 0.95) 0%,
+          rgba(248, 250, 252, 0.95) 100%
+        );
+        backdrop-filter: blur(20px);
+        padding: 1.5rem 2.5rem;
         box-shadow: var(--vendor-shadow);
-        border-bottom: 1px solid var(--vendor-border);
+        border-bottom: 2px solid rgba(37, 99, 235, 0.1);
+        position: relative;
+      }
+
+      .vendor-header::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: var(--vendor-gradient);
       }
 
       .vendor-title {
         display: flex;
         align-items: center;
-        gap: 12px;
+        gap: 15px;
         margin: 0;
         color: var(--vendor-dark);
+        font-weight: 600;
+        font-size: 20px;
       }
 
       .vendor-title i {
-        color: var(--vendor-primary);
-        font-size: 24px;
+        background: var(--vendor-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        font-size: 26px;
+        filter: drop-shadow(0 2px 4px rgba(37, 99, 235, 0.3));
       }
 
       .chat-dashboard {
@@ -58,19 +107,45 @@
       }
 
       .chat-rooms-panel {
-        width: 350px;
-        background: white;
-        border-radius: 12px;
+        width: 380px;
+        background: linear-gradient(
+          135deg,
+          rgba(255, 255, 255, 0.9) 0%,
+          rgba(248, 250, 252, 0.8) 100%
+        );
+        backdrop-filter: blur(20px);
+        border-radius: 18px;
         box-shadow: var(--vendor-shadow);
+        border: 1px solid rgba(37, 99, 235, 0.1);
         display: flex;
         flex-direction: column;
         overflow: hidden;
       }
 
       .rooms-header {
-        padding: 20px;
-        border-bottom: 1px solid var(--vendor-border);
-        background: var(--vendor-light);
+        padding: 25px;
+        border-bottom: 2px solid rgba(37, 99, 235, 0.1);
+        background: linear-gradient(
+          135deg,
+          var(--vendor-light) 0%,
+          rgba(248, 250, 252, 0.9) 100%
+        );
+        position: relative;
+      }
+
+      .rooms-header::after {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: linear-gradient(
+          90deg,
+          transparent 0%,
+          rgba(37, 99, 235, 0.3) 50%,
+          transparent 100%
+        );
       }
 
       .rooms-header h5 {
@@ -103,40 +178,54 @@
       .room-item {
         display: flex;
         align-items: center;
-        padding: 12px;
-        border-radius: 8px;
+        padding: 16px;
+        border-radius: 15px;
         cursor: pointer;
-        transition: background 0.2s;
-        margin-bottom: 8px;
-        border: 1px solid transparent;
+        transition: all 0.3s ease;
+        margin-bottom: 10px;
+        border: 1px solid rgba(37, 99, 235, 0.1);
+        background: rgba(255, 255, 255, 0.6);
+        backdrop-filter: blur(10px);
       }
 
       .room-item:hover {
-        background: var(--vendor-light);
+        background: rgba(255, 255, 255, 0.9);
+        transform: translateX(8px);
+        box-shadow: 0 8px 25px rgba(37, 99, 235, 0.15);
       }
 
       .room-item.active {
-        background: var(--vendor-primary);
+        background: var(--vendor-gradient);
         color: white;
-        border-color: var(--vendor-primary);
+        border-color: transparent;
+        box-shadow: 0 10px 30px rgba(37, 99, 235, 0.4);
+        transform: translateX(8px);
       }
 
       .room-avatar {
-        width: 40px;
-        height: 40px;
+        width: 44px;
+        height: 44px;
         border-radius: 50%;
-        background: var(--vendor-success);
+        background: linear-gradient(
+          135deg,
+          var(--vendor-accent) 0%,
+          #3b82f6 100%
+        );
         display: flex;
         align-items: center;
         justify-content: center;
         color: white;
         font-weight: 600;
-        margin-right: 12px;
+        margin-right: 15px;
         flex-shrink: 0;
+        box-shadow: 0 4px 12px rgba(29, 78, 216, 0.3);
+        border: 2px solid rgba(255, 255, 255, 0.8);
       }
 
       .room-item.active .room-avatar {
-        background: rgba(255, 255, 255, 0.2);
+        background: rgba(255, 255, 255, 0.25);
+        box-shadow: 0 4px 12px rgba(255, 255, 255, 0.3);
+        border-color: rgba(255, 255, 255, 0.9);
       }
 
       .room-info {
@@ -190,21 +279,47 @@
 
       .chat-main-panel {
         flex: 1;
-        background: white;
-        border-radius: 12px;
+        background: linear-gradient(
+          135deg,
+          rgba(255, 255, 255, 0.9) 0%,
+          rgba(248, 250, 252, 0.8) 100%
+        );
+        backdrop-filter: blur(20px);
+        border-radius: 18px;
         box-shadow: var(--vendor-shadow);
+        border: 1px solid rgba(37, 99, 235, 0.1);
         display: flex;
         flex-direction: column;
         overflow: hidden;
       }
 
       .chat-header {
-        padding: 20px;
-        border-bottom: 1px solid var(--vendor-border);
-        background: var(--vendor-light);
+        padding: 25px;
+        border-bottom: 2px solid rgba(37, 99, 235, 0.1);
+        background: linear-gradient(
+          135deg,
+          var(--vendor-light) 0%,
+          rgba(248, 250, 252, 0.9) 100%
+        );
         display: flex;
         align-items: center;
         justify-content: space-between;
+        position: relative;
+      }
+
+      .chat-header::after {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: linear-gradient(
+          90deg,
+          transparent 0%,
+          rgba(37, 99, 235, 0.3) 50%,
+          transparent 100%
+        );
       }
 
       .chat-customer-info {
@@ -214,16 +329,18 @@
       }
 
       .customer-avatar {
-        width: 48px;
-        height: 48px;
+        width: 52px;
+        height: 52px;
         border-radius: 50%;
-        background: var(--vendor-primary);
+        background: var(--vendor-gradient);
         display: flex;
         align-items: center;
         justify-content: center;
         color: white;
         font-weight: 600;
-        font-size: 18px;
+        font-size: 20px;
+        box-shadow: 0 6px 18px rgba(37, 99, 235, 0.4);
+        border: 3px solid rgba(255, 255, 255, 0.8);
       }
 
       .customer-details h6 {
@@ -269,9 +386,29 @@
 
       .chat-messages-area {
         flex: 1;
-        padding: 20px;
+        padding: 25px;
         overflow-y: auto;
-        background: #fafbfc;
+        background: linear-gradient(
+          180deg,
+          rgba(248, 250, 252, 0.4) 0%,
+          rgba(255, 255, 255, 0.6) 100%
+        );
+        position: relative;
+      }
+
+      .chat-messages-area::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 20px;
+        background: linear-gradient(
+          180deg,
+          rgba(37, 99, 235, 0.05) 0%,
+          transparent 100%
+        );
+        pointer-events: none;
       }
 
       .message-group {
@@ -300,42 +437,57 @@
       }
 
       .message-avatar {
-        width: 32px;
-        height: 32px;
+        width: 38px;
+        height: 38px;
         border-radius: 50%;
-        background: var(--vendor-primary);
+        background: linear-gradient(
+          135deg,
+          var(--vendor-accent) 0%,
+          #3b82f6 100%
+        );
         display: flex;
         align-items: center;
         justify-content: center;
         color: white;
         font-weight: 600;
-        font-size: 12px;
-        margin: 0 8px;
+        font-size: 14px;
+        margin: 0 10px;
         flex-shrink: 0;
+        box-shadow: 0 4px 12px rgba(29, 78, 216, 0.3);
+        border: 2px solid rgba(255, 255, 255, 0.8);
       }
 
       .message.vendor .message-avatar {
-        background: var(--vendor-success);
+        background: var(--vendor-gradient);
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
       }
 
       .message-bubble {
-        max-width: 70%;
-        padding: 12px 16px;
-        border-radius: 18px;
+        max-width: 75%;
+        padding: 16px 20px;
+        border-radius: 20px;
         position: relative;
         word-wrap: break-word;
+        backdrop-filter: blur(10px);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
       }
 
       .message:not(.vendor) .message-bubble {
-        background: white;
-        border: 1px solid var(--vendor-border);
-        border-bottom-left-radius: 4px;
+        background: linear-gradient(
+          135deg,
+          rgba(255, 255, 255, 0.9) 0%,
+          rgba(248, 250, 252, 0.8) 100%
+        );
+        border: 1px solid rgba(29, 78, 216, 0.15);
+        border-bottom-left-radius: 8px;
+        color: var(--vendor-dark);
       }
 
       .message.vendor .message-bubble {
-        background: var(--vendor-primary);
+        background: var(--vendor-gradient);
         color: white;
-        border-bottom-right-radius: 4px;
+        border-bottom-right-radius: 8px;
+        box-shadow: 0 6px 20px rgba(37, 99, 235, 0.3);
       }
 
       .message-content {
@@ -365,9 +517,30 @@
       }
 
       .chat-input-area {
-        padding: 20px;
-        background: white;
-        border-top: 1px solid var(--vendor-border);
+        padding: 25px;
+        background: linear-gradient(
+          135deg,
+          rgba(255, 255, 255, 0.95) 0%,
+          rgba(248, 250, 252, 0.95) 100%
+        );
+        backdrop-filter: blur(20px);
+        border-top: 2px solid rgba(37, 99, 235, 0.1);
+        position: relative;
+      }
+
+      .chat-input-area::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: linear-gradient(
+          90deg,
+          transparent 0%,
+          rgba(37, 99, 235, 0.3) 50%,
+          transparent 100%
+        );
       }
 
       .quick-replies {
@@ -378,23 +551,29 @@
       }
 
       .quick-reply-btn {
-        padding: 8px 16px;
-        background: linear-gradient(135deg, var(--vendor-light), #f1f5f9);
-        border: 1px solid var(--vendor-border);
-        border-radius: 20px;
-        font-size: 12px;
+        padding: 10px 18px;
+        background: linear-gradient(
+          135deg,
+          rgba(255, 255, 255, 0.9) 0%,
+          rgba(248, 250, 252, 0.8) 100%
+        );
+        border: 2px solid rgba(37, 99, 235, 0.2);
+        border-radius: 25px;
+        font-size: 13px;
         cursor: pointer;
         transition: all 0.3s ease;
         font-weight: 500;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 3px 10px rgba(37, 99, 235, 0.1);
+        backdrop-filter: blur(10px);
+        color: var(--vendor-dark);
       }
 
       .quick-reply-btn:hover {
-        background: linear-gradient(135deg, var(--vendor-primary), #1d4ed8);
+        background: var(--vendor-gradient);
         color: white;
-        border-color: var(--vendor-primary);
-        transform: translateY(-1px);
-        box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+        border-color: transparent;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
       }
 
       .input-group {
@@ -405,19 +584,24 @@
 
       .message-input {
         flex: 1;
-        border: 2px solid var(--vendor-border);
-        border-radius: 24px;
-        padding: 12px 20px;
-        font-size: 14px;
+        border: 2px solid rgba(37, 99, 235, 0.2);
+        border-radius: 25px;
+        padding: 15px 22px;
+        font-size: 15px;
         outline: none;
-        transition: border-color 0.2s;
+        transition: all 0.3s ease;
         resize: none;
         max-height: 120px;
-        min-height: 44px;
+        min-height: 50px;
+        font-family: "Lora", serif;
+        background: rgba(255, 255, 255, 0.8);
+        backdrop-filter: blur(10px);
       }
 
       .message-input:focus {
         border-color: var(--vendor-primary);
+        box-shadow: 0 0 20px rgba(37, 99, 235, 0.2);
+        background: rgba(255, 255, 255, 0.95);
       }
 
       .input-buttons {
@@ -427,63 +611,67 @@
       }
 
       .image-button {
-        background: linear-gradient(135deg, #10b981, #059669);
+        background: linear-gradient(
+          135deg,
+          var(--vendor-accent) 0%,
+          #3b82f6 100%
+        );
         color: white;
         border: none;
-        border-radius: 12px;
-        width: 44px;
-        height: 44px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        font-size: 16px;
-        box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
-      }
-
-      .image-button:hover {
-        background: linear-gradient(135deg, #059669, #047857);
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
-      }
-
-      .image-button:active {
-        transform: translateY(0);
-      }
-
-      .send-button {
-        background: linear-gradient(135deg, var(--vendor-primary), #1d4ed8);
-        color: white;
-        border: none;
-        border-radius: 12px;
-        width: 48px;
-        height: 48px;
+        border-radius: 16px;
+        width: 50px;
+        height: 50px;
         display: flex;
         align-items: center;
         justify-content: center;
         cursor: pointer;
         transition: all 0.3s ease;
         font-size: 18px;
-        box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+        box-shadow: 0 4px 15px rgba(29, 78, 216, 0.4);
+      }
+
+      .image-button:hover {
+        background: linear-gradient(135deg, #3b82f6, #60a5fa);
+        transform: translateY(-3px);
+        box-shadow: 0 6px 20px rgba(29, 78, 216, 0.5);
+      }
+
+      .image-button:active {
+        transform: translateY(-1px);
+      }
+
+      .send-button {
+        background: var(--vendor-gradient);
+        color: white;
+        border: none;
+        border-radius: 16px;
+        width: 54px;
+        height: 54px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 20px;
+        box-shadow: 0 4px 15px rgba(37, 99, 235, 0.4);
       }
 
       .send-button:hover:not(:disabled) {
-        background: linear-gradient(135deg, #1d4ed8, #1e40af);
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+        background: linear-gradient(135deg, #3b82f6, #93c5fd);
+        transform: translateY(-3px);
+        box-shadow: 0 6px 20px rgba(37, 99, 235, 0.5);
       }
 
       .send-button:disabled {
-        background: linear-gradient(135deg, #94a3b8, #64748b);
+        background: linear-gradient(135deg, #e2e8f0, #cbd5e1);
         cursor: not-allowed;
         transform: none;
         box-shadow: none;
         opacity: 0.7;
       }
 
-      .send-button:active {
-        transform: translateY(0);
+      .send-button:active:not(:disabled) {
+        transform: translateY(-1px);
       }
 
       /* FontAwesome fallback - only show emoji if FontAwesome fails to load */
@@ -540,7 +728,7 @@
         color: white !important;
         border-color: #8b5cf6 !important;
         transform: translateY(-1px);
-        box-shadow: 0 2px 8px rgba(139, 92, 246, 0.3);
+        box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
       }
 
       .empty-state {
@@ -559,28 +747,205 @@
         opacity: 0.5;
       }
 
+      /* Enhanced Animations */
+      @keyframes slideInLeft {
+        from {
+          opacity: 0;
+          transform: translateX(-30px);
+        }
+        to {
+          opacity: 1;
+          transform: translateX(0);
+        }
+      }
+
+      @keyframes slideInRight {
+        from {
+          opacity: 0;
+          transform: translateX(30px);
+        }
+        to {
+          opacity: 1;
+          transform: translateX(0);
+        }
+      }
+
+      @keyframes pulse {
+        0% {
+          box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.4);
+        }
+        70% {
+          box-shadow: 0 0 0 10px rgba(37, 99, 235, 0);
+        }
+        100% {
+          box-shadow: 0 0 0 0 rgba(37, 99, 235, 0);
+        }
+      }
+
+      .chat-rooms-panel {
+        animation: slideInLeft 0.6s ease-out;
+      }
+
+      .chat-main-panel {
+        animation: slideInRight 0.6s ease-out;
+      }
+
+      .room-item {
+        animation: slideInLeft 0.4s ease-out;
+      }
+
+      .room-item:nth-child(1) {
+        animation-delay: 0.1s;
+      }
+      .room-item:nth-child(2) {
+        animation-delay: 0.2s;
+      }
+      .room-item:nth-child(3) {
+        animation-delay: 0.3s;
+      }
+
+      .quick-reply-btn {
+        animation: slideInRight 0.4s ease-out;
+      }
+
+      .quick-reply-btn:nth-child(1) {
+        animation-delay: 0.1s;
+      }
+      .quick-reply-btn:nth-child(2) {
+        animation-delay: 0.2s;
+      }
+      .quick-reply-btn:nth-child(3) {
+        animation-delay: 0.3s;
+      }
+      .quick-reply-btn:nth-child(4) {
+        animation-delay: 0.4s;
+      }
+
+      .send-button:not(:disabled):active,
+      .image-button:active {
+        animation: pulse 0.6s ease-out;
+      }
+
       /* Responsive */
       @media (max-width: 768px) {
         .chat-dashboard {
           flex-direction: column;
-          padding: 10px;
+          padding: 8px;
+          gap: 15px;
         }
 
         .chat-rooms-panel {
           width: 100%;
-          height: 200px;
+          height: 220px;
+          border-radius: 15px;
+        }
+
+        .rooms-header {
+          padding: 20px;
         }
 
         .rooms-list {
           display: flex;
           overflow-x: auto;
-          padding: 8px;
+          padding: 10px;
+          gap: 8px;
         }
 
         .room-item {
-          min-width: 200px;
-          margin-right: 8px;
+          min-width: 220px;
+          margin-right: 0;
           margin-bottom: 0;
+          flex-shrink: 0;
+        }
+
+        .chat-main-panel {
+          border-radius: 15px;
+        }
+
+        .chat-header {
+          padding: 20px;
+        }
+
+        .customer-avatar {
+          width: 44px;
+          height: 44px;
+          font-size: 18px;
+        }
+
+        .quick-replies {
+          flex-wrap: wrap;
+          gap: 6px;
+        }
+
+        .quick-reply-btn {
+          font-size: 12px;
+          padding: 8px 14px;
+        }
+
+        .chat-input-area {
+          padding: 20px;
+        }
+
+        .message-input {
+          padding: 12px 18px;
+          min-height: 45px;
+        }
+
+        .send-button {
+          width: 48px;
+          height: 48px;
+          font-size: 18px;
+        }
+
+        .image-button {
+          width: 44px;
+          height: 44px;
+          font-size: 16px;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .vendor-header {
+          padding: 1rem 1.5rem;
+        }
+
+        .vendor-title {
+          font-size: 16px;
+        }
+
+        .vendor-title i {
+          font-size: 20px;
+        }
+
+        .chat-dashboard {
+          padding: 5px;
+        }
+
+        .rooms-header h5 {
+          font-size: 14px;
+        }
+
+        .room-item {
+          min-width: 180px;
+          padding: 12px;
+        }
+
+        .room-avatar {
+          width: 36px;
+          height: 36px;
+        }
+
+        .room-name {
+          font-size: 13px;
+        }
+
+        .chat-header {
+          padding: 15px;
+        }
+
+        .quick-reply-btn {
+          font-size: 11px;
+          padding: 6px 12px;
         }
       }
     </style>
@@ -642,20 +1007,6 @@
           </div>
 
           <div class="chat-actions">
-            <button
-              onclick="transferChat()"
-              class="action-btn transfer-btn"
-              title="Chuyển chat"
-            >
-              <i class="fas fa-exchange-alt"></i> Chuyển
-            </button>
-            <button
-              onclick="closeChat()"
-              class="action-btn close-btn"
-              title="Đóng chat"
-            >
-              <i class="fas fa-times"></i> Đóng
-            </button>
             <button
               id="clearHistoryBtn"
               title="Xóa lịch sử phòng"
@@ -874,16 +1225,28 @@
           try {
             const res = await fetch(`/api/chat/rooms?limit=${limit || 100}`);
             if (!res.ok) return;
-            const rooms = await res.json();
+            let rooms = await res.json();
+            // Filter out legacy/guest rooms (support-*) to avoid phantom entries
+            rooms = rooms.filter((r) => {
+              const id = String(r.roomId || "");
+              return /^user-\d+(?:-seller-\d+)?$/.test(id);
+            });
             const roomsList = document.getElementById("roomsList");
             if (!roomsList) return;
             roomsList.innerHTML = "";
             rooms.forEach((r) => {
-              const displayName = (
-                r.customerName ||
-                r.lastMessageBy ||
-                "KH"
-              ).toString();
+              // Prefer stored customerName; fallback to lastMessageBy (not system); else parse from roomId
+              let displayName = (r.customerName || "").toString().trim();
+              if (!displayName) {
+                const lastBy = (r.lastMessageBy || "").toString().trim();
+                if (lastBy && lastBy.toLowerCase() !== "system")
+                  displayName = lastBy;
+              }
+              if (!displayName) {
+                const roomIdStr = String(r.roomId || "");
+                const m = roomIdStr.match(/^user-(\d+)/);
+                displayName = m ? "User #" + m[1] : "Khách hàng";
+              }
               const avatar = displayName.trim().charAt(0).toUpperCase();
               const item = document.createElement("div");
               item.className = "room-item";
@@ -1157,6 +1520,26 @@
             }
           });
 
+        // Image button wiring (vendor)
+        (function () {
+          const imgBtn = document.getElementById("imageButton");
+          const imgInput = document.getElementById("imageInput");
+          if (imgBtn && imgInput) {
+            imgBtn.addEventListener("click", function () {
+              imgInput.click();
+            });
+            imgInput.addEventListener("change", function (e) {
+              const file = e.target.files && e.target.files[0];
+              if (file) {
+                uploadAndSendImage(file).catch(function () {
+                  alert("Tải ảnh thất bại");
+                });
+              }
+              e.target.value = "";
+            });
+          }
+        })();
+
         function addOrActivateRoom(roomId, customerName) {
           const roomsList = document.getElementById("roomsList");
           let existing = roomsList.querySelector(`[data-room="${roomId}"]`);
@@ -1292,6 +1675,7 @@
 
           const lastMsgEl = item.querySelector(".room-last-message");
           const timeEl = item.querySelector(".room-time");
+          const nameEl = item.querySelector(".room-name");
           const badgeEl = item.querySelector(".room-badge");
 
           if (lastMsgEl) lastMsgEl.textContent = preview || "Tin nhắn mới";
@@ -1300,6 +1684,17 @@
               hour: "2-digit",
               minute: "2-digit",
             });
+          }
+          // If we have a customer name (from) and current label looks generic or 'system', update it
+          if (nameEl && from && from.toLowerCase() !== "system") {
+            const currentName = nameEl.textContent && nameEl.textContent.trim();
+            if (
+              !currentName ||
+              currentName.toLowerCase() === "system" ||
+              currentName.startsWith("Khách hàng ")
+            ) {
+              nameEl.textContent = from;
+            }
           }
           if (badgeEl) {
             const count = Number(pendingCount || 0);
@@ -1354,12 +1749,16 @@
             }
             if (!confirm("Bạn có chắc muốn xóa lịch sử phòng này?")) return;
             try {
-              // Use POST alias to avoid DELETE being blocked by proxies/CSRF
+              // Use POST alias and include credentials to ensure session is sent
               const res = await fetch(
                 `/api/chat/history/clear?roomId=${encodeURIComponent(
                   currentRoom
                 )}`,
-                { method: "POST" }
+                {
+                  method: "POST",
+                  credentials: "include",
+                  headers: { "X-Requested-With": "XMLHttpRequest" },
+                }
               );
               const ok = res.ok ? (await res.json()).success !== false : false;
               if (ok) {

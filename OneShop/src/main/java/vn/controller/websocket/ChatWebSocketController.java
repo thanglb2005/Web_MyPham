@@ -201,7 +201,7 @@ public class ChatWebSocketController {
                 tagMsg.put("sender", "system");
                 tagMsg.put("senderType", "system");
                 tagMsg.put("messageType", "SYSTEM");
-                tagMsg.put("messageContent", "");
+                tagMsg.put("messageContent", "Phòng được tạo bởi " + userName);
                 tagMsg.put("customerName", userName);
                 tagMsg.put("sentAt", System.currentTimeMillis());
                 chatHistoryService.appendMessage(roomId, tagMsg);
