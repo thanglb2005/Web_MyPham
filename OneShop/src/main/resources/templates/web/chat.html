@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chat Tư Vấn - OneShop</title>
+    <link rel="stylesheet" th:href="@{/vendor/bootstrap/bootstrap.min.css}" />
+    <link rel="stylesheet" th:href="@{/vendor/fontawesome/css/all.min.css}" />
+    <link rel="stylesheet" th:href="@{/css/main.css}" />
+    <style>
+      :root {
+        --chat-primary: #2563eb;
+        --chat-primary-light: #3b82f6;
+        --chat-secondary: #f1f5f9;
+        --chat-success: #10b981;
+        --chat-danger: #ef4444;
+        --chat-warning: #f59e0b;
+        --chat-dark: #1e293b;
+        --chat-light: #f8fafc;
+        --chat-border: #e2e8f0;
+        --chat-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+          0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --chat-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+          0 4px 6px -2px rgba(0, 0, 0, 0.05);
+      }
+
+      body {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      }
+
+      .chat-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .chat-header-main {
+        background: white;
+        border-radius: 16px 16px 0 0;
+        padding: 20px 24px;
+        box-shadow: var(--chat-shadow);
+        border-bottom: 1px solid var(--chat-border);
+      }
+
+      .chat-title {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 16px;
+      }
+
+      .chat-title i {
+        color: var(--chat-primary);
+        font-size: 24px;
+      }
+
+      .chat-title h3 {
+        margin: 0;
+        color: var(--chat-dark);
+        font-weight: 600;
+      }
+
+      .chat-controls {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+
+      .room-selector {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        background: var(--chat-light);
+        padding: 8px 12px;
+        border-radius: 8px;
+        border: 1px solid var(--chat-border);
+      }
+
+      .room-selector input {
+        border: none;
+        background: transparent;
+        outline: none;
+        min-width: 150px;
+        font-size: 14px;
+      }
+
+      .btn-join {
+        background: var(--chat-primary);
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 8px;
+        font-weight: 500;
+        transition: all 0.2s;
+      }
+
+      .btn-join:hover {
+        background: var(--chat-primary-light);
+        transform: translateY(-1px);
+      }
+
+      .chat-main {
+        background: white;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        box-shadow: var(--chat-shadow-lg);
+      }
+
+      .chat-sidebar {
+        background: var(--chat-light);
+        border-right: 1px solid var(--chat-border);
+        width: 280px;
+        padding: 20px;
+        display: none; /* Will show on larger screens */
+      }
+
+      .online-users {
+        margin-bottom: 24px;
+      }
+
+      .online-users h5 {
+        color: var(--chat-dark);
+        font-weight: 600;
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .user-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 12px;
+        border-radius: 8px;
+        margin-bottom: 4px;
+        transition: background 0.2s;
+      }
+
+      .user-item:hover {
+        background: white;
+      }
+
+      .user-avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: var(--chat-primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 600;
+        font-size: 12px;
+      }
+
+      .user-status {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--chat-success);
+        margin-left: auto;
+      }
+
+      .chat-content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .chat-messages {
+        flex: 1;
+        padding: 20px;
+        overflow-y: auto;
+        background: #fafbfc;
+        min-height: 400px;
+        max-height: 500px;
+      }
+
+      .message-group {
+        margin-bottom: 20px;
+      }
+
+      .message {
+        display: flex;
+        margin-bottom: 8px;
+        animation: slideIn 0.3s ease-out;
+      }
+
+      @keyframes slideIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .message.own {
+        flex-direction: row-reverse;
+      }
+
+      .message-avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: var(--chat-primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 600;
+        font-size: 14px;
+        margin: 0 10px;
+        flex-shrink: 0;
+      }
+
+      .message.own .message-avatar {
+        background: var(--chat-success);
+      }
+
+      .message-bubble {
+        max-width: 70%;
+        padding: 12px 16px;
+        border-radius: 18px;
+        position: relative;
+        word-wrap: break-word;
+      }
+
+      .message:not(.own) .message-bubble {
+        background: white;
+        border: 1px solid var(--chat-border);
+        border-bottom-left-radius: 4px;
+      }
+
+      .message.own .message-bubble {
+        background: var(--chat-primary);
+        color: white;
+        border-bottom-right-radius: 4px;
+      }
+
+      .message-sender {
+        font-weight: 600;
+        font-size: 12px;
+        margin-bottom: 4px;
+        opacity: 0.8;
+      }
+
+      .message-content {
+        line-height: 1.4;
+        font-size: 14px;
+      }
+
+      .message-time {
+        font-size: 11px;
+        opacity: 0.7;
+        margin-top: 4px;
+        text-align: right;
+      }
+
+      .message.own .message-time {
+        text-align: left;
+      }
+
+      .typing-indicator {
+        padding: 12px 20px;
+        font-style: italic;
+        color: var(--chat-primary);
+        font-size: 14px;
+        min-height: 20px;
+        background: var(--chat-light);
+        border-top: 1px solid var(--chat-border);
+      }
+
+      .typing-dots {
+        display: inline-flex;
+        gap: 2px;
+        margin-left: 8px;
+      }
+
+      .typing-dots span {
+        width: 4px;
+        height: 4px;
+        border-radius: 50%;
+        background: var(--chat-primary);
+        animation: typing 1.4s infinite;
+      }
+
+      .typing-dots span:nth-child(2) {
+        animation-delay: 0.2s;
+      }
+      .typing-dots span:nth-child(3) {
+        animation-delay: 0.4s;
+      }
+
+      @keyframes typing {
+        0%,
+        60%,
+        100% {
+          transform: translateY(0);
+        }
+        30% {
+          transform: translateY(-10px);
+        }
+      }
+
+      .chat-input-area {
+        padding: 20px;
+        background: white;
+        border-top: 1px solid var(--chat-border);
+        border-radius: 0 0 16px 16px;
+      }
+
+      .input-group {
+        display: flex;
+        gap: 12px;
+        align-items: flex-end;
+      }
+
+      .message-input {
+        flex: 1;
+        border: 2px solid var(--chat-border);
+        border-radius: 24px;
+        padding: 12px 20px;
+        font-size: 14px;
+        outline: none;
+        transition: border-color 0.2s;
+        resize: none;
+        max-height: 120px;
+        min-height: 44px;
+      }
+
+      .message-input:focus {
+        border-color: var(--chat-primary);
+      }
+
+      .send-button {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: var(--chat-primary);
+        border: none;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+        cursor: pointer;
+      }
+
+      .send-button:hover:not(:disabled) {
+        background: var(--chat-primary-light);
+        transform: scale(1.05);
+      }
+
+      .send-button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      .connection-status {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 12px;
+        color: var(--chat-success);
+        margin-left: auto;
+      }
+
+      .connection-status.disconnected {
+        color: var(--chat-danger);
+      }
+
+      .status-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: currentColor;
+        animation: pulse 2s infinite;
+      }
+
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.5;
+        }
+      }
+
+      .system-message {
+        text-align: center;
+        margin: 16px 0;
+        padding: 8px 16px;
+        background: var(--chat-warning);
+        color: white;
+        border-radius: 16px;
+        font-size: 12px;
+        display: inline-block;
+        margin-left: 50%;
+        transform: translateX(-50%);
+      }
+
+      /* Responsive Design */
+      @media (min-width: 768px) {
+        .chat-main {
+          flex-direction: row;
+        }
+
+        .chat-sidebar {
+          display: block;
+        }
+
+        .chat-controls {
+          justify-content: space-between;
+        }
+      }
+
+      @media (max-width: 767px) {
+        .chat-container {
+          padding: 10px;
+        }
+
+        .chat-header-main {
+          padding: 16px;
+        }
+
+        .chat-controls {
+          flex-direction: column;
+          align-items: stretch;
+        }
+
+        .room-selector {
+          justify-content: center;
+        }
+
+        .message-bubble {
+          max-width: 85%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="chat-container">
+      <!-- Chat Header -->
+      <div class="chat-header-main" style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
+        <div class="chat-title">
+          <i class="fas fa-comments"></i>
+          <h3>Chat Tư Vấn Trực Tuyến</h3>
+        </div>
+
+        <div class="chat-controls" style="display:flex;align-items:center;gap:12px;">
+          <div class="connection-status" id="connectionStatus">
+            <div class="status-dot"></div>
+            <span>Đang kết nối...</span>
+          </div>
+          <button type="button" id="clearHistoryBtn" class="btn btn-outline-secondary btn-sm" title="Xóa lịch sử trò chuyện">
+            <i class="fas fa-trash"></i>
+            Xóa lịch sử
+          </button>
+          <a href="/logout" class="btn btn-outline-danger btn-sm">
+            <i class="fas fa-sign-out-alt"></i>
+            Đăng xuất
+          </a>
+        </div>
+      </div>
+
+      <!-- Main Chat Area -->
+      <div class="chat-main">
+        <!-- Sidebar (Desktop only) -->
+        <div class="chat-sidebar">
+          <div class="online-users">
+            <h5>
+              <i class="fas fa-users"></i>
+              Người dùng trực tuyến
+            </h5>
+            <div class="user-item">
+              <div class="user-avatar">TV</div>
+              <div>
+                <div style="font-weight: 600; font-size: 13px">Tư vấn viên</div>
+                <div style="font-size: 11px; color: #64748b">
+                  Đang hoạt động
+                </div>
+              </div>
+              <div class="user-status"></div>
+            </div>
+          </div>
+
+          <div class="quick-actions">
+            <h5>
+              <i class="fas fa-bolt"></i>
+              Hành động nhanh
+            </h5>
+            <button
+              class="btn btn-sm btn-outline-primary mb-2 w-100"
+              onclick="sendQuickMessage('Xin chào! Tôi cần tư vấn sản phẩm.')"
+            >
+              <i class="fas fa-hand-wave"></i> Chào hỏi
+            </button>
+            <button
+              class="btn btn-sm btn-outline-primary mb-2 w-100"
+              onclick="sendQuickMessage('Tôi muốn hỏi về giá sản phẩm.')"
+            >
+              <i class="fas fa-tag"></i> Hỏi giá
+            </button>
+            <button
+              class="btn btn-sm btn-outline-primary mb-2 w-100"
+              onclick="sendQuickMessage('Sản phẩm này có còn hàng không?')"
+            >
+              <i class="fas fa-box"></i> Tồn kho
+            </button>
+          </div>
+        </div>
+
+        <!-- Chat Content -->
+        <div class="chat-content">
+          <!-- Messages Area -->
+          <div class="chat-messages" id="messages">
+            <!-- Welcome message -->
+            <div class="system-message">
+              <i class="fas fa-info-circle"></i>
+              Chào mừng bạn đến với hệ thống chat tư vấn OneShop
+            </div>
+          </div>
+
+          <!-- Typing Indicator -->
+          <div class="typing-indicator" id="typingIndicator"></div>
+
+          <!-- Input Area -->
+          <div class="chat-input-area">
+            <form id="chatForm" class="input-group">
+              <textarea
+                id="messageInput"
+                class="message-input"
+                placeholder="Nhập tin nhắn của bạn..."
+                rows="1"
+                autocomplete="off"
+              ></textarea>
+              <button type="submit" class="send-button" id="sendButton">
+                <i class="fas fa-paper-plane"></i>
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script th:src="@{/vendor/jquery/jquery.min.js}"></script>
+    <script th:src="@{/vendor/bootstrap/bootstrap.bundle.min.js}"></script>
+    <script th:src="@{/webjars/sockjs-client/1.5.1/sockjs.min.js}"></script>
+    <script th:src="@{/webjars/stomp-websocket/2.3.4/stomp.min.js}"></script>
+    <script>
+      (function () {
+        let stompClient = null;
+        // Persist room and name across reload/login using localStorage (fallback to random)
+        const qp = new URLSearchParams(window.location.search);
+        const storedRoom = localStorage.getItem('oneshop.chat.roomId');
+        const storedName = localStorage.getItem('oneshop.chat.userName');
+        let currentRoom = qp.get('room') || storedRoom || ("support-" + Math.floor(Math.random() * 1e6));
+        let userName = qp.get('user') || storedName || ("khach_" + Math.floor(Math.random() * 1000));
+        localStorage.setItem('oneshop.chat.roomId', currentRoom);
+        localStorage.setItem('oneshop.chat.userName', userName);
+        let isConnected = false;
+        let typingTimer = null;
+        let seenKeys = new Set();
+
+        // Initialize
+        // Auto room for customer; no input required
+
+        function updateConnectionStatus(connected, message) {
+          const statusEl = document.getElementById("connectionStatus");
+          const sendBtn = document.getElementById("sendButton");
+
+          isConnected = connected;
+          statusEl.className = connected
+            ? "connection-status"
+            : "connection-status disconnected";
+          statusEl.innerHTML = `
+            <div class="status-dot"></div>
+            <span>${
+              message || (connected ? "Đã kết nối" : "Mất kết nối")
+            }</span>
+          `;
+
+          sendBtn.disabled = !connected;
+        }
+
+        // Clear history handler
+        document.getElementById('clearHistoryBtn').addEventListener('click', async function () {
+          if (!currentRoom) return;
+          if (!confirm('Bạn có chắc muốn xóa toàn bộ lịch sử trò chuyện?')) return;
+          try {
+            const res = await fetch(`/api/chat/history?roomId=${encodeURIComponent(currentRoom)}`, { method: 'DELETE' });
+            const ok = res.ok ? (await res.json()).success !== false : false;
+            if (ok) {
+              // Reset UI state
+              seenKeys.clear();
+              const messages = document.getElementById('messages');
+              messages.innerHTML = '<div class="system-message"><i class="fas fa-trash"></i> Lịch sử trò chuyện đã được xóa.</div>';
+            } else {
+              alert('Không thể xóa lịch sử. Vui lòng thử lại.');
+            }
+          } catch (e) {
+            alert('Có lỗi khi xóa lịch sử.');
+          }
+        });
+
+        function connect(callback) {
+          updateConnectionStatus(false, "Đang kết nối...");
+
+          const socket = new SockJS("/ws");
+          stompClient = Stomp.over(socket);
+
+          stompClient.connect(
+            {},
+            function (frame) {
+              console.log("Connected: " + frame);
+              updateConnectionStatus(true, "Đã kết nối");
+              // Load history then subscribe
+              loadHistory(currentRoom, 50).finally(() => {
+                subscribeRoom(currentRoom);
+                // Announce join so vendors see this new room
+                stompClient.send(
+                  "/app/chat.join",
+                  {},
+                  JSON.stringify({
+                    roomId: currentRoom,
+                    userType: "customer",
+                    senderName: userName,
+                  })
+                );
+              });
+
+              if (callback) callback();
+            },
+            function (error) {
+              console.log("Connection error: ", error);
+              updateConnectionStatus(false, "Lỗi kết nối");
+              setTimeout(() => connect(), 3000);
+            }
+          );
+        }
+
+        function subscribeRoom(roomId) {
+          if (!stompClient || !stompClient.connected) return;
+
+          // Unsubscribe previous subscriptions
+          if (window._roomSub) window._roomSub.unsubscribe();
+          if (window._typingSub) window._typingSub.unsubscribe();
+
+          // Subscribe to room messages
+          window._roomSub = stompClient.subscribe(
+            "/topic/room/" + roomId,
+            function (message) {
+              const data = JSON.parse(message.body);
+              appendMessage(data);
+            }
+          );
+
+          // Subscribe to typing indicators
+          window._typingSub = stompClient.subscribe(
+            "/topic/room/" + roomId + "/typing",
+            function (message) {
+              const data = JSON.parse(message.body);
+              showTypingIndicator(data);
+            }
+          );
+
+          console.log("Subscribed to room: " + roomId);
+        }
+
+        function messageKey(msg) {
+          return [msg.sender||"", msg.sentAt||"", msg.messageContent||""].join("|");
+        }
+
+        function appendMessage(msg) {
+          const key = messageKey(msg);
+          if (seenKeys.has(key)) return;
+          seenKeys.add(key);
+          const isMe = msg.sender === userName;
+          const isSystem = msg.sender === "system";
+          const container = document.getElementById("messages");
+
+          if (isSystem) {
+            const systemEl = document.createElement("div");
+            systemEl.className = "system-message";
+            systemEl.innerHTML = `<i class="fas fa-info-circle"></i> ${msg.messageContent}`;
+            container.appendChild(systemEl);
+          } else {
+            const messageEl = document.createElement("div");
+            messageEl.className = "message" + (isMe ? " own" : "");
+
+            const avatarLetter = (msg.sender || "?").charAt(0).toUpperCase();
+            const timeStr = new Date(
+              msg.sentAt || Date.now()
+            ).toLocaleTimeString("vi-VN", {
+              hour: "2-digit",
+              minute: "2-digit",
+            });
+
+            messageEl.innerHTML = `
+              <div class="message-avatar">${avatarLetter}</div>
+              <div class="message-bubble">
+                ${
+                  !isMe ? `<div class="message-sender">${msg.sender}</div>` : ""
+                }
+                <div class="message-content">${escapeHtml(
+                  msg.messageContent || ""
+                )}</div>
+                <div class="message-time">${timeStr}</div>
+              </div>
+            `;
+
+            container.appendChild(messageEl);
+          }
+
+          // Auto scroll to bottom
+          container.scrollTop = container.scrollHeight;
+        }
+
+        function showTypingIndicator(data) {
+          const indicator = document.getElementById("typingIndicator");
+
+          if (data.isTyping && data.userName !== userName) {
+            indicator.innerHTML = `
+              <i class="fas fa-user"></i>
+              ${data.userName} đang nhập
+              <div class="typing-dots">
+                <span></span>
+                <span></span>
+                <span></span>
+              </div>
+            `;
+          } else {
+            indicator.innerHTML = "";
+          }
+        }
+
+        function sendMessage(text) {
+          if (!stompClient || !stompClient.connected || !text.trim()) return;
+
+          stompClient.send(
+            "/app/chat.send",
+            {},
+            JSON.stringify({
+              roomId: currentRoom,
+              messageContent: text.trim(),
+              messageType: "TEXT",
+              userType: "customer",
+              senderName: userName,
+            })
+          );
+        }
+
+        function sendTyping(isTyping) {
+          if (!stompClient || !stompClient.connected) return;
+
+          stompClient.send(
+            "/app/chat.typing",
+            {},
+            JSON.stringify({
+              roomId: currentRoom,
+              isTyping: !!isTyping,
+              senderName: userName,
+              userType: "customer",
+            })
+          );
+        }
+
+        function escapeHtml(text) {
+          const div = document.createElement("div");
+          div.textContent = text;
+          return div.innerHTML;
+        }
+
+        async function loadHistory(roomId, limit) {
+          try {
+            const res = await fetch(`/api/chat/history?roomId=${encodeURIComponent(roomId)}&limit=${limit||50}`);
+            if (!res.ok) return;
+            const items = await res.json();
+            seenKeys.clear();
+            items.forEach(appendMessage);
+            const container = document.getElementById("messages");
+            container.scrollTop = container.scrollHeight;
+          } catch (e) {
+            console.warn("loadHistory failed", e);
+          }
+        }
+
+        // Auto-resize textarea
+        function autoResizeTextarea(textarea) {
+          textarea.style.height = "auto";
+          textarea.style.height = Math.min(textarea.scrollHeight, 120) + "px";
+        }
+
+        // Quick message function
+        window.sendQuickMessage = function (message) {
+          document.getElementById("messageInput").value = message;
+          document.getElementById("messageInput").focus();
+        };
+
+        // Event Listeners
+        document
+          .getElementById("chatForm")
+          .addEventListener("submit", function (e) {
+            e.preventDefault();
+            const input = document.getElementById("messageInput");
+            const text = input.value.trim();
+
+            if (text) {
+              sendMessage(text);
+              input.value = "";
+              autoResizeTextarea(input);
+            }
+          });
+
+        document
+          .getElementById("messageInput")
+          .addEventListener("input", function (e) {
+            autoResizeTextarea(e.target);
+
+            // Send typing indicator
+            sendTyping(true);
+            clearTimeout(typingTimer);
+            typingTimer = setTimeout(() => sendTyping(false), 1000);
+          });
+
+        document
+          .getElementById("messageInput")
+          .addEventListener("keydown", function (e) {
+            if (e.key === "Enter" && !e.shiftKey) {
+              e.preventDefault();
+              document
+                .getElementById("chatForm")
+                .dispatchEvent(new Event("submit"));
+            }
+          });
+
+        // No manual join needed on customer side
+
+        // Initialize connection
+        connect(function () {
+          appendMessage({
+            sender: "system",
+            messageContent: `Chào mừng ${userName} đến với phòng chat ${currentRoom}!`,
+            sentAt: Date.now(),
+          });
+        });
+
+        // Handle page unload
+        window.addEventListener("beforeunload", function () {
+          if (stompClient && stompClient.connected) {
+            stompClient.disconnect();
+          }
+        });
+      })();
+    </script>
+  </body>
+</html>

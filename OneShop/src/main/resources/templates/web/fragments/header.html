@@ -38,6 +38,29 @@
               <a th:href="@{/products}" class="header-widget" title="Sản phẩm">
                 <i class="fas fa-store"></i>
               </a>
+              <th:block th:if="${session.user != null}">
+                <a th:href="@{/logout}" class="header-widget" title="Đăng xuất">
+                  <i class="fas fa-sign-out-alt"></i>
+                </a>
+              </th:block>
+              <th:block
+                th:if="${session.user == null or (#lists.isEmpty(session.user.roles.?[name=='ROLE_VENDOR']) and #lists.isEmpty(session.user.roles.?[name=='ROLE_ADMIN']))}"
+              >
+                <a th:href="@{/chat}" class="header-widget" title="Chat tư vấn">
+                  <i class="fas fa-comments"></i>
+                </a>
+              </th:block>
+              <th:block
+                th:if="${session.user != null and (!#lists.isEmpty(session.user.roles.?[name=='ROLE_VENDOR']) or !#lists.isEmpty(session.user.roles.?[name=='ROLE_ADMIN']))}"
+              >
+                <a
+                  th:href="@{/admin/vendor-chat}"
+                  class="header-widget"
+                  title="Vendor Chat"
+                >
+                  <i class="fas fa-headset"></i>
+                </a>
+              </th:block>
             </div>
           </div>
         </div>

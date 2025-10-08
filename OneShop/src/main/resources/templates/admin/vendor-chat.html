@@ -1,0 +1,1121 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Quản Lý Chat - Vendor Dashboard</title>
+    <link rel="stylesheet" th:href="@{/vendor/bootstrap/bootstrap.min.css}" />
+    <link rel="stylesheet" th:href="@{/vendor/fontawesome/css/all.min.css}" />
+    <style>
+      :root {
+        --vendor-primary: #2563eb;
+        --vendor-success: #10b981;
+        --vendor-warning: #f59e0b;
+        --vendor-danger: #ef4444;
+        --vendor-dark: #1e293b;
+        --vendor-light: #f8fafc;
+        --vendor-border: #e2e8f0;
+        --vendor-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      }
+
+      body {
+        background: #f1f5f9;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      }
+
+      .vendor-header {
+        background: white;
+        padding: 1rem 2rem;
+        box-shadow: var(--vendor-shadow);
+        border-bottom: 1px solid var(--vendor-border);
+      }
+
+      .vendor-title {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin: 0;
+        color: var(--vendor-dark);
+      }
+
+      .vendor-title i {
+        color: var(--vendor-primary);
+        font-size: 24px;
+      }
+
+      .chat-dashboard {
+        display: flex;
+        height: calc(100vh - 80px);
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 20px;
+        gap: 20px;
+      }
+
+      .chat-rooms-panel {
+        width: 350px;
+        background: white;
+        border-radius: 12px;
+        box-shadow: var(--vendor-shadow);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+
+      .rooms-header {
+        padding: 20px;
+        border-bottom: 1px solid var(--vendor-border);
+        background: var(--vendor-light);
+      }
+
+      .rooms-header h5 {
+        margin: 0;
+        color: var(--vendor-dark);
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .rooms-search {
+        margin-top: 12px;
+      }
+
+      .rooms-search input {
+        width: 100%;
+        padding: 8px 12px;
+        border: 1px solid var(--vendor-border);
+        border-radius: 6px;
+        font-size: 14px;
+      }
+
+      .rooms-list {
+        flex: 1;
+        overflow-y: auto;
+        padding: 12px;
+      }
+
+      .room-item {
+        display: flex;
+        align-items: center;
+        padding: 12px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background 0.2s;
+        margin-bottom: 8px;
+        border: 1px solid transparent;
+      }
+
+      .room-item:hover {
+        background: var(--vendor-light);
+      }
+
+      .room-item.active {
+        background: var(--vendor-primary);
+        color: white;
+        border-color: var(--vendor-primary);
+      }
+
+      .room-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: var(--vendor-success);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 600;
+        margin-right: 12px;
+        flex-shrink: 0;
+      }
+
+      .room-item.active .room-avatar {
+        background: rgba(255, 255, 255, 0.2);
+      }
+
+      .room-info {
+        flex: 1;
+        min-width: 0;
+      }
+
+      .room-name {
+        font-weight: 600;
+        font-size: 14px;
+        margin-bottom: 4px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .room-last-message {
+        font-size: 12px;
+        opacity: 0.7;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .room-meta {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 4px;
+      }
+
+      .room-time {
+        font-size: 11px;
+        opacity: 0.6;
+      }
+
+      .room-badge {
+        background: var(--vendor-danger);
+        color: white;
+        border-radius: 10px;
+        padding: 2px 6px;
+        font-size: 10px;
+        font-weight: 600;
+        min-width: 18px;
+        text-align: center;
+      }
+
+      .room-item.active .room-badge {
+        background: rgba(255, 255, 255, 0.3);
+      }
+
+      .chat-main-panel {
+        flex: 1;
+        background: white;
+        border-radius: 12px;
+        box-shadow: var(--vendor-shadow);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+
+      .chat-header {
+        padding: 20px;
+        border-bottom: 1px solid var(--vendor-border);
+        background: var(--vendor-light);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .chat-customer-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .customer-avatar {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        background: var(--vendor-primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 600;
+        font-size: 18px;
+      }
+
+      .customer-details h6 {
+        margin: 0;
+        color: var(--vendor-dark);
+        font-weight: 600;
+      }
+
+      .customer-status {
+        font-size: 12px;
+        color: var(--vendor-success);
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
+
+      .status-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--vendor-success);
+      }
+
+      .chat-actions {
+        display: flex;
+        gap: 8px;
+      }
+
+      .chat-actions button {
+        padding: 8px 12px;
+        border: 1px solid var(--vendor-border);
+        background: white;
+        border-radius: 6px;
+        color: var(--vendor-dark);
+        font-size: 12px;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+
+      .chat-actions button:hover {
+        background: var(--vendor-light);
+      }
+
+      .chat-messages-area {
+        flex: 1;
+        padding: 20px;
+        overflow-y: auto;
+        background: #fafbfc;
+      }
+
+      .message-group {
+        margin-bottom: 20px;
+      }
+
+      .message {
+        display: flex;
+        margin-bottom: 12px;
+        animation: slideIn 0.3s ease-out;
+      }
+
+      @keyframes slideIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .message.vendor {
+        flex-direction: row-reverse;
+      }
+
+      .message-avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: var(--vendor-primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 600;
+        font-size: 12px;
+        margin: 0 8px;
+        flex-shrink: 0;
+      }
+
+      .message.vendor .message-avatar {
+        background: var(--vendor-success);
+      }
+
+      .message-bubble {
+        max-width: 70%;
+        padding: 12px 16px;
+        border-radius: 18px;
+        position: relative;
+        word-wrap: break-word;
+      }
+
+      .message:not(.vendor) .message-bubble {
+        background: white;
+        border: 1px solid var(--vendor-border);
+        border-bottom-left-radius: 4px;
+      }
+
+      .message.vendor .message-bubble {
+        background: var(--vendor-primary);
+        color: white;
+        border-bottom-right-radius: 4px;
+      }
+
+      .message-content {
+        line-height: 1.4;
+        font-size: 14px;
+      }
+
+      .message-time {
+        font-size: 11px;
+        opacity: 0.7;
+        margin-top: 4px;
+        text-align: right;
+      }
+
+      .message.vendor .message-time {
+        text-align: left;
+      }
+
+      .typing-indicator {
+        padding: 12px 20px;
+        font-style: italic;
+        color: var(--vendor-primary);
+        font-size: 14px;
+        min-height: 20px;
+        background: var(--vendor-light);
+        border-top: 1px solid var(--vendor-border);
+      }
+
+      .chat-input-area {
+        padding: 20px;
+        background: white;
+        border-top: 1px solid var(--vendor-border);
+      }
+
+      .quick-replies {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 12px;
+        flex-wrap: wrap;
+      }
+
+      .quick-reply-btn {
+        padding: 6px 12px;
+        background: var(--vendor-light);
+        border: 1px solid var(--vendor-border);
+        border-radius: 16px;
+        font-size: 12px;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+
+      .quick-reply-btn:hover {
+        background: var(--vendor-primary);
+        color: white;
+        border-color: var(--vendor-primary);
+      }
+
+      .input-group {
+        display: flex;
+        gap: 12px;
+        align-items: flex-end;
+      }
+
+      .message-input {
+        flex: 1;
+        border: 2px solid var(--vendor-border);
+        border-radius: 24px;
+        padding: 12px 20px;
+        font-size: 14px;
+        outline: none;
+        transition: border-color 0.2s;
+        resize: none;
+        max-height: 120px;
+        min-height: 44px;
+      }
+
+      .message-input:focus {
+        border-color: var(--vendor-primary);
+      }
+
+      .send-button {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: var(--vendor-primary);
+        border: none;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+        cursor: pointer;
+      }
+
+      .send-button:hover:not(:disabled) {
+        background: #1d4ed8;
+        transform: scale(1.05);
+      }
+
+      .send-button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      .empty-state {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        color: #64748b;
+        text-align: center;
+      }
+
+      .empty-state i {
+        font-size: 48px;
+        margin-bottom: 16px;
+        opacity: 0.5;
+      }
+
+      /* Responsive */
+      @media (max-width: 768px) {
+        .chat-dashboard {
+          flex-direction: column;
+          padding: 10px;
+        }
+
+        .chat-rooms-panel {
+          width: 100%;
+          height: 200px;
+        }
+
+        .rooms-list {
+          display: flex;
+          overflow-x: auto;
+          padding: 8px;
+        }
+
+        .room-item {
+          min-width: 200px;
+          margin-right: 8px;
+          margin-bottom: 0;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="vendor-header" style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
+      <h4 class="vendor-title" style="margin:0;">
+        <i class="fas fa-headset"></i>
+        Quản Lý Chat Khách Hàng
+      </h4>
+      <div>
+        <a href="/logout" class="btn btn-outline-danger btn-sm">
+          <i class="fas fa-sign-out-alt"></i>
+          Đăng xuất
+        </a>
+      </div>
+    </div>
+
+    <div class="chat-dashboard">
+      <!-- Chat Rooms Panel -->
+      <div class="chat-rooms-panel">
+        <div class="rooms-header">
+          <h5>
+            <i class="fas fa-inbox"></i>
+            Cuộc trò chuyện
+          </h5>
+          <div class="rooms-search">
+            <input
+              type="text"
+              id="roomSearch"
+              placeholder="Tìm kiếm khách hàng..."
+            />
+          </div>
+        </div>
+
+        <div class="rooms-list" id="roomsList"><!-- populated by JS --></div>
+      </div>
+
+      <!-- Main Chat Panel -->
+      <div class="chat-main-panel">
+        <div class="chat-header" id="chatHeader">
+          <div class="chat-customer-info">
+            <div class="customer-avatar">KH</div>
+            <div class="customer-details">
+              <h6>Khách hàng #001</h6>
+              <div class="customer-status">
+                <div class="status-dot"></div>
+                Đang hoạt động
+              </div>
+            </div>
+          </div>
+
+          <div class="chat-actions">
+            <button onclick="transferChat()">
+              <i class="fas fa-exchange-alt"></i> Chuyển
+            </button>
+            <button onclick="closeChat()">
+              <i class="fas fa-times"></i> Đóng
+            </button>
+            <button id="clearHistoryBtn" title="Xóa lịch sử phòng">
+              <i class="fas fa-trash"></i> Xóa lịch sử
+            </button>
+          </div>
+        </div>
+
+        <div class="chat-messages-area" id="chatMessages">
+          <div
+            class="system-message"
+            style="
+              text-align: center;
+              margin: 20px 0;
+              padding: 8px 16px;
+              background: var(--vendor-warning);
+              color: white;
+              border-radius: 16px;
+              font-size: 12px;
+            "
+          >
+            <i class="fas fa-info-circle"></i>
+            Cuộc trò chuyện với Khách hàng #001
+          </div>
+        </div>
+
+        <div class="typing-indicator" id="typingIndicator"></div>
+
+        <div class="chat-input-area">
+          <div class="quick-replies">
+            <div
+              class="quick-reply-btn"
+              onclick="sendQuickReply('Xin chào! Tôi có thể giúp gì cho bạn?')"
+            >
+              👋 Chào hỏi
+            </div>
+            <div
+              class="quick-reply-btn"
+              onclick="sendQuickReply('Cảm ơn bạn đã liên hệ. Tôi sẽ kiểm tra và phản hồi ngay.')"
+            >
+              ⏰ Đang kiểm tra
+            </div>
+            <div
+              class="quick-reply-btn"
+              onclick="sendQuickReply('Sản phẩm này hiện đang có sẵn. Bạn có muốn đặt hàng không?')"
+            >
+              ✅ Có sẵn
+            </div>
+            <div
+              class="quick-reply-btn"
+              onclick="sendQuickReply('Rất tiếc, sản phẩm này hiện đang hết hàng. Chúng tôi sẽ nhập thêm trong tuần tới.')"
+            >
+              ❌ Hết hàng
+            </div>
+          </div>
+
+          <form id="chatForm" class="input-group">
+            <textarea
+              id="messageInput"
+              class="message-input"
+              placeholder="Nhập tin nhắn cho khách hàng..."
+              rows="1"
+              autocomplete="off"
+            ></textarea>
+            <button type="submit" class="send-button" id="sendButton">
+              <i class="fas fa-paper-plane"></i>
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <script th:src="@{/vendor/jquery/jquery.min.js}"></script>
+    <script th:src="@{/vendor/bootstrap/bootstrap.bundle.min.js}"></script>
+    <script th:src="@{/webjars/sockjs-client/1.5.1/sockjs.min.js}"></script>
+    <script th:src="@{/webjars/stomp-websocket/2.3.4/stomp.min.js}"></script>
+    <script>
+      (function () {
+        let stompClient = null;
+        let currentRoom = null;
+        let vendorName = "vendor_" + Math.floor(Math.random() * 1000);
+        let isConnected = false;
+        let typingTimer = null;
+        let seenKeys = new Set();
+
+        function getQueryParam(name) {
+          const params = new URLSearchParams(window.location.search);
+          return params.get(name);
+        }
+
+        function connect() {
+          const socket = new SockJS("/ws");
+          stompClient = Stomp.over(socket);
+
+          // Optional vendorName/room overrides via query
+          // Persist vendor name across reloads
+          const savedVendor = localStorage.getItem('oneshop.vendor.name');
+          const qpVendor = getQueryParam("vn") || getQueryParam("vendorName");
+          vendorName = qpVendor || savedVendor || vendorName;
+          localStorage.setItem('oneshop.vendor.name', vendorName);
+          const qpRoom = getQueryParam("room");
+          if (qpRoom) currentRoom = qpRoom;
+          if (!currentRoom) {
+            const savedRoom = localStorage.getItem('oneshop.vendor.currentRoom');
+            if (savedRoom) currentRoom = savedRoom;
+          }
+
+          stompClient.connect(
+            {},
+            function (frame) {
+              console.log("Vendor connected");
+              isConnected = true;
+              // Only subscribe when a room is chosen (by query or click).
+              // Load recent history then subscribe to realtime.
+              if (currentRoom) {
+                loadHistory(currentRoom, 50).finally(() => {
+                  subscribeRoom(currentRoom);
+                  stompClient.send(
+                    "/app/chat.join",
+                    {},
+                    JSON.stringify({ roomId: currentRoom, userType: "vendor", senderName: vendorName })
+                  );
+                });
+              }
+              // Subscribe to global room events so vendors see new rooms instantly
+              if (window._roomsGlobalSub)
+                window._roomsGlobalSub.unsubscribe &&
+                  window._roomsGlobalSub.unsubscribe();
+              window._roomsGlobalSub = stompClient.subscribe(
+                "/topic/rooms",
+                function (message) {
+                  const data = JSON.parse(message.body);
+                  switch (data.type) {
+                    case "ROOM_OPEN":
+                      addOrActivateRoom(data.roomId, data.customerName);
+                      // Auto-open the first incoming room if none selected yet
+                      if (!currentRoom) {
+                        const item = document.querySelector(`[data-room="${data.roomId}"]`);
+                        if (item) onRoomItemClick.call(item);
+                      }
+                      break;
+                    case "ROOM_MESSAGE":
+                      updateRoomFromMessage(
+                        data.roomId,
+                        data.from,
+                        data.preview,
+                        data.pendingCount || 0,
+                        data.sentAt
+                      );
+                      if (!currentRoom) {
+                        const item = document.querySelector(`[data-room="${data.roomId}"]`);
+                        if (item) onRoomItemClick.call(item);
+                      }
+                      break;
+                    case "ROOM_ASSIGNED":
+                    case "ROOM_UPDATED":
+                      updateRoomFromMessage(
+                        data.roomId,
+                        data.lastMessageBy || "Khách hàng",
+                        data.preview || "",
+                        data.pendingCount || 0,
+                        data.sentAt
+                      );
+                      break;
+                  }
+                }
+              );
+            },
+            function (error) {
+              console.log("Connection error: ", error);
+              isConnected = false;
+              setTimeout(() => connect(), 3000);
+            }
+          );
+        }
+
+        function subscribeRoom(roomId) {
+          if (!stompClient || !stompClient.connected) return;
+
+          // Unsubscribe previous
+          if (window._roomSub) window._roomSub.unsubscribe();
+          if (window._typingSub) window._typingSub.unsubscribe();
+
+          // Subscribe to room messages
+          window._roomSub = stompClient.subscribe(
+            "/topic/room/" + roomId,
+            function (message) {
+              const data = JSON.parse(message.body);
+              appendMessage(data);
+            }
+          );
+
+          // Subscribe to typing indicators
+          window._typingSub = stompClient.subscribe(
+            "/topic/room/" + roomId + "/typing",
+            function (message) {
+              const data = JSON.parse(message.body);
+              showTypingIndicator(data);
+            }
+          );
+        }
+
+        function messageKey(msg) {
+          return [msg.sender || "", msg.sentAt || "", msg.messageContent || ""].join("|");
+        }
+
+        function appendMessage(msg) {
+          const key = messageKey(msg);
+          if (seenKeys.has(key)) return;
+          seenKeys.add(key);
+          const isVendor =
+            msg.sender === vendorName || msg.sender.startsWith("vendor");
+          const isSystem = msg.sender === "system";
+          const container = document.getElementById("chatMessages");
+
+          if (isSystem) {
+            const systemEl = document.createElement("div");
+            systemEl.className = "system-message";
+            systemEl.style.cssText =
+              "text-align: center; margin: 16px 0; padding: 8px 16px; background: var(--vendor-warning); color: white; border-radius: 16px; font-size: 12px;";
+            systemEl.innerHTML = `<i class="fas fa-info-circle"></i> ${msg.messageContent}`;
+            container.appendChild(systemEl);
+          } else {
+            const messageEl = document.createElement("div");
+            messageEl.className = "message" + (isVendor ? " vendor" : "");
+
+            const avatarLetter = (msg.sender || "?").charAt(0).toUpperCase();
+            const timeStr = new Date(
+              msg.sentAt || Date.now()
+            ).toLocaleTimeString("vi-VN", {
+              hour: "2-digit",
+              minute: "2-digit",
+            });
+
+            messageEl.innerHTML = `
+                        <div class="message-avatar">${avatarLetter}</div>
+                        <div class="message-bubble">
+                            <div class="message-content">${escapeHtml(
+                              msg.messageContent || ""
+                            )}</div>
+                            <div class="message-time">${timeStr}</div>
+                        </div>
+                    `;
+
+            container.appendChild(messageEl);
+          }
+
+          container.scrollTop = container.scrollHeight;
+        }
+
+        function showTypingIndicator(data) {
+          const indicator = document.getElementById("typingIndicator");
+
+          if (data.isTyping && data.userName !== vendorName) {
+            indicator.innerHTML = `
+                        <i class="fas fa-user"></i>
+                        ${data.userName} đang nhập tin nhắn...
+                    `;
+          } else {
+            indicator.innerHTML = "";
+          }
+        }
+
+        function sendMessage(text) {
+          if (!stompClient || !stompClient.connected || !text.trim()) return;
+
+          stompClient.send(
+            "/app/chat.send",
+            {},
+            JSON.stringify({
+              roomId: currentRoom,
+              messageContent: text.trim(),
+              messageType: "TEXT",
+              userType: "vendor",
+              senderName: vendorName,
+            })
+          );
+        }
+
+        function sendTyping(isTyping) {
+          if (!stompClient || !stompClient.connected) return;
+
+          stompClient.send(
+            "/app/chat.typing",
+            {},
+            JSON.stringify({
+              roomId: currentRoom,
+              isTyping: !!isTyping,
+              senderName: vendorName,
+              userType: "vendor",
+            })
+          );
+        }
+
+        function escapeHtml(text) {
+          const div = document.createElement("div");
+          div.textContent = text;
+          return div.innerHTML;
+        }
+
+        function autoResizeTextarea(textarea) {
+          textarea.style.height = "auto";
+          textarea.style.height = Math.min(textarea.scrollHeight, 120) + "px";
+        }
+
+        async function loadHistory(roomId, limit) {
+          try {
+            const res = await fetch(`/api/chat/history?roomId=${encodeURIComponent(roomId)}&limit=${limit||50}`);
+            if (!res.ok) return;
+            const items = await res.json();
+            // reset seen keys for new room
+            seenKeys.clear();
+            items.forEach(appendMessage);
+            // scroll after initial render
+            const container = document.getElementById("chatMessages");
+            container.scrollTop = container.scrollHeight;
+          } catch (e) {
+            console.warn("loadHistory failed", e);
+          }
+        }
+
+        // Global functions
+        window.sendQuickReply = function (message) {
+          sendMessage(message);
+        };
+
+        window.transferChat = function () {
+          alert(
+            "Chức năng chuyển chat sẽ được phát triển trong phiên bản tiếp theo"
+          );
+        };
+
+        window.closeChat = function () {
+          if (confirm("Bạn có chắc muốn đóng cuộc trò chuyện này?")) {
+            sendMessage("Cuộc trò chuyện đã được đóng bởi tư vấn viên.");
+          }
+        };
+
+        // Event listeners
+        document
+          .getElementById("chatForm")
+          .addEventListener("submit", function (e) {
+            e.preventDefault();
+            const input = document.getElementById("messageInput");
+            const text = input.value.trim();
+
+            if (text) {
+              sendMessage(text);
+              input.value = "";
+              autoResizeTextarea(input);
+            }
+          });
+
+        document
+          .getElementById("messageInput")
+          .addEventListener("input", function (e) {
+            autoResizeTextarea(e.target);
+
+            sendTyping(true);
+            clearTimeout(typingTimer);
+            typingTimer = setTimeout(() => sendTyping(false), 1000);
+          });
+
+        document
+          .getElementById("messageInput")
+          .addEventListener("keydown", function (e) {
+            if (e.key === "Enter" && !e.shiftKey) {
+              e.preventDefault();
+              document
+                .getElementById("chatForm")
+                .dispatchEvent(new Event("submit"));
+            }
+          });
+
+        function addOrActivateRoom(roomId, customerName) {
+          const roomsList = document.getElementById("roomsList");
+          let existing = roomsList.querySelector(`[data-room="${roomId}"]`);
+          if (!existing) {
+            const avatar = (customerName || "KH")
+              .trim()
+              .charAt(0)
+              .toUpperCase();
+            const wrapper = document.createElement("div");
+            wrapper.className = "room-item";
+            wrapper.setAttribute("data-room", roomId);
+            wrapper.innerHTML = `
+              <div class="room-avatar">${avatar}</div>
+              <div class="room-info">
+                <div class="room-name">${
+                  customerName || "Khách hàng " + roomId
+                }</div>
+                <div class="room-last-message">Phòng mới được tạo</div>
+              </div>
+              <div class="room-meta">
+                <div class="room-time">${new Date().toLocaleTimeString(
+                  "vi-VN",
+                  { hour: "2-digit", minute: "2-digit" }
+                )}</div>
+                <div class="room-badge">1</div>
+              </div>
+            `;
+            roomsList.prepend(wrapper);
+            // attach click handler and auto-open if first room
+            wrapper.addEventListener("click", onRoomItemClick);
+            if (!currentRoom) {
+              onRoomItemClick.call(wrapper);
+            }
+          }
+        }
+
+        function onRoomItemClick() {
+          // Remove active class from all rooms
+          document
+            .querySelectorAll(".room-item")
+            .forEach((r) => r.classList.remove("active"));
+
+          // Add active class to clicked room
+          this.classList.add("active");
+
+          // Switch room
+          const newRoom = this.dataset.room;
+          if (newRoom !== currentRoom) {
+            currentRoom = newRoom;
+            try { localStorage.setItem('oneshop.vendor.currentRoom', currentRoom); } catch (e) {}
+            // clear previous state and load history first
+            seenKeys.clear();
+
+            // Join as vendor to notify and assign
+            if (stompClient && stompClient.connected) {
+              // Load history then subscribe and join
+              loadHistory(currentRoom, 50).finally(() => {
+                subscribeRoom(currentRoom);
+                stompClient.send(
+                  "/app/chat.join",
+                  {},
+                  JSON.stringify({
+                    roomId: currentRoom,
+                    userType: "vendor",
+                    senderName: vendorName,
+                  })
+                );
+              });
+            }
+
+            // Clear messages
+            const messagesContainer = document.getElementById("chatMessages");
+            messagesContainer.innerHTML = `
+              <div class="system-message" style="text-align: center; margin: 20px 0; padding: 8px 16px; background: var(--vendor-warning); color: white; border-radius: 16px; font-size: 12px;">
+                <i class="fas fa-door-open"></i>
+                Đã chuyển sang phòng: ${currentRoom}
+              </div>
+            `;
+
+            // Update header
+            const roomName = this.querySelector(".room-name").textContent;
+            const customerAvatar =
+              this.querySelector(".room-avatar").textContent;
+            document.querySelector(".customer-avatar").textContent =
+              customerAvatar;
+            document.querySelector(".customer-details h6").textContent =
+              roomName;
+
+            // Reset unread badge for this room
+            const badgeEl = this.querySelector(".room-badge");
+            if (badgeEl) {
+              badgeEl.textContent = "0";
+              badgeEl.style.display = "none";
+            }
+
+            // Focus input for quick reply
+            const input = document.getElementById("messageInput");
+            input && input.focus();
+          }
+        }
+
+        // Room switching (initial items)
+        document.querySelectorAll(".room-item").forEach((item) => {
+          item.addEventListener("click", onRoomItemClick);
+        });
+
+        // Event delegation for dynamically added rooms
+        document
+          .getElementById("roomsList")
+          .addEventListener("click", function (e) {
+            const item = e.target.closest(".room-item");
+            if (item && this.contains(item)) {
+              onRoomItemClick.call(item, e);
+            }
+          });
+
+        function updateRoomFromMessage(
+          roomId,
+          from,
+          preview,
+          pendingCount,
+          sentAt
+        ) {
+          const roomsList = document.getElementById("roomsList");
+          let item = roomsList.querySelector(`[data-room="${roomId}"]`);
+          if (!item) {
+            addOrActivateRoom(roomId, from || "Khách hàng");
+            item = roomsList.querySelector(`[data-room="${roomId}"]`);
+          }
+          if (!item) return;
+
+          const lastMsgEl = item.querySelector(".room-last-message");
+          const timeEl = item.querySelector(".room-time");
+          const badgeEl = item.querySelector(".room-badge");
+
+          if (lastMsgEl) lastMsgEl.textContent = preview || "Tin nhắn mới";
+          if (timeEl && sentAt) {
+            timeEl.textContent = new Date(sentAt).toLocaleTimeString("vi-VN", {
+              hour: "2-digit",
+              minute: "2-digit",
+            });
+          }
+          if (badgeEl) {
+            const count = Number(pendingCount || 0);
+            badgeEl.textContent = String(count);
+            badgeEl.style.display = count > 0 ? "inline-block" : "none";
+          } else if (pendingCount > 0) {
+            const meta = item.querySelector(".room-meta");
+            if (meta) {
+              const newBadge = document.createElement("div");
+              newBadge.className = "room-badge";
+              newBadge.textContent = String(pendingCount);
+              meta.appendChild(newBadge);
+            }
+          }
+
+          // Move room to top on new message
+          roomsList.prepend(item);
+        }
+
+        // Search functionality
+        document
+          .getElementById("roomSearch")
+          .addEventListener("input", function (e) {
+            const searchTerm = e.target.value.toLowerCase();
+            document.querySelectorAll(".room-item").forEach((room) => {
+              const roomName = room
+                .querySelector(".room-name")
+                .textContent.toLowerCase();
+              const lastMessage = room
+                .querySelector(".room-last-message")
+                .textContent.toLowerCase();
+
+              if (
+                roomName.includes(searchTerm) ||
+                lastMessage.includes(searchTerm)
+              ) {
+                room.style.display = "flex";
+              } else {
+                room.style.display = "none";
+              }
+            });
+          });
+
+        // Initialize connection
+        // Clear History button
+        document.getElementById('clearHistoryBtn').addEventListener('click', async function () {
+          if (!currentRoom) { alert('Chưa chọn phòng chat.'); return; }
+          if (!confirm('Bạn có chắc muốn xóa lịch sử phòng này?')) return;
+          try {
+            const res = await fetch(`/api/chat/history?roomId=${encodeURIComponent(currentRoom)}`, { method: 'DELETE' });
+            const ok = res.ok ? (await res.json()).success !== false : false;
+            if (ok) {
+              // Clear messages UI
+              seenKeys.clear();
+              const messagesContainer = document.getElementById('chatMessages');
+              messagesContainer.innerHTML = `<div class=\"system-message\" style=\"text-align: center; margin: 20px 0; padding: 8px 16px; background: var(--vendor-warning); color: white; border-radius: 16px; font-size: 12px;\"><i class=\"fas fa-trash\"></i> Lịch sử đã được xóa.</div>`;
+              // Update room preview
+              const item = document.querySelector(`[data-room=\"${currentRoom}\"]`);
+              if (item) {
+                const lastMsgEl = item.querySelector('.room-last-message');
+                if (lastMsgEl) lastMsgEl.textContent = 'Đã xóa lịch sử';
+              }
+            } else {
+              alert('Không thể xóa lịch sử.');
+            }
+          } catch (e) {
+            alert('Có lỗi khi xóa lịch sử.');
+          }
+        });
+        connect();
+      })();
+    </script>
+  </body>
+</html>
