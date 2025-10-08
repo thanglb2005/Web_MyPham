@@ -10,7 +10,68 @@
     <link rel="stylesheet" href="/assets/css/bootstrap.min.css" />
     <link rel="stylesheet" href="/assets/css/atlantis.min.css" />
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
     <style>
+        /* Action Buttons */
+        .btn-action-group {
+            display: flex;
+            justify-content: center;
+        }
+        
+        .btn-action-group .btn {
+            padding: 6px 10px;
+            margin-right: 5px;
+            border-radius: 4px;
+            width: 34px;
+            height: 34px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .btn-info {
+            background-color: #2196F3 !important;
+            border-color: #2196F3 !important;
+            color: white !important;
+        }
+        
+        .btn-warning {
+            background-color: #FF9800 !important;
+            border-color: #FF9800 !important;
+            color: white !important;
+        }
+        
+        .btn-primary {
+            background-color: #0D47A1 !important;
+            border-color: #0D47A1 !important;
+            color: white !important;
+        }
+        
+        .btn-danger {
+            background-color: #F44336 !important;
+            border-color: #F44336 !important;
+            color: white !important;
+        }
+        
+        .btn:hover {
+            opacity: 0.85;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* Icons in buttons */
+        .btn i {
+            font-size: 14px;
+        }
+        
+        .provider-logo {
+            width: 50px;
+            height: 50px;
+            object-fit: contain;
+            border-radius: 4px;
+            background-color: #f8f9fa;
+            box-shadow: 0 0 3px rgba(0, 0, 0, 0.1);
+        }
+        
         .pagination {
             display: flex;
             justify-content: center;
@@ -175,27 +236,42 @@
                                         <span th:if="${provider.status}" class="badge badge-success">Hoạt động</span>
                                         <span th:unless="${provider.status}" class="badge badge-danger">Ngừng hoạt động</span>
                                     </td>
-                                    <td class="text-center">
-                                        <button class="btn btn-info btn-circle btn-sm edit-provider" 
-                                                th:data-id="${provider.providerId}" 
-                                                th:data-logo="${provider.logo}" 
-                                                data-toggle="modal" 
-                                                data-target="#editProviderModal" title="Sửa">
-                                            <i class="fas fa-edit"></i>
-                                        </button>
-                                        <form th:action="@{'/admin/toggleShippingProviderStatus/' + ${provider.providerId}}" 
-                                              method="post" style="display:inline;">
-                                            <button type="submit" class="btn btn-warning btn-circle btn-sm" 
-                                                    th:title="${provider.status ? 'Vô hiệu hóa' : 'Kích hoạt'}">
-                                                <i class="fas" th:classappend="${provider.status ? 'fa-power-off' : 'fa-check'}"></i>
+                                    <td>
+                                        <div class="btn-action-group">
+                                            <!-- Nút xem chi tiết -->
+                                            <button class="btn btn-info btn-sm view-provider" 
+                                                    th:data-id="${provider.providerId}" 
+                                                    data-toggle="modal" 
+                                                    data-target="#viewProviderModal">
+                                                <i class="fas fa-eye"></i>
                                             </button>
-                                        </form>
-                                        <button class="btn btn-danger btn-circle btn-sm delete-provider" 
-                                                th:data-id="${provider.providerId}" 
-                                                th:data-name="${provider.providerName}" 
-                                                data-toggle="modal" data-target="#deleteProviderModal" title="Xóa">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
+                                            
+                                            <!-- Nút chỉnh sửa -->
+                                            <button class="btn btn-warning btn-sm edit-provider" 
+                                                    th:data-id="${provider.providerId}" 
+                                                    th:data-logo="${provider.logo}" 
+                                                    data-toggle="modal" 
+                                                    data-target="#editProviderModal">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            
+                                            <!-- Nút bật/tắt trạng thái -->
+                                            <button class="btn btn-sm toggle-status" 
+                                                    th:data-id="${provider.providerId}" 
+                                                    th:data-status="${provider.status}"
+                                                    th:class="${provider.status ? 'btn btn-success btn-sm toggle-status' : 'btn btn-danger btn-sm toggle-status'}">
+                                                <i th:if="${provider.status}" class="fas fa-check-circle"></i>
+                                                <i th:unless="${provider.status}" class="fas fa-ban"></i>
+                                            </button>
+                                            
+                                            <!-- Nút xóa -->
+                                            <button class="btn btn-danger btn-sm delete-provider" 
+                                                    th:data-id="${provider.providerId}" 
+                                                    th:data-name="${provider.providerName}" 
+                                                    data-toggle="modal" data-target="#deleteProviderModal">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                             </tbody>
@@ -363,6 +439,111 @@
             </div>
         </div>
         
+        <!-- View Provider Modal -->
+        <div class="modal fade" id="viewProviderModal" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Chi tiết nhà vận chuyển</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-md-4 text-center mb-4">
+                                <div class="mb-3">
+                                    <img id="view-provider-logo" src="" class="img-fluid rounded" style="max-width: 150px; max-height: 150px; display: none;" alt="Logo">
+                                    <div id="view-provider-no-logo" class="d-flex align-items-center justify-content-center" style="width: 150px; height: 150px; margin: auto; background-color: #f8f9fa; display: none;">
+                                        <i class="fas fa-truck text-muted fa-3x"></i>
+                                    </div>
+                                </div>
+                                <div>
+                                    <span id="view-provider-status-badge" class="badge badge-pill"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-8">
+                                <table class="table table-borderless">
+                                    <tbody>
+                                        <tr>
+                                            <th style="width: 150px;">ID:</th>
+                                            <td id="view-provider-id"></td>
+                                        </tr>
+                                        <tr>
+                                            <th>Tên nhà vận chuyển:</th>
+                                            <td id="view-provider-name"></td>
+                                        </tr>
+                                        <tr>
+                                            <th>Điện thoại:</th>
+                                            <td id="view-provider-phone"></td>
+                                        </tr>
+                                        <tr>
+                                            <th>Email:</th>
+                                            <td id="view-provider-email"></td>
+                                        </tr>
+                                        <tr>
+                                            <th>Website:</th>
+                                            <td id="view-provider-website"></td>
+                                        </tr>
+                                        <tr>
+                                            <th>Địa chỉ:</th>
+                                            <td id="view-provider-address"></td>
+                                        </tr>
+                                        <tr>
+                                            <th>Phí vận chuyển:</th>
+                                            <td id="view-provider-fees"></td>
+                                        </tr>
+                                        <tr>
+                                            <th>Thời gian giao:</th>
+                                            <td id="view-provider-time"></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-12">
+                                <h6 class="font-weight-bold">Mô tả:</h6>
+                                <p id="view-provider-desc" class="text-muted"></p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
+                        <button type="button" class="btn btn-primary edit-from-view" data-toggle="modal" data-target="#editProviderModal" data-dismiss="modal">Chỉnh sửa</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Toggle Status Modal -->
+        <div class="modal fade" id="toggleStatusModal" tabindex="-1" role="dialog" aria-labelledby="toggleStatusModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="toggleStatusModalLabel">
+                            <i class="fas fa-toggle-on"></i>
+                            Thay đổi trạng thái
+                        </h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Bạn có chắc chắn muốn thay đổi trạng thái của nhà vận chuyển này?</p>
+                        <p id="toggleStatusName" class="font-weight-bold"></p>
+                        <p id="toggleStatusMessage"></p>
+                    </div>
+                    <div class="modal-footer">
+                        <form id="toggleStatusForm" method="post">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy</button>
+                            <button type="submit" class="btn btn-primary">Xác nhận</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
         <!-- Delete Provider Modal -->
         <div class="modal fade" id="deleteProviderModal" tabindex="-1" role="dialog" aria-hidden="true">
             <div class="modal-dialog" role="document">
@@ -389,35 +570,168 @@
         <!-- JavaScript for edit and delete operations -->
         <script>
             $(document).ready(function() {
+                console.log("Document ready!");
+                
                 // Edit provider
                 $('.edit-provider').click(function() {
+                    console.log("Edit provider clicked!");
                     var id = $(this).data('id');
+                    console.log("Provider ID:", id);
                     $.ajax({
                         url: '/admin/getShippingProviderData/' + id,
                         type: 'GET',
                         success: function(data) {
+                            console.log("Provider data received:", data);
                             $('#edit-provider-id').val(data.providerId);
                             $('#edit-provider-name').val(data.providerName);
-                            $('#edit-provider-phone').val(data.contactPhone);
-                            $('#edit-provider-email').val(data.contactEmail);
-                            $('#edit-provider-address').val(data.address);
+                            $('#edit-provider-phone').val(data.contactPhone || '');
+                            $('#edit-provider-email').val(data.contactEmail || '');
+                            $('#edit-provider-address').val(data.address || '');
                             $('#edit-provider-fees').val(data.shippingFees);
-                            $('#edit-provider-time').val(data.deliveryTimeRange);
+                            $('#edit-provider-time').val(data.deliveryTimeRange || '');
                             $('#edit-provider-status').val(data.status.toString());
-                            $('#edit-provider-desc').val(data.description);
+                            $('#edit-provider-desc').val(data.description || '');
                             
                             // Handle logo preview
                             if (data.logo && data.logo !== "") {
+                                console.log("Loading logo:", data.logo);
                                 $("#edit-provider-logo-preview").attr("src", "/images/" + data.logo);
                                 $("#edit-provider-logo-preview").show();
                                 $("#edit-provider-no-logo").hide();
                             } else {
+                                console.log("No logo available");
                                 $("#edit-provider-logo-preview").hide();
                                 $("#edit-provider-no-logo").show();
                             }
                         },
                         error: function() {
                             alert('Không thể tải thông tin nhà vận chuyển!');
+                        }
+                    });
+                });
+                
+                // View provider details
+                $('.view-provider').click(function() {
+                    console.log("View provider clicked!");
+                    var providerId = $(this).data('id');
+                    console.log("Provider ID to view:", providerId);
+                    $.ajax({
+                        url: '/admin/getShippingProviderData/' + providerId,
+                        type: 'GET',
+                        dataType: 'json',
+                        success: function(data) {
+                            console.log("View data received:", data);
+                            // Populate the view modal
+                            $('#view-provider-id').text(data.providerId);
+                            $('#view-provider-name').text(data.providerName);
+                            $('#view-provider-phone').text(data.contactPhone || 'N/A');
+                            $('#view-provider-email').text(data.contactEmail || 'N/A');
+                            $('#view-provider-website').text(data.website || 'N/A');
+                            $('#view-provider-address').text(data.address || 'N/A');
+                            
+                            // Format shipping fees with thousand separator
+                            var formattedFees = data.shippingFees ? data.shippingFees.toLocaleString('vi-VN') + ' VNĐ' : 'N/A';
+                            $('#view-provider-fees').text(formattedFees);
+                            
+                            $('#view-provider-time').text(data.deliveryTimeRange || 'N/A');
+                            $('#view-provider-desc').text(data.description || 'Không có mô tả');
+                            
+                            // Set status badge
+                            if (data.status) {
+                                $('#view-provider-status-badge')
+                                    .text('Hoạt động')
+                                    .removeClass('badge-danger')
+                                    .addClass('badge-success');
+                            } else {
+                                $('#view-provider-status-badge')
+                                    .text('Ngừng hoạt động')
+                                    .removeClass('badge-success')
+                                    .addClass('badge-danger');
+                            }
+                            
+                            // Handle logo
+                            if (data.logo && data.logo !== "") {
+                                console.log("View logo:", data.logo);
+                                $("#view-provider-logo").attr("src", "/images/" + data.logo);
+                                $("#view-provider-logo").show();
+                                $("#view-provider-no-logo").hide();
+                            } else {
+                                console.log("No logo for view");
+                                $("#view-provider-logo").hide();
+                                $("#view-provider-no-logo").show();
+                            }
+                            
+                            // Store provider ID for edit button
+                            $('.edit-from-view').data('provider-id', data.providerId);
+                        },
+                        error: function(xhr, status, error) {
+                            console.error("Error loading provider data:", error);
+                            console.error("Status:", status);
+                            console.error("Response:", xhr.responseText);
+                            alert('Không thể tải thông tin nhà vận chuyển!');
+                        }
+                    });
+                });
+                
+                // Edit from view modal
+                $('.edit-from-view').click(function() {
+                    var providerId = $(this).data('provider-id');
+                    $('.edit-provider[data-id="' + providerId + '"]').trigger('click');
+                });
+                
+                // Toggle status
+                $('.toggle-status').click(function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    if (!confirm('Bạn có chắc chắn muốn thay đổi trạng thái nhà vận chuyển này?')) {
+                        return false;
+                    }
+                    
+                    var providerId = $(this).data('id');
+                    var btn = $(this);
+                    
+                    console.log("Toggle status clicked for provider ID:", providerId);
+                    console.log("Button current state:", btn.hasClass('btn-success') ? "Active" : "Inactive");
+                    
+                    $.ajax({
+                        url: '/admin/shipping-providers/toggle-status/' + providerId,
+                        type: 'POST',
+                        success: function(response) {
+                            console.log("Toggle status response:", response);
+                            if (response === 'success') {
+                                // Update button icon and class
+                                if (btn.hasClass('btn-success')) {
+                                    console.log("Changing to inactive state");
+                                    btn.removeClass('btn-success').addClass('btn-danger');
+                                    btn.find('i').removeClass('fa-check-circle').addClass('fa-ban');
+                                } else {
+                                    console.log("Changing to active state");
+                                    btn.removeClass('btn-danger').addClass('btn-success');
+                                    btn.find('i').removeClass('fa-ban').addClass('fa-check-circle');
+                                }
+                                
+                                // Also update the status badge in the same row
+                                var row = btn.closest('tr');
+                                var statusCell = row.find('td:eq(7)'); // 8th column (0-based)
+                                
+                                if (btn.hasClass('btn-success')) {
+                                    statusCell.html('<span class="badge badge-success">Hoạt động</span>');
+                                } else {
+                                    statusCell.html('<span class="badge badge-danger">Ngừng hoạt động</span>');
+                                }
+                                
+                                showAlert('success', 'Đã cập nhật trạng thái nhà vận chuyển!');
+                            } else {
+                                console.error("Toggle status failed:", response);
+                                showAlert('error', 'Đã có lỗi xảy ra!');
+                            }
+                        },
+                        error: function(xhr, status, error) {
+                            console.error("Toggle status error:", error);
+                            console.error("Status:", status);
+                            console.error("Response:", xhr.responseText);
+                            showAlert('error', 'Đã có lỗi xảy ra!');
                         }
                     });
                 });
@@ -429,6 +743,26 @@
                     $('#delete-provider-name').text(name);
                     $('#deleteProviderForm').attr('action', '/admin/deleteShippingProvider/' + id);
                 });
+                
+                // Function to show alert messages
+                function showAlert(type, message) {
+                    var alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
+                    var alertHtml = '<div class="alert ' + alertClass + ' alert-dismissible fade show" role="alert">' +
+                        message +
+                        '<button type="button" class="close" data-dismiss="alert" aria-label="Close">' +
+                        '<span aria-hidden="true">&times;</span>' +
+                        '</button>' +
+                        '</div>';
+                    
+                    // Insert the alert at the top of the card body
+                    var alertBox = $(alertHtml);
+                    $('.card-body').prepend(alertBox);
+                    
+                    // Automatically dismiss after 3 seconds
+                    setTimeout(function() {
+                        alertBox.alert('close');
+                    }, 3000);
+                }
             });
         </script>
                                     </div>

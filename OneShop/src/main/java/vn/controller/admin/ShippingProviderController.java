@@ -192,17 +192,24 @@ public class ShippingProviderController {
     }
     
     /**
-     * Get shipping provider data for editing
+     * Get shipping provider data for editing or viewing
      */
     @GetMapping("/getShippingProviderData/{id}")
     @ResponseBody
     public ShippingProvider getShippingProviderData(@PathVariable("id") Long id) {
+        System.out.println("Fetching shipping provider data for ID: " + id);
         Optional<ShippingProvider> provider = shippingProviderService.findById(id);
-        return provider.orElse(null);
+        if (provider.isPresent()) {
+            System.out.println("Found provider: " + provider.get().getProviderName());
+            return provider.get();
+        } else {
+            System.out.println("Provider not found for ID: " + id);
+            return null;
+        }
     }
     
     /**
-     * Toggle shipping provider status (active/inactive)
+     * Toggle shipping provider status (active/inactive) with redirect
      */
     @PostMapping("/toggleShippingProviderStatus/{id}")
     public String toggleShippingProviderStatus(@PathVariable("id") Long id) {
@@ -215,5 +222,22 @@ public class ShippingProviderController {
         }
         
         return "redirect:/admin/shipping-providers?error=notfound";
+    }
+    
+    /**
+     * Toggle shipping provider status (active/inactive) via AJAX
+     */
+    @PostMapping("/shipping-providers/toggle-status/{id}")
+    @ResponseBody
+    public String toggleShippingProviderStatusAjax(@PathVariable("id") Long id) {
+        Optional<ShippingProvider> providerOpt = shippingProviderService.findById(id);
+        if (providerOpt.isPresent()) {
+            ShippingProvider provider = providerOpt.get();
+            provider.setStatus(!provider.getStatus());
+            shippingProviderService.save(provider);
+            return "success";
+        }
+        
+        return "error";
     }
 }
