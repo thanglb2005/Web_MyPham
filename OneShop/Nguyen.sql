@@ -1,5 +1,6 @@
 ﻿USE WebMyPham;
 GO
+insert into categories(
 
 INSERT INTO brands(brand_name, brand_image, description, origin, status) 
 VALUES
@@ -49,70 +50,70 @@ VALUES
 -- 1. Simple Kind To Skin Soothing Facial Toner
 (N'Toner nhẹ dịu, không cồn & hương liệu, giúp làm sạch và cân bằng pH da nhạy cảm', 0, GETDATE(), 107000,
  N'simple_soothing_toner.png', N'Simple Kind To Skin Soothing Facial Toner 200ml', 120, 1,
- (SELECT category_id FROM categories WHERE category_name=N'Toner/Nước hoa hồng'),
+ (SELECT category_id FROM categories WHERE category_name=N'Toner'),
  (SELECT brand_id FROM brands WHERE brand_name=N'Simple'),
  DATEFROMPARTS(2025,7,1), DATEFROMPARTS(2027,7,1), 0),
 
 -- 2. Klairs Supple Preparation Facial Toner
 (N'Toner Klairs Supple Preparation cân bằng pH, dưỡng ẩm dịu nhẹ cho da nhạy cảm', 0, GETDATE(), 233000,
  N'klairs_supple_toner.png', N'Klairs Supple Preparation Facial Toner 180ml', 90, 1,
- (SELECT category_id FROM categories WHERE category_name=N'Toner/Nước hoa hồng'),
+ (SELECT category_id FROM categories WHERE category_name=N'Toner'),
  (SELECT brand_id FROM brands WHERE brand_name=N'Klairs'),
  DATEFROMPARTS(2025,6,1), DATEFROMPARTS(2027,6,1), 0),
 
 -- 3. Skin1004 Madagascar Centella Toning Toner
 (N'Toner chứa rau má Madagascar làm dịu, cấp ẩm và phục hồi da sau mụn', 0, GETDATE(), 312000,
  N'skin1004_centella_toner.png', N'Skin1004 Madagascar Centella Toning Toner 210ml', 100, 1,
- (SELECT category_id FROM categories WHERE category_name=N'Toner/Nước hoa hồng'),
+ (SELECT category_id FROM categories WHERE category_name=N'Toner'),
  (SELECT brand_id FROM brands WHERE brand_name=N'Skin1004'),
  DATEFROMPARTS(2025,6,15), DATEFROMPARTS(2027,6,15), 0),
 
 -- 4. Some By Mi AHA-BHA-PHA 30 Days Miracle Toner
 (N'Toner tẩy tế bào chết nhẹ với AHA-BHA-PHA, hỗ trợ sáng da & giảm mụn trong 30 ngày', 0, GETDATE(), 289000,
  N'somebymi_miracle_toner.png', N'Some By Mi AHA-BHA-PHA 30 Days Miracle Toner 150ml', 130, 1,
- (SELECT category_id FROM categories WHERE category_name=N'Toner/Nước hoa hồng'),
+ (SELECT category_id FROM categories WHERE category_name=N'Toner'),
  (SELECT brand_id FROM brands WHERE brand_name=N'Some By Mi'),
  DATEFROMPARTS(2025,5,1), DATEFROMPARTS(2027,5,1), 0),
 
 -- 5. Pyunkang Yul Essence Toner
 (N'Toner dưỡng ẩm sâu, chiết xuất rễ Hoàng Cầm giúp làm dịu & tăng đàn hồi cho da', 0, GETDATE(), 210000,
  N'pyunkangyul_essence_toner.png', N'Pyunkang Yul Essence Toner 200ml', 120, 1,
- (SELECT category_id FROM categories WHERE category_name=N'Toner/Nước hoa hồng'),
+ (SELECT category_id FROM categories WHERE category_name=N'Toner'),
  (SELECT brand_id FROM brands WHERE brand_name=N'Pyunkang Yul'),
  DATEFROMPARTS(2025,4,20), DATEFROMPARTS(2027,4,20), 0),
 
 -- 6. Cocoon Sen Hậu Giang Soothing Toner
 (N'Toner thuần chay chiết xuất Sen Hậu Giang, cấp ẩm & làm dịu da nhạy cảm', 0, GETDATE(), 173000,
  N'cocoon_sen_toner.png', N'Cocoon Sen Hậu Giang Soothing Toner 140ml', 150, 1,
- (SELECT category_id FROM categories WHERE category_name=N'Toner/Nước hoa hồng'),
+ (SELECT category_id FROM categories WHERE category_name=N'Toner'),
  (SELECT brand_id FROM brands WHERE brand_name=N'Cocoon'),
  DATEFROMPARTS(2025,7,10), DATEFROMPARTS(2027,7,10), 0),
 
 -- 7. La Roche-Posay Effaclar Clarifying Toner
 (N'Toner dược mỹ phẩm chứa BHA & LHA giúp làm sạch sâu, giảm bít tắc lỗ chân lông', 5, GETDATE(), 360000,
  N'larocheposay_effaclar_toner.png', N'La Roche-Posay Effaclar Clarifying Toner 200ml', 80, 1,
- (SELECT category_id FROM categories WHERE category_name=N'Toner/Nước hoa hồng'),
+ (SELECT category_id FROM categories WHERE category_name=N'Toner'),
  (SELECT brand_id FROM brands WHERE brand_name=N'La Roche-Posay'),
  DATEFROMPARTS(2025,6,1), DATEFROMPARTS(2027,6,1), 0),
 
 -- 8. Vichy Normaderm Purifying Pore-Tightening Toner
 (N'Toner khoáng núi lửa Vichy giúp se khít lỗ chân lông, hỗ trợ kiềm dầu cho da mụn', 5, GETDATE(), 380000,
  N'vichy_normaderm_toner.png', N'Vichy Normaderm Purifying Pore-Tightening Toner 200ml', 90, 1,
- (SELECT category_id FROM categories WHERE category_name=N'Toner/Nước hoa hồng'),
+ (SELECT category_id FROM categories WHERE category_name=N'Toner'),
  (SELECT brand_id FROM brands WHERE brand_name=N'Vichy'),
  DATEFROMPARTS(2025,5,1), DATEFROMPARTS(2027,5,1), 0),
 
 -- 9. Hada Labo Gokujyun Hyaluronic Acid Lotion (Toner)
 (N'Toner cấp ẩm chuyên sâu với 3 loại Hyaluronic Acid giúp da căng mượt & ẩm mịn', 0, GETDATE(), 245000,
  N'hadalabo_gokujyun_toner.png', N'Hada Labo Gokujyun Hyaluronic Acid Lotion 170ml', 140, 1,
- (SELECT category_id FROM categories WHERE category_name=N'Toner/Nước hoa hồng'),
+ (SELECT category_id FROM categories WHERE category_name=N'Toner'),
  (SELECT brand_id FROM brands WHERE brand_name=N'Hada Labo'),
  DATEFROMPARTS(2025,5,15), DATEFROMPARTS(2027,5,15), 0),
 
 -- 10. Bioderma Sensibio Tonique
 (N'Toner Bioderma Sensibio dịu nhẹ, không cồn, làm mềm & phục hồi cân bằng cho da nhạy cảm', 0, GETDATE(), 320000,
  N'bioderma_sensibio_tonique.png', N'Bioderma Sensibio Tonique 250ml', 85, 1,
- (SELECT category_id FROM categories WHERE category_name=N'Toner/Nước hoa hồng'),
+ (SELECT category_id FROM categories WHERE category_name=N'Toner'),
  (SELECT brand_id FROM brands WHERE brand_name=N'Bioderma'),
  DATEFROMPARTS(2025,4,10), DATEFROMPARTS(2027,4,10), 0);
 GO
@@ -279,24 +280,214 @@ VALUES
  (SELECT brand_id FROM brands WHERE brand_name=N'Klairs'),
  DATEFROMPARTS(2025,6,1), DATEFROMPARTS(2028,6,1), 0);
 GO
+
+
+SET NOCOUNT ON;
+SET XACT_ABORT ON;
+
+-----------------------------
+-- 0) KHẢO SÁT TRÙNG HIỆN TẠI
+-----------------------------
+-- Brand trùng
 SELECT brand_name, COUNT(*) AS cnt
-FROM brands
+FROM dbo.brands
+GROUP BY brand_name
+HAVING COUNT(*) > 1;
+
+-- Category trùng
+SELECT category_name, COUNT(*) AS cnt
+FROM dbo.categories
+GROUP BY category_name
+HAVING COUNT(*) > 1;
+--Product trùng
+SELECT product_name, COUNT(*) AS cnt
+FROM dbo.products
+GROUP BY product_name
+HAVING COUNT(*) > 1;
+------------------------------------
+-- 1) CHUẨN HOÁ TÊN (TRIM khoảng trắng)
+------------------------------------
+UPDATE dbo.brands
+SET brand_name = LTRIM(RTRIM(brand_name));
+
+UPDATE dbo.categories
+SET category_name = LTRIM(RTRIM(category_name));
+
+UPDATE dbo.products
+SET product_name = LTRIM(RTRIM(product_name));
+
+--------------------------------------------
+-- 2) GỘP TRÙNG BRANDS (giữ brand_id nhỏ nhất)
+--------------------------------------------
+BEGIN TRAN;
+
+-- Liệt kê cặp (brand_id, keep_id) cho các bản ghi trùng
+IF OBJECT_ID('tempdb..#brand_dups') IS NOT NULL DROP TABLE #brand_dups;
+SELECT b.brand_id,
+       b.brand_name,
+       MIN(b2.brand_id) OVER (PARTITION BY b.brand_name) AS keep_id
+INTO #brand_dups
+FROM dbo.brands b
+JOIN dbo.brands b2
+  ON b.brand_name = b2.brand_name;
+
+-- Chỉ lấy những bản ghi cần xoá (brand_id <> keep_id)
+IF OBJECT_ID('tempdb..#brand_to_delete') IS NOT NULL DROP TABLE #brand_to_delete;
+SELECT brand_id, brand_name, keep_id
+INTO #brand_to_delete
+FROM #brand_dups
+WHERE brand_id <> keep_id;
+
+-- Remap products -> keep_id
+UPDATE p
+SET p.brand_id = d.keep_id
+FROM dbo.products p
+JOIN #brand_to_delete d
+  ON p.brand_id = d.brand_id;
+
+-- Xoá bản ghi trùng
+DELETE b
+FROM dbo.brands b
+JOIN #brand_to_delete d
+  ON b.brand_id = d.brand_id;
+
+COMMIT;
+--2) GỘP TRÙNG PRODUCTS (giữ product_id nhỏ nhất)
+BEGIN TRAN;
+
+-- Liệt kê cặp (product_id, keep_id) cho các bản ghi trùng
+IF OBJECT_ID('tempdb..#prod_dups') IS NOT NULL DROP TABLE #prod_dups;
+SELECT p.product_id,
+       p.product_name,
+       MIN(p2.product_id) OVER (PARTITION BY p.product_name) AS keep_id
+INTO #prod_dups
+FROM dbo.products p
+JOIN dbo.products p2
+  ON p.product_name = p2.product_name;
+
+-- Chỉ lấy những bản ghi cần xoá (product_id <> keep_id)
+IF OBJECT_ID('tempdb..#prod_to_delete') IS NOT NULL DROP TABLE #prod_to_delete;
+SELECT product_id, product_name, keep_id
+INTO #prod_to_delete
+FROM #prod_dups
+WHERE product_id <> keep_id;
+
+-- Nếu có bảng con liên kết FK tới products thì cần update chúng về keep_id trước khi xoá
+-- Ví dụ: (nếu có bảng order_details)
+-- UPDATE od
+-- SET od.product_id = d.keep_id
+-- FROM order_details od
+-- JOIN #prod_to_delete d ON od.product_id = d.product_id;
+
+-- Xoá bản ghi trùng
+DELETE p
+FROM dbo.products p
+JOIN #prod_to_delete d
+  ON p.product_id = d.product_id;
+
+COMMIT;
+-----------------------------------------------
+-- 3) GỘP TRÙNG CATEGORIES (giữ category_id nhỏ)
+-----------------------------------------------
+BEGIN TRAN;
+
+IF OBJECT_ID('tempdb..#cat_dups') IS NOT NULL DROP TABLE #cat_dups;
+SELECT c.category_id,
+       c.category_name,
+       MIN(c2.category_id) OVER (PARTITION BY c.category_name) AS keep_id
+INTO #cat_dups
+FROM dbo.categories c
+JOIN dbo.categories c2
+  ON c.category_name = c2.category_name;
+
+IF OBJECT_ID('tempdb..#cat_to_delete') IS NOT NULL DROP TABLE #cat_to_delete;
+SELECT category_id, category_name, keep_id
+INTO #cat_to_delete
+FROM #cat_dups
+WHERE category_id <> keep_id;
+
+-- Remap products -> keep_id
+UPDATE p
+SET p.category_id = d.keep_id
+FROM dbo.products p
+JOIN #cat_to_delete d
+  ON p.category_id = d.category_id;
+
+-- Xoá bản ghi trùng
+DELETE c
+FROM dbo.categories c
+JOIN #cat_to_delete d
+  ON c.category_id = d.category_id;
+
+COMMIT;
+
+---------------------------------------
+-- 4) TẠO UNIQUE TRÊN TÊN ĐÃ CHUẨN HOÁ
+--    (dùng computed column để chống lệch khoảng trắng / chữ hoa-thường)
+---------------------------------------
+-- Brands
+IF COL_LENGTH('dbo.brands', 'brand_name_norm') IS NULL
+BEGIN
+  ALTER TABLE dbo.brands
+    ADD brand_name_norm AS UPPER(LTRIM(RTRIM(brand_name))) PERSISTED;
+END;
+
+IF NOT EXISTS (
+  SELECT 1 FROM sys.indexes
+  WHERE name = N'UQ_brands_brand_name_norm'
+    AND object_id = OBJECT_ID(N'dbo.brands')
+)
+BEGIN
+  CREATE UNIQUE INDEX UQ_brands_brand_name_norm
+  ON dbo.brands(brand_name_norm);
+END;
+
+-- Categories
+IF COL_LENGTH('dbo.categories', 'category_name_norm') IS NULL
+BEGIN
+  ALTER TABLE dbo.categories
+    ADD category_name_norm AS UPPER(LTRIM(RTRIM(category_name))) PERSISTED;
+END;
+
+IF NOT EXISTS (
+  SELECT 1 FROM sys.indexes
+  WHERE name = N'UQ_categories_category_name_norm'
+    AND object_id = OBJECT_ID(N'dbo.categories')
+)
+BEGIN
+  CREATE UNIQUE INDEX UQ_categories_category_name_norm
+  ON dbo.categories(category_name_norm);
+END;
+
+IF COL_LENGTH('dbo.products', 'product_name_norm') IS NULL
+BEGIN
+  ALTER TABLE dbo.products
+    ADD product_name_norm AS UPPER(LTRIM(RTRIM(product_name))) PERSISTED;
+END;
+
+IF NOT EXISTS (
+  SELECT 1 FROM sys.indexes
+  WHERE name = N'UQ_products_product_name_norm'
+    AND object_id = OBJECT_ID(N'dbo.products')
+)
+BEGIN
+  CREATE UNIQUE INDEX UQ_products_product_name_norm
+  ON dbo.products(product_name_norm);
+END;
+---------------------------------------
+-- 5) KIỂM TRA LẠI (PHẢI = 0 DÒNG)
+---------------------------------------
+SELECT brand_name, COUNT(*) AS cnt
+FROM dbo.brands
 GROUP BY brand_name
 HAVING COUNT(*) > 1;
 
 SELECT category_name, COUNT(*) AS cnt
-FROM categories
+FROM dbo.categories
 GROUP BY category_name
 HAVING COUNT(*) > 1;
-;WITH d AS (
-  SELECT brand_id,
-         ROW_NUMBER() OVER (PARTITION BY brand_name ORDER BY brand_id) AS rn
-  FROM brands
-  WHERE brand_name = N'La Roche-Posay'
-)
-DELETE FROM brands WHERE brand_id IN (SELECT brand_id FROM d WHERE rn > 1);
-ALTER TABLE brands
-ADD CONSTRAINT UQ_brands_brand_name UNIQUE (brand_name);
 
-ALTER TABLE categories
-ADD CONSTRAINT UQ_categories_category_name UNIQUE (category_name);
+SELECT product_name, COUNT(*) AS cnt
+FROM dbo.products
+GROUP BY product_name
+HAVING COUNT(*) > 1;
