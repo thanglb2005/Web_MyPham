@@ -48,7 +48,10 @@ VALUES
 ('user.png','chi@gmail.com',N'Trần Thảo Chi','123456','2025-09-04',1),
 ('user.png','dong@gmail.com',N'Trần Hữu Đồng','123456','2025-09-04',1),
 ('user.png','user@gmail.com','User Demo','123456','2025-09-04',1),
-('user.png','admin@mypham.com','Admin Mỹ Phẩm','123456','2025-09-04',1);
+('user.png','admin@mypham.com','Admin Mỹ Phẩm','123456','2025-09-04',1),
+('user.png','vendor1@mypham.com',N'Nguyễn Văn An','123456','2025-10-07',1),
+('user.png','vendor2@mypham.com',N'Trần Thị Bình','123456','2025-10-07',1),
+('user.png','vendor3@mypham.com',N'Lê Minh Châu','123456','2025-10-07',1);
 GO
 
 -- Bảng role
@@ -59,7 +62,7 @@ CREATE TABLE role (
 );
 
 INSERT INTO role(name)
-VALUES ('ROLE_USER'),('ROLE_ADMIN');
+VALUES ('ROLE_USER'),('ROLE_ADMIN'),('ROLE_VENDOR');
 GO
 
 -- Bảng users_roles
@@ -72,7 +75,14 @@ CREATE TABLE users_roles (
 );
 
 INSERT INTO users_roles(user_id, role_id)
-VALUES (1,1),(2,1),(3,1),(4,2);
+VALUES 
+(1,1),  -- chi@gmail.com - ROLE_USER
+(2,1),  -- dong@gmail.com - ROLE_USER
+(3,1),  -- user@gmail.com - ROLE_USER
+(4,2),  -- admin@mypham.com - ROLE_ADMIN
+(5,3),  -- vendor1@mypham.com - ROLE_VENDOR
+(6,3),  -- vendor2@mypham.com - ROLE_VENDOR
+(7,3);  -- vendor3@mypham.com - ROLE_VENDOR
 GO
 
 -- Bảng brands
@@ -195,3 +205,5 @@ VALUES
 (1, 1), -- user 1 thích Son đỏ Ruby
 (3, 2); -- user 2 thích Nước hoa Rose
 GO
+
+-- (Đã loại bỏ schema chat để dùng WebSocket thuần, không lưu DB)
