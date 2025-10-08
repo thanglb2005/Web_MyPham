@@ -119,7 +119,6 @@ VALUES
 (N'L''Oreal', 'loreal.jpg', N'Tập đoàn mỹ phẩm hàng đầu thế giới', N'Pháp', 1),
 (N'Nivea', 'nivea.jpg', N'Thương hiệu dưỡng da lâu đời từ Đức', N'Đức', 1);
 GO
-
 /* ===============================
    TABLE: products
    =============================== */
@@ -228,3 +227,16 @@ VALUES
 (1, 1),
 (3, 2);
 GO
+-- chat_message table + index
+CREATE TABLE chat_message (
+  id BIGINT IDENTITY(1,1) PRIMARY KEY,
+  room_id NVARCHAR(100) NOT NULL,
+  sender NVARCHAR(255) NOT NULL,
+  sender_type NVARCHAR(50) NOT NULL,
+  message_type NVARCHAR(20) NOT NULL,
+  content NVARCHAR(MAX) NOT NULL,
+  sent_at BIGINT NOT NULL,
+  customer_name NVARCHAR(255) NULL,
+  vendor_name NVARCHAR(255) NULL
+);
+CREATE INDEX ix_chat_message_room_time ON chat_message(room_id, sent_at DESC);
