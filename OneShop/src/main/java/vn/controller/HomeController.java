@@ -42,6 +42,16 @@ public class HomeController {
         
         model.addAttribute("user", user);
         model.addAttribute("categories", categoryService.getAllCategories());
+        
+        // Add cart count for header
+        if (user != null) {
+            @SuppressWarnings("unchecked")
+            java.util.Map<Long, vn.entity.CartItem> cartMap = (java.util.Map<Long, vn.entity.CartItem>) session.getAttribute("cartMap");
+            int cartCount = (cartMap != null) ? cartMap.size() : 0;
+            model.addAttribute("totalCartItems", cartCount);
+        } else {
+            model.addAttribute("totalCartItems", 0);
+        }
 
         // Newest products and best-sale products for homepage
         model.addAttribute("productList", productService.listProductNew20());

@@ -72,7 +72,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
      */
     @Query(value = "SELECT p.product_id, p.product_name, " +
             "SUM(od.quantity) as total_quantity_sold, " +
-            "SUM(od.quantity * od.price) as total_revenue " +
+            "SUM(od.quantity * od.unit_price) as total_revenue " +
             "FROM order_details od " +
             "INNER JOIN products p ON od.product_id = p.product_id " +
             "INNER JOIN orders o ON od.order_id = o.order_id " +

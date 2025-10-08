@@ -39,6 +39,12 @@
                 <i class="fas fa-store"></i>
               </a>
               <th:block th:if="${session.user != null}">
+                <a th:href="@{/cart}" class="header-widget" title="Giỏ hàng">
+                  <i class="fas fa-shopping-cart"></i>
+                  <span class="cart-count" th:text="${totalCartItems != null ? totalCartItems : 0}">0</span>
+                </a>
+              </th:block>
+              <th:block th:if="${session.user != null}">
                 <a th:href="@{/logout}" class="header-widget" title="Đăng xuất">
                   <i class="fas fa-sign-out-alt"></i>
                 </a>

@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<meta http-equiv="content-type" content="text/html;charset=utf-8" />
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <meta name="author" content="mironcoder" />
+    <meta name="email" content="mironcoder@gmail.com" />
+    <meta name="profile" content="https://themeforest.net/user/mironcoder" />
+    <meta name="template" content="greeny" />
+    <meta name="title" content="greeny - Ecommerce Food Store HTML Template" />
+    <meta name="keywords" content="organic, food, shop, ecommerce, store, html, bootstrap, template, agriculture, vegetables, products, farm, grocery, natural, online" />
+    <title>Thanh toán - OneShop</title>
+    <link rel="icon" href="images/favicon.png" />
+    <link rel="stylesheet" href="fonts/flaticon/flaticon.css" />
+    <link rel="stylesheet" href="fonts/icofont/icofont.min.css" />
+    <link rel="stylesheet" href="fonts/fontawesome/fontawesome.min.css" />
+    <link rel="stylesheet" href="vendor/venobox/venobox.min.css" />
+    <link rel="stylesheet" href="vendor/slickslider/slick.min.css" />
+    <link rel="stylesheet" href="vendor/niceselect/nice-select.min.css" />
+    <link rel="stylesheet" href="vendor/bootstrap/bootstrap.min.css" />
+    <link rel="stylesheet" th:href="@{/css/main.css}" />
+    <link rel="stylesheet" th:href="@{/css/checkout.css}" />
+</head>
+<body>
+    <!--************************************
+        Header Start
+    *************************************-->
+    <header th:replace="~{/web/fragments/header :: header}"></header>
+    <!--************************************
+        Header End
+    *************************************-->
+
+    <section class="inner-section single-banner" style="background: url(images/single-banner.jpg) no-repeat center">
+        <div class="container">
+            <h2>Thông tin đơn hàng</h2>
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a th:href="@{/}">Trang chủ</a></li>
+                <li class="breadcrumb-item active">Thanh toán</li>
+            </ol>
+        </div>
+    </section>
+    
+    <section class="inner-section checkout-part">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="alert-info">
+                        <p>
+                            Phản hồi khách hàng? <a href="javascript:void(0);">Đăng nhập</a>
+                        </p>
+                    </div>
+                </div>
+                <div class="col-lg-12">
+                    <div class="account-card">
+                        <div class="account-title"><h4>Đơn Đặt Hàng Của Bạn</h4></div>
+                        <div th:unless="${cartItems != null and !#lists.isEmpty(cartItems)}" class="text-center">
+                            <h3 style="color: #119744" class="mt-5">Hiện tại bạn chưa có sản phẩm nào trong giỏ hàng!</h3>
+                            <h4 style="color: #119744">Hãy mua sắm đi nào!</h4>
+                            <a th:href="@{/products}" style="text-decoration: underline;">Click tại đây!</a>
+                        </div>
+                        <div class="account-content">
+                            <div class="table-scroll">
+                                <table class="table-list" th:if="${cartItems != null and !#lists.isEmpty(cartItems)}">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col">#</th>
+                                            <th scope="col">Sản phẩm</th>
+                                            <th scope="col">Tên sản phẩm</th>
+                                            <th scope="col">Đơn giá</th>
+                                            <th scope="col">Thể loại</th>
+                                            <th scope="col">Số lượng</th>
+                                            <th scope="col">action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr th:each="item,State : ${cartItems}">
+                                            <td class="table-serial"><h6>[[${State.index + 1}]]</h6></td>
+                                            <td class="table-image">
+                                                <img th:src="${item.imageUrl}" alt="product" />
+                                            </td>
+                                            <td class="table-name"><h6>[[${item.name}]]</h6></td>
+                                            <td class="table-price">
+                                                <h6>[[${#numbers.formatDecimal(item.unitPrice, 1, 'DEFAULT', 0, 'DEFAULT')} +' VNĐ']]<small>/kg</small></h6>
+                                            </td>
+                                            <td class="table-brand"><h6>[[${item.categoryName}]]</h6></td>
+                                            <td class="table-quantity"><h6>[[${item.quantity}]]</h6></td>
+                                            <td class="table-action">
+                                                <a class="view" th:href="@{/productDetail(id=${item.id})}" title="Chi tiết sản phẩm">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <th:block th:if="${cartItems != null and !#lists.isEmpty(cartItems)}">
+                                <div class="chekout-coupon">
+                                    <h4>Tổng tiền thanh toán</h4>
+                                </div>
+                                <div class="checkout-charge">
+                                    <ul>
+                                        <li>
+                                            <span>Tổng tiền thanh toán<small>(Incl. VAT)</small></span>
+                                            <span>[[${#numbers.formatDecimal(totalPrice, 1, 'DEFAULT', 0, 'DEFAULT')}+ ' VNĐ']]</span>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </th:block>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-12" th:if="${cartItems != null and !#lists.isEmpty(cartItems)}">
+                    <div class="account-card mb-0">
+                        <div class="account-title">
+                            <h4>Thông tin nhận hàng</h4>
+                        </div>
+                        <div class="account-content">
+                            <div class="row">
+                                <div class="col-lg-8">
+                                    <form class="user-form" th:action="@{/checkout}" method="post">
+                                        <div class="row">
+                                            <div class="col-lg-6">
+                                                <div class="form-group">
+                                                    <label>Họ tên <span style="color: red;">*</span></label>
+                                                    <input
+                                                        type="text"
+                                                        name="customerName"
+                                                        th:value="${user.name}"
+                                                        class="form-control"
+                                                        placeholder="Nhập họ tên"
+                                                        required="required"
+                                                    />
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-6">
+                                                <div class="form-group">
+                                                    <label>Email <span style="color: red;">*</span></label>
+                                                    <input
+                                                        type="email"
+                                                        name="customerEmail"
+                                                        th:value="${user.email}"
+                                                        class="form-control"
+                                                        placeholder="Nhập email"
+                                                        required="required"
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
+                                            <div class="col-lg-6">
+                                                <div class="form-group">
+                                                    <label>Số điện thoại <span style="color: red;">*</span></label>
+                                                    <input
+                                                        type="tel"
+                                                        name="phone"
+                                                        th:value="${user.phone != null ? user.phone : ''}"
+                                                        class="form-control"
+                                                        placeholder="Nhập số điện thoại"
+                                                        required="required"
+                                                    />
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-6">
+                                                <div class="form-group">
+                                                    <label>Tỉnh/Thành phố <span style="color: red;">*</span></label>
+                                                    <select name="city" class="form-control" required>
+                                                        <option value="">Chọn tỉnh/thành phố</option>
+                                                        <option value="Hà Nội">Hà Nội</option>
+                                                        <option value="TP. Hồ Chí Minh">TP. Hồ Chí Minh</option>
+                                                        <option value="Đà Nẵng">Đà Nẵng</option>
+                                                        <option value="Hải Phòng">Hải Phòng</option>
+                                                        <option value="Cần Thơ">Cần Thơ</option>
+                                                        <option value="An Giang">An Giang</option>
+                                                        <option value="Bà Rịa - Vũng Tàu">Bà Rịa - Vũng Tàu</option>
+                                                        <option value="Bắc Giang">Bắc Giang</option>
+                                                        <option value="Bắc Kạn">Bắc Kạn</option>
+                                                        <option value="Bạc Liêu">Bạc Liêu</option>
+                                                        <option value="Bắc Ninh">Bắc Ninh</option>
+                                                        <option value="Bến Tre">Bến Tre</option>
+                                                        <option value="Bình Định">Bình Định</option>
+                                                        <option value="Bình Dương">Bình Dương</option>
+                                                        <option value="Bình Phước">Bình Phước</option>
+                                                        <option value="Bình Thuận">Bình Thuận</option>
+                                                        <option value="Cà Mau">Cà Mau</option>
+                                                        <option value="Cao Bằng">Cao Bằng</option>
+                                                        <option value="Đắk Lắk">Đắk Lắk</option>
+                                                        <option value="Đắk Nông">Đắk Nông</option>
+                                                        <option value="Điện Biên">Điện Biên</option>
+                                                        <option value="Đồng Nai">Đồng Nai</option>
+                                                        <option value="Đồng Tháp">Đồng Tháp</option>
+                                                        <option value="Gia Lai">Gia Lai</option>
+                                                        <option value="Hà Giang">Hà Giang</option>
+                                                        <option value="Hà Nam">Hà Nam</option>
+                                                        <option value="Hà Tĩnh">Hà Tĩnh</option>
+                                                        <option value="Hải Dương">Hải Dương</option>
+                                                        <option value="Hậu Giang">Hậu Giang</option>
+                                                        <option value="Hòa Bình">Hòa Bình</option>
+                                                        <option value="Hưng Yên">Hưng Yên</option>
+                                                        <option value="Khánh Hòa">Khánh Hòa</option>
+                                                        <option value="Kiên Giang">Kiên Giang</option>
+                                                        <option value="Kon Tum">Kon Tum</option>
+                                                        <option value="Lai Châu">Lai Châu</option>
+                                                        <option value="Lâm Đồng">Lâm Đồng</option>
+                                                        <option value="Lạng Sơn">Lạng Sơn</option>
+                                                        <option value="Lào Cai">Lào Cai</option>
+                                                        <option value="Long An">Long An</option>
+                                                        <option value="Nam Định">Nam Định</option>
+                                                        <option value="Nghệ An">Nghệ An</option>
+                                                        <option value="Ninh Bình">Ninh Bình</option>
+                                                        <option value="Ninh Thuận">Ninh Thuận</option>
+                                                        <option value="Phú Thọ">Phú Thọ</option>
+                                                        <option value="Phú Yên">Phú Yên</option>
+                                                        <option value="Quảng Bình">Quảng Bình</option>
+                                                        <option value="Quảng Nam">Quảng Nam</option>
+                                                        <option value="Quảng Ngãi">Quảng Ngãi</option>
+                                                        <option value="Quảng Ninh">Quảng Ninh</option>
+                                                        <option value="Quảng Trị">Quảng Trị</option>
+                                                        <option value="Sóc Trăng">Sóc Trăng</option>
+                                                        <option value="Sơn La">Sơn La</option>
+                                                        <option value="Tây Ninh">Tây Ninh</option>
+                                                        <option value="Thái Bình">Thái Bình</option>
+                                                        <option value="Thái Nguyên">Thái Nguyên</option>
+                                                        <option value="Thanh Hóa">Thanh Hóa</option>
+                                                        <option value="Thừa Thiên Huế">Thừa Thiên Huế</option>
+                                                        <option value="Tiền Giang">Tiền Giang</option>
+                                                        <option value="Trà Vinh">Trà Vinh</option>
+                                                        <option value="Tuyên Quang">Tuyên Quang</option>
+                                                        <option value="Vĩnh Long">Vĩnh Long</option>
+                                                        <option value="Vĩnh Phúc">Vĩnh Phúc</option>
+                                                        <option value="Yên Bái">Yên Bái</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label>Địa chỉ chi tiết <span style="color: red;">*</span></label>
+                                            <textarea
+                                                name="address"
+                                                class="form-control"
+                                                placeholder="Nhập địa chỉ chi tiết (số nhà, tên đường, phường/xã, quận/huyện)"
+                                                rows="3"
+                                                required="required"
+                                            ></textarea>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label>Ghi chú đơn hàng</label>
+                                            <textarea
+                                                name="note"
+                                                class="form-control"
+                                                placeholder="Ghi chú thêm cho đơn hàng (không bắt buộc)"
+                                                rows="2"
+                                            ></textarea>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <div class="account-title">
+                                                <h4>Phương thức thanh toán</h4>
+                                            </div>
+                                            <div class="payment-methods">
+                                                <div class="payment-option">
+                                                    <input type="radio" id="cod" value="cod" name="paymentMethod" checked>
+                                                    <label for="cod" class="payment-label">
+                                                        <i class="fas fa-money-bill-wave"></i>
+                                                        <div>
+                                                            <strong>Thanh toán khi nhận hàng (COD)</strong>
+                                                            <small>Bạn sẽ thanh toán bằng tiền mặt khi nhận được hàng</small>
+                                                        </div>
+                                                    </label>
+                                                </div>
+                                                <div class="payment-option">
+                                                    <input type="radio" id="paypal" value="paypal" name="paymentMethod">
+                                                    <label for="paypal" class="payment-label">
+                                                        <i class="fab fa-paypal"></i>
+                                                        <div>
+                                                            <strong>Thanh toán qua PayPal</strong>
+                                                            <small>Thanh toán an toàn qua tài khoản PayPal của bạn</small>
+                                                        </div>
+                                                    </label>
+                                                </div>
+                                                <div class="payment-option">
+                                                    <input type="radio" id="bank_transfer" value="bank_transfer" name="paymentMethod">
+                                                    <label for="bank_transfer" class="payment-label">
+                                                        <i class="fas fa-university"></i>
+                                                        <div>
+                                                            <strong>Chuyển khoản ngân hàng</strong>
+                                                            <small>Chuyển khoản trực tiếp vào tài khoản ngân hàng</small>
+                                                        </div>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="checkout-proced">
+                                            <a th:href="@{/cart}" class="btn btn-outline">Quay lại giỏ hàng</a>
+                                            <button type="submit" class="btn btn-inline">Đặt hàng ngay</button>
+                                        </div>
+                                    </form>
+                                </div>
+                                <div class="col-lg-4">
+                                    <div class="order-summary">
+                                        <h4>Tóm tắt đơn hàng</h4>
+                                        <div class="summary-item">
+                                            <span>Tạm tính:</span>
+                                            <span>[[${#numbers.formatDecimal(totalPrice, 1, 'DEFAULT', 0, 'DEFAULT')} VNĐ]]</span>
+                                        </div>
+                                        <div class="summary-item">
+                                            <span>Phí vận chuyển:</span>
+                                            <span style="color: #119744;">Miễn phí</span>
+                                        </div>
+                                        <div class="summary-item">
+                                            <span>Thuế VAT:</span>
+                                            <span>Đã bao gồm</span>
+                                        </div>
+                                        <hr>
+                                        <div class="summary-total">
+                                            <span><strong>Tổng cộng:</strong></span>
+                                            <span><strong style="color: #119744; font-size: 1.2em;">[[${#numbers.formatDecimal(totalPrice, 1, 'DEFAULT', 0, 'DEFAULT')} VNĐ]]</strong></span>
+                                        </div>
+                                        <div class="summary-note">
+                                            <small><i class="fas fa-info-circle"></i> Tổng tiền đã bao gồm thuế VAT và phí vận chuyển</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Newsletter Section -->
+    <section class="news-part" style="background: url('images/newsletter.jpg') no-repeat center">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-5 col-lg-6 col-xl-7">
+                    <div class="news-text">
+                        <h2>Nhận chiết khấu 20% cho người đăng ký</h2>
+                        <p>Nhận chiết khấu 20% cho người đăng ký</p>
+                    </div>
+                </div>
+                <div class="col-md-7 col-lg-6 col-xl-5">
+                    <form class="news-form">
+                        <input type="text" placeholder="Enter Your Email Address" />
+                        <button>
+                            <span><i class="icofont-ui-email"></i>Subscribe</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Intro Section -->
+    <section class="intro-part">
+        <div class="container">
+            <div class="row intro-content">
+                <div class="col-sm-6 col-lg-3">
+                    <div class="intro-wrap">
+                        <div class="intro-icon"><i class="fas fa-truck"></i></div>
+                        <div class="intro-content">
+                            <h5>Giao Hàng Tận Nhà Miễn Phí</h5>
+                            <p>Lorem ipsum dolor sit amet adipisicing elit nobis.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-lg-3">
+                    <div class="intro-wrap">
+                        <div class="intro-icon"><i class="fas fa-sync-alt"></i></div>
+                        <div class="intro-content">
+                            <h5>Chính Sách Hoàn Trả</h5>
+                            <p>Lorem ipsum dolor sit amet adipisicing elit nobis.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-lg-3">
+                    <div class="intro-wrap">
+                        <div class="intro-icon"><i class="fas fa-headset"></i></div>
+                        <div class="intro-content">
+                            <h5>Hệ Thống Hỗ Trợ</h5>
+                            <p>Lorem ipsum dolor sit amet adipisicing elit nobis.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-lg-3">
+                    <div class="intro-wrap">
+                        <div class="intro-icon"><i class="fas fa-lock"></i></div>
+                        <div class="intro-content">
+                            <h5>Cách Thanh Toán An Toàn</h5>
+                            <p>Lorem ipsum dolor sit amet adipisicing elit nobis.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!--************************************
+        Footer Start
+    *************************************-->
+    <footer th:replace="~{/web/fragments/footer :: footer}"></footer>
+    <!--************************************
+        Footer End
+    *************************************-->
+    
+    <script src="vendor/bootstrap/jquery-1.12.4.min.js"></script>
+    <script src="vendor/bootstrap/popper.min.js"></script>
+    <script src="vendor/bootstrap/bootstrap.min.js"></script>
+    <script src="vendor/countdown/countdown.min.js"></script>
+    <script src="vendor/niceselect/nice-select.min.js"></script>
+    <script src="vendor/slickslider/slick.min.js"></script>
+    <script src="vendor/venobox/venobox.min.js"></script>
+    <script src="js/nice-select.js"></script>
+    <script src="js/countdown.js"></script>
+    <script src="js/accordion.js"></script>
+    <script src="js/venobox.js"></script>
+    <script src="js/slick.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>

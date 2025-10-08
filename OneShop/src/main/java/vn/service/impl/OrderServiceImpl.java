@@ -2,66 +2,113 @@ package vn.service.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import vn.entity.CartItem;
 import vn.entity.Order;
+import vn.entity.OrderDetail;
+import vn.entity.User;
+import vn.repository.OrderDetailRepository;
 import vn.repository.OrderRepository;
+import vn.repository.ProductRepository;
 import vn.service.OrderService;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
-/**
- * Service implementation for Order management
- * @author OneShop Team
- */
 @Service
 public class OrderServiceImpl implements OrderService {
-    
+
     @Autowired
     private OrderRepository orderRepository;
-    
+
+    @Autowired
+    private OrderDetailRepository orderDetailRepository;
+
+    @Autowired
+    private ProductRepository productRepository;
+
     @Override
-    public List<Order> findAll() {
-        return orderRepository.findAll();
-    }
-    
-    @Override
-    public Optional<Order> findById(Long id) {
-        return orderRepository.findById(id);
-    }
-    
-    @Override
-    public Order save(Order order) {
-        return orderRepository.save(order);
-    }
-    
-    @Override
-    public void deleteById(Long id) {
-        orderRepository.deleteById(id);
-    }
-    
-    @Override
-    public List<Order> findOrderByUserId(Long userId) {
-        return orderRepository.findOrderByUserId(userId);
-    }
-    
-    @Override
-    public List<Order> findAllOrderByOrderDateDesc() {
-        return orderRepository.findAllOrderByOrderDateDesc();
-    }
-    
-    @Override
-    public List<Order> findByStatus(Integer status) {
-        return orderRepository.findByStatus(status);
-    }
-    
-    @Override
-    public Order updateOrderStatus(Long orderId, Integer status) {
-        Optional<Order> orderOpt = orderRepository.findById(orderId);
-        if (orderOpt.isPresent()) {
-            Order order = orderOpt.get();
-            order.setStatus(status);
-            return orderRepository.save(order);
+    @Transactional
+    public Order createOrder(User user, String customerName, String customerEmail, String customerPhone,
+                             String shippingAddress, String note, Order.PaymentMethod paymentMethod,
+                             Map<Long, CartItem> cartItems) {
+
+        if (cartItems == null || cartItems.isEmpty()) {
+            throw new IllegalArgumentException("Cart cannot be empty to create an order.");
         }
-        return null;
+
+        Order order = new Order();
+        order.setUser(user);
+        order.setCustomerName(customerName);
+        order.setCustomerEmail(customerEmail);
+        order.setCustomerPhone(customerPhone);
+        order.setShippingAddress(shippingAddress);
+        order.setNote(note);
+        order.setPaymentMethod(paymentMethod);
+        order.setStatus(Order.OrderStatus.PENDING);
+        order.setOrderDate(LocalDateTime.now());
+
+        double totalAmount = cartItems.values().stream()
+                .mapToDouble(item -> item.getQuantity() * item.getUnitPrice())
+                .sum();
+        order.setTotalAmount(totalAmount);
+
+        Order savedOrder = orderRepository.save(order);
+
+        List<OrderDetail> orderDetails = new ArrayList<>();
+        for (CartItem cartItem : cartItems.values()) {
+            OrderDetail orderDetail = new OrderDetail();
+            orderDetail.setOrder(savedOrder);
+            orderDetail.setProduct(productRepository.findById(cartItem.getId())
+                    .orElseThrow(() -> new RuntimeException("Product not found: " + cartItem.getId())));
+            orderDetail.setProductName(cartItem.getName());
+            orderDetail.setUnitPrice(cartItem.getUnitPrice());
+            orderDetail.setQuantity(cartItem.getQuantity());
+            orderDetail.setTotalPrice(cartItem.getTotalPrice());
+            orderDetails.add(orderDetail);
+        }
+        orderDetailRepository.saveAll(orderDetails);
+
+        savedOrder.setOrderDetails(orderDetails);
+        return savedOrder;
+    }
+
+    @Override
+    public Order getOrderById(Long orderId) {
+        return orderRepository.findById(orderId).orElse(null);
+    }
+
+    @Override
+    public Collection<Order> getOrdersByUser(User user) {
+        return orderRepository.findByUserOrderByOrderDateDesc(user);
+    }
+
+    @Override
+    @Transactional
+    public void updateOrderStatus(Long orderId, Order.OrderStatus newStatus) {
+        Optional<Order> orderOptional = orderRepository.findById(orderId);
+        orderOptional.ifPresent(order -> {
+            order.setStatus(newStatus);
+            if (newStatus == Order.OrderStatus.SHIPPING && order.getShippedDate() == null) {
+                order.setShippedDate(LocalDateTime.now());
+            } else if (newStatus == Order.OrderStatus.DELIVERED && order.getDeliveredDate() == null) {
+                order.setDeliveredDate(LocalDateTime.now());
+            }
+            orderRepository.save(order);
+        });
+    }
+
+    @Override
+    @Transactional
+    public void assignShipper(Long orderId, User shipper) {
+        Optional<Order> orderOptional = orderRepository.findById(orderId);
+        orderOptional.ifPresent(order -> {
+            order.setShipper(shipper);
+            orderRepository.save(order);
+        });
     }
 }

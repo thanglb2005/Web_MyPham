@@ -62,7 +62,7 @@ public class OrderController {
         List<Order> orderDetails;
         
         if (status != null) {
-            orderDetails = orderRepository.findByStatus(status);
+            orderDetails = orderRepository.findByStatusOrderByOrderDateDesc(Order.OrderStatus.values()[status]);
         } else {
             orderDetails = orderRepository.findAll();
         }
@@ -83,15 +83,15 @@ public class OrderController {
                                          order.getUser().getEmail().toLowerCase().contains(searchTerm);
                     
                     // Search by phone number
-                    boolean matchesPhone = order.getPhone() != null && 
-                                         order.getPhone().contains(search);
+                    boolean matchesPhone = order.getCustomerPhone() != null && 
+                                         order.getCustomerPhone().contains(search);
                     
                     // Search by order ID
                     boolean matchesOrderId = order.getOrderId().toString().contains(search);
                     
                     // Search by address
-                    boolean matchesAddress = order.getAddress() != null && 
-                                           order.getAddress().toLowerCase().contains(searchTerm);
+                    boolean matchesAddress = order.getShippingAddress() != null && 
+                                           order.getShippingAddress().toLowerCase().contains(searchTerm);
                     
                     return matchesName || matchesEmail || matchesPhone || matchesOrderId || matchesAddress;
                 })
@@ -144,7 +144,7 @@ public class OrderController {
         
         Optional<Order> orderOpt = orderRepository.findById(id);
         if (orderOpt.isPresent()) {
-            model.addAttribute("amount", orderOpt.get().getAmount());
+            model.addAttribute("amount", orderOpt.get().getTotalAmount());
         }
         
         model.addAttribute("orderDetail", listO);
@@ -159,7 +159,7 @@ public class OrderController {
         Optional<Order> o = orderRepository.findById(id);
         if (o.isPresent()) {
             Order oReal = o.get();
-            oReal.setStatus(3); // 3: Đã hủy
+            oReal.setStatus(Order.OrderStatus.CANCELLED); // Đã hủy
             orderRepository.save(oReal);
         }
         return new ModelAndView("forward:/admin/orders", model);
@@ -171,7 +171,7 @@ public class OrderController {
         Optional<Order> o = orderRepository.findById(id);
         if (o.isPresent()) {
             Order oReal = o.get();
-            oReal.setStatus(1); // 1: Đã xác nhận
+            oReal.setStatus(Order.OrderStatus.CONFIRMED); // Đã xác nhận
             orderRepository.save(oReal);
         }
         return new ModelAndView("forward:/admin/orders", model);
@@ -183,7 +183,7 @@ public class OrderController {
         Optional<Order> o = orderRepository.findById(id);
         if (o.isPresent()) {
             Order oReal = o.get();
-            oReal.setStatus(2); // 2: Đã giao hàng
+            oReal.setStatus(Order.OrderStatus.DELIVERED); // Đã giao hàng
             orderRepository.save(oReal);
 
             // Update product quantities
@@ -228,10 +228,10 @@ public class OrderController {
             }
             excelContent.append(",");
             
-            excelContent.append(order.getPhone()).append(",");
+            excelContent.append(order.getCustomerPhone()).append(",");
             
             // Escape address if it contains commas
-            String address = order.getAddress();
+            String address = order.getShippingAddress();
             if (address.contains(",")) {
                 excelContent.append("\"").append(address).append("\"");
             } else {
@@ -241,14 +241,14 @@ public class OrderController {
             
             String status = "";
             switch (order.getStatus()) {
-                case 0: status = "Chờ xác nhận"; break;
-                case 1: status = "Đã xác nhận"; break;
-                case 2: status = "Đã giao hàng"; break;
-                case 3: status = "Đã hủy"; break;
+                case PENDING: status = "Chờ xác nhận"; break;
+                case CONFIRMED: status = "Đã xác nhận"; break;
+                case DELIVERED: status = "Đã giao hàng"; break;
+                case CANCELLED: status = "Đã hủy"; break;
                 default: status = "Không xác định"; break;
             }
             excelContent.append(status).append(",");
-            excelContent.append(order.getAmount()).append("\n");
+            excelContent.append(order.getTotalAmount()).append("\n");
         }
         
         // Write Excel content to response
@@ -263,14 +263,14 @@ public class OrderController {
         
         // Calculate statistics
         long totalOrders = allOrders.size();
-        long pendingOrders = allOrders.stream().filter(o -> o.getStatus() == 0).count();
-        long confirmedOrders = allOrders.stream().filter(o -> o.getStatus() == 1).count();
-        long deliveredOrders = allOrders.stream().filter(o -> o.getStatus() == 2).count();
-        long cancelledOrders = allOrders.stream().filter(o -> o.getStatus() == 3).count();
+        long pendingOrders = allOrders.stream().filter(o -> o.getStatus() == Order.OrderStatus.PENDING).count();
+        long confirmedOrders = allOrders.stream().filter(o -> o.getStatus() == Order.OrderStatus.CONFIRMED).count();
+        long deliveredOrders = allOrders.stream().filter(o -> o.getStatus() == Order.OrderStatus.DELIVERED).count();
+        long cancelledOrders = allOrders.stream().filter(o -> o.getStatus() == Order.OrderStatus.CANCELLED).count();
         
         double totalRevenue = allOrders.stream()
-            .filter(o -> o.getStatus() == 2) // Only delivered orders
-            .mapToDouble(Order::getAmount)
+            .filter(o -> o.getStatus() == Order.OrderStatus.DELIVERED) // Only delivered orders
+            .mapToDouble(Order::getTotalAmount)
             .sum();
         
         model.addAttribute("totalOrders", totalOrders);

@@ -66,7 +66,7 @@ public class RevenueStatisticsService {
                 if (order.getOrderDate() != null) {
                     // Chuyển đổi ngày đơn hàng sang Calendar để so sánh
                     Calendar orderDate = Calendar.getInstance();
-                    orderDate.setTime(order.getOrderDate());
+                    orderDate.setTime(java.sql.Timestamp.valueOf(order.getOrderDate()));
                     orderDate.set(Calendar.HOUR_OF_DAY, 0);
                     orderDate.set(Calendar.MINUTE, 0);
                     orderDate.set(Calendar.SECOND, 0);
@@ -76,10 +76,10 @@ public class RevenueStatisticsService {
                     if (orderDate.get(Calendar.YEAR) == today.get(Calendar.YEAR) &&
                         orderDate.get(Calendar.DAY_OF_YEAR) == today.get(Calendar.DAY_OF_YEAR)) {
                         todayOrders.add(order);
-                        if (order.getAmount() != null) {
-                            revenue += order.getAmount();
+                        if (order.getTotalAmount() != null) {
+                            revenue += order.getTotalAmount();
                         }
-                        System.out.println("[Đơn hàng hôm nay] ID: " + order.getOrderId() + ", Ngày: " + order.getOrderDate() + ", Giá trị: " + order.getAmount());
+                        System.out.println("[Đơn hàng hôm nay] ID: " + order.getOrderId() + ", Ngày: " + order.getOrderDate() + ", Giá trị: " + order.getTotalAmount());
                     }
                 }
             }
@@ -137,18 +137,18 @@ public class RevenueStatisticsService {
             double previousMonthRevenue = 0.0;
             
             for (Order order : allOrders) {
-                if (order.getOrderDate() != null && order.getAmount() != null) {
+                if (order.getOrderDate() != null && order.getTotalAmount() != null) {
                     Calendar orderDate = Calendar.getInstance();
-                    orderDate.setTime(order.getOrderDate());
+                    orderDate.setTime(java.sql.Timestamp.valueOf(order.getOrderDate()));
                     int orderMonth = orderDate.get(Calendar.MONTH) + 1; // Chuyển sang 1-based (1-12)
                     int orderYear = orderDate.get(Calendar.YEAR);
                     
                     // Lọc đơn hàng của tháng được chọn
                     if (orderMonth == month && orderYear == year) {
-                        currentMonthRevenue += order.getAmount();
+                        currentMonthRevenue += order.getTotalAmount();
                         System.out.println("[Đơn hàng - Tháng " + month + "/" + year + "] ID: " + order.getOrderId() + 
                                            ", Tháng: " + orderMonth + "/" + orderYear + 
-                                           ", Giá trị: " + order.getAmount());
+                                           ", Giá trị: " + order.getTotalAmount());
                     }
                     
                     // Lọc đơn hàng của tháng trước
@@ -159,7 +159,7 @@ public class RevenueStatisticsService {
                         localPrevYear = year - 1;
                     }
                     if (orderMonth == localPrevMonth && orderYear == localPrevYear) {
-                        previousMonthRevenue += order.getAmount();
+                        previousMonthRevenue += order.getTotalAmount();
                     }
                 }
             }
@@ -221,17 +221,17 @@ public class RevenueStatisticsService {
             int endMonth = quarter * 3;
             
             for (Order order : allOrders) {
-                if (order.getOrderDate() != null && order.getAmount() != null) {
+                if (order.getOrderDate() != null && order.getTotalAmount() != null) {
                     Calendar orderDate = Calendar.getInstance();
-                    orderDate.setTime(order.getOrderDate());
+                    orderDate.setTime(java.sql.Timestamp.valueOf(order.getOrderDate()));
                     int orderMonth = orderDate.get(Calendar.MONTH) + 1; // Chuyển sang 1-based (1-12)
                     int orderYear = orderDate.get(Calendar.YEAR);
                     
                     if (orderYear == year && orderMonth >= startMonth && orderMonth <= endMonth) {
-                        quarterRevenue += order.getAmount();
+                        quarterRevenue += order.getTotalAmount();
                         System.out.println("[Đơn hàng - Quý " + quarter + "/" + year + "] ID: " + order.getOrderId() + 
                                           ", Tháng: " + orderMonth + "/" + orderYear + 
-                                          ", Giá trị: " + order.getAmount());
+                                          ", Giá trị: " + order.getTotalAmount());
                     }
                 }
             }
@@ -288,29 +288,29 @@ public class RevenueStatisticsService {
                         for (Order debugOrder : allOrders) {
                             if (debugOrder.getOrderDate() != null) {
                                 Calendar debugCal = Calendar.getInstance();
-                                debugCal.setTime(debugOrder.getOrderDate());
+                                debugCal.setTime(java.sql.Timestamp.valueOf(debugOrder.getOrderDate()));
                                 System.out.println("DEBUG - Order ID: " + debugOrder.getOrderId() + 
                                            ", Date: " + debugOrder.getOrderDate() + 
                                            ", Month: " + (debugCal.get(Calendar.MONTH) + 1) +
                                            ", Year: " + debugCal.get(Calendar.YEAR) +
-                                           ", Amount: " + (debugOrder.getAmount() != null ? debugOrder.getAmount() : "null"));
+                                           ", Amount: " + (debugOrder.getTotalAmount() != null ? debugOrder.getTotalAmount() : "null"));
                             }
                         }
                         
                         for (Order order : allOrders) {
-                            if (order.getOrderDate() != null && order.getAmount() != null) {
+                            if (order.getOrderDate() != null && order.getTotalAmount() != null) {
                                 // Lọc theo tháng và năm đã chọn
                                 Calendar orderDate = Calendar.getInstance();
-                                orderDate.setTime(order.getOrderDate());
+                                orderDate.setTime(java.sql.Timestamp.valueOf(order.getOrderDate()));
                                 int orderMonth = orderDate.get(Calendar.MONTH) + 1; // Calendar.MONTH bắt đầu từ 0 (chuyển sang 1-12)
                                 int orderYear = orderDate.get(Calendar.YEAR);
                                 
                                 if (orderYear == year && orderMonth == month) {
-                                    revenue += order.getAmount();
+                                    revenue += order.getTotalAmount();
                                     System.out.println("ID: " + order.getOrderId() + 
                                                       ", Ngày: " + order.getOrderDate() + 
                                                       ", Tháng: " + orderMonth + "/" + orderYear + 
-                                                      ", Giá trị: " + formatCurrency(order.getAmount()));
+                                                      ", Giá trị: " + formatCurrency(order.getTotalAmount()));
                                 }
                             }
                         }
@@ -334,19 +334,19 @@ public class RevenueStatisticsService {
                         System.out.println("------------------------------------");
                         
                         for (Order order : allOrders) {
-                            if (order.getOrderDate() != null && order.getAmount() != null) {
+                            if (order.getOrderDate() != null && order.getTotalAmount() != null) {
                                 // Sử dụng Calendar thay vì toInstant()
                                 Calendar cal = Calendar.getInstance();
-                                cal.setTime(order.getOrderDate());
+                                cal.setTime(java.sql.Timestamp.valueOf(order.getOrderDate()));
                                 int orderMonth = cal.get(Calendar.MONTH) + 1; // Calendar.MONTH bắt đầu từ 0
                                 int orderYear = cal.get(Calendar.YEAR);
                                 
                                 if (orderYear == year && orderMonth >= startMonth && orderMonth <= endMonth) {
-                                    revenue += order.getAmount();
+                                    revenue += order.getTotalAmount();
                                     System.out.println("ID: " + order.getOrderId() + 
                                                       ", Ngày: " + order.getOrderDate() + 
                                                       ", Tháng: " + orderMonth + "/" + orderYear + 
-                                                      ", Giá trị: " + formatCurrency(order.getAmount()));
+                                                      ", Giá trị: " + formatCurrency(order.getTotalAmount()));
                                 }
                             }
                         }
@@ -363,18 +363,18 @@ public class RevenueStatisticsService {
                     System.out.println("------------------------------------");
                     
                     for (Order order : allOrders) {
-                        if (order.getOrderDate() != null && order.getAmount() != null) {
+                        if (order.getOrderDate() != null && order.getTotalAmount() != null) {
                             // Sử dụng Calendar thay vì toInstant()
                             Calendar cal = Calendar.getInstance();
-                            cal.setTime(order.getOrderDate());
+                            cal.setTime(java.sql.Timestamp.valueOf(order.getOrderDate()));
                             int orderYear = cal.get(Calendar.YEAR);
                             
                             if (orderYear == year) {
-                                revenue += order.getAmount();
+                                revenue += order.getTotalAmount();
                                 System.out.println("ID: " + order.getOrderId() + 
                                                   ", Ngày: " + order.getOrderDate() + 
                                                   ", Tháng: " + (cal.get(Calendar.MONTH) + 1) + "/" + orderYear + 
-                                                  ", Giá trị: " + formatCurrency(order.getAmount()));
+                                                  ", Giá trị: " + formatCurrency(order.getTotalAmount()));
                             }
                         }
                     }
@@ -468,7 +468,7 @@ public class RevenueStatisticsService {
             Map<User, Map<String, Object>> customerMap = new HashMap<>();
             
             for (Order order : allOrders) {
-                if (order.getUser() != null && order.getAmount() != null) {
+                if (order.getUser() != null && order.getTotalAmount() != null) {
                     User user = order.getUser();
                     Map<String, Object> stats;
                     
@@ -478,13 +478,13 @@ public class RevenueStatisticsService {
                         double totalSpent = (double) stats.get("totalSpent");
                         
                         stats.put("orderCount", orderCount + 1);
-                        stats.put("totalSpent", totalSpent + order.getAmount());
+                        stats.put("totalSpent", totalSpent + order.getTotalAmount());
                     } else {
                         stats = new HashMap<>();
                         stats.put("userId", user.getUserId());
                         stats.put("name", user.getName());
                         stats.put("orderCount", 1);
-                        stats.put("totalSpent", order.getAmount());
+                        stats.put("totalSpent", order.getTotalAmount());
                     }
                     
                     customerMap.put(user, stats);
@@ -538,9 +538,9 @@ public class RevenueStatisticsService {
             Map<Product, Map<String, Object>> productMap = new HashMap<>();
             
             for (OrderDetail detail : allOrderDetails) {
-                if (detail.getProduct() != null && detail.getQuantity() != null && detail.getPrice() != null) {
+                if (detail.getProduct() != null && detail.getQuantity() != null && detail.getUnitPrice() != null) {
                     Product product = detail.getProduct();
-                    double subtotal = detail.getQuantity() * detail.getPrice();
+                    double subtotal = detail.getQuantity() * detail.getUnitPrice();
                     Map<String, Object> stats;
                     
                     if (productMap.containsKey(product)) {
@@ -552,11 +552,11 @@ public class RevenueStatisticsService {
                         
                         stats.put("quantitySold", quantitySold + detail.getQuantity());
                         stats.put("revenue", revenue + subtotal);
-                        prices.add(detail.getPrice());
+                        prices.add(detail.getUnitPrice());
                     } else {
                         stats = new HashMap<>();
                         List<Double> prices = new ArrayList<>();
-                        prices.add(detail.getPrice());
+                        prices.add(detail.getUnitPrice());
                         
                         stats.put("productId", product.getProductId());
                         stats.put("name", product.getProductName());
@@ -632,8 +632,8 @@ public class RevenueStatisticsService {
             int totalOrders = 0;
             
             for (Order order : allOrders) {
-                if (order.getOrderDate() != null && order.getAmount() != null) {
-                    totalRevenue += order.getAmount();
+                if (order.getOrderDate() != null && order.getTotalAmount() != null) {
+                    totalRevenue += order.getTotalAmount();
                     totalOrders++;
                 }
             }
@@ -654,21 +654,21 @@ public class RevenueStatisticsService {
                         
                         // Duyệt qua tất cả đơn hàng và phân loại theo tháng
                         for (Order order : allOrders) {
-                            if (order.getOrderDate() != null && order.getAmount() != null) {
+                            if (order.getOrderDate() != null && order.getTotalAmount() != null) {
                                 // Sử dụng Calendar để lấy thông tin tháng và năm
                                 Calendar cal = Calendar.getInstance();
-                                cal.setTime(order.getOrderDate());
+                                cal.setTime(java.sql.Timestamp.valueOf(order.getOrderDate()));
                                 int orderMonth = cal.get(Calendar.MONTH) + 1; // Chuyển sang 1-based (1-12)
                                 int orderYear = cal.get(Calendar.YEAR);
                                 
                                 // Chỉ tính các đơn hàng trong năm được chọn
                                 if (orderYear == year) {
                                     // Chú ý: mảng monthRevenueData và monthOrderData bắt đầu từ index 0, nhưng tháng từ 1
-                                    monthRevenueData[orderMonth-1] += order.getAmount();
+                                    monthRevenueData[orderMonth-1] += order.getTotalAmount();
                                     monthOrderData[orderMonth-1]++;
                                     System.out.println("Đơn hàng tháng " + orderMonth + 
                                                      ", ID: " + order.getOrderId() + 
-                                                     ", Giá trị: " + order.getAmount());
+                                                     ", Giá trị: " + order.getTotalAmount());
                                 }
                             }
                         }
@@ -692,10 +692,10 @@ public class RevenueStatisticsService {
                         
                         // Duyệt qua tất cả đơn hàng và phân loại theo quý
                         for (Order order : allOrders) {
-                            if (order.getOrderDate() != null && order.getAmount() != null) {
+                            if (order.getOrderDate() != null && order.getTotalAmount() != null) {
                                 // Sử dụng Calendar để lấy thông tin tháng và năm
                                 Calendar cal = Calendar.getInstance();
-                                cal.setTime(order.getOrderDate());
+                                cal.setTime(java.sql.Timestamp.valueOf(order.getOrderDate()));
                                 int orderMonth = cal.get(Calendar.MONTH) + 1; // Chuyển sang 1-based (1-12)
                                 int orderYear = cal.get(Calendar.YEAR);
                                 
@@ -704,11 +704,11 @@ public class RevenueStatisticsService {
                                 
                                 // Chỉ tính các đơn hàng trong năm được chọn
                                 if (orderYear == year) {
-                                    quarterRevenueData[quarterIndex] += order.getAmount();
+                                    quarterRevenueData[quarterIndex] += order.getTotalAmount();
                                     quarterOrderData[quarterIndex]++;
                                     System.out.println("Đơn hàng quý " + (quarterIndex + 1) + 
                                                      ", ID: " + order.getOrderId() + 
-                                                     ", Giá trị: " + order.getAmount());
+                                                     ", Giá trị: " + order.getTotalAmount());
                                 }
                             }
                         }
@@ -739,7 +739,7 @@ public class RevenueStatisticsService {
                         if (order.getOrderDate() != null) {
                             // Chuyển đổi java.util.Date sang năm bằng Calendar
                             Calendar cal = Calendar.getInstance();
-                            cal.setTime(order.getOrderDate());
+                            cal.setTime(java.sql.Timestamp.valueOf(order.getOrderDate()));
                             int orderYear = cal.get(Calendar.YEAR);
                             System.out.println("Năm của đơn hàng: " + orderYear + ", ID: " + order.getOrderId());
                             
@@ -774,15 +774,15 @@ public class RevenueStatisticsService {
                         }
                         
                         for (Order order : allOrders) {
-                            if (order.getOrderDate() != null && order.getAmount() != null) {
+                            if (order.getOrderDate() != null && order.getTotalAmount() != null) {
                                 // Sử dụng Calendar thay vì toInstant()
                                 Calendar cal = Calendar.getInstance();
-                                cal.setTime(order.getOrderDate());
+                                cal.setTime(java.sql.Timestamp.valueOf(order.getOrderDate()));
                                 int orderYear = cal.get(Calendar.YEAR);
                                 int index = orderYear - minYear;
                                 
                                 if (index >= 0 && index < numYears) {
-                                    yearRevenueData[index] += order.getAmount();
+                                    yearRevenueData[index] += order.getTotalAmount();
                                     yearOrderData[index]++;
                                 }
                             }
@@ -829,7 +829,7 @@ public class RevenueStatisticsService {
             for (Order order : allOrders) {
                 if (order.getOrderDate() != null) {
                     Calendar orderDate = Calendar.getInstance();
-                    orderDate.setTime(order.getOrderDate());
+                    orderDate.setTime(java.sql.Timestamp.valueOf(order.getOrderDate()));
                     int orderMonth = orderDate.get(Calendar.MONTH) + 1; // Chuyển sang 1-based (1-12)
                     int orderYear = orderDate.get(Calendar.YEAR);
                     
@@ -865,7 +865,7 @@ public class RevenueStatisticsService {
             for (Order order : allOrders) {
                 if (order.getOrderDate() != null) {
                     Calendar orderDate = Calendar.getInstance();
-                    orderDate.setTime(order.getOrderDate());
+                    orderDate.setTime(java.sql.Timestamp.valueOf(order.getOrderDate()));
                     int orderMonth = orderDate.get(Calendar.MONTH) + 1; // Chuyển sang 1-based (1-12)
                     int orderYear = orderDate.get(Calendar.YEAR);
                     
@@ -896,7 +896,7 @@ public class RevenueStatisticsService {
             for (Order order : allOrders) {
                 if (order.getOrderDate() != null) {
                     Calendar orderDate = Calendar.getInstance();
-                    orderDate.setTime(order.getOrderDate());
+                    orderDate.setTime(java.sql.Timestamp.valueOf(order.getOrderDate()));
                     int orderYear = orderDate.get(Calendar.YEAR);
                     
                     if (orderYear == year) {
@@ -923,17 +923,17 @@ public class RevenueStatisticsService {
             int orderCount = 0;
             
             for (Order order : allOrders) {
-                if (order.getOrderDate() != null && order.getAmount() != null) {
+                if (order.getOrderDate() != null && order.getTotalAmount() != null) {
                     Calendar orderDate = Calendar.getInstance();
-                    orderDate.setTime(order.getOrderDate());
+                    orderDate.setTime(java.sql.Timestamp.valueOf(order.getOrderDate()));
                     int orderYear = orderDate.get(Calendar.YEAR);
                     
                     if (orderYear == year) {
-                        yearRevenue += order.getAmount();
+                        yearRevenue += order.getTotalAmount();
                         orderCount++;
                         System.out.println("[Đơn hàng - Năm " + year + "] ID: " + order.getOrderId() + 
                                           ", Ngày: " + order.getOrderDate() + 
-                                          ", Giá trị: " + order.getAmount());
+                                          ", Giá trị: " + order.getTotalAmount());
                     }
                 }
             }

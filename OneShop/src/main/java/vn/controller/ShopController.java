@@ -18,8 +18,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import vn.entity.Product;
+import vn.entity.User;
 import vn.service.CategoryService;
 import vn.service.ProductService;
+
+import jakarta.servlet.http.HttpSession;
 
 @Controller
 public class ShopController {
@@ -29,10 +32,22 @@ public class ShopController {
 
     @Autowired
     private CategoryService categoryService;
+    
+    private void addCartCountToModel(HttpSession session, Model model) {
+        User user = (User) session.getAttribute("user");
+        if (user != null) {
+            @SuppressWarnings("unchecked")
+            java.util.Map<Long, vn.entity.CartItem> cartMap = (java.util.Map<Long, vn.entity.CartItem>) session.getAttribute("cartMap");
+            int cartCount = (cartMap != null) ? cartMap.size() : 0;
+            model.addAttribute("totalCartItems", cartCount);
+        } else {
+            model.addAttribute("totalCartItems", 0);
+        }
+    }
 
     @GetMapping(value = "/products")
     public String shop(Model model, Pageable pageable, @RequestParam("page") Optional<Integer> page,
-            @RequestParam("size") Optional<Integer> size) {
+            @RequestParam("size") Optional<Integer> size, HttpSession session) {
 
         int currentPage = page.orElse(1);
         int pageSize = size.orElse(12);
@@ -48,6 +63,9 @@ public class ShopController {
         model.addAttribute("products", productPage);
         model.addAttribute("categories", categoryService.getAllCategories());
         model.addAttribute("coutnProductByCategory", productService.listCategoryByProductName());
+        
+        // Add cart count for header
+        addCartCountToModel(session, model);
 
         // Add best selling products for sidebar widget
         List<Object[]> bestSaleRaw = productService.bestSaleProduct20();
@@ -86,12 +104,15 @@ public class ShopController {
     public String showSearch(@RequestParam(value = "productName", required = false) String productName,
                              @RequestParam(value = "keyword", required = false) String keyword,
                              @RequestParam(value = "q", required = false) String q,
-                             Model model) {
+                             Model model, HttpSession session) {
         String kw = (productName != null) ? productName : (keyword != null ? keyword : (q != null ? q : ""));
         List<Product> results = kw.isEmpty() ? productService.findAll() : productService.searchProduct(kw);
         model.addAttribute("products", new PageImpl<>(results));
         model.addAttribute("pageNumbers", List.of(1));
         model.addAttribute("keyword", kw);
+        
+        // Add cart count for header
+        addCartCountToModel(session, model);
         model.addAttribute("categories", categoryService.getAllCategories());
         model.addAttribute("coutnProductByCategory", productService.listCategoryByProductName());
         
@@ -111,7 +132,7 @@ public class ShopController {
     }
 
     @GetMapping(value = "/promotions")
-    public String promotions(Model model) {
+    public String promotions(Model model, HttpSession session) {
         // Filter products with discount > 0 and sort by discount desc
         List<Product> discounted = productService.findAll().stream()
                 .filter(p -> p.getDiscount() != null && p.getDiscount() > 0)
@@ -121,6 +142,9 @@ public class ShopController {
         model.addAttribute("products", new PageImpl<>(discounted));
         model.addAttribute("pageNumbers", List.of(1));
         model.addAttribute("categories", categoryService.getAllCategories());
+        
+        // Add cart count for header
+        addCartCountToModel(session, model);
         model.addAttribute("coutnProductByCategory", productService.listCategoryByProductName());
         model.addAttribute("promotionView", true);
 
@@ -140,12 +164,15 @@ public class ShopController {
     }
 
     @GetMapping(value = "/productByCategory")
-    public String productByCategory(@RequestParam("id") Long categoryId, Model model) {
+    public String productByCategory(@RequestParam("id") Long categoryId, Model model, HttpSession session) {
         List<Product> productsByCate = productService.listProductByCategory(categoryId);
         model.addAttribute("products", new PageImpl<>(productsByCate));
         model.addAttribute("pageNumbers", List.of(1));
         model.addAttribute("categories", categoryService.getAllCategories());
         model.addAttribute("coutnProductByCategory", productService.listCategoryByProductName());
+        
+        // Add cart count for header
+        addCartCountToModel(session, model);
         
         // Add best selling products
         List<Object[]> bestSaleRaw = productService.bestSaleProduct20();

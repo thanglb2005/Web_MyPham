@@ -28,12 +28,12 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
     /**
      * 2. Thống kê doanh thu theo danh mục (chỉ sản phẩm có trong order)
      */
-    @Query("SELECT c.categoryName, COALESCE(SUM(od.price * od.quantity), 0) " +
+    @Query("SELECT c.categoryName, COALESCE(SUM(od.unitPrice * od.quantity), 0) " +
            "FROM Category c " +
            "LEFT JOIN Product p ON c.categoryId = p.category.categoryId " +
            "LEFT JOIN OrderDetail od ON od.product.productId = p.productId " +
            "GROUP BY c.categoryName " +
-           "ORDER BY COALESCE(SUM(od.price * od.quantity), 0) DESC")
+           "ORDER BY COALESCE(SUM(od.unitPrice * od.quantity), 0) DESC")
     List<Object[]> getRevenueByCategory();
 
     /**
@@ -61,7 +61,7 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
      */
     @Query("SELECT c.categoryName, " +
            "COUNT(p.productId), " +
-           "COALESCE(SUM(od.price * od.quantity), 0), " +
+           "COALESCE(SUM(od.unitPrice * od.quantity), 0), " +
            "COUNT(CASE WHEN p.favorite = true THEN 1 END), " +
            "AVG(CASE WHEN p.favorite = true THEN 5.0 ELSE 3.0 END), " +
            "COUNT(p.productId), " +
@@ -71,20 +71,20 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
            "LEFT JOIN Product p ON c.categoryId = p.category.categoryId " +
            "LEFT JOIN OrderDetail od ON od.product.productId = p.productId " +
            "GROUP BY c.categoryName, c.categoryId, c.categoryImage " +
-           "ORDER BY COALESCE(SUM(od.price * od.quantity), 0) DESC")
+           "ORDER BY COALESCE(SUM(od.unitPrice * od.quantity), 0) DESC")
     List<Object[]> getComprehensiveCategoryStats();
 
     /**
      * Thống kê doanh thu theo danh mục trong khoảng thời gian
      */
-    @Query("SELECT c.categoryName, COALESCE(SUM(od.price * od.quantity), 0) " +
+    @Query("SELECT c.categoryName, COALESCE(SUM(od.unitPrice * od.quantity), 0) " +
            "FROM Category c " +
            "LEFT JOIN Product p ON c.categoryId = p.category.categoryId " +
            "LEFT JOIN OrderDetail od ON od.product.productId = p.productId " +
            "LEFT JOIN Order o ON od.order.orderId = o.orderId " +
            "WHERE o.orderDate BETWEEN :startDate AND :endDate " +
            "GROUP BY c.categoryName " +
-           "ORDER BY COALESCE(SUM(od.price * od.quantity), 0) DESC")
+           "ORDER BY COALESCE(SUM(od.unitPrice * od.quantity), 0) DESC")
     List<Object[]> getRevenueByCategoryInDateRange(@Param("startDate") String startDate, 
                                                   @Param("endDate") String endDate);
 
@@ -101,12 +101,12 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
     /**
      * Thống kê doanh thu theo danh mục có trạng thái active
      */
-    @Query("SELECT c.categoryName, COALESCE(SUM(od.price * od.quantity), 0) " +
+    @Query("SELECT c.categoryName, COALESCE(SUM(od.unitPrice * od.quantity), 0) " +
            "FROM Category c " +
            "LEFT JOIN Product p ON c.categoryId = p.category.categoryId " +
            "LEFT JOIN OrderDetail od ON od.product.productId = p.productId " +
            "WHERE p.status = true " +
            "GROUP BY c.categoryName " +
-           "ORDER BY COALESCE(SUM(od.price * od.quantity), 0) DESC")
+           "ORDER BY COALESCE(SUM(od.unitPrice * od.quantity), 0) DESC")
     List<Object[]> getActiveRevenueByCategory();
 }

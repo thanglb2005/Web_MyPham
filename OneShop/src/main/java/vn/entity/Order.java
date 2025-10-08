@@ -5,42 +5,78 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.io.Serializable;
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 
-/**
- * Order entity for managing customer orders
- * @author OneShop Team
- */
 @Entity
 @Table(name = "orders")
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class Order implements Serializable {
-
-    private static final long serialVersionUID = 1L;
+public class Order {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "order_id")
     private Long orderId;
-    
-    @Temporal(TemporalType.DATE)
-    private Date orderDate;
-    
-    private Double amount;
-    
-    private String address;
-    
-    private String phone;
-    
-    private Integer status; // 0: Chờ xác nhận, 1: Đã xác nhận, 2: Đã giao hàng, 3: Đã hủy
-
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<OrderDetail> orderDetails;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
+
+    @Column(name = "customer_name", nullable = false)
+    private String customerName;
+
+    @Column(name = "customer_email", nullable = false)
+    private String customerEmail;
+
+    @Column(name = "customer_phone", nullable = false)
+    private String customerPhone;
+
+    @Column(name = "shipping_address", nullable = false)
+    private String shippingAddress;
+
+    @Column(columnDefinition = "TEXT")
+    private String note;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private OrderStatus status = OrderStatus.PENDING;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "payment_method", nullable = false)
+    private PaymentMethod paymentMethod = PaymentMethod.COD;
+
+    @Column(name = "total_amount", nullable = false)
+    private Double totalAmount;
+
+    @Column(name = "order_date", nullable = false)
+    private LocalDateTime orderDate = LocalDateTime.now();
+
+    @Column(name = "shipped_date")
+    private LocalDateTime shippedDate;
+
+    @Column(name = "delivered_date")
+    private LocalDateTime deliveredDate;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "shipper_id")
+    private User shipper;
+
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<OrderDetail> orderDetails;
+
+    public enum OrderStatus {
+        PENDING,
+        CONFIRMED,
+        SHIPPING,
+        DELIVERED,
+        CANCELLED
+    }
+
+    public enum PaymentMethod {
+        COD,
+        PAYPAL,
+        BANK_TRANSFER
+    }
 }

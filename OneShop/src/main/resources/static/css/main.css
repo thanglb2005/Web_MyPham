@@ -6251,3 +6251,25 @@ tbody tr td:last-child {
     margin-bottom: 30px;
   }
 }
+
+/* Cart count badge */
+.cart-count {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background: #ff3838;
+  color: white;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  font-size: 12px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.header-widget {
+  position: relative;
+}

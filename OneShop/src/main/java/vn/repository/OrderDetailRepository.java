@@ -2,194 +2,90 @@ package vn.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import vn.entity.OrderDetail;
 
 import java.util.List;
 
-/**
- * Repository for OrderDetail entity
- * @author OneShop Team
- */
 @Repository
 public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long> {
 
-    @Query(value = "SELECT * FROM order_details WHERE order_id = ?1", nativeQuery = true)
-    List<OrderDetail> findByOrderId(Long orderId);
-    
-    @Query(value = "SELECT * FROM order_details WHERE product_id = ?1", nativeQuery = true)
-    List<OrderDetail> findByProductId(Long productId);
-
-    // ========== STATISTICS QUERIES ==========
+    /**
+     * Find order details by order ID
+     */
+    @Query("SELECT od FROM OrderDetail od WHERE od.order.orderId = :orderId ORDER BY od.orderDetailId ASC")
+    List<OrderDetail> findByOrderId(@Param("orderId") Long orderId);
 
     /**
-     * Statistics by product sold
-     * Returns: product_id, product_name, total_quantity, total_revenue, avg_price, min_price, max_price
+     * Find order details by product ID
      */
-    @Query(value = "SELECT p.product_id, " +
-            "p.product_name, " +
-            "SUM(od.quantity) as total_quantity, " +
-            "SUM(od.quantity * od.price) as total_revenue, " +
-            "AVG(od.price) as avg_price, " +
-            "MIN(od.price) as min_price, " +
-            "MAX(od.price) as max_price " +
-            "FROM order_details od " +
-            "INNER JOIN products p ON od.product_id = p.product_id " +
-            "INNER JOIN orders o ON od.order_id = o.order_id " +
-            "WHERE o.status IN (1, 2) " + // Only confirmed and delivered orders
-            "GROUP BY p.product_id, p.product_name " +
-            "ORDER BY total_revenue DESC", nativeQuery = true)
+    @Query("SELECT od FROM OrderDetail od WHERE od.product.productId = :productId ORDER BY od.orderDetailId DESC")
+    List<OrderDetail> findByProductId(@Param("productId") Long productId);
+
+    /**
+     * Get product sales statistics
+     */
+    @Query("SELECT od.product.productName, SUM(od.quantity) as totalQuantity, SUM(od.totalPrice) as totalRevenue " +
+           "FROM OrderDetail od GROUP BY od.product.productId, od.product.productName ORDER BY totalRevenue DESC")
     List<Object[]> getProductSalesStatistics();
 
     /**
-     * Statistics by category sold
-     * Returns: category_name, total_quantity, total_revenue, avg_price, min_price, max_price
+     * Get category sales statistics
      */
-    @Query(value = "SELECT c.category_name, " +
-            "SUM(od.quantity) as total_quantity, " +
-            "SUM(od.quantity * od.price) as total_revenue, " +
-            "AVG(od.price) as avg_price, " +
-            "MIN(od.price) as min_price, " +
-            "MAX(od.price) as max_price " +
-            "FROM order_details od " +
-            "INNER JOIN products p ON od.product_id = p.product_id " +
-            "INNER JOIN categories c ON p.category_id = c.category_id " +
-            "INNER JOIN orders o ON od.order_id = o.order_id " +
-            "WHERE o.status IN (1, 2) " +
-            "GROUP BY c.category_id, c.category_name " +
-            "ORDER BY total_revenue DESC", nativeQuery = true)
+    @Query("SELECT c.categoryName, SUM(od.quantity) as totalQuantity, SUM(od.totalPrice) as totalRevenue " +
+           "FROM OrderDetail od JOIN od.product p JOIN p.category c GROUP BY c.categoryId, c.categoryName ORDER BY totalRevenue DESC")
     List<Object[]> getCategorySalesStatistics();
 
     /**
-     * Statistics by brand sold
-     * Returns: brand_name, total_quantity, total_revenue, avg_price, min_price, max_price
+     * Get brand sales statistics
      */
-    @Query(value = "SELECT b.brand_name, " +
-            "SUM(od.quantity) as total_quantity, " +
-            "SUM(od.quantity * od.price) as total_revenue, " +
-            "AVG(od.price) as avg_price, " +
-            "MIN(od.price) as min_price, " +
-            "MAX(od.price) as max_price " +
-            "FROM order_details od " +
-            "INNER JOIN products p ON od.product_id = p.product_id " +
-            "INNER JOIN brands b ON p.brand_id = b.brand_id " +
-            "INNER JOIN orders o ON od.order_id = o.order_id " +
-            "WHERE o.status IN (1, 2) " +
-            "GROUP BY b.brand_id, b.brand_name " +
-            "ORDER BY total_revenue DESC", nativeQuery = true)
+    @Query("SELECT b.brandName, SUM(od.quantity) as totalQuantity, SUM(od.totalPrice) as totalRevenue " +
+           "FROM OrderDetail od JOIN od.product p JOIN p.brand b GROUP BY b.brandId, b.brandName ORDER BY totalRevenue DESC")
     List<Object[]> getBrandSalesStatistics();
 
     /**
-     * Statistics of products sold by year
-     * Returns: year, total_quantity, total_revenue, avg_price, min_price, max_price
+     * Get monthly sales statistics
      */
-    @Query(value = "SELECT YEAR(o.order_date) as year, " +
-            "SUM(od.quantity) as total_quantity, " +
-            "SUM(od.quantity * od.price) as total_revenue, " +
-            "AVG(od.price) as avg_price, " +
-            "MIN(od.price) as min_price, " +
-            "MAX(od.price) as max_price " +
-            "FROM order_details od " +
-            "INNER JOIN orders o ON od.order_id = o.order_id " +
-            "WHERE o.status IN (1, 2) " +
-            "GROUP BY YEAR(o.order_date) " +
-            "ORDER BY year DESC", nativeQuery = true)
-    List<Object[]> getYearlySalesStatistics();
-
-    /**
-     * Statistics of products sold by month
-     * Returns: month, total_quantity, total_revenue, avg_price, min_price, max_price
-     */
-    @Query(value = "SELECT MONTH(o.order_date) as month, " +
-            "SUM(od.quantity) as total_quantity, " +
-            "SUM(od.quantity * od.price) as total_revenue, " +
-            "AVG(od.price) as avg_price, " +
-            "MIN(od.price) as min_price, " +
-            "MAX(od.price) as max_price " +
-            "FROM order_details od " +
-            "INNER JOIN orders o ON od.order_id = o.order_id " +
-            "WHERE o.status IN (1, 2) " +
-            "GROUP BY MONTH(o.order_date) " +
-            "ORDER BY month", nativeQuery = true)
+    @Query("SELECT YEAR(od.order.orderDate) as year, MONTH(od.order.orderDate) as month, " +
+           "SUM(od.quantity) as totalQuantity, SUM(od.totalPrice) as totalRevenue " +
+           "FROM OrderDetail od WHERE od.order.status = 'DELIVERED' " +
+           "GROUP BY YEAR(od.order.orderDate), MONTH(od.order.orderDate) ORDER BY year, month")
     List<Object[]> getMonthlySalesStatistics();
 
     /**
-     * Statistics of products sold by quarter
-     * Returns: quarter, total_quantity, total_revenue, avg_price, min_price, max_price
+     * Get quarterly sales statistics
      */
-    @Query(value = "SELECT CASE " +
-            "WHEN MONTH(o.order_date) BETWEEN 1 AND 3 THEN 1 " +
-            "WHEN MONTH(o.order_date) BETWEEN 4 AND 6 THEN 2 " +
-            "WHEN MONTH(o.order_date) BETWEEN 7 AND 9 THEN 3 " +
-            "WHEN MONTH(o.order_date) BETWEEN 10 AND 12 THEN 4 " +
-            "END as quarter, " +
-            "SUM(od.quantity) as total_quantity, " +
-            "SUM(od.quantity * od.price) as total_revenue, " +
-            "AVG(od.price) as avg_price, " +
-            "MIN(od.price) as min_price, " +
-            "MAX(od.price) as max_price " +
-            "FROM order_details od " +
-            "INNER JOIN orders o ON od.order_id = o.order_id " +
-            "WHERE o.status IN (1, 2) " +
-            "GROUP BY CASE " +
-            "WHEN MONTH(o.order_date) BETWEEN 1 AND 3 THEN 1 " +
-            "WHEN MONTH(o.order_date) BETWEEN 4 AND 6 THEN 2 " +
-            "WHEN MONTH(o.order_date) BETWEEN 7 AND 9 THEN 3 " +
-            "WHEN MONTH(o.order_date) BETWEEN 10 AND 12 THEN 4 " +
-            "END " +
-            "ORDER BY quarter", nativeQuery = true)
+    @Query("SELECT YEAR(od.order.orderDate) as year, " +
+           "CASE WHEN MONTH(od.order.orderDate) BETWEEN 1 AND 3 THEN 1 " +
+           "     WHEN MONTH(od.order.orderDate) BETWEEN 4 AND 6 THEN 2 " +
+           "     WHEN MONTH(od.order.orderDate) BETWEEN 7 AND 9 THEN 3 " +
+           "     ELSE 4 END as quarter, " +
+           "SUM(od.quantity) as totalQuantity, SUM(od.totalPrice) as totalRevenue " +
+           "FROM OrderDetail od WHERE od.order.status = 'DELIVERED' " +
+           "GROUP BY YEAR(od.order.orderDate), " +
+           "CASE WHEN MONTH(od.order.orderDate) BETWEEN 1 AND 3 THEN 1 " +
+           "     WHEN MONTH(od.order.orderDate) BETWEEN 4 AND 6 THEN 2 " +
+           "     WHEN MONTH(od.order.orderDate) BETWEEN 7 AND 9 THEN 3 " +
+           "     ELSE 4 END ORDER BY year, quarter")
     List<Object[]> getQuarterlySalesStatistics();
 
     /**
-     * Statistics by user
-     * Returns: user_id, name, total_orders, total_spent, avg_order_value, last_purchase_date, customer_status
+     * Get yearly sales statistics
      */
-    @Query(value = "SELECT u.user_id, u.name, " +
-            "COUNT(DISTINCT o.order_id) as total_orders, " +
-            "SUM(o.amount) as total_spent, " +
-            "AVG(o.amount) as avg_order_value, " +
-            "MAX(o.order_date) as last_purchase_date, " +
-            "CASE " +
-            "   WHEN DATEDIFF(day, MAX(o.order_date), GETDATE()) <= 30 THEN N'Khách hàng thường xuyên' " +
-            "   WHEN DATEDIFF(day, MAX(o.order_date), GETDATE()) <= 90 THEN N'Khách hàng thỉnh thoảng' " +
-            "   ELSE N'Khách hàng không hoạt động' " +
-            "END as customer_status " +
-            "FROM orders o " +
-            "INNER JOIN [user] u ON o.user_id = u.user_id " +
-            "WHERE o.status IN (1, 2) " +
-            "GROUP BY u.user_id, u.name " +
-            "ORDER BY total_spent DESC", nativeQuery = true)
+    @Query("SELECT YEAR(od.order.orderDate) as year, " +
+           "SUM(od.quantity) as totalQuantity, SUM(od.totalPrice) as totalRevenue " +
+           "FROM OrderDetail od WHERE od.order.status = 'DELIVERED' " +
+           "GROUP BY YEAR(od.order.orderDate) ORDER BY year")
+    List<Object[]> getYearlySalesStatistics();
+
+    /**
+     * Get user statistics
+     */
+    @Query("SELECT u.name, u.email, COUNT(DISTINCT od.order) as totalOrders, " +
+           "SUM(od.quantity) as totalQuantity, SUM(od.totalPrice) as totalRevenue " +
+           "FROM OrderDetail od JOIN od.order o JOIN o.user u " +
+           "WHERE o.status = 'DELIVERED' " +
+           "GROUP BY u.userId, u.name, u.email ORDER BY totalRevenue DESC")
     List<Object[]> getUserStatistics();
-
-    /**
-     * Statistics by date range
-     * Returns: date, total_quantity, total_revenue, order_count
-     */
-    @Query(value = "SELECT CONVERT(DATE, o.order_date) as order_date, " +
-            "SUM(od.quantity) as total_quantity, " +
-            "SUM(od.quantity * od.price) as total_revenue, " +
-            "COUNT(DISTINCT o.order_id) as order_count " +
-            "FROM order_details od " +
-            "INNER JOIN orders o ON od.order_id = o.order_id " +
-            "WHERE o.status IN (1, 2) " +
-            "GROUP BY CONVERT(DATE, o.order_date) " +
-            "ORDER BY order_date DESC", nativeQuery = true)
-    List<Object[]> getDailySalesStatistics();
-
-    /**
-     * Statistics by product category and brand combination
-     * Returns: category_name, brand_name, total_quantity, total_revenue
-     */
-    @Query(value = "SELECT c.category_name, b.brand_name, " +
-            "SUM(od.quantity) as total_quantity, " +
-            "SUM(od.quantity * od.price) as total_revenue " +
-            "FROM order_details od " +
-            "INNER JOIN products p ON od.product_id = p.product_id " +
-            "INNER JOIN categories c ON p.category_id = c.category_id " +
-            "INNER JOIN brands b ON p.brand_id = b.brand_id " +
-            "INNER JOIN orders o ON od.order_id = o.order_id " +
-            "WHERE o.status IN (1, 2) " +
-            "GROUP BY c.category_id, c.category_name, b.brand_id, b.brand_name " +
-            "ORDER BY total_revenue DESC", nativeQuery = true)
-    List<Object[]> getCategoryBrandStatistics();
 }

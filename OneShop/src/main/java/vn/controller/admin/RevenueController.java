@@ -1,30 +1,16 @@
 package vn.controller.admin;
 
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityManagerFactory;
-import jakarta.persistence.Query;
 import jakarta.servlet.http.HttpSession;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.SQLException;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import vn.entity.User;
 import vn.entity.Order;
-import vn.entity.OrderDetail;
 import vn.repository.OrderRepository;
-import vn.repository.OrderDetailRepository;
-import vn.repository.ProductRepository;
-import vn.repository.UserRepository;
 import vn.service.statistics.RevenueStatisticsService;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.HashMap;
@@ -40,10 +26,6 @@ public class RevenueController {
 
     private final RevenueStatisticsService revenueStatisticsService;
     private final OrderRepository orderRepository;
-    private final OrderDetailRepository orderDetailRepository;
-    private final UserRepository userRepository;
-    private final ProductRepository productRepository;
-    private final EntityManagerFactory entityManagerFactory;
     
     // API endpoint để lấy dữ liệu cho biểu đồ
     @GetMapping("/api/monthly-revenue-data")
@@ -271,17 +253,9 @@ public class RevenueController {
     }
     
     public RevenueController(RevenueStatisticsService revenueStatisticsService,
-                            OrderRepository orderRepository,
-                            OrderDetailRepository orderDetailRepository,
-                            UserRepository userRepository,
-                            ProductRepository productRepository,
-                            EntityManagerFactory entityManagerFactory) {
+                            OrderRepository orderRepository) {
         this.revenueStatisticsService = revenueStatisticsService;
         this.orderRepository = orderRepository;
-        this.orderDetailRepository = orderDetailRepository;
-        this.userRepository = userRepository;
-        this.productRepository = productRepository;
-        this.entityManagerFactory = entityManagerFactory;
     }
 
     /**
@@ -394,8 +368,8 @@ public class RevenueController {
                 double totalRevenue = 0.0;
                 int validOrders = 0;
                 for (Order order : orderList) {
-                    if (order.getAmount() != null) {
-                        totalRevenue += order.getAmount();
+                    if (order.getTotalAmount() != null) {
+                        totalRevenue += order.getTotalAmount();
                         validOrders++;
                     }
                 }

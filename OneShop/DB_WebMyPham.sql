@@ -154,20 +154,26 @@ GO
 IF OBJECT_ID('dbo.orders', 'U') IS NOT NULL DROP TABLE dbo.orders;
 CREATE TABLE dbo.orders (
     order_id BIGINT IDENTITY(1,1) PRIMARY KEY,
-    address NVARCHAR(255),
-    amount DECIMAL(18,2),
-    order_date DATETIME DEFAULT GETDATE(),
-    phone NVARCHAR(50),
-    status INT NOT NULL,
-    user_id BIGINT,
+    user_id BIGINT NOT NULL,
+    customer_name NVARCHAR(255) NOT NULL,
+    customer_email NVARCHAR(255) NOT NULL,
+    customer_phone NVARCHAR(20) NOT NULL,
+    shipping_address NVARCHAR(500) NOT NULL,
+    note NVARCHAR(1000),
+    status NVARCHAR(50) NOT NULL DEFAULT 'PENDING',
+    payment_method NVARCHAR(50) NOT NULL DEFAULT 'COD',
+    total_amount DECIMAL(18,2) NOT NULL CHECK (total_amount > 0),
+    order_date DATETIME2 NOT NULL DEFAULT GETDATE(),
+    shipped_date DATETIME2,
+    delivered_date DATETIME2,
     shipper_id BIGINT NULL, -- shipper giao hàng
     CONSTRAINT FK_orders_user FOREIGN KEY(user_id) REFERENCES dbo.[user](user_id),
     CONSTRAINT FK_orders_shipper FOREIGN KEY(shipper_id) REFERENCES dbo.[user](user_id)
 );
-INSERT INTO dbo.orders(address, amount, phone, status, user_id, shipper_id)
+INSERT INTO dbo.orders(user_id, customer_name, customer_email, customer_phone, shipping_address, note, status, payment_method, total_amount, shipper_id)
 VALUES
-(N'Hà Nội', 500000, '0911111111', 1, 1, 8),
-(N'Đà Nẵng', 1200000, '0922222222', 2, 2, 8);
+(1, N'Nguyễn Văn A', 'nguyenvana@email.com', '0911111111', N'Hà Nội', N'Giao hàng nhanh', 'PENDING', 'COD', 500000, 8),
+(2, N'Trần Thị B', 'tranthib@email.com', '0922222222', N'Đà Nẵng', N'Giao hàng buổi chiều', 'CONFIRMED', 'COD', 1200000, 8);
 GO
 
 /* ===============================
@@ -176,17 +182,19 @@ GO
 IF OBJECT_ID('dbo.order_details', 'U') IS NOT NULL DROP TABLE dbo.order_details;
 CREATE TABLE dbo.order_details (
     order_detail_id BIGINT IDENTITY(1,1) PRIMARY KEY,
-    price DECIMAL(18,2),
-    quantity INT NOT NULL,
-    order_id BIGINT,
-    product_id BIGINT,
+    order_id BIGINT NOT NULL,
+    product_id BIGINT NOT NULL,
+    product_name NVARCHAR(255) NOT NULL,
+    unit_price DECIMAL(18,2) NOT NULL CHECK (unit_price > 0),
+    quantity INT NOT NULL CHECK (quantity > 0),
+    total_price DECIMAL(18,2) NOT NULL CHECK (total_price > 0),
     CONSTRAINT FK_orderdetails_orders FOREIGN KEY(order_id) REFERENCES dbo.orders(order_id),
     CONSTRAINT FK_orderdetails_products FOREIGN KEY(product_id) REFERENCES dbo.products(product_id)
 );
-INSERT INTO dbo.order_details(price, quantity, order_id, product_id)
+INSERT INTO dbo.order_details(order_id, product_id, product_name, unit_price, quantity, total_price)
 VALUES
-(250000, 2, 1, 1),
-(1200000, 1, 2, 3);
+(1, 1, N'Son Chanel Cam', 250000, 2, 500000),
+(2, 3, N'Nước hoa Chanel', 1200000, 1, 1200000);
 GO
 
 /* ===============================
@@ -240,3 +248,29 @@ CREATE TABLE chat_message (
   vendor_name NVARCHAR(255) NULL
 );
 CREATE INDEX ix_chat_message_room_time ON chat_message(room_id, sent_at DESC);
+
+/* ===============================
+   TABLE: shipping_providers
+   =============================== */
+IF OBJECT_ID('dbo.shipping_providers', 'U') IS NOT NULL DROP TABLE dbo.shipping_providers;
+CREATE TABLE dbo.shipping_providers (
+    provider_id BIGINT IDENTITY(1,1) PRIMARY KEY,
+    provider_name NVARCHAR(255) NOT NULL,
+    contact_phone NVARCHAR(15),
+    contact_email NVARCHAR(255),
+    description NVARCHAR(1000),
+    website NVARCHAR(255),
+    address NVARCHAR(255),
+    shipping_fees DECIMAL(18,2),
+    delivery_time_range NVARCHAR(255),
+    logo NVARCHAR(255),
+    status BIT DEFAULT 1
+);
+INSERT INTO dbo.shipping_providers (provider_name, contact_phone, contact_email, description, website, address, shipping_fees, delivery_time_range, logo, status)
+VALUES
+(N'Giao Hàng Nhanh', N'1900636677', N'support@ghn.vn', N'Dịch vụ giao hàng nhanh trên toàn quốc', N'https://ghn.vn', N'Hà Nội, Việt Nam', 30000, N'1-3 ngày', N'ghn-logo.png', 1),
+(N'Giao Hàng Tiết Kiệm', N'1900636677', N'support@giaohangtietkiem.vn', N'Dịch vụ giao hàng tiết kiệm toàn quốc', N'https://giaohangtietkiem.vn', N'Hồ Chí Minh, Việt Nam', 25000, N'2-4 ngày', N'ghtk-logo.png', 1),
+(N'J&T Express', N'19001088', N'cskh@jtexpress.vn', N'Dịch vụ chuyển phát nhanh J&T Express', N'https://jtexpress.vn', N'Hồ Chí Minh, Việt Nam', 28000, N'1-3 ngày', N'jt-express-logo.png', 1),
+(N'Viettel Post', N'1900818820', N'cskh@viettelpost.com.vn', N'Dịch vụ chuyển phát Viettel Post', N'https://viettelpost.com.vn', N'Hà Nội, Việt Nam', 27000, N'2-4 ngày', N'viettel-post-logo.png', 1),
+(N'Vietnam Post', N'18006422', N'info@vnpost.vn', N'Bưu điện Việt Nam - Vietnam Post', N'https://www.vnpost.vn', N'Hà Nội, Việt Nam', 26000, N'2-5 ngày', N'vnpost-logo.png', 1);
+GO
