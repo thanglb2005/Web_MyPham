@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import vn.entity.CartItem;
 import vn.entity.Order;
 import vn.entity.Product;
@@ -29,7 +30,8 @@ public class CartController {
     @GetMapping("/add-to-cart")
     public String addToCart(@RequestParam("productId") Long productId,
                             @RequestParam(value = "quantity", defaultValue = "1") Integer quantity,
-                            HttpServletRequest request, Model model) {
+                            HttpServletRequest request, Model model,
+                            RedirectAttributes redirectAttributes) {
 
         User user = (User) request.getSession().getAttribute("user");
         if (user == null) {
@@ -58,9 +60,30 @@ public class CartController {
             session.setAttribute("cartMap", cartMap);
             session.setAttribute("cartItems", cartMap.values());
             model.addAttribute("totalCartItems", cartMap.size());
+
+            // Flash success message for UI feedback after redirect
+            redirectAttributes.addFlashAttribute("success", "Đã thêm sản phẩm vào giỏ hàng.");
+        } else {
+            redirectAttributes.addFlashAttribute("error", "Sản phẩm không tồn tại hoặc đã bị gỡ.");
         }
 
-        return "redirect:/products";
+        // Redirect back to previous page (Referer) if safe, else fallback
+        String redirectPath = "/products";
+        String referer = request.getHeader("Referer");
+        if (referer != null) {
+            try {
+                java.net.URI uri = new java.net.URI(referer);
+                String path = uri.getPath();
+                String query = uri.getQuery();
+                if (path != null && path.startsWith("/")
+                        && !path.startsWith("/add-to-cart")
+                        && !path.startsWith("/login")) {
+                    redirectPath = path + (query != null ? ("?" + query) : "");
+                }
+            } catch (java.net.URISyntaxException ignored) { }
+        }
+
+        return "redirect:" + redirectPath;
     }
 
     @GetMapping("/cart")

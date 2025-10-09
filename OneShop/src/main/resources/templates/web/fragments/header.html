@@ -2,6 +2,45 @@
 <html lang="" xmlns:th="http://www.thymeleaf.org">
   <head>
     <title></title>
+    <link rel="stylesheet" href="/vendor/bootstrap/bootstrap.min.css" />
+    <link rel="stylesheet" href="/fonts/fontawesome/fontawesome.min.css" />
+    <script src="/vendor/bootstrap/jquery-1.12.4.min.js"></script>
+    <script src="/vendor/bootstrap/bootstrap.min.js"></script>
+    <script src="/assets/js/plugin/sweetalert/sweetalert.min.js"></script>
+    <style>
+      /* Improve visibility of cart count badge */
+      .header-part .header-widget { position: relative; }
+      .header-part .header-widget .cart-count {
+        position: absolute;
+        top: -6px;
+        right: -8px;
+        background: #0db1fd; /* theme primary blue */
+        color: #ffffff !important; /* white text for contrast */
+        border: 2px solid #fff;
+        border-radius: 999px;
+        min-width: 20px;
+        height: 18px;
+        padding: 0 5px;
+        line-height: 16px;
+        font-size: 8px;
+        font-weight: 700;
+        text-align: center;
+        box-shadow: 0 2px 6px rgba(0,0,0,.2);
+        transform-origin: center;
+      }
+      @keyframes cart-bump { 0% { transform: scale(1); } 30% { transform: scale(1.15); } 100% { transform: scale(1); } }
+      .header-part .header-widget .cart-count.badge-bump { animation: cart-bump .25s ease-out; }
+      @media (min-width: 992px) {
+        .header-part .header-widget .cart-count {
+          top: -8px;
+          right: -10px;
+          min-width: 20px;
+          height: 20px;
+          line-height: 18px;
+          font-size: 11px;
+        }
+      }
+    </style>
   </head>
   <body>
     <th:block th:fragment="header">
@@ -41,7 +80,7 @@
               <th:block th:if="${session.user != null}">
                 <a th:href="@{/cart}" class="header-widget" title="Giỏ hàng">
                   <i class="fas fa-shopping-cart"></i>
-                  <span class="cart-count" th:text="${totalCartItems != null ? totalCartItems : 0}">0</span>
+                  <span class="cart-count" th:text="${session.cartMap != null ? session.cartMap.size() : (totalCartItems != null ? totalCartItems : 0)}">0</span>
                 </a>
               </th:block>
               <th:block th:if="${session.user != null}">
@@ -107,6 +146,74 @@
           </div>
         </div>
       </nav>
+      <style>
+        /* Keep local override in case other styles load later */
+        .header-part .header-widget .cart-count {
+          background: #0e98dd !important;
+          color: #ffffff !important;
+          font-size: 12px !important; /* smaller numeral only */
+          font-weight: 600 !important;
+        }
+      </style>
+      <script src="/assets/js/plugin/sweetalert/sweetalert.min.js"></script>
+      <script th:inline="javascript">
+        /*<![CDATA[*/
+        document.addEventListener('DOMContentLoaded', function () {
+          // Ensure cart-count reflects current session value
+          try {
+            if (window.fetch) {
+              fetch('/cart/count', { credentials: 'same-origin' })
+                .then(function(res){ return res.ok ? res.text() : '0'; })
+                .then(function(txt){
+                  var val = parseInt(txt, 10);
+                  if (!isNaN(val)) {
+                    var el = document.querySelector('.cart-count');
+                    if (el) {
+                      var old = el.textContent;
+                      el.textContent = String(val);
+                      if (old !== String(val)) {
+                        el.classList.remove('badge-bump');
+                        // force reflow for animation restart
+                        void el.offsetWidth;
+                        el.classList.add('badge-bump');
+                        setTimeout(function(){ el.classList.remove('badge-bump'); }, 300);
+                      }
+                    }
+                  }
+                })
+                .catch(function(){});
+            }
+          } catch (e) {}
+
+          var successMsg = /*[[${success}]]*/ null;
+          var errorMsg = /*[[${error}]]*/ null;
+          function showFallbackToast(text, type) {
+            var el = document.createElement('div');
+            el.textContent = text;
+            el.style.position = 'fixed';
+            el.style.top = '16px';
+            el.style.right = '16px';
+            el.style.zIndex = '9999';
+            el.style.padding = '10px 14px';
+            el.style.borderRadius = '6px';
+            el.style.color = '#fff';
+            el.style.background = type === 'error' ? '#dc3545' : '#198754';
+            el.style.boxShadow = '0 4px 12px rgba(0,0,0,.15)';
+            document.body.appendChild(el);
+            setTimeout(function(){ el.remove(); }, 2000);
+          }
+          function showAlert(text, type) {
+            if (window.swal) {
+              swal({ title: type === 'error' ? 'Lỗi' : 'Thành công', text: text, icon: type === 'error' ? 'error' : 'success', timer: 1800, buttons: false });
+            } else {
+              showFallbackToast(text, type);
+            }
+          }
+          if (typeof successMsg === 'string' && successMsg.length > 0) { showAlert(successMsg, 'success'); }
+          if (typeof errorMsg === 'string' && errorMsg.length > 0) { showAlert(errorMsg, 'error'); }
+        });
+        /*]]>*/
+      </script>
     </th:block>
   </body>
 </html>

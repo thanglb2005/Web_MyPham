@@ -25,7 +25,8 @@ public class WebMvcConfig implements WebMvcConfigurer {
         System.out.println("Configuring resource handler: /images/ -> " + uploadPath);
         
         registry.addResourceHandler("/images/**")
-                .addResourceLocations("file:" + uploadPath + "/");
+                .addResourceLocations("file:" + uploadPath + "/")
+                .addResourceLocations("classpath:/static/images/");
                 
         // Các resource handler mặc định vẫn được giữ nguyên
     }
