@@ -1,0 +1,829 @@
+ <!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title th:text="${pageTitle}">Dashboard Shop</title>
+    <link rel="icon" href="/images/favicon.png" />
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="/assets/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="/assets/css/atlantis.css" />
+    <link rel="stylesheet" href="/assets/css/demo.css" />
+    <link rel="stylesheet" href="/assets/css/fonts.min.css" />
+    <link rel="stylesheet" href="/assets/css/atlantis.min.css" />
+    <link rel="stylesheet" href="/css/admin-fonts.css" />
+    <style>
+      /* Admin-style customizations for Shop Dashboard */
+      .logo-header {
+        background: white !important;
+        border-bottom: 1px solid #e9ecef;
+      }
+
+      .navbar-header {
+        background: #007bff !important;
+      }
+
+      .navbar-header .navbar-nav .nav-link {
+        color: white !important;
+      }
+
+      .navbar-header .navbar-nav .nav-link:hover {
+        color: #f8f9fa !important;
+      }
+
+      /* Fixed Sidebar */
+      .sidebar {
+        position: fixed !important;
+        top: 60px;
+        left: 0;
+        bottom: 0;
+        z-index: 1028;
+        width: 250px;
+        background: white !important;
+        border-right: 1px solid #e9ecef;
+        margin: 0;
+        padding: 0;
+      }
+
+      /* Main Content Adjustment */
+      .main-panel {
+        margin-top: 60px !important;
+        margin-left: 250px !important;
+        padding: 0;
+        margin-right: 0;
+      }
+
+      .content {
+        padding: 0;
+        margin: 0;
+        position: relative;
+        top: 0;
+      }
+
+      .page-inner {
+        padding: 0;
+        margin: 0;
+      }
+
+      .page-header {
+        padding: 15px 20px;
+        margin: 0;
+        background: white;
+        border-bottom: 1px solid #e9ecef;
+        position: relative;
+        top: 0;
+      }
+
+      .card-stats .card-body {
+        padding: 1.5rem;
+      }
+
+      .card-stats .card-stats-title {
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: #6c757d;
+        margin-bottom: 0.5rem;
+      }
+
+      .card-stats .card-stats-number {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #007bff;
+      }
+
+      .card-stats .card-stats-icon {
+        font-size: 2.5rem;
+        color: #007bff;
+        opacity: 0.7;
+      }
+
+      .shop-logo-dashboard {
+        width: 80px;
+        height: 80px;
+        object-fit: cover;
+        border-radius: 15px;
+        border: 3px solid rgba(255,255,255,0.3);
+      }
+
+      .status-badge {
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.9rem;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrapper">
+      <!-- Header -->
+      <div class="main-header">
+        <div class="logo-header" data-background-color="white">
+          <a th:href="@{/vendor/home}" class="logo">
+            <img
+              src="/images/logo/oneshop-logo.png"
+              alt="navbar brand"
+              class="navbar-brand"
+              style="width: 160px; height: auto;"
+              onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"
+            />
+            <span 
+              style="display: none; font-size: 1.5rem; font-weight: bold; color: #007bff;"
+            >
+              <i class="fas fa-store"></i> Vendor Dashboard
+            </span>
+          </a>
+          <button
+            class="navbar-toggler sidenav-toggler ml-auto"
+            type="button"
+            data-toggle="collapse"
+            data-target="collapse"
+            aria-expanded="false"
+            aria-label="Toggle navigation"
+          >
+            <span class="navbar-toggler-icon">
+              <i class="icon-menu"></i>
+            </span>
+          </button>
+        </div>
+
+        <!-- Navbar Header -->
+        <nav class="navbar navbar-header navbar-expand-lg" data-background-color="blue">
+          <div class="container-fluid">
+            <ul class="navbar-nav topbar-nav ml-md-auto align-items-center">
+              <li class="nav-item">
+                <a class="nav-link" th:href="@{/vendor/home}">
+                  <i class="fas fa-home"></i> Trang chủ
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" th:href="@{/vendor/my-shops}">
+                  <i class="fas fa-list"></i> Danh sách Shop
+                </a>
+              </li>
+              <li class="nav-item dropdown hidden-caret">
+                <a
+                  class="dropdown-toggle profile-pic"
+                  data-toggle="dropdown"
+                  href="#"
+                  aria-expanded="false"
+                >
+                  <div class="avatar-sm">
+                    <img
+                      src="/images/user.png"
+                      alt="User Avatar"
+                      class="avatar-img rounded-circle"
+                    />
+                  </div>
+                  <span class="profile-username" th:text="${vendor.name}">Vendor</span>
+                </a>
+                <ul class="dropdown-menu dropdown-user animated fadeIn">
+                  <div class="dropdown-user-scroll scrollbar-outer">
+                    <li>
+                      <div class="user-box">
+                        <div class="avatar-lg">
+                          <img
+                            src="/images/user.png"
+                            alt="User Avatar"
+                            class="avatar-img rounded"
+                          />
+                        </div>
+                        <div class="u-text">
+                          <h4 th:text="${vendor.name}">Vendor Name</h4>
+                          <p class="text-muted" th:text="${vendor.email}">vendor@email.com</p>
+                        </div>
+                      </div>
+                    </li>
+                    <li>
+                      <div class="dropdown-divider"></div>
+                      <a class="dropdown-item" th:href="@{/logout}">Logout</a>
+                    </li>
+                  </div>
+                </ul>
+              </li>
+            </ul>
+          </div>
+        </nav>
+      </div>
+
+      <!-- Sidebar -->
+      <div class="sidebar sidebar-style-2" data-background-color="white">
+        <div class="sidebar-wrapper scrollbar-inner">
+          <div class="sidebar-content">
+            <div class="user">
+              <div class="avatar-sm float-left mr-2">
+                <img
+                  src="/images/user.png"
+                  alt="User Avatar"
+                  class="avatar-img rounded-circle"
+                />
+              </div>
+              <div class="info">
+                <a
+                  data-toggle="collapse"
+                  href="#collapseExample"
+                  aria-expanded="true"
+                >
+                  <span th:text="${vendor.name}">
+                    Vendor Name
+                  </span>
+                  <span class="user-level">Shop Owner</span>
+                </a>
+                <div class="clearfix"></div>
+              </div>
+            </div>
+
+            <ul class="nav nav-primary">
+              <li class="nav-item active">
+                <a th:href="@{'/vendor/dashboard/' + ${shop.shopId}}">
+                  <i class="fas fa-tachometer-alt"></i>
+                  <p>Dashboard Shop</p>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a th:href="@{'/vendor/products?shopId=' + ${shop.shopId}}">
+                  <i class="fas fa-box"></i>
+                  <p>Sản phẩm</p>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a th:href="@{'/vendor/orders?shopId=' + ${shop.shopId}}">
+                  <i class="fas fa-shopping-cart"></i>
+                  <p>Đơn hàng</p>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a th:href="@{/vendor/my-shops}">
+                  <i class="fas fa-store"></i>
+                  <p>Tất cả Shops</p>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a th:href="@{/vendor/home}">
+                  <i class="fas fa-home"></i>
+                  <p>Trang chủ Vendor</p>
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="main-panel">
+        <div class="content">
+          <!-- Page Header -->
+          <div class="page-header">
+            <h4 class="page-title">
+              <i class="fas fa-tachometer-alt"></i>
+              Dashboard - <span th:text="${shop.shopName}">Shop Name</span>
+            </h4>
+            <ul class="breadcrumbs">
+              <li class="nav-home">
+                <a th:href="@{/vendor/home}">
+                  <i class="flaticon-home"></i>
+                </a>
+              </li>
+              <li class="separator">
+                <i class="flaticon-right-arrow"></i>
+              </li>
+              <li class="nav-item">
+                <a th:href="@{/vendor/my-shops}">Shops</a>
+              </li>
+              <li class="separator">
+                <i class="flaticon-right-arrow"></i>
+              </li>
+              <li class="nav-item">
+                <a href="#" th:text="${shop.shopName}">Dashboard</a>
+              </li>
+            </ul>
+          </div>
+
+          <div class="page-inner">
+            <!-- Statistics Cards -->
+            <div class="row">
+              <div class="col-md-6 col-lg-3">
+                <div class="card card-stats card-primary">
+                  <div class="card-body">
+                    <div class="row">
+                      <div class="col-5">
+                        <div class="icon-big text-center">
+                          <i class="flaticon-box card-stats-icon"></i>
+                        </div>
+                      </div>
+                      <div class="col-7 col-stats">
+                        <div class="numbers">
+                          <p class="card-stats-title">Sản phẩm</p>
+                          <h4 class="card-stats-number" th:text="${productCount}">
+                            0
+                          </h4>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-md-6 col-lg-3">
+                <div class="card card-stats card-info">
+                  <div class="card-body">
+                    <div class="row">
+                      <div class="col-5">
+                        <div class="icon-big text-center">
+                          <i class="flaticon-shopping-cart card-stats-icon"></i>
+                        </div>
+                      </div>
+                      <div class="col-7 col-stats">
+                        <div class="numbers">
+                          <p class="card-stats-title">Đơn hàng</p>
+                          <h4 class="card-stats-number" th:text="${shop.totalOrders}">
+                            0
+                          </h4>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-md-6 col-lg-3">
+                <div class="card card-stats card-success">
+                  <div class="card-body">
+                    <div class="row">
+                      <div class="col-5">
+                        <div class="icon-big text-center">
+                          <i class="flaticon-dollar card-stats-icon"></i>
+                        </div>
+                      </div>
+                      <div class="col-7 col-stats">
+                        <div class="numbers">
+                          <p class="card-stats-title">Doanh thu</p>
+                          <h4 class="card-stats-number" th:text="${#numbers.formatDecimal(shop.totalRevenue/1000000,1,'DEFAULT',1,'DEFAULT')} + 'M'">
+                            0M
+                          </h4>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-md-6 col-lg-3">
+                <div class="card card-stats card-warning">
+                  <div class="card-body">
+                    <div class="row">
+                      <div class="col-5">
+                        <div class="icon-big text-center">
+                          <i class="flaticon-clock card-stats-icon"></i>
+                        </div>
+                      </div>
+                      <div class="col-7 col-stats">
+                        <div class="numbers">
+                          <p class="card-stats-title">Chuẩn bị</p>
+                          <h4 class="card-stats-number" th:text="${shop.preparationDays} + ' ngày'">
+                            2 ngày
+                          </h4>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Shop Welcome Section -->
+            <div class="row">
+              <div class="col-md-8">
+                <div class="card">
+                  <div class="card-header">
+                    <div class="card-title">
+                      <i class="flaticon-store"></i> 
+                      Chào mừng đến với Dashboard của <span th:text="${shop.shopName}">Shop</span>
+                    </div>
+                  </div>
+                  <div class="card-body">
+                    <div class="row">
+                      <div class="col-md-8">
+                        <h4 class="text-primary mb-3" th:text="${shop.shopName}">
+                          Tên Shop
+                        </h4>
+                        <p class="mb-3" th:text="${shop.shopDescription} ?: 'Chưa có mô tả shop'">
+                          Mô tả shop
+                        </p>
+
+                        <div class="row mb-3">
+                          <div class="col-md-6">
+                            <h6 class="text-primary">Quản lý nhanh:</h6>
+                            <ul class="list-unstyled">
+                              <li>
+                                <i class="flaticon-check text-success"></i> Thêm sản phẩm mới
+                              </li>
+                              <li>
+                                <i class="flaticon-check text-success"></i> Xử lý đơn hàng
+                              </li>
+                              <li>
+                                <i class="flaticon-check text-success"></i> Theo dõi doanh thu
+                              </li>
+                              <li>
+                                <i class="flaticon-check text-success"></i> Cài đặt shop
+                              </li>
+                            </ul>
+                          </div>
+                          <div class="col-md-6">
+                            <h6 class="text-primary">Thông tin:</h6>
+                            <ul class="list-unstyled">
+                              <li>
+                                <i class="flaticon-phone text-info"></i> 
+                                <span th:text="${shop.phoneNumber} ?: 'Chưa cập nhật'">Phone</span>
+                              </li>
+                              <li>
+                                <i class="flaticon-location text-info"></i>
+                                <span th:text="${shop.city} ?: 'Chưa cập nhật'">City</span>
+                              </li>
+                              <li>
+                                <i class="flaticon-truck text-info"></i>
+                                COD: <span th:text="${shop.allowCod} ? 'Có' : 'Không'">Có</span>
+                              </li>
+                              <li>
+                                <i class="flaticon-calendar text-info"></i>
+                                Tạo: <span th:text="${#temporals.format(shop.createdAt, 'dd/MM/yyyy')}">Date</span>
+                              </li>
+                            </ul>
+                          </div>
+                        </div>
+
+                        <div class="d-flex">
+                          <button
+                            onclick="showProductManagement()"
+                            class="btn btn-primary mr-2"
+                          >
+                            <i class="flaticon-box"></i> Quản lý Sản phẩm
+                          </button>
+                          <button
+                            onclick="showOrderManagement()"
+                            class="btn btn-outline-primary"
+                          >
+                            <i class="flaticon-shopping-cart"></i> Quản lý Đơn hàng
+                          </button>
+                        </div>
+                      </div>
+                      <div class="col-md-4 text-center">
+                        <div th:if="${shop.shopLogo != null}">
+                          <img
+                            th:src="@{'/loadImage?imageName=' + ${shop.shopLogo}}"
+                            alt="Logo shop"
+                            class="shop-logo-dashboard"
+                          />
+                        </div>
+                        <div th:if="${shop.shopLogo == null}">
+                          <i
+                            class="flaticon-store fa-5x text-primary"
+                            style="opacity: 0.5"
+                          ></i>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-md-4">
+                <div class="card">
+                  <div class="card-header">
+                    <div class="card-title">
+                      <i class="flaticon-information"></i> Trạng thái Shop
+                    </div>
+                  </div>
+                  <div class="card-body">
+                    <div class="mb-3">
+                      <small class="text-muted">Trạng thái hiện tại</small>
+                      <div>
+                        <span class="badge" 
+                              th:classappend="${shop.status.name()}=='ACTIVE' ? 'badge-success' : 
+                                             (${shop.status.name()}=='PENDING' ? 'badge-warning' : 'badge-danger')"
+                              th:text="${shop.status.name()}=='ACTIVE' ? 'Đang hoạt động' :
+                                       (${shop.status.name()}=='PENDING' ? 'Chờ phê duyệt' : 'Tạm ngưng')">
+                          Status
+                        </span>
+                      </div>
+                    </div>
+                    <div class="mb-3">
+                      <small class="text-muted">Shop Slug</small>
+                      <div class="fw-bold" th:text="${shop.shopSlug}">shop-slug</div>
+                    </div>
+                    <div class="mb-3">
+                      <small class="text-muted">Ngày chuẩn bị đơn</small>
+                      <div class="fw-bold" th:text="${shop.preparationDays} + ' ngày'">2 ngày</div>
+                    </div>
+                    <hr />
+                    <div class="text-center">
+                      <a th:href="@{'/shop/' + ${shop.shopSlug}}" target="_blank" class="btn btn-outline-primary btn-sm">
+                        <i class="flaticon-eye"></i> Xem shop trên web
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Product Management Section (Hidden by default) -->
+            <div class="row mt-4" id="productManagementSection" style="display: none;">
+              <div class="col-md-12">
+                <div class="card">
+                  <div class="card-header d-flex justify-content-between align-items-center">
+                    <div class="card-title mb-0">
+                      <i class="flaticon-box"></i> Quản lý Sản phẩm
+                    </div>
+                    <button class="btn btn-sm btn-secondary" onclick="hideManagementSections()">
+                      <i class="flaticon-close"></i> Đóng
+                    </button>
+                  </div>
+                  <div class="card-body">
+                    <div class="row mb-4">
+                      <div class="col-md-6">
+                        <button class="btn btn-primary" onclick="showAddProductForm()">
+                          <i class="flaticon-plus"></i> Thêm sản phẩm mới
+                        </button>
+                        <button class="btn btn-outline-primary ml-2" onclick="loadProductList()">
+                          <i class="flaticon-list"></i> Danh sách sản phẩm
+                        </button>
+                      </div>
+                    </div>
+                    
+                    <!-- Add Product Form -->
+                    <div id="addProductForm" style="display: none;">
+                      <h5 class="mb-3">Thêm sản phẩm mới</h5>
+                      <form>
+                        <div class="row">
+                          <div class="col-md-6">
+                            <div class="form-group">
+                              <label>Tên sản phẩm</label>
+                              <input type="text" class="form-control" placeholder="Nhập tên sản phẩm">
+                            </div>
+                          </div>
+                          <div class="col-md-6">
+                            <div class="form-group">
+                              <label>Giá bán</label>
+                              <input type="number" class="form-control" placeholder="Nhập giá bán">
+                            </div>
+                          </div>
+                        </div>
+                        <div class="form-group">
+                          <label>Mô tả sản phẩm</label>
+                          <textarea class="form-control" rows="4" placeholder="Nhập mô tả chi tiết"></textarea>
+                        </div>
+                        <div class="row">
+                          <div class="col-md-6">
+                            <div class="form-group">
+                              <label>Danh mục</label>
+                              <select class="form-control">
+                                <option>Chọn danh mục</option>
+                                <option>Mỹ phẩm</option>
+                                <option>Skincare</option>
+                                <option>Makeup</option>
+                              </select>
+                            </div>
+                          </div>
+                          <div class="col-md-6">
+                            <div class="form-group">
+                              <label>Tồn kho</label>
+                              <input type="number" class="form-control" placeholder="Số lượng tồn kho">
+                            </div>
+                          </div>
+                        </div>
+                        <div class="form-group">
+                          <label>Hình ảnh sản phẩm</label>
+                          <input type="file" class="form-control" multiple>
+                        </div>
+                        <div class="form-actions">
+                          <button type="submit" class="btn btn-success">
+                            <i class="flaticon-check"></i> Lưu sản phẩm
+                          </button>
+                          <button type="button" class="btn btn-secondary ml-2" onclick="hideAddProductForm()">
+                            <i class="flaticon-close"></i> Hủy
+                          </button>
+                        </div>
+                      </form>
+                    </div>
+
+                    <!-- Product List -->
+                    <div id="productList" style="display: none;">
+                      <h5 class="mb-3">Danh sách sản phẩm</h5>
+                      <div class="table-responsive">
+                        <table class="table table-hover">
+                          <thead>
+                            <tr>
+                              <th>Hình ảnh</th>
+                              <th>Tên sản phẩm</th>
+                              <th>Giá</th>
+                              <th>Tồn kho</th>
+                              <th>Trạng thái</th>
+                              <th>Hành động</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr>
+                              <td colspan="6" class="text-center text-muted py-4">
+                                <i class="flaticon-box fa-3x mb-3 d-block"></i>
+                                Đang tải danh sách sản phẩm...
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Order Management Section (Hidden by default) -->
+            <div class="row mt-4" id="orderManagementSection" style="display: none;">
+              <div class="col-md-12">
+                <div class="card">
+                  <div class="card-header d-flex justify-content-between align-items-center">
+                    <div class="card-title mb-0">
+                      <i class="flaticon-shopping-cart"></i> Quản lý Đơn hàng
+                    </div>
+                    <button class="btn btn-sm btn-secondary" onclick="hideManagementSections()">
+                      <i class="flaticon-close"></i> Đóng
+                    </button>
+                  </div>
+                  <div class="card-body">
+                    <div class="row mb-4">
+                      <div class="col-md-12">
+                        <div class="btn-group" role="group">
+                          <button class="btn btn-outline-primary active" onclick="filterOrders('all')">
+                            Tất cả đơn hàng
+                          </button>
+                          <button class="btn btn-outline-warning" onclick="filterOrders('pending')">
+                            Chờ xử lý
+                          </button>
+                          <button class="btn btn-outline-info" onclick="filterOrders('processing')">
+                            Đang xử lý
+                          </button>
+                          <button class="btn btn-outline-success" onclick="filterOrders('completed')">
+                            Hoàn thành
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="table-responsive">
+                      <table class="table table-hover">
+                        <thead>
+                          <tr>
+                            <th>Mã đơn</th>
+                            <th>Khách hàng</th>
+                            <th>Sản phẩm</th>
+                            <th>Tổng tiền</th>
+                            <th>Trạng thái</th>
+                            <th>Ngày đặt</th>
+                            <th>Hành động</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr>
+                            <td colspan="7" class="text-center text-muted py-4">
+                              <i class="flaticon-shopping-cart fa-3x mb-3 d-block"></i>
+                              Đang tải danh sách đơn hàng...
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/assets/js/core/jquery.3.2.1.min.js"></script>
+    <script src="/assets/js/core/popper.min.js"></script>
+    <script src="/assets/js/core/bootstrap.min.js"></script>
+    <script src="/assets/js/plugin/jquery-ui-1.12.1.custom/jquery-ui.min.js"></script>
+    <script src="/assets/js/plugin/jquery-ui-touch-punch/jquery.ui.touch-punch.min.js"></script>
+    <script src="/assets/js/plugin/jquery-scrollbar/jquery.scrollbar.min.js"></script>
+    <script src="/assets/js/atlantis.min.js"></script>
+    
+    <script>
+      // Dashboard Management Functions
+      function showProductManagement() {
+        hideManagementSections();
+        document.getElementById('productManagementSection').style.display = 'block';
+        // Smooth scroll to section
+        document.getElementById('productManagementSection').scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'start' 
+        });
+      }
+
+      function showOrderManagement() {
+        hideManagementSections();
+        document.getElementById('orderManagementSection').style.display = 'block';
+        // Smooth scroll to section
+        document.getElementById('orderManagementSection').scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'start' 
+        });
+      }
+
+      function hideManagementSections() {
+        document.getElementById('productManagementSection').style.display = 'none';
+        document.getElementById('orderManagementSection').style.display = 'none';
+        hideAddProductForm();
+        hideProductList();
+      }
+
+      // Product Management Functions
+      function showAddProductForm() {
+        hideProductList();
+        document.getElementById('addProductForm').style.display = 'block';
+      }
+
+      function hideAddProductForm() {
+        document.getElementById('addProductForm').style.display = 'none';
+      }
+
+      function loadProductList() {
+        hideAddProductForm();
+        document.getElementById('productList').style.display = 'block';
+        
+        // TODO: Load actual product data via AJAX
+        setTimeout(() => {
+          const tbody = document.querySelector('#productList tbody');
+          tbody.innerHTML = `
+            <tr>
+              <td><img src="/images/sample-product.jpg" style="width: 50px; height: 50px; object-fit: cover;" onerror="this.src='/images/no-image.png'"></td>
+              <td>Son môi cao cấp</td>
+              <td>299,000 VNĐ</td>
+              <td>25</td>
+              <td><span class="badge badge-success">Đang bán</span></td>
+              <td>
+                <button class="btn btn-sm btn-outline-primary" onclick="editProduct(1)">
+                  <i class="flaticon-edit"></i>
+                </button>
+                <button class="btn btn-sm btn-outline-danger" onclick="deleteProduct(1)">
+                  <i class="flaticon-delete"></i>
+                </button>
+              </td>
+            </tr>
+            <tr>
+              <td><img src="/images/sample-product2.jpg" style="width: 50px; height: 50px; object-fit: cover;" onerror="this.src='/images/no-image.png'"></td>
+              <td>Kem dưỡng da</td>
+              <td>450,000 VNĐ</td>
+              <td>12</td>
+              <td><span class="badge badge-warning">Sắp hết</span></td>
+              <td>
+                <button class="btn btn-sm btn-outline-primary" onclick="editProduct(2)">
+                  <i class="flaticon-edit"></i>
+                </button>
+                <button class="btn btn-sm btn-outline-danger" onclick="deleteProduct(2)">
+                  <i class="flaticon-delete"></i>
+                </button>
+              </td>
+            </tr>
+          `;
+        }, 1000);
+      }
+
+      function hideProductList() {
+        document.getElementById('productList').style.display = 'none';
+      }
+
+      // Order Management Functions
+      function filterOrders(status) {
+        // Remove active class from all buttons
+        document.querySelectorAll('#orderManagementSection .btn-group button').forEach(btn => {
+          btn.classList.remove('active');
+        });
+        
+        // Add active class to clicked button
+        event.target.classList.add('active');
+        
+        // TODO: Filter orders by status via AJAX
+        console.log('Filtering orders by status:', status);
+      }
+
+      // Utility Functions
+      function editProduct(productId) {
+        alert('Edit product ' + productId + ' - Feature coming soon!');
+      }
+
+      function deleteProduct(productId) {
+        if (confirm('Bạn có chắc chắn muốn xóa sản phẩm này?')) {
+          alert('Delete product ' + productId + ' - Feature coming soon!');
+        }
+      }
+
+      // Initialize page
+      $(document).ready(function() {
+        // Any initialization code here
+        console.log('Shop Dashboard initialized');
+      });
+    </script>
+  </body>
+</html>

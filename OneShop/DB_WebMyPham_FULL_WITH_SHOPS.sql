@@ -38,7 +38,7 @@ CREATE TABLE dbo.[user] (
     register_date  DATE DEFAULT (GETDATE()),
     status         BIT  DEFAULT 1
 );
--- 8 user (đã thêm shipper)
+-- 9 user (đã thêm shipper và CSKH)
 INSERT INTO dbo.[user](avatar, email, name, password, register_date, status)
 VALUES 
 ('user.png','chi@gmail.com',N'Trần Thảo Chi','123456','2025-09-04',1),
@@ -48,7 +48,8 @@ VALUES
 ('user.png','vendor@mypham.com',N'Nguyễn Văn An','123456','2025-10-07',1),
 ('user.png','vendor1@mypham.com',N'Trần Thị Bình','123456','2025-10-07',1),
 ('user.png','vendor2@mypham.com',N'Lê Quốc Cường','123456','2025-10-07',1),
-('user.png','shipper@mypham.com',N'Phạm Văn Giao','123456','2025-10-08',1);
+('user.png','shipper@mypham.com',N'Phạm Văn Giao','123456','2025-10-08',1),
+('user.png','cskh@mypham.com',N'Nguyễn Thị Linh - CSKH','123456','2025-10-10',1);
 GO
 
 /* ===============================
@@ -64,7 +65,8 @@ VALUES
 ('ROLE_USER'),
 ('ROLE_ADMIN'),
 ('ROLE_VENDOR'),
-('ROLE_SHIPPER');
+('ROLE_SHIPPER'),
+('ROLE_CSKH');
 GO
 
 /* ===============================
@@ -88,7 +90,8 @@ VALUES
 (5,1),(5,3),  -- vendor An: USER + VENDOR
 (6,1),(6,3),  -- vendor Bình: USER + VENDOR
 (7,1),(7,3),  -- vendor Cường: USER + VENDOR
-(8,4);  -- shipper
+(8,4),  -- shipper
+(9,5);  -- cskh: CSKH
 GO
 
 /* ===============================
@@ -119,8 +122,8 @@ CREATE TABLE dbo.shops (
     shop_logo NVARCHAR(255),
     shop_banner NVARCHAR(255),
     
-    -- Liên kết vendor (1 user = 1 shop)
-    vendor_id BIGINT NOT NULL UNIQUE,
+    -- Liên kết vendor (1 vendor có thể có nhiều shop)
+    vendor_id BIGINT NOT NULL,
     
     -- Thông tin liên hệ
     phone_number NVARCHAR(15),
@@ -857,7 +860,7 @@ PRINT '✅ DATABASE ĐÃ HOÀN THÀNH!';
 PRINT '📊 Tổng kết:';
 PRINT '   - Categories: 10';
 PRINT '   - Brands: 58';
-PRINT '   - Users: 8 (3 vendor + 1 admin + 3 user + 1 shipper)';
+PRINT '   - Users: 9 (3 vendor + 1 admin + 3 user + 1 shipper + 1 cskh)';
 PRINT '   - Shops: 3 (2 ACTIVE + 1 PENDING)';
 SELECT 'Products' AS [Type], COUNT(*) AS [Count] FROM products;
 SELECT 'Shop 1 (An)' AS [Shop], COUNT(*) AS [Products] FROM products WHERE shop_id = 1;

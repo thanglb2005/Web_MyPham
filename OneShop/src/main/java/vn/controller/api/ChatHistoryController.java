@@ -101,13 +101,7 @@ public class ChatHistoryController {
     private boolean isVendorOrAdmin(HttpSession session) {
         Object userObj = session.getAttribute("user");
         if (!(userObj instanceof User)) return false;
-        User user = (User) userObj;
-        try {
-            return user.getRoles().stream().anyMatch(r ->
-                "ROLE_VENDOR".equals(r.getName()) || "ROLE_ADMIN".equals(r.getName())
-            );
-        } catch (Exception e) {
-            return false;
-        }
+        // Cho phép tất cả user đã login sử dụng chat
+        return true;
     }
 }

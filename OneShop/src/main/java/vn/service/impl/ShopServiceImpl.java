@@ -3,7 +3,6 @@ package vn.service.impl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import vn.entity.Order;
 import vn.entity.Shop;
 import vn.entity.User;
 import vn.repository.OrderDetailRepository;
@@ -12,6 +11,7 @@ import vn.repository.ShopRepository;
 import vn.service.ShopService;
 import vn.util.SlugUtils;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -27,6 +27,14 @@ public class ShopServiceImpl implements ShopService {
     private OrderDetailRepository orderDetailRepository;
 
     @Override
+    public Optional<Shop> findById(Long shopId) {
+        if (shopId == null) {
+            return Optional.empty();
+        }
+        return shopRepository.findById(shopId);
+    }
+
+    @Override
     public Optional<Shop> findByVendor(User vendor) {
         if (vendor == null) {
             return Optional.empty();
@@ -35,11 +43,27 @@ public class ShopServiceImpl implements ShopService {
     }
 
     @Override
+    public List<Shop> findAllByVendor(User vendor) {
+        if (vendor == null) {
+            return List.of();
+        }
+        return shopRepository.findAllByVendor(vendor);
+    }
+
+    @Override
     public Optional<Shop> findByVendorId(Long vendorId) {
         if (vendorId == null) {
             return Optional.empty();
         }
         return shopRepository.findByVendor_UserId(vendorId);
+    }
+
+    @Override
+    public List<Shop> findAllByVendorId(Long vendorId) {
+        if (vendorId == null) {
+            return List.of();
+        }
+        return shopRepository.findAllByVendor_UserId(vendorId);
     }
 
     @Override

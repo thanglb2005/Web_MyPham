@@ -7,6 +7,7 @@ import org.springframework.stereotype.Repository;
 import vn.entity.Shop;
 import vn.entity.User;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -15,6 +16,10 @@ public interface ShopRepository extends JpaRepository<Shop, Long> {
     Optional<Shop> findByVendor(User vendor);
 
     Optional<Shop> findByVendor_UserId(Long vendorId);
+
+    List<Shop> findAllByVendor(User vendor);
+
+    List<Shop> findAllByVendor_UserId(Long vendorId);
 
     boolean existsByShopSlug(String slug);
 

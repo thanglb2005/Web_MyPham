@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title th:text="${pageTitle}">Danh sách Shop</title>
+    <link rel="stylesheet" th:href="@{/vendor/bootstrap/bootstrap.min.css}" />
+    <link rel="stylesheet" th:href="@{/fonts/fontawesome/fontawesome.min.css}" />
+    <link rel="stylesheet" th:href="@{/css/main.css}" />
+    <link rel="stylesheet" th:href="@{/css/vendor.css}" />
+    <style>
+      .shop-info-card {
+        background: #fff;
+        border: 1px solid #e0e0e0;
+        border-radius: 15px;
+        padding: 30px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        margin-bottom: 30px;
+      }
+      .shop-logo {
+        width: 120px;
+        height: 120px;
+        object-fit: cover;
+        border-radius: 15px;
+        border: 3px solid #f8f9fa;
+      }
+      .shop-banner {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+        border-radius: 10px;
+      }
+      .status-badge {
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.875rem;
+      }
+      .metric-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 25px;
+        border-radius: 15px;
+        text-align: center;
+        margin-bottom: 20px;
+      }
+      .metric-number {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 5px;
+      }
+      .action-btn {
+        border-radius: 25px;
+        padding: 10px 25px;
+        font-weight: 600;
+        margin: 5px;
+      }
+    </style>
+  </head>
+  <body>
+    <header th:replace="~{/web/fragments/header :: header}"></header>
+
+    <main class="section" style="padding-top: 40px;">
+      <div class="container">
+        <!-- Breadcrumb -->
+        <nav aria-label="breadcrumb" class="mb-4">
+          <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+              <a th:href="@{/vendor/home}">
+                <i class="fas fa-home"></i> Trang chủ Vendor
+              </a>
+            </li>
+            <li class="breadcrumb-item active">Shop của tôi</li>
+          </ol>
+        </nav>
+
+        <!-- Shop Information -->
+        <div class="shop-info-card">
+          <div class="row">
+            <div class="col-md-8">
+              <div class="d-flex align-items-start gap-3 mb-4">
+                <div>
+                  <img th:if="${shop.shopLogo != null}"
+                       th:src="@{'/loadImage?imageName=' + ${shop.shopLogo}}"
+                       alt="Logo shop" class="shop-logo" />
+                  <div th:if="${shop.shopLogo == null}" 
+                       class="shop-logo d-flex align-items-center justify-content-center bg-light">
+                    <i class="fas fa-store fa-3x text-muted"></i>
+                  </div>
+                </div>
+                <div class="flex-grow-1">
+                  <h2 class="mb-2" th:text="${shop.shopName}">Tên Shop</h2>
+                  <p class="text-muted mb-3" th:text="${shop.shopDescription} ?: 'Chưa có mô tả shop'">
+                    Mô tả shop
+                  </p>
+                  <span class="status-badge" 
+                        th:classappend="${shop.status.name()}=='ACTIVE' ? 'bg-success text-white' : 
+                                       (${shop.status.name()}=='PENDING' ? 'bg-warning text-dark' : 'bg-danger text-white')"
+                        th:text="${shop.status.name()}=='ACTIVE' ? 'Đang hoạt động' :
+                                 (${shop.status.name()}=='PENDING' ? 'Chờ phê duyệt' : 'Tạm ngưng')">
+                    Trạng thái
+                  </span>
+                </div>
+              </div>
+
+              <!-- Contact Info -->
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <div class="d-flex align-items-center">
+                    <i class="fas fa-phone text-primary me-2"></i>
+                    <span th:text="${shop.phoneNumber} ?: 'Chưa cập nhật'">Số điện thoại</span>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="d-flex align-items-center">
+                    <i class="fas fa-map-marker-alt text-primary me-2"></i>
+                    <span th:text="${shop.address} ?: 'Chưa cập nhật'">Địa chỉ</span>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="d-flex align-items-center">
+                    <i class="fas fa-city text-primary me-2"></i>
+                    <span th:text="${shop.city} + ', ' + ${shop.district}">Thành phố</span>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="d-flex align-items-center">
+                    <i class="fas fa-calendar-alt text-primary me-2"></i>
+                    <span>Tạo lập: 
+                      <span th:text="${#temporals.format(shop.createdAt, 'dd/MM/yyyy')}">01/01/2024</span>
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-md-4">
+              <!-- Shop Banner -->
+              <div th:if="${shop.shopBanner != null}" class="mb-3">
+                <img th:src="@{'/loadImage?imageName=' + ${shop.shopBanner}}"
+                     alt="Banner shop" class="shop-banner" />
+              </div>
+              <div th:if="${shop.shopBanner == null}" 
+                   class="shop-banner bg-light d-flex align-items-center justify-content-center">
+                <div class="text-center text-muted">
+                  <i class="fas fa-image fa-3x mb-2"></i>
+                  <p>Chưa có banner</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Shop Metrics -->
+        <div class="row g-4 mb-4">
+          <div class="col-md-3">
+            <div class="metric-card">
+              <div class="metric-number" th:text="${shop.totalProducts}">0</div>
+              <div>Sản phẩm</div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="metric-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+              <div class="metric-number" th:text="${shop.totalOrders}">0</div>
+              <div>Đơn hàng</div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="metric-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+              <div class="metric-number" th:text="${#numbers.formatDecimal(shop.totalRevenue/1000000,1,'DEFAULT',1,'DEFAULT')} + 'M'">0M</div>
+              <div>Doanh thu (VNĐ)</div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="metric-card" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
+              <div class="metric-number" th:text="${shop.preparationDays}">2</div>
+              <div>Ngày chuẩn bị</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="shop-info-card">
+          <h4 class="mb-4">
+            <i class="fas fa-bolt"></i>
+            Hành động nhanh
+          </h4>
+          <div class="row g-3">
+            <div class="col-md-3 col-6">
+              <a th:href="@{/vendor/products}" class="btn btn-primary action-btn w-100">
+                <i class="fas fa-box"></i>
+                <br>Quản lý sản phẩm
+              </a>
+            </div>
+            <div class="col-md-3 col-6">
+              <a th:href="@{/vendor/orders}" class="btn btn-success action-btn w-100">
+                <i class="fas fa-shopping-cart"></i>
+                <br>Xem đơn hàng
+              </a>
+            </div>
+            <div class="col-md-3 col-6">
+              <a th:href="@{/cskh/chat}" class="btn btn-info action-btn w-100" target="_blank">
+                <i class="fas fa-comments"></i>
+                <br>Chat khách hàng
+              </a>
+            </div>
+            <div class="col-md-3 col-6">
+              <a th:href="@{/vendor/shop/settings}" class="btn btn-warning action-btn w-100">
+                <i class="fas fa-cog"></i>
+                <br>Cài đặt shop
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Shop Settings Info -->
+        <div class="shop-info-card">
+          <h4 class="mb-4">
+            <i class="fas fa-info-circle"></i>
+            Thông tin cài đặt
+          </h4>
+          <div class="row">
+            <div class="col-md-6">
+              <div class="border rounded p-3">
+                <h6 class="text-primary">
+                  <i class="fas fa-truck"></i>
+                  Giao hàng
+                </h6>
+                <p class="mb-1">
+                  <strong>COD:</strong> 
+                  <span th:text="${shop.allowCod} ? 'Có hỗ trợ' : 'Không hỗ trợ'">Có hỗ trợ</span>
+                </p>
+                <p class="mb-0">
+                  <strong>Thời gian chuẩn bị:</strong> 
+                  <span th:text="${shop.preparationDays} + ' ngày'">2 ngày</span>
+                </p>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="border rounded p-3">
+                <h6 class="text-primary">
+                  <i class="fas fa-link"></i>
+                  Đường dẫn
+                </h6>
+                <p class="mb-1">
+                  <strong>Shop slug:</strong> 
+                  <span class="text-muted" th:text="${shop.shopSlug}">shop-slug</span>
+                </p>
+                <p class="mb-0">
+                  <strong>URL:</strong> 
+                  <a th:href="@{'/shop/' + ${shop.shopSlug}}" target="_blank" class="text-decoration-none">
+                    Xem shop trên web
+                    <i class="fas fa-external-link-alt"></i>
+                  </a>
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Back Button -->
+        <div class="text-center">
+          <a th:href="@{/vendor/home}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i>
+            Quay lại trang chủ Vendor
+          </a>
+        </div>
+      </div>
+    </main>
+
+    <footer th:replace="~{/web/fragments/footer :: footer}"></footer>
+
+    <script th:src="@{/vendor/bootstrap/jquery-3.6.0.min.js}"></script>
+    <script th:src="@{/vendor/bootstrap/bootstrap.bundle.min.js}"></script>
+  </body>
+</html>

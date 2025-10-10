@@ -39,11 +39,7 @@ public class VendorShopController {
             return "redirect:/login";
         }
 
-        Optional<Shop> existingShop = shopService.findByVendor(vendor);
-        if (existingShop.isPresent()) {
-            redirectAttributes.addFlashAttribute("info", "Bạn đã có shop. Có thể cập nhật thông tin tại đây.");
-            return "redirect:/vendor/shop/settings";
-        }
+        // Vendor có thể tạo nhiều shop
 
         if (!model.containsAttribute("shopForm")) {
             model.addAttribute("shopForm", new VendorShopForm());
@@ -107,7 +103,7 @@ public class VendorShopController {
 
         shopService.registerShop(vendor, shop);
         redirectAttributes.addFlashAttribute("success", "Đăng ký shop thành công! Shop sẽ được duyệt trong thời gian sớm nhất.");
-        return "redirect:/vendor/dashboard";
+        return "redirect:/vendor/home";
     }
 
     @GetMapping("/settings")

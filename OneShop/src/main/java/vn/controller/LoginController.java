@@ -29,12 +29,20 @@ public class LoginController {
         if (user != null) {
             session.setAttribute("user", user);
             
-            // Check if user is admin
+            // Check user role for routing
             boolean isAdmin = user.getRoles().stream()
                 .anyMatch(role -> role.getName().equals("ROLE_ADMIN"));
+            boolean isCSKH = user.getRoles().stream()
+                .anyMatch(role -> role.getName().equals("ROLE_CSKH"));
+            boolean isVendor = user.getRoles().stream()
+                .anyMatch(role -> role.getName().equals("ROLE_VENDOR"));
             
             if (isAdmin) {
                 return "redirect:/admin/home";
+            } else if (isCSKH) {
+                return "redirect:/cskh/chat";
+            } else if (isVendor) {
+                return "redirect:/vendor/home";
             } else {
                 return "redirect:/";
             }
@@ -61,12 +69,20 @@ public class LoginController {
                 createRememberMeCookie(user, response);
             }
             
-            // Check if user is admin
+            // Check user role for routing
             boolean isAdmin = user.getRoles().stream()
                 .anyMatch(role -> role.getName().equals("ROLE_ADMIN"));
+            boolean isCSKH = user.getRoles().stream()
+                .anyMatch(role -> role.getName().equals("ROLE_CSKH"));
+            boolean isVendor = user.getRoles().stream()
+                .anyMatch(role -> role.getName().equals("ROLE_VENDOR"));
             
             if (isAdmin) {
                 return "redirect:/admin/home";
+            } else if (isCSKH) {
+                return "redirect:/cskh/chat";
+            } else if (isVendor) {
+                return "redirect:/vendor/home";
             } else {
                 return "redirect:/";
             }

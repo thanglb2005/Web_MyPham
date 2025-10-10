@@ -91,6 +91,17 @@ public class ChatViewController {
         return "redirect:/chat";
     }
 
+    @GetMapping("/cskh/chat")
+    public String cskhChatPage(HttpSession session, Model model) {
+        Object userObj = session.getAttribute("user");
+        if (userObj instanceof User) {
+            // Cho phép tất cả user đã login vào chat
+            return "admin/vendor-chat"; // Dùng chung template
+        }
+        // Not logged in: redirect to login
+        return "redirect:/login";
+    }
+
     private String getCookie(HttpServletRequest request, String name) {
         if (request.getCookies() == null) return null;
         for (Cookie c : request.getCookies()) {

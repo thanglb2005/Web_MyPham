@@ -9,13 +9,30 @@
     <link rel="stylesheet" th:href="@{/css/main.css}" />
     <link rel="stylesheet" th:href="@{/css/vendor.css}" />
   </head>
-  <body>
-    <header th:replace="~{/web/fragments/header :: header}"></header>
-
-    <main class="section" style="padding-top: 40px;">
+  <body class="bg-light">
+    <!-- Vendor Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
       <div class="container">
-        <div th:replace="~{vendor/fragments/nav :: vendorNav('register')}"></div>
+        <a class="navbar-brand" th:href="@{/vendor/home}">
+          <i class="fas fa-store"></i>
+          Vendor Portal
+        </a>
+        <div class="navbar-nav ms-auto">
+          <a class="nav-link" th:href="@{/vendor/home}">
+            <i class="fas fa-home"></i> Trang chủ
+          </a>
+          <a class="nav-link" th:href="@{/vendor/my-shops}">
+            <i class="fas fa-list"></i> Danh sách Shop
+          </a>
+          <a class="nav-link" th:href="@{/logout}">
+            <i class="fas fa-sign-out-alt"></i> Đăng xuất
+          </a>
+        </div>
+      </div>
+    </nav>
 
+    <main class="py-4">
+      <div class="container">
         <div class="vendor-card vendor-form">
           <h2 class="mb-3">Đăng ký shop</h2>
           <p class="text-muted">Cung cấp thông tin cơ bản để chúng tôi tạo storefront cho bạn.</p>
@@ -78,14 +95,12 @@
               <button type="submit" class="btn btn-primary">
                 <i class="fas fa-paper-plane"></i> Gửi đăng ký
               </button>
-              <a class="btn btn-outline-secondary" th:href="@{/vendor/dashboard}">Hủy</a>
+              <a class="btn btn-outline-secondary" th:href="@{/vendor/home}">Hủy</a>
             </div>
           </form>
         </div>
       </div>
     </main>
-
-    <footer th:replace="~{/web/fragments/footer :: footer}"></footer>
 
     <script th:src="@{/vendor/bootstrap/jquery-3.6.0.min.js}"></script>
     <script th:src="@{/vendor/bootstrap/bootstrap.bundle.min.js}"></script>
