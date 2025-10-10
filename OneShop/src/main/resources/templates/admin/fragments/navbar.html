@@ -16,7 +16,6 @@
   "
 >
   <style>
-    /* Đảm bảo menu collapse hoạt động */
     .nav-item .collapse {
       display: none;
     }
@@ -25,7 +24,7 @@
     }
     .nav-item.active > a {
       background-color: #007bff !important;
-      color: white !important;
+      color: #fff !important;
     }
     .nav-item .caret {
       transition: transform 0.3s ease;
@@ -46,11 +45,7 @@
           />
         </div>
         <div class="info">
-          <a
-            data-toggle="collapse"
-            href="#collapseExample"
-            aria-expanded="true"
-          >
+          <a data-toggle="collapse" href="#collapseExample" aria-expanded="true">
             <span>
               Tên: Admin OneShop
               <span class="user-level">Administrator</span>
@@ -93,45 +88,57 @@
         </li>
 
         <li class="nav-item">
+          <a th:href="@{/admin/shops}" data-tooltip="Duyệt đăng ký shop">
+            <i class="fas fa-store"></i>
+            <p>Duyệt Shop</p>
+          </a>
+        </li>
+
+        <li class="nav-item">
           <a
             data-toggle="collapse"
             href="#tables"
-            data-tooltip="Hệ Thống Quản Lý"
+            data-tooltip="Hệ thống quản lý"
           >
             <i class="fas fa-table"></i>
-            <p>Hệ Thống Quản Lý</p>
+            <p>Hệ thống quản lý</p>
             <span class="caret"></span>
           </a>
           <div class="collapse" id="tables">
             <ul class="nav nav-collapse">
               <li>
                 <a th:href="@{/admin/categories}">
-                  <span class="sub-item">Quản Lý Thể Loại</span>
+                  <span class="sub-item">Quản lý Thể loại</span>
                 </a>
               </li>
               <li>
                 <a th:href="@{/admin/products}">
-                  <span class="sub-item">Quản Lý Sản Phẩm</span>
+                  <span class="sub-item">Quản lý Sản phẩm</span>
+                </a>
+              </li>
+              <li>
+                <a th:href="@{/admin/shops}">
+                  <span class="sub-item">Quản lý Shop</span>
                 </a>
               </li>
               <li>
                 <a th:href="@{/admin/brands}">
-                  <span class="sub-item">Quản Lý Thương Hiệu</span>
+                  <span class="sub-item">Quản lý Thương hiệu</span>
                 </a>
               </li>
               <li>
                 <a th:href="@{/admin/shipping-providers}">
-                  <span class="sub-item">Quản Lý Nhà Vận Chuyển</span>
+                  <span class="sub-item">Quản lý Nhà vận chuyển</span>
                 </a>
               </li>
               <li>
                 <a th:href="@{/admin/orders}">
-                  <span class="sub-item">Quản Lý Đơn Hàng</span>
+                  <span class="sub-item">Quản lý Đơn hàng</span>
                 </a>
               </li>
               <li>
                 <a th:href="@{/admin/users}">
-                  <span class="sub-item">Quản Lý Khách Hàng</span>
+                  <span class="sub-item">Quản lý Khách hàng</span>
                 </a>
               </li>
             </ul>
@@ -142,52 +149,52 @@
           <a
             data-toggle="collapse"
             href="#charts"
-            data-tooltip="Thống Kê Doanh Số"
+            data-tooltip="Thống kê doanh số"
           >
             <i class="far fa-chart-bar"></i>
-            <p>Thống Kê Doanh Số</p>
+            <p>Thống kê doanh số</p>
             <span class="caret"></span>
           </a>
           <div class="collapse" id="charts">
             <ul class="nav nav-collapse">
               <li>
                 <a href="/admin/statistics#overview">
-                  <span class="sub-item">Dashboard Thống Kê</span>
+                  <span class="sub-item">Dashboard thống kê</span>
                 </a>
               </li>
               <li>
                 <a href="/admin/statistics#products">
-                  <span class="sub-item">Thống Kê Sản Phẩm</span>
+                  <span class="sub-item">Thống kê sản phẩm</span>
                 </a>
               </li>
               <li>
                 <a th:href="@{/admin/category-statistics}">
-                  <span class="sub-item">Thống Kê Danh Mục</span>
+                  <span class="sub-item">Thống kê danh mục</span>
                 </a>
               </li>
               <li>
                 <a href="/admin/statistics#brands">
-                  <span class="sub-item">Thống Kê Thương Hiệu</span>
+                  <span class="sub-item">Thống kê thương hiệu</span>
                 </a>
               </li>
               <li>
                 <a th:href="@{/admin/customer-statistics}">
-                  <span class="sub-item">Thống Kê Khách Hàng</span>
+                  <span class="sub-item">Thống kê khách hàng</span>
                 </a>
               </li>
               <li>
                 <a th:href="@{/admin/revenue-statistics}">
-                  <span class="sub-item">Thống Kê Doanh Thu</span>
+                  <span class="sub-item">Thống kê doanh thu</span>
                 </a>
               </li>
               <li>
                 <a href="/admin/statistics#products">
-                  <span class="sub-item">Sản Phẩm Bán Chạy</span>
+                  <span class="sub-item">Sản phẩm bán chạy</span>
                 </a>
               </li>
               <li>
                 <a href="/admin/statistics#products">
-                  <span class="sub-item">Sản Phẩm Yêu Thích</span>
+                  <span class="sub-item">Sản phẩm yêu thích</span>
                 </a>
               </li>
             </ul>

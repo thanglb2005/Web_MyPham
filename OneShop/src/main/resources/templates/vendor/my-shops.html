@@ -3,288 +3,210 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title th:text="${pageTitle}">Danh sách Shop của tôi</title>
+    <title th:text="${pageTitle}">Shop của tôi</title>
     <link rel="stylesheet" th:href="@{/vendor/bootstrap/bootstrap.min.css}" />
-    <link rel="stylesheet" th:href="@{/fonts/fontawesome/fontawesome.min.css}" />
+    <link
+      rel="stylesheet"
+      th:href="@{/fonts/fontawesome/fontawesome.min.css}"
+    />
     <link rel="stylesheet" th:href="@{/css/main.css}" />
     <link rel="stylesheet" th:href="@{/css/vendor.css}" />
     <style>
+      body {
+        background-color: #f3f4f6;
+      }
+      .vendor-section {
+        background: #fff;
+        border-radius: 20px;
+        padding: 28px;
+        box-shadow: 0 16px 40px rgba(15, 23, 42, 0.08);
+        border: 1px solid rgba(15, 23, 42, 0.06);
+      }
+      .shop-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 24px;
+      }
       .shop-card {
         background: #fff;
-        border: 1px solid #e0e0e0;
-        border-radius: 15px;
-        padding: 25px;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-        margin-bottom: 25px;
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border-radius: 18px;
+        border: 1px solid rgba(15, 23, 42, 0.08);
+        padding: 24px;
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+        box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
       }
       .shop-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+        transform: translateY(-4px);
+        box-shadow: 0 22px 45px rgba(37, 99, 235, 0.2);
       }
-      .shop-logo {
-        width: 80px;
-        height: 80px;
-        object-fit: cover;
-        border-radius: 12px;
-        border: 2px solid #f8f9fa;
-      }
-      .shop-banner {
-        width: 100%;
-        height: 120px;
-        object-fit: cover;
-        border-radius: 8px;
-      }
-      .status-badge {
-        padding: 6px 12px;
-        border-radius: 15px;
-        font-weight: 600;
-        font-size: 0.8rem;
-      }
-      .metric-item {
-        text-align: center;
-        padding: 15px;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        border-radius: 10px;
-        margin-bottom: 10px;
-      }
-      .metric-number {
-        font-size: 1.5rem;
-        font-weight: 700;
-        margin-bottom: 3px;
-      }
-      .shop-actions {
+      .shop-card header {
         display: flex;
-        gap: 10px;
-        flex-wrap: wrap;
+        flex-direction: column;
+        gap: 4px;
       }
-      .action-btn-sm {
-        border-radius: 20px;
-        padding: 8px 16px;
-        font-size: 0.875rem;
+      .metric-line {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 0.95rem;
+        color: #475569;
+      }
+      .metric-line strong {
+        color: #0f172a;
+      }
+      .badge-status {
+        border-radius: 999px;
+        padding: 0.4rem 0.85rem;
         font-weight: 600;
+        font-size: 0.85rem;
       }
-      .summary-card {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        padding: 30px;
-        border-radius: 15px;
-        margin-bottom: 30px;
-        text-align: center;
+      .actions {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
       }
     </style>
   </head>
   <body class="bg-light">
-    <!-- Vendor Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-      <div class="container">
-        <a class="navbar-brand" th:href="@{/vendor/home}">
-          <i class="fas fa-store"></i>
-          Vendor Portal
+    <div th:replace="~{vendor/fragments/nav :: vendorNav('shops')}"></div>
+
+    <main class="container py-4">
+      <section class="vendor-section mb-4">
+        <div
+          class="d-flex flex-column flex-lg-row justify-content-between gap-3 align-items-start align-items-lg-center"
+        >
+          <div>
+            <h1 class="h4 mb-1">Shop của tôi</h1>
+            <p class="text-muted mb-0">
+              Quản lý danh sách shop và tình trạng hoạt động.
+            </p>
+          </div>
+          <div class="d-flex gap-2">
+            <a class="btn btn-outline-secondary" th:href="@{/vendor/dashboard}">
+              <i class="fas fa-arrow-left me-2"></i>Quay lại Dashboard
+            </a>
+            <a class="btn btn-primary" th:href="@{/vendor/shop/register}">
+              <i class="fas fa-plus me-2"></i>Đăng ký shop
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <section
+        class="shop-grid"
+        th:if="${shops != null && !#lists.isEmpty(shops)}"
+      >
+        <article
+          class="shop-card"
+          th:each="shop : ${shops}"
+          th:with="status=${shop.status != null ? shop.status : 'PENDING'}"
+        >
+          <header>
+            <div>
+              <h2 class="h6 mb-1" th:text="${shop.shopName}">Tên shop</h2>
+              <span class="text-muted small" th:text="${shop.shopSlug}"
+                >shop-slug</span
+              >
+            </div>
+          </header>
+
+          <div>
+            <span
+              class="badge-status"
+              th:classappend="${status == 'ACTIVE'} ? ' bg-success-subtle text-success' :
+                                 (${status == 'PENDING'} ? ' bg-warning-subtle text-warning' : ' bg-danger-subtle text-danger')"
+              th:text="${status == 'ACTIVE'} ? 'Hoạt động' :
+                         (${status == 'PENDING'} ? 'Chờ duyệt' : 'Tạm ngưng')"
+            >
+              Hoạt động
+            </span>
+          </div>
+
+          <div class="metric-line">
+            <i class="fas fa-cubes text-primary"></i>
+            <span
+              >Sản phẩm:
+              <strong
+                th:text="${shop.totalProducts != null ? shop.totalProducts : 0}"
+                >0</strong
+              ></span
+            >
+          </div>
+          <div class="metric-line">
+            <i class="fas fa-shopping-bag text-success"></i>
+            <span
+              >Đơn hàng:
+              <strong
+                th:text="${shop.totalOrders != null ? shop.totalOrders : 0}"
+                >0</strong
+              ></span
+            >
+          </div>
+          <div class="metric-line">
+            <i class="fas fa-money-bill-wave text-info"></i>
+            <span
+              >Doanh thu:
+              <strong
+                th:text="${shop.totalRevenue != null ?
+              #numbers.formatDecimal(shop.totalRevenue, 0, 'DEFAULT', 0, 'DEFAULT') + ' đ' : '0 đ'}"
+                >0 đ</strong
+              ></span
+            >
+          </div>
+          <div class="metric-line">
+            <i class="fas fa-calendar-alt text-secondary"></i>
+            <span
+              >Ngày tạo:
+              <strong
+                th:text="${shop.createdAt != null ?
+              #temporals.format(shop.createdAt, 'dd/MM/yyyy') : 'N/A'}"
+                >01/01/2024</strong
+              ></span
+            >
+          </div>
+
+          <div class="actions">
+            <a
+              class="btn btn-primary btn-sm flex-fill"
+              th:href="@{'/vendor/dashboard/' + ${shop.shopId}}"
+            >
+              <i class="fas fa-tachometer-alt me-1"></i>Dashboard
+            </a>
+            <a
+              class="btn btn-outline-secondary btn-sm flex-fill"
+              th:href="@{'/vendor/shop/settings?shopId=' + ${shop.shopId}}"
+            >
+              <i class="fas fa-sliders-h me-1"></i>Cài đặt
+            </a>
+            <a
+              class="btn btn-outline-secondary btn-sm flex-fill"
+              th:href="@{'/shop/' + ${shop.shopSlug}}"
+              target="_blank"
+            >
+              <i class="fas fa-external-link-alt"></i>
+            </a>
+          </div>
+        </article>
+      </section>
+
+      <section
+        class="vendor-section text-center py-5"
+        th:if="${shops == null || #lists.isEmpty(shops)}"
+      >
+        <div class="mb-3">
+          <i class="fas fa-store fa-2x text-primary"></i>
+        </div>
+        <h5 class="fw-semibold mb-2">Bạn chưa có shop nào</h5>
+        <p class="text-muted mb-4">
+          Đăng ký shop mới để bắt đầu kinh doanh cùng OneShop.
+        </p>
+        <a class="btn btn-primary btn-lg" th:href="@{/vendor/shop/register}">
+          <i class="fas fa-plus-circle me-2"></i>Đăng ký shop ngay
         </a>
-        <div class="navbar-nav ms-auto">
-          <a class="nav-link" th:href="@{/vendor/home}">
-            <i class="fas fa-home"></i> Trang chủ
-          </a>
-          <span class="navbar-text me-3" th:text="'Xin chào, ' + ${vendor.name}">Xin chào, Vendor</span>
-          <a class="nav-link" th:href="@{/logout}">
-            <i class="fas fa-sign-out-alt"></i> Đăng xuất
-          </a>
-        </div>
-      </div>
-    </nav>
-
-    <main class="py-4">
-      <div class="container">
-        <!-- Breadcrumb -->
-        <nav aria-label="breadcrumb" class="mb-4">
-          <ol class="breadcrumb">
-            <li class="breadcrumb-item">
-              <a th:href="@{/vendor/home}">
-                <i class="fas fa-home"></i> Trang chủ Vendor
-              </a>
-            </li>
-            <li class="breadcrumb-item active">Danh sách Shop</li>
-          </ol>
-        </nav>
-
-        <!-- Summary -->
-        <div class="summary-card">
-          <h1 class="mb-3">
-            <i class="fas fa-store"></i>
-            Danh sách Shop của bạn
-          </h1>
-          <p class="mb-3 fs-5" th:text="'Bạn đang quản lý ' + ${totalShops} + ' shop'">
-            Bạn đang quản lý X shop
-          </p>
-          <a th:href="@{/vendor/shop/register}" class="btn btn-light btn-lg">
-            <i class="fas fa-plus"></i> Đăng ký thêm Shop
-          </a>
-        </div>
-
-        <!-- No shops message -->
-        <div th:if="${shops.isEmpty()}" class="text-center py-5">
-          <i class="fas fa-store fa-5x text-muted mb-3"></i>
-          <h3 class="text-muted">Chưa có shop nào</h3>
-          <p class="text-muted mb-4">Hãy đăng ký shop đầu tiên để bắt đầu bán hàng.</p>
-          <a th:href="@{/vendor/shop/register}" class="btn btn-primary btn-lg">
-            <i class="fas fa-plus"></i> Đăng ký Shop đầu tiên
-          </a>
-        </div>
-
-        <!-- Shops List -->
-        <div th:if="${!shops.isEmpty()}">
-          <div th:each="shop, stat : ${shops}" class="shop-card">
-            <div class="row align-items-center">
-              <!-- Shop Info -->
-              <div class="col-lg-6">
-                <div class="d-flex align-items-start gap-3">
-                  <div>
-                    <img th:if="${shop.shopLogo != null}"
-                         th:src="@{'/loadImage?imageName=' + ${shop.shopLogo}}"
-                         alt="Logo shop" class="shop-logo" />
-                    <div th:if="${shop.shopLogo == null}" 
-                         class="shop-logo d-flex align-items-center justify-content-center bg-light">
-                      <i class="fas fa-store fa-2x text-muted"></i>
-                    </div>
-                  </div>
-                  <div class="flex-grow-1">
-                    <h4 class="mb-2" th:text="${shop.shopName}">Tên Shop</h4>
-                    <p class="text-muted mb-2" th:text="${shop.shopDescription} ?: 'Chưa có mô tả shop'">
-                      Mô tả shop
-                    </p>
-                    <span class="status-badge" 
-                          th:classappend="${shop.status.name()}=='ACTIVE' ? 'bg-success text-white' : 
-                                         (${shop.status.name()}=='PENDING' ? 'bg-warning text-dark' : 'bg-danger text-white')"
-                          th:text="${shop.status.name()}=='ACTIVE' ? 'Đang hoạt động' :
-                                   (${shop.status.name()}=='PENDING' ? 'Chờ phê duyệt' : 'Tạm ngưng')">
-                      Trạng thái
-                    </span>
-                    
-                    <div class="mt-2 small text-muted">
-                      <i class="fas fa-calendar-alt"></i>
-                      <span>Tạo: <span th:text="${#temporals.format(shop.createdAt, 'dd/MM/yyyy')}">01/01/2024</span></span>
-                      
-                      <span th:if="${shop.approvedAt != null}" class="ms-3">
-                        <i class="fas fa-check-circle"></i>
-                        <span>Duyệt: <span th:text="${#temporals.format(shop.approvedAt, 'dd/MM/yyyy')}">01/01/2024</span></span>
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Shop Metrics -->
-              <div class="col-lg-3">
-                <div class="row g-2">
-                  <div class="col-6">
-                    <div class="metric-item">
-                      <div class="metric-number" th:text="${shop.totalProducts}">0</div>
-                      <div class="small">Sản phẩm</div>
-                    </div>
-                  </div>
-                  <div class="col-6">
-                    <div class="metric-item" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
-                      <div class="metric-number" th:text="${shop.totalOrders}">0</div>
-                      <div class="small">Đơn hàng</div>
-                    </div>
-                  </div>
-                  <div class="col-12">
-                    <div class="metric-item" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
-                      <div class="metric-number" th:text="${#numbers.formatDecimal(shop.totalRevenue/1000000,1,'DEFAULT',1,'DEFAULT')} + 'M'">0M</div>
-                      <div class="small">Doanh thu (VNĐ)</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Shop Actions -->
-              <div class="col-lg-3">
-                <div class="shop-actions">
-                  <!-- Main Dashboard Button -->
-                  <a th:href="@{'/vendor/dashboard/' + ${shop.shopId}}" 
-                     class="btn btn-primary action-btn-sm w-100 mb-2">
-                    <i class="fas fa-tachometer-alt"></i> Vào Dashboard
-                  </a>
-                  
-                  <div class="d-flex gap-1 flex-wrap">
-                    <a th:if="${shop.status.name() == 'ACTIVE'}" 
-                       th:href="@{'/vendor/products?shopId=' + ${shop.shopId}}" 
-                       class="btn btn-outline-primary action-btn-sm">
-                      <i class="fas fa-box"></i> SP
-                    </a>
-                    
-                    <a th:if="${shop.status.name() == 'ACTIVE'}" 
-                       th:href="@{'/vendor/orders?shopId=' + ${shop.shopId}}" 
-                       class="btn btn-outline-success action-btn-sm">
-                      <i class="fas fa-shopping-cart"></i> ĐH
-                    </a>
-                    
-                    <a th:href="@{'/vendor/shop/settings?shopId=' + ${shop.shopId}}" 
-                       class="btn btn-outline-warning action-btn-sm">
-                      <i class="fas fa-cog"></i>
-                    </a>
-                    
-                    <a th:href="@{'/shop/' + ${shop.shopSlug}}" 
-                       target="_blank"
-                       class="btn btn-outline-secondary action-btn-sm">
-                      <i class="fas fa-external-link-alt"></i>
-                    </a>
-                  </div>
-                </div>
-                
-                <div class="mt-3 small text-muted">
-                  <div>
-                    <i class="fas fa-phone"></i>
-                    <span th:text="${shop.phoneNumber} ?: 'Chưa cập nhật'">SĐT</span>
-                  </div>
-                  <div class="mt-1">
-                    <i class="fas fa-map-marker-alt"></i>
-                    <span th:text="${shop.city} ?: 'Chưa cập nhật'">Địa chỉ</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Shop Banner -->
-            <div th:if="${shop.shopBanner != null}" class="mt-3">
-              <img th:src="@{'/loadImage?imageName=' + ${shop.shopBanner}}"
-                   alt="Banner shop" class="shop-banner" />
-            </div>
-          </div>
-        </div>
-
-        <!-- Quick Actions -->
-        <div th:if="${!shops.isEmpty()}" class="text-center mt-4">
-          <h4 class="mb-3">
-            <i class="fas fa-bolt"></i>
-            Hành động nhanh
-          </h4>
-          <div class="d-flex justify-content-center gap-3 flex-wrap">
-            <a th:href="@{/vendor/products}" class="btn btn-primary">
-              <i class="fas fa-box"></i> Tất cả sản phẩm
-            </a>
-            <a th:href="@{/vendor/orders}" class="btn btn-success">
-              <i class="fas fa-shopping-cart"></i> Tất cả đơn hàng
-            </a>
-            <a th:href="@{/cskh/chat}" class="btn btn-info" target="_blank">
-              <i class="fas fa-comments"></i> Chat khách hàng
-            </a>
-            <a th:href="@{/vendor/shop/register}" class="btn btn-warning">
-              <i class="fas fa-plus"></i> Thêm shop mới
-            </a>
-          </div>
-        </div>
-
-        <!-- Back Button -->
-        <div class="text-center mt-4">
-          <a th:href="@{/vendor/home}" class="btn btn-outline-secondary">
-            <i class="fas fa-arrow-left"></i>
-            Quay lại trang chủ Vendor
-          </a>
-        </div>
-      </div>
+      </section>
     </main>
 
     <script th:src="@{/vendor/bootstrap/jquery-3.6.0.min.js}"></script>

@@ -1,0 +1,224 @@
+﻿<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+  <meta http-equiv="content-type" content="text/html;charset=utf-8" />
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
+    <meta name="author" content="mironcoder" />
+    <meta name="email" content="mironcoder@gmail.com" />
+    <meta name="profile" content="https://themeforest.net/user/mironcoder" />
+    <meta name="template" content="greeny" />
+    <meta name="title" content="greeny - Ecommerce Food Store HTML Template" />
+    <meta
+      name="keywords"
+      content="organic, food, shop, ecommerce, store, html, bootstrap, template, agriculture, vegetables, products, farm, grocery, natural, online"
+    />
+    <title th:text="${pageTitle}">OneShop - Sản phẩm</title>
+    <link rel="icon" href="/assets/img/icon.png" />
+    <link rel="stylesheet" href="/fonts/flaticon/flaticon.css" />
+    <link rel="stylesheet" href="/fonts/icofont/icofont.min.css" />
+    <link rel="stylesheet" href="/fonts/fontawesome/fontawesome.min.css" />
+    <link rel="stylesheet" href="/vendor/venobox/venobox.min.css" />
+    <link rel="stylesheet" href="/vendor/slickslider/slick.min.css" />
+    <link rel="stylesheet" href="/vendor/niceselect/nice-select.min.css" />
+    <link rel="stylesheet" href="/vendor/bootstrap/bootstrap.min.css" />
+    <link rel="stylesheet" href="/css/main.css" />
+  </head>
+  <body>
+    <header th:replace="~{/web/fragments/header :: header}"></header>
+
+    <section
+      class="inner-section single-banner"
+      th:style="${shop.shopBanner != null} ? 'background: url(' + '/loadImage?imageName=' + ${shop.shopBanner} + ') no-repeat center' : 'background: url(/images/single-banner.jpg) no-repeat center'"
+    >
+      <div class="container">
+        <h2 th:text="${shop.shopName}">Tên shop</h2>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a th:href="@{/}">Trang chủ</a></li>
+          <li class="breadcrumb-item active" aria-current="page" th:text="${shop.shopName}"></li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="inner-section shop-part">
+      <div class="container">
+        <div class="row content-reverse">
+          <div class="col-lg-3">
+            <div class="shop-widget">
+              <div class="shop-banner text-center mb-3">
+                <img
+                  th:if="${shop.shopLogo != null}"
+                  th:src="@{'/loadImage?imageName=' + ${shop.shopLogo}}"
+                  alt="Logo shop"
+                  class="rounded"
+                  style="max-width: 150px;"
+                />
+                <div class="shop-logo" th:if="${shop.shopLogo == null}">
+                  <i class="fas fa-store"></i>
+                </div>
+              </div>
+              <h6 class="shop-widget-title text-uppercase" th:text="${shop.shopName}">Tên shop</h6>
+              <p class="text-muted" th:text="${shop.shopDescription}">Mô tả shop</p>
+              <ul class="shop-widget-list">
+                <li>
+                  <div class="shop-widget-content">
+                    <i class="icofont-location-pin"></i>
+                    <span th:text="${shop.address}">Địa chỉ</span>
+                  </div>
+                </li>
+                <li th:if="${shop.phoneNumber != null}">
+                  <div class="shop-widget-content">
+                    <i class="icofont-ui-call"></i>
+                    <span th:text="${shop.phoneNumber}">Số điện thoại</span>
+                  </div>
+                </li>
+                <li>
+                  <div class="shop-widget-content">
+                    <i class="icofont-cube"></i>
+                    <span>Sản phẩm: <strong th:text="${shop.totalProducts != null ? shop.totalProducts : 0}">0</strong></span>
+                  </div>
+                </li>
+                <li>
+                  <div class="shop-widget-content">
+                    <i class="icofont-basket"></i>
+                    <span>Đơn hàng: <strong th:text="${shop.totalOrders != null ? shop.totalOrders : 0}">0</strong></span>
+                  </div>
+                </li>
+                <li>
+                  <div class="shop-widget-content">
+                    <i class="icofont-coins"></i>
+                    <span>Doanh thu: <strong th:text="${#numbers.formatDecimal(shop.totalRevenue, 0, 'DEFAULT', 0, 'DEFAULT')} + ' ₫'">0 ₫</strong></span>
+                  </div>
+                </li>
+              </ul>
+            </div>
+
+            <div class="shop-widget">
+              <h6 class="shop-widget-title">Tìm kiếm sản phẩm</h6>
+              <form th:action="@{/searchProduct}" method="get" class="shop-widget-form">
+                <input type="text" name="productName" placeholder="Tìm kiếm..." />
+                <button type="submit"><i class="icofont-search"></i></button>
+              </form>
+            </div>
+
+            <div class="shop-widget">
+              <h6 class="shop-widget-title">Danh mục sản phẩm</h6>
+              <ul class="shop-widget-list shop-widget-scroll">
+                <li th:each="item : ${coutnProductByCategory}">
+                  <div class="shop-widget-content">
+                    <a th:href="@{/shop/{slug}(slug=${shop.shopSlug})}">
+                      <label style="color: #0d6efd; cursor: pointer">[[${item[1]}]]</label>
+                    </a>
+                  </div>
+                  <span class="shop-widget-number">([[${item[2]}]])</span>
+                </li>
+              </ul>
+            </div>
+
+            <div class="shop-widget" th:if="${bestSaleProduct20 != null}">
+              <h6 class="shop-widget-title">Sản phẩm nổi bật</h6>
+              <div class="shop-widget-group">
+                <div class="shop-widget-card" th:each="item, iterStat : ${bestSaleProduct20}" th:if="${iterStat.index < 3}">
+                  <div class="shop-widget-img">
+                    <img th:if="${item.productImage != null}" th:src="@{'/loadImage?imageName=' + ${item.productImage}}" alt="product" />
+                    <img th:unless="${item.productImage != null}" src="/assets/img/examples/product1.jpg" alt="product" />
+                  </div>
+                  <div class="shop-widget-meta">
+                    <h6 th:text="${item.productName}">Tên sản phẩm</h6>
+                    <h6 class="product-price" th:text="${#numbers.formatDecimal(item.price, 0, 'DEFAULT', 0, 'DEFAULT')} + ' ₫'">0 ₫</h6>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-lg-9">
+            <div class="row">
+              <div class="col-lg-12">
+                <div class="top-filter">
+                  <div class="filter-show">
+                    <label class="filter-label">
+                      Hiển thị
+                      <span th:text="${products.numberOfElements}"></span> trong tổng số
+                      <span th:text="${products.totalElements}"></span> sản phẩm
+                    </label>
+                  </div>
+                  <div class="filter-short">
+                    <label class="filter-label">Sắp xếp:</label>
+                    <select class="custom-select filter-select" id="sortSelect" disabled>
+                      <option value="default" selected>Mặc định</option>
+                    </select>
+                  </div>
+                  <div class="filter-action">
+                    <button class="filter-btn" data-view="grid" title="Grid View">
+                      <i class="fas fa-th"></i>
+                    </button>
+                    <button class="filter-btn active" data-view="list" title="List View">
+                      <i class="fas fa-list"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="row row-cols-2 row-cols-md-3 row-cols-lg-3 row-cols-xl-4" id="product-container">
+              <div class="col" th:each="item : ${products}">
+                <div class="product-card">
+                  <div class="product-media">
+                    <div class="product-label" th:if="${item.discount != null && item.discount > 0}">
+                      <label class="label-text sale" th:text="'- ' + ${item.discount} + '%'">-10%</label>
+                    </div>
+                    <a class="product-image" th:href="@{/productDetail(id=${item.productId})}">
+                      <img th:if="${item.productImage != null && !#strings.isEmpty(item.productImage)}" th:src="@{'/loadImage?imageName=' + ${item.productImage}}" alt="product" />
+                      <img th:unless="${item.productImage != null && !#strings.isEmpty(item.productImage)}" src="/assets/img/examples/product1.jpg" alt="product" />
+                    </a>
+                  </div>
+                  <div class="product-content">
+                    <h6 class="product-name">
+                      <a th:href="@{/productDetail(id=${item.productId})}">[[${item.productName}]]</a>
+                    </h6>
+                    <h6 class="product-price">
+                      <del th:if="${item.discount != null && item.discount > 0}" th:text="${#numbers.formatDecimal(item.price, 0, 'DEFAULT', 0, 'DEFAULT')} + ' ₫'"></del>
+                      <span th:text="${#numbers.formatDecimal(item.price * (1 - (item.discount != null ? item.discount : 0)/100.0), 0, 'DEFAULT', 0, 'DEFAULT')} + ' ₫'">0 ₫</span>
+                    </h6>
+                    <a class="product-add" th:href="@{/productDetail(id=${item.productId})}">Xem chi tiết</a>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-lg-12">
+                <div class="bottom-paginate">
+                  <ul class="pagination">
+                    <li class="page-item" th:each="pageNumber : ${pageNumbers}" th:if="${products.totalPages > 0}">
+                      <a class="page-link" th:href="@{/shop/{slug}(slug=${shop.shopSlug}, size=${products.size}, page=${pageNumber})}" th:classappend="${pageNumber == products.number + 1} ? ' active'">[[${pageNumber}]]</a>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer th:replace="~{/web/fragments/footer :: footer}"></footer>
+
+    <script src="/vendor/bootstrap/jquery-1.12.4.min.js"></script>
+    <script src="/vendor/bootstrap/popper.min.js"></script>
+    <script src="/vendor/bootstrap/bootstrap.min.js"></script>
+    <script src="/vendor/countdown/countdown.min.js"></script>
+    <script src="/vendor/niceselect/nice-select.min.js"></script>
+    <script src="/vendor/slickslider/slick.min.js"></script>
+    <script src="/vendor/venobox/venobox.min.js"></script>
+    <script src="/js/nice-select.js"></script>
+    <script src="/js/countdown.js"></script>
+    <script src="/js/accordion.js"></script>
+    <script src="/js/venobox.js"></script>
+    <script src="/js/slick.js"></script>
+    <script src="/js/main.js"></script>
+  </body>
+</html>

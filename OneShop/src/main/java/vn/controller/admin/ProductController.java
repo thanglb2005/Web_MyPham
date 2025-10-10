@@ -13,11 +13,13 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import vn.dto.ShopProductStatistics;
 import vn.entity.*;
 import vn.service.BrandService;
 import vn.service.CategoryService;
 import vn.service.ImageStorageService;
 import vn.service.ProductService;
+import vn.service.ShopService;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -38,6 +40,9 @@ public class ProductController {
 
     @Autowired
     private ImageStorageService imageStorageService;
+
+    @Autowired
+    private ShopService shopService;
 
     @ModelAttribute("user")
     public User user(Model model, HttpSession session) {
@@ -76,31 +81,30 @@ public class ProductController {
             @RequestParam(defaultValue = "productId") String sortBy,
             @RequestParam(defaultValue = "asc") String sortDir,
             @RequestParam(required = false) String search,
+            @RequestParam(required = false) Long shopId,
             HttpSession session, Model model) {
         User user = (User) session.getAttribute("user");
         if (user == null) {
             return "redirect:/login";
         }
 
-        // Create Pageable object
-        Sort sort = sortDir.equalsIgnoreCase("desc") ? 
-                    Sort.by(sortBy).descending() : 
+        Sort sort = sortDir.equalsIgnoreCase("desc") ?
+                    Sort.by(sortBy).descending() :
                     Sort.by(sortBy).ascending();
         Pageable pageable = PageRequest.of(page, size, sort);
-        
-        // Search or get all products
+        String trimmedSearch = (search != null && !search.trim().isEmpty()) ? search.trim() : null;
+
         Page<Product> productPage;
-        if (search != null && !search.trim().isEmpty()) {
-            productPage = productService.findByProductNameContainingIgnoreCase(search, pageable);
+        if (trimmedSearch != null && shopId != null) {
+            productPage = productService.findByShopAndName(shopId, trimmedSearch, pageable);
+        } else if (trimmedSearch != null) {
+            productPage = productService.findByProductNameContainingIgnoreCase(trimmedSearch, pageable);
+        } else if (shopId != null) {
+            productPage = productService.findByShopId(shopId, pageable);
         } else {
-            // For now, we'll get all products and create a manual page
-            List<Product> allProducts = productService.findAll();
-            int start = (int) pageable.getOffset();
-            int end = Math.min((start + pageable.getPageSize()), allProducts.size());
-            List<Product> pageContent = allProducts.subList(start, end);
-            productPage = new org.springframework.data.domain.PageImpl<>(pageContent, pageable, allProducts.size());
+            productPage = productService.findAll(pageable);
         }
-        
+
         model.addAttribute("productPage", productPage);
         model.addAttribute("products", productPage.getContent());
         model.addAttribute("currentPage", page);
@@ -109,19 +113,42 @@ public class ProductController {
         model.addAttribute("pageSize", size);
         model.addAttribute("sortBy", sortBy);
         model.addAttribute("sortDir", sortDir);
-        model.addAttribute("search", search);
-        
+        model.addAttribute("search", trimmedSearch);
+        model.addAttribute("selectedShopId", shopId);
+
+        List<Shop> shopList = shopService.findAll();
+        model.addAttribute("shopList", shopList);
+        if (shopId != null) {
+            shopList.stream()
+                    .filter(shop -> shop.getShopId().equals(shopId))
+                    .findFirst()
+                    .ifPresent(shop -> model.addAttribute("selectedShopName", shop.getShopName()));
+        }
+
+        List<ShopProductStatistics> shopStats = productService.getShopProductStatistics();
+        long totalShopCount = shopStats.size();
+        long totalProductCount = shopStats.stream().mapToLong(ShopProductStatistics::getProductCount).sum();
+        long totalQuantity = shopStats.stream().mapToLong(ShopProductStatistics::getTotalQuantity).sum();
+        double totalInventoryValue = shopStats.stream().mapToDouble(ShopProductStatistics::getTotalInventoryValue).sum();
+
+        model.addAttribute("shopStats", shopStats);
+        model.addAttribute("totalShopCount", totalShopCount);
+        model.addAttribute("totalProductCountSummary", totalProductCount);
+        model.addAttribute("totalQuantitySummary", totalQuantity);
+        model.addAttribute("totalInventoryValueSummary", totalInventoryValue);
+
         Product product = new Product();
         model.addAttribute("product", product);
-        
+
         return "admin/products";
     }
 
-    @PostMapping("/addProduct")
+@PostMapping("/addProduct")
     public String addProduct(@ModelAttribute("product") Product product, 
                            @RequestParam("file") MultipartFile file,
                            @RequestParam("categoryId") Long categoryId,
                            @RequestParam("brandId") Long brandId,
+                           @RequestParam("shopId") Long shopId,
                            HttpServletRequest httpServletRequest) {
         
         try {
@@ -130,6 +157,12 @@ public class ProductController {
             Brand brand = brandService.findById(brandId).orElse(null);
             product.setCategory(category);
             product.setBrand(brand);
+
+            Shop shop = shopService.findById(shopId).orElse(null);
+            if (shop == null) {
+                return "redirect:/admin/products?error=true&action=add";
+            }
+            product.setShop(shop);
             
             // Set entered date if not set
             if (product.getEnteredDate() == null) {
@@ -175,6 +208,7 @@ public class ProductController {
         Product product = productService.findById(id).orElse(null);
         if (product != null) {
             model.addAttribute("product", product);
+            model.addAttribute("shopList", shopService.findAll());
             return "admin/editProduct";
         }
         return "redirect:/admin/products";
@@ -186,6 +220,7 @@ public class ProductController {
                               @RequestParam(value = "file", required = false) MultipartFile file,
                               @RequestParam("categoryId") Long categoryId,
                               @RequestParam("brandId") Long brandId,
+                           @RequestParam("shopId") Long shopId,
                               HttpSession session) {
         User user = (User) session.getAttribute("user");
         if (user == null) {
@@ -209,6 +244,11 @@ public class ProductController {
                 Brand brand = brandService.findById(brandId).orElse(null);
                 existingProduct.setCategory(category);
                 existingProduct.setBrand(brand);
+
+                Shop shop = shopService.findById(shopId).orElse(null);
+                if (shop != null) {
+                    existingProduct.setShop(shop);
+                }
 
                 if (file != null && !file.isEmpty()) {
                     String fileName = imageStorageService.store(file, product.getProductName());

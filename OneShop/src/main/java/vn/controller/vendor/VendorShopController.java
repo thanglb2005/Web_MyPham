@@ -20,6 +20,7 @@ import vn.service.ImageStorageService;
 import vn.service.ShopService;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Optional;
 
 @Controller
@@ -33,17 +34,16 @@ public class VendorShopController {
     private ImageStorageService imageStorageService;
 
     @GetMapping("/register")
-    public String registerForm(HttpSession session, Model model, RedirectAttributes redirectAttributes) {
+    public String registerForm(HttpSession session, Model model) {
         User vendor = ensureVendor(session);
         if (vendor == null) {
             return "redirect:/login";
         }
 
-        // Vendor có thể tạo nhiều shop
-
         if (!model.containsAttribute("shopForm")) {
             model.addAttribute("shopForm", new VendorShopForm());
         }
+        model.addAttribute("vendor", vendor);
         model.addAttribute("pageTitle", "Đăng ký shop");
         return "vendor/shop-register";
     }
@@ -61,11 +61,7 @@ public class VendorShopController {
             return "redirect:/login";
         }
 
-        if (shopService.findByVendor(vendor).isPresent()) {
-            redirectAttributes.addFlashAttribute("info", "Bạn đã có shop. Có thể cập nhật thông tin tại đây.");
-            return "redirect:/vendor/shop/settings";
-        }
-
+        model.addAttribute("vendor", vendor);
         if (!shopService.isShopNameAvailable(form.getShopName(), null)) {
             bindingResult.rejectValue("shopName", "duplicate", "Tên shop đã tồn tại.");
         }
@@ -103,27 +99,37 @@ public class VendorShopController {
 
         shopService.registerShop(vendor, shop);
         redirectAttributes.addFlashAttribute("success", "Đăng ký shop thành công! Shop sẽ được duyệt trong thời gian sớm nhất.");
-        return "redirect:/vendor/home";
+        return "redirect:/vendor/my-shops";
     }
 
     @GetMapping("/settings")
-    public String settings(HttpSession session, Model model, RedirectAttributes redirectAttributes) {
+    public String settings(@RequestParam(value = "shopId", required = false) Long shopId,
+                           HttpSession session,
+                           Model model,
+                           RedirectAttributes redirectAttributes) {
         User vendor = ensureVendor(session);
         if (vendor == null) {
             return "redirect:/login";
         }
 
-        Optional<Shop> shopOpt = shopService.findByVendor(vendor);
+        Optional<Shop> shopOpt = shopId != null
+                ? shopService.findByIdAndVendor(shopId, vendor)
+                : shopService.findFirstByVendor(vendor);
         if (shopOpt.isEmpty()) {
-            redirectAttributes.addFlashAttribute("warning", "Bạn chưa có shop. Đăng ký shop mới nhé!");
+            redirectAttributes.addFlashAttribute("warning", "Bạn chưa có shop nào. Đăng ký shop mới nhé!");
             return "redirect:/vendor/shop/register";
         }
 
+        Shop shop = shopOpt.get();
         if (!model.containsAttribute("shopForm")) {
-            VendorShopForm form = toForm(shopOpt.get());
-            model.addAttribute("shopForm", form);
+            model.addAttribute("shopForm", toForm(shop));
         }
-        model.addAttribute("shop", shopOpt.get());
+
+        List<Shop> shopList = shopService.findAllByVendor(vendor);
+        model.addAttribute("vendor", vendor);
+        model.addAttribute("shop", shop);
+        model.addAttribute("shopList", shopList);
+        model.addAttribute("selectedShopId", shop.getShopId());
         model.addAttribute("pageTitle", "Cài đặt shop");
         return "vendor/shop-settings";
     }
@@ -141,9 +147,16 @@ public class VendorShopController {
             return "redirect:/login";
         }
 
-        Optional<Shop> shopOpt = shopService.findByVendor(vendor);
+        Long targetShopId = form.getShopId();
+        if (targetShopId == null) {
+            bindingResult.reject("shopId", "Thiếu thông tin shop cần cập nhật.");
+        }
+
+        Optional<Shop> shopOpt = targetShopId != null
+                ? shopService.findByIdAndVendor(targetShopId, vendor)
+                : Optional.empty();
         if (shopOpt.isEmpty()) {
-            redirectAttributes.addFlashAttribute("warning", "Bạn chưa có shop. Đăng ký shop mới nhé!");
+            redirectAttributes.addFlashAttribute("warning", "Không tìm thấy shop để cập nhật.");
             return "redirect:/vendor/shop/register";
         }
 
@@ -154,7 +167,11 @@ public class VendorShopController {
         }
 
         if (bindingResult.hasErrors()) {
+            List<Shop> shopList = shopService.findAllByVendor(vendor);
+            model.addAttribute("vendor", vendor);
             model.addAttribute("shop", shop);
+            model.addAttribute("shopList", shopList);
+            model.addAttribute("selectedShopId", shop.getShopId());
             model.addAttribute("pageTitle", "Cài đặt shop");
             return "vendor/shop-settings";
         }
@@ -180,14 +197,18 @@ public class VendorShopController {
             }
         } catch (IOException e) {
             bindingResult.reject("upload", "Không thể lưu hình ảnh. Vui lòng thử lại.");
+            List<Shop> shopList = shopService.findAllByVendor(vendor);
+            model.addAttribute("vendor", vendor);
             model.addAttribute("shop", shop);
+            model.addAttribute("shopList", shopList);
+            model.addAttribute("selectedShopId", shop.getShopId());
             model.addAttribute("pageTitle", "Cài đặt shop");
             return "vendor/shop-settings";
         }
 
         shopService.updateShop(shop);
         redirectAttributes.addFlashAttribute("success", "Cập nhật thông tin shop thành công.");
-        return "redirect:/vendor/shop/settings";
+        return "redirect:/vendor/shop/settings?shopId=" + shop.getShopId();
     }
 
     private User ensureVendor(HttpSession session) {
@@ -202,6 +223,7 @@ public class VendorShopController {
 
     private VendorShopForm toForm(Shop shop) {
         VendorShopForm form = new VendorShopForm();
+        form.setShopId(shop.getShopId());
         form.setShopName(shop.getShopName());
         form.setShopDescription(shop.getShopDescription());
         form.setPhoneNumber(shop.getPhoneNumber());
@@ -214,4 +236,3 @@ public class VendorShopController {
         return form;
     }
 }
-

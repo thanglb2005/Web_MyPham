@@ -2,6 +2,7 @@ package vn.service;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import vn.dto.ShopProductStatistics;
 import vn.entity.Product;
 
 import java.util.List;
@@ -51,5 +52,11 @@ public interface ProductService {
     Optional<Product> findByIdAndShop(Long productId, Long shopId);
 
     long countByShopId(Long shopId);
+
+    Page<Product> findAll(Pageable pageable);
+
+    Page<Product> findByShopAndName(Long shopId, String productName, Pageable pageable);
+
+    List<ShopProductStatistics> getShopProductStatistics();
 }
 

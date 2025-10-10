@@ -6,6 +6,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import vn.entity.Product;
 import vn.repository.ProductRepository;
+import vn.dto.ShopProductStatistics;
+import vn.entity.Shop;
 import vn.service.ProductService;
 
 import java.util.List;
@@ -98,6 +100,33 @@ public class ProductServiceImpl implements ProductService {
         return productRepository.bestSaleProduct20();
     }
     
+
+    @Override
+    public Page<Product> findAll(Pageable pageable) {
+        return productRepository.findAll(pageable);
+    }
+
+    @Override
+    public Page<Product> findByShopAndName(Long shopId, String productName, Pageable pageable) {
+        return productRepository.findByShopShopIdAndProductNameContainingIgnoreCase(shopId, productName, pageable);
+    }
+
+    @Override
+    public List<ShopProductStatistics> getShopProductStatistics() {
+        List<Object[]> rows = productRepository.getShopProductStatistics();
+        return rows.stream()
+                .map(row -> ShopProductStatistics.builder()
+                        .shopId(row[0] != null ? ((Number) row[0]).longValue() : null)
+                        .shopName((String) row[1])
+                        .status(row[2] != null ? Shop.ShopStatus.valueOf(((String) row[2]).toUpperCase()) : Shop.ShopStatus.PENDING)
+                        .vendorName(row[3] != null ? (String) row[3] : "Không xác định")
+                        .productCount(row[4] != null ? ((Number) row[4]).longValue() : 0L)
+                        .totalQuantity(row[5] != null ? ((Number) row[5]).longValue() : 0L)
+                        .totalInventoryValue(row[6] != null ? ((Number) row[6]).doubleValue() : 0.0)
+                        .build())
+                .toList();
+    }
+
     @Override
     public List<Product> findByInventoryIds(List<Long> listProductId) {
         return productRepository.findByInventoryIds(listProductId);

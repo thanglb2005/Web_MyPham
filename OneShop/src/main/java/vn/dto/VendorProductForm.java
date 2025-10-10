@@ -6,6 +6,9 @@ import lombok.Data;
 @Data
 public class VendorProductForm {
 
+    @NotNull(message = "Shop không được để trống")
+    private Long shopId;
+
     @NotBlank(message = "Tên sản phẩm không được để trống")
     private String productName;
 
@@ -33,4 +36,3 @@ public class VendorProductForm {
 
     private Boolean active = Boolean.TRUE;
 }
-

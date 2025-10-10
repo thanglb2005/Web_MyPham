@@ -1,4 +1,53 @@
 /* Vendor management styles */
+.vendor-navbar {
+  background: linear-gradient(135deg, #1d4ed8 0%, #0f172a 100%);
+  padding: 0.85rem 0;
+}
+
+.vendor-navbar .navbar-brand {
+  color: #fff;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 1.125rem;
+}
+
+.vendor-navbar .navbar-brand:hover {
+  color: #e2e8f0;
+}
+
+.vendor-navbar .nav-link {
+  color: rgba(226, 232, 240, 0.85);
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  border-radius: 999px;
+  padding: 0.45rem 0.9rem;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.vendor-navbar .nav-link .fas {
+  font-size: 0.85rem;
+}
+
+.vendor-navbar .nav-link:hover,
+.vendor-navbar .nav-link.active {
+  color: #0f172a;
+  background-color: #e0f2fe;
+}
+
+.vendor-navbar .btn {
+  border-radius: 999px;
+  font-weight: 600;
+}
+
+.vendor-greeting {
+  color: rgba(226, 232, 240, 0.9);
+  font-weight: 600;
+}
+
 .vendor-nav__list .nav-link {
   font-weight: 600;
   color: #0d6efd;
@@ -111,4 +160,3 @@
 .vendor-empty p {
   margin-bottom: 16px;
 }
-

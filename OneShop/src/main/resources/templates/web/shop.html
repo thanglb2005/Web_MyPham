@@ -44,6 +44,28 @@
 
     <section class="inner-section shop-part">
       <div class="container">
+        <div
+          class="alert alert-warning d-flex align-items-center gap-2 mb-4"
+          th:if="${inactiveShop}"
+        >
+          <i class="fas fa-info-circle fa-lg"></i>
+          <span th:switch="${shopStatusLabel}">
+            <span th:case="${T(vn.entity.Shop$ShopStatus).PENDING}"
+              >Cửa hàng đang chờ duyệt. Sản phẩm sẽ được mở bán sau khi hệ thống
+              phê duyệt.</span
+            >
+            <span th:case="${T(vn.entity.Shop$ShopStatus).SUSPENDED}"
+              >Cửa hàng đang tạm ngưng hoạt động. Vui lòng quay lại sau.</span
+            >
+            <span th:case="${T(vn.entity.Shop$ShopStatus).REJECTED}"
+              >Cửa hàng tạm thời chưa khả dụng do chưa được phê duyệt. Vui lòng
+              thử lại sau.</span
+            >
+            <span th:case="*"
+              >Cửa hàng hiện chưa hoạt động. Vui lòng quay lại sau.</span
+            >
+          </span>
+        </div>
         <div class="row content-reverse">
           <div class="col-lg-3">
             <!-- Search Widget -->
@@ -63,14 +85,38 @@
               </form>
             </div>
 
+            <!-- Shop Filter Widget -->
+            <div class="shop-widget">
+              <h6 class="shop-widget-title">Chọn cửa hàng</h6>
+              <div class="shop-widget-form">
+                <select
+                  id="shopSelector"
+                  class="form-select"
+                  onchange="filterByShop()"
+                >
+                  <option value="">Tất cả cửa hàng</option>
+                  <option
+                    th:each="shop : ${shopList}"
+                    th:value="${shop.shopId}"
+                    th:text="${shop.shopName}"
+                    th:selected="${selectedShopId != null and selectedShopId == shop.shopId}"
+                  ></option>
+                </select>
+              </div>
+            </div>
+
             <!-- Category Filter Widget -->
             <div class="shop-widget">
               <h6 class="shop-widget-title">Danh mục sản phẩm</h6>
               <ul class="shop-widget-list shop-widget-scroll">
                 <li>
                   <div class="shop-widget-content">
-                    <a th:href="@{/products}">
-                      <label style="color: #0d6efd; font-weight: 600"
+                    <a
+                      th:href="${shop != null} ? @{/shop/{slug}(slug=${shop.shopSlug})} : @{/products}"
+                    >
+                      <label
+                        style="color: #0d6efd; font-weight: 600"
+                        th:classappend="${shop != null and selectedCategoryId == null} ? ' fw-semibold'"
                         >Tất cả sản phẩm</label
                       >
                     </a>
@@ -78,10 +124,13 @@
                 </li>
                 <li th:each="item : ${coutnProductByCategory}">
                   <div class="shop-widget-content">
-                    <a th:href="@{/productByCategory(id=${item[0]})}">
+                    <a
+                      th:href="${shop != null} ? @{/shop/{slug}(slug=${shop.shopSlug}, categoryId=${item[0]})} : @{/productByCategory(id=${item[0]})}"
+                    >
                       <label
                         for="cate1"
                         style="color: #0d6efd; cursor: pointer"
+                        th:classappend="${shop != null and selectedCategoryId != null and selectedCategoryId == item[0]} ? ' fw-semibold'"
                       >
                         [[${item[1]}]]
                       </label>
@@ -349,10 +398,20 @@
                     >
                       <a
                         class="page-link"
-                        th:href="@{/products(size=${products.size}, page=${pageNumber})}"
+                        th:if="${shop != null}"
+                        th:href="@{/shop/{slug}(slug=${shop.shopSlug}, size=${products.size}, page=${pageNumber}, categoryId=${selectedCategoryId})}"
                         th:class="${pageNumber==products.number + 1} ? 'page-link active'"
-                        >[[${pageNumber}]]</a
                       >
+                        [[${pageNumber}]]
+                      </a>
+                      <a
+                        class="page-link"
+                        th:unless="${shop != null}"
+                        th:href="${selectedCategoryId != null} ? @{/productByCategory(id=${selectedCategoryId}, size=${products.size}, page=${pageNumber})} : @{/products(size=${products.size}, page=${pageNumber})}"
+                        th:class="${pageNumber==products.number + 1} ? 'page-link active'"
+                      >
+                        [[${pageNumber}]]
+                      </a>
                     </li>
                   </ul>
                 </div>
@@ -451,6 +510,23 @@
           }
         );
       });
+
+      // Shop filter function
+      function filterByShop() {
+        const shopId = document.getElementById("shopSelector").value;
+        const currentUrl = new URL(window.location.href);
+
+        if (shopId) {
+          currentUrl.searchParams.set("shopId", shopId);
+        } else {
+          currentUrl.searchParams.delete("shopId");
+        }
+
+        // Reset to page 1 when filtering
+        currentUrl.searchParams.delete("page");
+
+        window.location.href = currentUrl.toString();
+      }
     </script>
   </body>
 </html>

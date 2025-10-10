@@ -1,94 +1,217 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title th:text="${pageTitle}">Sản phẩm của tôi</title>
-    <link rel="stylesheet" th:href="@{/vendor/bootstrap/bootstrap.min.css}" />
-    <link rel="stylesheet" th:href="@{/fonts/fontawesome/fontawesome.min.css}" />
-    <link rel="stylesheet" th:href="@{/css/main.css}" />
-    <link rel="stylesheet" th:href="@{/css/vendor.css}" />
-  </head>
-  <body>
-    <header th:replace="~{/web/fragments/header :: header}"></header>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title th:text="${pageTitle}">Quản lý sản phẩm</title>
+  <link rel="stylesheet" th:href="@{/vendor/bootstrap/bootstrap.min.css}" />
+  <link rel="stylesheet" th:href="@{/fonts/fontawesome/fontawesome.min.css}" />
+  <link rel="stylesheet" th:href="@{/css/main.css}" />
+  <link rel="stylesheet" th:href="@{/css/vendor.css}" />
+  <style>
+    body {
+      background-color: #f3f4f6;
+    }
+    .vendor-section {
+      background: #fff;
+      border-radius: 18px;
+      padding: 24px;
+      box-shadow: 0 12px 32px rgba(15, 23, 42, 0.08);
+      border: 1px solid rgba(15, 23, 42, 0.06);
+    }
+    .product-table thead {
+      background: rgba(15, 23, 42, 0.04);
+      color: #0f172a;
+    }
+    .product-table img {
+      width: 64px;
+      height: 64px;
+      border-radius: 12px;
+      object-fit: cover;
+      border: 1px solid rgba(148, 163, 184, 0.35);
+    }
+    .product-table .no-image {
+      width: 64px;
+      height: 64px;
+      border-radius: 12px;
+      background: rgba(148, 163, 184, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #475569;
+    }
+    .product-actions {
+      display: flex;
+      gap: 10px;
+    }
+    .badge-status {
+      border-radius: 999px;
+      padding: 0.35rem 0.75rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+    .empty-state {
+      text-align: center;
+      padding: 60px;
+      background: #fff;
+      border-radius: 20px;
+      border: 1px dashed rgba(37, 99, 235, 0.35);
+      box-shadow: 0 12px 28px rgba(37, 99, 235, 0.12);
+    }
+    .empty-state .icon {
+      width: 72px;
+      height: 72px;
+      margin: 0 auto 16px;
+      background: rgba(37, 99, 235, 0.1);
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      color: #2563eb;
+    }
+    .status-hint {
+      border-radius: 14px;
+    }
+  </style>
+</head>
+<body class="bg-light">
+  <div th:replace="~{vendor/fragments/nav :: vendorNav('products')}"></div>
 
-    <main class="section" style="padding-top: 40px;">
-      <div class="container">
-        <div th:replace="~{vendor/fragments/nav :: vendorNav('products')}"></div>
+  <main class="container py-4">
+    <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+      <i class="fas fa-check-circle me-2"></i><span th:text="${success}">Thao tác thành công</span>
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+      <i class="fas fa-times-circle me-2"></i><span th:text="${error}">Đã xảy ra lỗi</span>
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    <div th:if="${warning}" class="alert alert-warning alert-dismissible fade show" role="alert">
+      <i class="fas fa-exclamation-triangle me-2"></i><span th:text="${warning}">Cảnh báo</span>
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
 
-        <div th:if="${success != null}" class="alert alert-success">[[${success}]]</div>
-        <div th:if="${error != null}" class="alert alert-danger">[[${error}]]</div>
-        <div th:if="${warning != null}" class="alert alert-warning">[[${warning}]]</div>
-
-        <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-3">
-          <div>
-            <h2 class="mb-1">Sản phẩm của tôi</h2>
-            <p class="text-muted mb-0" th:text="${shop.shopName}">Tên shop</p>
+    <section class="vendor-section mb-4">
+      <div class="d-flex flex-column flex-xl-row justify-content-between gap-3 align-items-start align-items-xl-center">
+        <div>
+          <h1 class="h4 mb-1">Danh sách sản phẩm</h1>
+          <p class="text-muted mb-0" th:text="${shop.shopName}">Tên shop</p>
+        </div>
+        <div class="d-flex flex-column flex-md-row align-items-stretch align-items-md-center gap-2">
+          <form class="d-flex align-items-center gap-2" th:action="@{/vendor/products}" method="get">
+            <label class="form-label mb-0 text-muted" for="shopSelector">Shop</label>
+            <select id="shopSelector"
+                    class="form-select form-select-sm"
+                    name="shopId"
+                    onchange="this.form.submit()">
+              <option th:each="ownedShop : ${shopList}"
+                      th:value="${ownedShop.shopId}"
+                      th:selected="${ownedShop.shopId == selectedShopId}"
+                      th:text="${ownedShop.shopName}">
+              </option>
+            </select>
+          </form>
+          <div class="d-flex gap-2">
+            <a class="btn btn-outline-secondary" th:href="@{/vendor/dashboard}">
+              <i class="fas fa-chart-line me-2"></i>Xem dashboard
+            </a>
+            <a class="btn btn-primary" th:href="@{'/vendor/products/new'(shopId=${selectedShopId})}">
+              <i class="fas fa-plus me-2"></i>Thêm sản phẩm mới
+            </a>
           </div>
-          <a class="btn btn-primary" th:href="@{/vendor/products/new}">
-            <i class="fas fa-plus"></i> Thêm sản phẩm
-          </a>
         </div>
+      </div>
+    </section>
 
-        <div th:if="${products == null || #lists.isEmpty(products)}" class="vendor-empty">
-          <i class="fas fa-box-open"></i>
-          <p>Chưa có sản phẩm nào. Hãy thêm sản phẩm đầu tiên của bạn!</p>
-          <a class="btn btn-primary" th:href="@{/vendor/products/new}">Thêm sản phẩm ngay</a>
-        </div>
+    <div th:if="${shopStatus != null and !shopStatus.equals(T(vn.entity.Shop$ShopStatus).ACTIVE)}"
+         class="alert alert-warning status-hint border-warning-subtle">
+      <i class="fas fa-clock me-2"></i>
+      <span th:switch="${shopStatus}">
+        <span th:case="${T(vn.entity.Shop$ShopStatus).PENDING}">Shop của bạn đang chờ duyệt. Bạn vẫn có thể chuẩn bị sản phẩm trong thời gian chờ.</span>
+        <span th:case="${T(vn.entity.Shop$ShopStatus).SUSPENDED}">Shop của bạn đang tạm ngưng. Vui lòng kiểm tra email hoặc liên hệ hỗ trợ OneShop.</span>
+        <span th:case="*">Shop của bạn đã bị từ chối. Kiểm tra lý do và cập nhật lại thông tin phù hợp.</span>
+      </span>
+    </div>
 
-        <div th:if="${products != null && !#lists.isEmpty(products)}" class="table-responsive vendor-card">
-          <table class="table align-middle vendor-table">
-            <thead>
-              <tr>
-                <th>Hình ảnh</th>
-                <th>Tên sản phẩm</th>
-                <th>Danh mục</th>
-                <th>Giá</th>
-                <th>Giảm giá</th>
-                <th>Số lượng</th>
-                <th>Trạng thái</th>
-                <th class="text-end">Thao tác</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr th:each="item : ${products}">
-                <td>
-                  <img th:if="${item.productImage != null}" th:src="@{'/loadImage?imageName=' + ${item.productImage}}" alt="Ảnh sản phẩm" />
-                  <div th:if="${item.productImage == null}" class="text-muted">--</div>
-                </td>
-                <td>
-                  <strong th:text="${item.productName}">Tên sản phẩm</strong>
-                  <div class="text-muted small" th:text="${#strings.abbreviate(item.description, 80)}"></div>
-                </td>
-                <td th:text="${item.category != null ? item.category.categoryName : '---'}">Danh mục</td>
-                <td th:text="${#numbers.formatDecimal(item.price,1,'DEFAULT',0,'DEFAULT')} + ' đ'">0 đ</td>
-                <td th:text="${item.discount} + '%'">0%</td>
-                <td th:text="${item.quantity}">0</td>
-                <td>
-                  <span class="badge" th:classappend="${item.status} ? ' bg-success' : ' bg-secondary'"
-                        th:text="${item.status} ? 'Đang bán' : 'Ngừng bán'">Trạng thái</span>
-                </td>
-                <td class="text-end vendor-actions">
-                  <a class="btn btn-sm btn-outline-primary" th:href="@{'/vendor/products/' + ${item.productId} + '/edit'}">
+    <div th:if="${products == null || #lists.isEmpty(products)}" class="empty-state">
+      <div class="icon"><i class="fas fa-box-open"></i></div>
+      <h5 class="fw-semibold mb-2">Chưa có sản phẩm nào</h5>
+      <p class="text-muted mb-4">
+        Hãy tạo sản phẩm đầu tiên để khách hàng có thể khám phá cửa hàng của bạn.
+      </p>
+      <a class="btn btn-primary btn-lg" th:href="@{'/vendor/products/new'(shopId=${selectedShopId})}">
+        <i class="fas fa-plus-circle me-2"></i>Thêm sản phẩm ngay
+      </a>
+    </div>
+
+    <div th:if="${products != null && !#lists.isEmpty(products)}" class="vendor-section">
+      <div class="table-responsive">
+        <table class="table align-middle product-table">
+          <thead>
+            <tr>
+              <th scope="col">#</th>
+              <th scope="col">Sản phẩm</th>
+              <th scope="col">Giá bán</th>
+              <th scope="col">Giảm giá</th>
+              <th scope="col">Tồn kho</th>
+              <th scope="col">Trạng thái</th>
+              <th scope="col" class="text-center">Thao tác</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:each="product, stat : ${products}">
+              <td th:text="${stat.index + 1}">1</td>
+              <td>
+                <div class="d-flex align-items-center gap-3">
+                  <div th:if="${product.productImage != null}">
+                    <img th:src="@{'/loadImage?imageName=' + ${product.productImage}}" alt="Ảnh sản phẩm" />
+                  </div>
+                  <div class="no-image" th:if="${product.productImage == null}">
+                    <i class="fas fa-image"></i>
+                  </div>
+                  <div>
+                    <strong th:text="${product.productName}">Tên sản phẩm</strong>
+                    <p class="text-muted small mb-0" th:text="${product.category != null ? product.category.categoryName : 'Chưa phân loại'}">Danh mục</p>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <span th:text="${#numbers.formatDecimal(product.price, 0, 'DEFAULT', 0, 'DEFAULT')} + ' đ'">0 đ</span>
+              </td>
+              <td>
+                <span th:text="${product.discount != null ? product.discount : 0} + '%'">0%</span>
+              </td>
+              <td>
+                <span class="fw-semibold" th:text="${product.quantity}">0</span>
+              </td>
+              <td>
+                <span class="badge-status"
+                      th:classappend="${product.status} ? ' bg-success-subtle text-success' : ' bg-secondary-subtle text-secondary'"
+                      th:text="${product.status} ? 'Đang bán' : 'Tạm ẩn'">
+                  Đang bán
+                </span>
+              </td>
+              <td>
+                <div class="product-actions justify-content-center">
+                  <a class="btn btn-outline-primary btn-sm" th:href="@{'/vendor/products/' + ${product.productId} + '/edit'(shopId=${selectedShopId})}">
                     <i class="fas fa-edit"></i>
                   </a>
-                  <form th:action="@{'/vendor/products/' + ${item.productId} + '/delete'}" method="post" class="d-inline" onsubmit="return confirm('Bạn chắc chắn muốn xóa sản phẩm này?');">
-                    <button class="btn btn-sm btn-outline-danger" type="submit">
+                  <form th:action="@{'/vendor/products/' + ${product.productId} + '/delete'}" method="post" onsubmit="return confirm('Bạn chắc chắn muốn xóa sản phẩm này?');">
+                    <button type="submit" class="btn btn-outline-danger btn-sm">
                       <i class="fas fa-trash"></i>
                     </button>
                   </form>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
-    </main>
+    </div>
+  </main>
 
-    <footer th:replace="~{/web/fragments/footer :: footer}"></footer>
-
-    <script th:src="@{/vendor/bootstrap/jquery-3.6.0.min.js}"></script>
-    <script th:src="@{/vendor/bootstrap/bootstrap.bundle.min.js}"></script>
-  </body>
+  <script th:src="@{/vendor/bootstrap/jquery-3.6.0.min.js}"></script>
+  <script th:src="@{/vendor/bootstrap/bootstrap.bundle.min.js}"></script>
+</body>
 </html>
-

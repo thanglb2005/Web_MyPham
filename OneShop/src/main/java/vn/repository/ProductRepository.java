@@ -315,5 +315,18 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     Optional<Product> findByProductIdAndShopShopId(Long productId, Long shopId);
 
     long countByShopShopId(Long shopId);
+
+    Page<Product> findByShopShopIdAndProductNameContainingIgnoreCase(Long shopId, String productName, Pageable pageable);
+
+    @Query(value = "SELECT s.shop_id, s.shop_name, s.status, u.name AS vendor_name, " +
+            "COUNT(p.product_id) AS product_count, " +
+            "ISNULL(SUM(p.quantity), 0) AS total_quantity, " +
+            "ISNULL(SUM(ISNULL(p.quantity, 0) * ISNULL(p.price, 0)), 0) AS total_inventory_value " +
+            "FROM shops s " +
+            "LEFT JOIN [user] u ON s.vendor_id = u.user_id " +
+            "LEFT JOIN products p ON s.shop_id = p.shop_id " +
+            "GROUP BY s.shop_id, s.shop_name, s.status, u.name " +
+            "ORDER BY s.shop_name", nativeQuery = true)
+    List<Object[]> getShopProductStatistics();
 }
 

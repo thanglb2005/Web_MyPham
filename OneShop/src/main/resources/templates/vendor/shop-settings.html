@@ -1,117 +1,158 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title th:text="${pageTitle}">Cài đặt shop</title>
-    <link rel="stylesheet" th:href="@{/vendor/bootstrap/bootstrap.min.css}" />
-    <link rel="stylesheet" th:href="@{/fonts/fontawesome/fontawesome.min.css}" />
-    <link rel="stylesheet" th:href="@{/css/main.css}" />
-    <link rel="stylesheet" th:href="@{/css/vendor.css}" />
-  </head>
-  <body>
-    <header th:replace="~{/web/fragments/header :: header}"></header>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title th:text="${pageTitle}">Cài đặt shop</title>
+  <link rel="stylesheet" th:href="@{/vendor/bootstrap/bootstrap.min.css}" />
+  <link rel="stylesheet" th:href="@{/fonts/fontawesome/fontawesome.min.css}" />
+  <link rel="stylesheet" th:href="@{/css/main.css}" />
+  <link rel="stylesheet" th:href="@{/css/vendor.css}" />
+  <style>
+    body {
+      background-color: #f3f4f6;
+    }
+    .vendor-section {
+      background: #fff;
+      border-radius: 18px;
+      padding: 32px;
+      box-shadow: 0 18px 42px rgba(15, 23, 42, 0.1);
+      border: 1px solid rgba(15, 23, 42, 0.06);
+      max-width: 960px;
+      margin: 0 auto;
+    }
+    .form-label {
+      font-weight: 600;
+      color: #1f2937;
+    }
+    .form-control, .form-select {
+      border-radius: 14px;
+      padding: 0.65rem 0.9rem;
+    }
+    .image-preview {
+      width: 120px;
+      height: 120px;
+      border-radius: 16px;
+      object-fit: cover;
+      border: 1px solid rgba(148, 163, 184, 0.4);
+    }
+    .banner-preview {
+      width: 100%;
+      max-width: 480px;
+      height: 140px;
+      border-radius: 16px;
+      object-fit: cover;
+      border: 1px solid rgba(148, 163, 184, 0.4);
+    }
+    .error-text {
+      color: #dc2626;
+      font-size: 0.85rem;
+      margin-top: 0.25rem;
+    }
+  </style>
+</head>
+<body class="bg-light">
+  <div th:replace="~{vendor/fragments/nav :: vendorNav('settings')}"></div>
 
-    <main class="section" style="padding-top: 40px;">
-      <div class="container">
-        <div th:replace="~{vendor/fragments/nav :: vendorNav('shop')}"></div>
+  <main class="container py-4">
+    <section class="vendor-section">
+      <div class="mb-4 d-flex justify-content-between align-items-center">
+        <div>
+          <h1 class="h4 mb-1">Cài đặt shop</h1>
+          <p class="text-muted mb-0" th:text="${shop.shopName}">Tên shop</p>
+        </div>
+        <a class="btn btn-outline-secondary" th:href="@{/vendor/home}">
+          <i class="fas fa-arrow-left me-2"></i>Quay lại trang chủ seller
+        </a>
+      </div>
 
-        <div class="row g-4">
-          <div class="col-lg-4">
-            <div class="vendor-card text-center">
-              <h4 class="mb-3" th:text="${shop.shopName}">Tên shop</h4>
-              <img th:if="${shop.shopBanner != null}"
-                   th:src="@{'/loadImage?imageName=' + ${shop.shopBanner}}"
-                   alt="Banner shop" class="vendor-banner-preview mb-3" />
-              <div th:if="${shop.shopBanner == null}" class="vendor-empty py-4">
-                <i class="fas fa-image"></i>
-                <p class="mb-0">Chưa có banner</p>
-              </div>
-              <img th:if="${shop.shopLogo != null}"
-                   th:src="@{'/loadImage?imageName=' + ${shop.shopLogo}}"
-                   alt="Logo shop"
-                   class="vendor-logo-preview mt-2" />
-              <p class="text-muted mt-3" th:text="${shop.shopDescription} ?: 'Chưa có mô tả chi tiết'">
-                Mô tả shop
-              </p>
-            </div>
-          </div>
-
-          <div class="col-lg-8">
-            <div class="vendor-card vendor-form">
-              <h3 class="mb-3">Cập nhật thông tin shop</h3>
-
-              <form th:action="@{/vendor/shop/settings}" th:object="${shopForm}" method="post" enctype="multipart/form-data">
-                <div class="row g-3">
-                  <div class="col-md-6">
-                    <label for="shopName">Tên shop *</label>
-                    <input id="shopName" type="text" class="form-control" th:field="*{shopName}" />
-                    <div class="text-danger small" th:if="${#fields.hasErrors('shopName')}" th:errors="*{shopName}"></div>
-                  </div>
-                  <div class="col-md-6">
-                    <label for="phoneNumber">Số điện thoại</label>
-                    <input id="phoneNumber" type="text" class="form-control" th:field="*{phoneNumber}" />
-                    <div class="text-danger small" th:if="${#fields.hasErrors('phoneNumber')}" th:errors="*{phoneNumber}"></div>
-                  </div>
-                  <div class="col-12">
-                    <label for="shopDescription">Mô tả shop</label>
-                    <textarea id="shopDescription" class="form-control" rows="4" th:field="*{shopDescription}"></textarea>
-                    <div class="text-danger small" th:if="${#fields.hasErrors('shopDescription')}" th:errors="*{shopDescription}"></div>
-                  </div>
-                  <div class="col-12">
-                    <label for="address">Địa chỉ</label>
-                    <input id="address" type="text" class="form-control" th:field="*{address}" />
-                  </div>
-                  <div class="col-md-4">
-                    <label for="city">Tỉnh/Thành</label>
-                    <input id="city" type="text" class="form-control" th:field="*{city}" />
-                  </div>
-                  <div class="col-md-4">
-                    <label for="district">Quận/Huyện</label>
-                    <input id="district" type="text" class="form-control" th:field="*{district}" />
-                  </div>
-                  <div class="col-md-4">
-                    <label for="ward">Phường/Xã</label>
-                    <input id="ward" type="text" class="form-control" th:field="*{ward}" />
-                  </div>
-                  <div class="col-md-6">
-                    <label for="logo">Logo shop (jpg, png)</label>
-                    <input id="logo" type="file" class="form-control" name="logo" accept="image/*" />
-                  </div>
-                  <div class="col-md-6">
-                    <label for="banner">Banner shop (jpg, png)</label>
-                    <input id="banner" type="file" class="form-control" name="banner" accept="image/*" />
-                  </div>
-                  <div class="col-md-6">
-                    <label for="preparationDays">Thời gian chuẩn bị (ngày)</label>
-                    <input id="preparationDays" type="number" min="1" max="14" class="form-control" th:field="*{preparationDays}" />
-                    <div class="text-danger small" th:if="${#fields.hasErrors('preparationDays')}" th:errors="*{preparationDays}"></div>
-                  </div>
-                  <div class="col-md-6 d-flex align-items-end">
-                    <div class="form-check">
-                      <input class="form-check-input" type="checkbox" id="allowCod" th:field="*{allowCod}" />
-                      <label class="form-check-label" for="allowCod">Cho phép thanh toán COD</label>
-                    </div>
-                  </div>
-                </div>
-
-                <div class="mt-4 d-flex gap-3">
-                  <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-save"></i> Lưu thay đổi
-                  </button>
-                  <a class="btn btn-outline-secondary" th:href="@{/vendor/dashboard}">Về bảng điều khiển</a>
-                </div>
-              </form>
-            </div>
+      <form th:action="@{/vendor/shop/settings}" th:object="${shopForm}" method="post" enctype="multipart/form-data" class="row g-4">
+        <input type="hidden" th:field="*{shopId}" />
+        <div class="col-md-6">
+          <label class="form-label" for="shopName">Tên shop *</label>
+          <input id="shopName" type="text" class="form-control" th:field="*{shopName}" />
+          <div class="error-text" th:if="${#fields.hasErrors('shopName')}" th:errors="*{shopName}"></div>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label" for="phoneNumber">Số điện thoại</label>
+          <input id="phoneNumber" type="text" class="form-control" th:field="*{phoneNumber}" />
+          <div class="error-text" th:if="${#fields.hasErrors('phoneNumber')}" th:errors="*{phoneNumber}"></div>
+        </div>
+        <div class="col-12">
+          <label class="form-label" for="shopDescription">Mô tả shop</label>
+          <textarea id="shopDescription" class="form-control" rows="4" th:field="*{shopDescription}"></textarea>
+          <div class="error-text" th:if="${#fields.hasErrors('shopDescription')}" th:errors="*{shopDescription}"></div>
+        </div>
+        <div class="col-12">
+          <label class="form-label" for="address">Địa chỉ</label>
+          <input id="address" type="text" class="form-control" th:field="*{address}" />
+        </div>
+        <div class="col-md-4">
+          <label class="form-label" for="city">Tỉnh/Thành</label>
+          <input id="city" type="text" class="form-control" th:field="*{city}" />
+        </div>
+        <div class="col-md-4">
+          <label class="form-label" for="district">Quận/Huyện</label>
+          <input id="district" type="text" class="form-control" th:field="*{district}" />
+        </div>
+        <div class="col-md-4">
+          <label class="form-label" for="ward">Phường/Xã</label>
+          <input id="ward" type="text" class="form-control" th:field="*{ward}" />
+        </div>
+        <div class="col-md-6">
+          <label class="form-label" for="logo">Cập nhật logo</label>
+          <input id="logo" type="file" class="form-control" name="logo" accept="image/*" />
+        </div>
+        <div class="col-md-6">
+          <label class="form-label" for="banner">Cập nhật banner</label>
+          <input id="banner" type="file" class="form-control" name="banner" accept="image/*" />
+        </div>
+        <div class="col-md-6" th:if="${shop.shopLogo != null}">
+          <label class="form-label">Logo hiện tại</label>
+          <div>
+            <img class="image-preview" th:src="@{'/loadImage?imageName=' + ${shop.shopLogo}}" alt="Logo shop" />
           </div>
         </div>
-      </div>
-    </main>
+        <div class="col-md-6" th:if="${shop.shopBanner != null}">
+          <label class="form-label">Banner hiện tại</label>
+          <div>
+            <img class="banner-preview" th:src="@{'/loadImage?imageName=' + ${shop.shopBanner}}" alt="Banner shop" />
+          </div>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label" for="preparationDays">Thời gian chuẩn bị (ngày) *</label>
+          <input id="preparationDays" type="number" min="1" max="14" class="form-control" th:field="*{preparationDays}" />
+          <div class="error-text" th:if="${#fields.hasErrors('preparationDays')}" th:errors="*{preparationDays}"></div>
+        </div>
+        <div class="col-md-6 d-flex align-items-center">
+          <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" role="switch" id="allowCod" th:field="*{allowCod}" />
+            <label class="form-check-label" for="allowCod">Cho phép thanh toán COD</label>
+          </div>
+        </div>
+        <div class="col-12 d-flex justify-content-end gap-2">
+          <a class="btn btn-outline-secondary" th:href="@{/vendor/home}">Hủy</a>
+          <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+        </div>
+      </form>
+    </section>
+  </main>
 
-    <footer th:replace="~{/web/fragments/footer :: footer}"></footer>
-
-    <script th:src="@{/vendor/bootstrap/jquery-3.6.0.min.js}"></script>
-    <script th:src="@{/vendor/bootstrap/bootstrap.bundle.min.js}"></script>
-  </body>
+  <script th:src="@{/vendor/bootstrap/jquery-3.6.0.min.js}"></script>
+  <script th:src="@{/vendor/bootstrap/bootstrap.bundle.min.js}"></script>
+  <script>
+    (function() {
+      const selector = document.getElementById('shopSelector');
+      if (selector) {
+        selector.addEventListener('change', function () {
+          const base = this.dataset.base;
+          if (this.value && base) {
+            window.location = base + '?shopId=' + this.value;
+          }
+        });
+      }
+    })();
+  </script>
+</body>
 </html>
 

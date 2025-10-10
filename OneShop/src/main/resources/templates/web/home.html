@@ -29,12 +29,37 @@
               <div class="banner-content">
                 <h1>Mỹ phẩm thiên nhiên - An toàn cho làn da</h1>
                 <p>
-                  OneShop mang đến những sản phẩm mỹ phẩm thiên nhiên, an
-                  toàn và hiệu quả. Chúng tôi cam kết mang đến vẻ đẹp tự nhiên
-                  và bền vững cho bạn.
+                  OneShop mang đến những sản phẩm mỹ phẩm thiên nhiên, an toàn
+                  và hiệu quả. Chúng tôi cam kết mang đến vẻ đẹp tự nhiên và bền
+                  vững cho bạn.
                 </p>
+
+                <!-- Shop Selector -->
+                <div class="shop-selector mb-3">
+                  <label class="form-label text-white mb-2">
+                    <i class="fas fa-store me-2"></i>Chọn cửa hàng để xem sản
+                    phẩm:
+                  </label>
+                  <select
+                    id="homeShopSelector"
+                    class="form-select"
+                    onchange="filterHomeByShop()"
+                  >
+                    <option value="">Tất cả cửa hàng</option>
+                    <option
+                      th:each="shop : ${shopList}"
+                      th:value="${shop.shopId}"
+                      th:text="${shop.shopName}"
+                      th:selected="${selectedShopId != null and selectedShopId == shop.shopId}"
+                    ></option>
+                  </select>
+                </div>
+
                 <div class="banner-btn">
-                  <a class="btn btn-inline" th:href="@{/products}">
+                  <a
+                    class="btn btn-inline"
+                    th:href="${selectedShopId != null} ? @{/products(shopId=${selectedShopId})} : @{/products}"
+                  >
                     <i class="fas fa-shopping-basket"></i
                     ><span>Mua sắm ngay</span>
                   </a>
@@ -57,11 +82,11 @@
         <!-- Product showcase -->
         <div class="banner-products">
           <div class="banner-product-item">
-            <img src="/loadImage?imageName=kemCeraVe.png" alt="Kem dưỡng">
+            <img src="/loadImage?imageName=kemCeraVe.png" alt="Kem dưỡng" />
             <h6>Kem dưỡng</h6>
           </div>
           <div class="banner-product-item">
-            <img src="/loadImage?imageName=SonYSLDoCam.jpg" alt="Son môi">
+            <img src="/loadImage?imageName=SonYSLDoCam.jpg" alt="Son môi" />
             <h6>Son môi</h6>
           </div>
         </div>
@@ -76,13 +101,16 @@
               <div class="banner-content">
                 <h1>Vẻ đẹp tự nhiên - Natural Beauty</h1>
                 <p>
-                  Khám phá bộ sưu tập mới với những sản phẩm mỹ phẩm thiên nhiên,
-                  mang đến vẻ đẹp tự nhiên và khỏe mạnh cho phụ nữ hiện đại.
+                  Khám phá bộ sưu tập mới với những sản phẩm mỹ phẩm thiên
+                  nhiên, mang đến vẻ đẹp tự nhiên và khỏe mạnh cho phụ nữ hiện
+                  đại.
                 </p>
                 <div class="banner-btn">
-                  <a class="btn btn-inline" th:href="@{/products}">
-                    <i class="fas fa-star"></i
-                    ><span>Khám phá ngay</span>
+                  <a
+                    class="btn btn-inline"
+                    th:href="${selectedShopId != null} ? @{/products(shopId=${selectedShopId})} : @{/products}"
+                  >
+                    <i class="fas fa-star"></i><span>Khám phá ngay</span>
                   </a>
                   <a class="btn btn-outline" href="#categories">
                     <i class="fas fa-th-large"></i><span>Danh mục</span>
@@ -103,11 +131,11 @@
         <!-- Product showcase -->
         <div class="banner-products">
           <div class="banner-product-item">
-            <img src="/loadImage?imageName=kemEucerin.png" alt="Serum">
+            <img src="/loadImage?imageName=kemEucerin.png" alt="Serum" />
             <h6>Serum</h6>
           </div>
           <div class="banner-product-item">
-            <img src="/loadImage?imageName=kemSebamed.png" alt="Toner">
+            <img src="/loadImage?imageName=kemSebamed.png" alt="Toner" />
             <h6>Toner</h6>
           </div>
         </div>
@@ -122,13 +150,16 @@
               <div class="banner-content">
                 <h1>Sản phẩm thiên nhiên bán chạy</h1>
                 <p>
-                  Những sản phẩm thiên nhiên được yêu thích nhất với chất lượng vượt trội,
-                  được tin dùng bởi hàng triệu khách hàng trên toàn quốc.
+                  Những sản phẩm thiên nhiên được yêu thích nhất với chất lượng
+                  vượt trội, được tin dùng bởi hàng triệu khách hàng trên toàn
+                  quốc.
                 </p>
                 <div class="banner-btn">
-                  <a class="btn btn-inline" th:href="@{/products}">
-                    <i class="fas fa-fire"></i
-                    ><span>Xem ngay</span>
+                  <a
+                    class="btn btn-inline"
+                    th:href="${selectedShopId != null} ? @{/products(shopId=${selectedShopId})} : @{/products}"
+                  >
+                    <i class="fas fa-fire"></i><span>Xem ngay</span>
                   </a>
                   <a class="btn btn-outline" href="#best-sellers">
                     <i class="fas fa-trophy"></i><span>Bán chạy</span>
@@ -149,11 +180,11 @@
         <!-- Product showcase -->
         <div class="banner-products">
           <div class="banner-product-item">
-            <img src="/loadImage?imageName=SonYSLDoTuoi.jpg" alt="Son YSL">
+            <img src="/loadImage?imageName=SonYSLDoTuoi.jpg" alt="Son YSL" />
             <h6>Son YSL</h6>
           </div>
           <div class="banner-product-item">
-            <img src="/loadImage?imageName=kemNamZO.png" alt="Kem chống nắng">
+            <img src="/loadImage?imageName=kemNamZO.png" alt="Kem chống nắng" />
             <h6>Kem chống nắng</h6>
           </div>
         </div>
@@ -182,7 +213,11 @@
     </section>
 
     <!-- Best sellers -->
-    <section id="best-sellers" class="section recent-part" th:if="${bestSaleProduct20} != null">
+    <section
+      id="best-sellers"
+      class="section recent-part"
+      th:if="${bestSaleProduct20} != null"
+    >
       <div class="container">
         <div class="row">
           <div class="col-lg-12">
@@ -206,7 +241,7 @@
                     </button>
                     <a
                       class="product-image"
-                      th:href="@{/productDetail(id=${item.productId})}"
+                      th:href="${selectedShopId != null} ? @{/products(shopId=${selectedShopId})} : @{/productDetail(id=${item.productId})}"
                     >
                       <img
                         th:if="${item.productImage != null and !#strings.isEmpty(item.productImage)}"
@@ -222,7 +257,7 @@
                     <div class="product-widget">
                       <a
                         title="Chi tiết"
-                        th:href="@{/productDetail(id=${item.productId})}"
+                        th:href="${selectedShopId != null} ? @{/products(shopId=${selectedShopId})} : @{/productDetail(id=${item.productId})}"
                         class="fas fa-eye"
                       ></a>
                     </div>
@@ -236,7 +271,8 @@
                       ><i class="icofont-star"></i>
                     </div>
                     <h6 class="product-name">
-                      <a th:href="@{/productDetail(id=${item.productId})}"
+                      <a
+                        th:href="${selectedShopId != null} ? @{/products(shopId=${selectedShopId})} : @{/productDetail(id=${item.productId})}"
                         >[[${item.productName}]]</a
                       >
                     </h6>
@@ -260,7 +296,9 @@
         <div class="row">
           <div class="col-lg-12">
             <div class="section-btn-25">
-              <a th:href="@{/products}" class="btn btn-outline"
+              <a
+                th:href="${selectedShopId != null} ? @{/products(shopId=${selectedShopId})} : @{/products}"
+                class="btn btn-outline"
                 ><i class="fas fa-eye"></i><span>Xem thêm</span></a
               >
             </div>
@@ -294,7 +332,7 @@
                     </button>
                     <a
                       class="product-image"
-                      th:href="@{/productDetail(id=${item.productId})}"
+                      th:href="${selectedShopId != null} ? @{/products(shopId=${selectedShopId})} : @{/productDetail(id=${item.productId})}"
                     >
                       <img
                         th:if="${item.productImage != null and !#strings.isEmpty(item.productImage)}"
@@ -310,7 +348,7 @@
                     <div class="product-widget">
                       <a
                         title="Chi tiết"
-                        th:href="@{/productDetail(id=${item.productId})}"
+                        th:href="${selectedShopId != null} ? @{/products(shopId=${selectedShopId})} : @{/productDetail(id=${item.productId})}"
                         class="fas fa-eye"
                       ></a>
                     </div>
@@ -324,7 +362,8 @@
                       ><i class="icofont-star"></i>
                     </div>
                     <h6 class="product-name">
-                      <a th:href="@{/productDetail(id=${item.productId})}"
+                      <a
+                        th:href="${selectedShopId != null} ? @{/products(shopId=${selectedShopId})} : @{/productDetail(id=${item.productId})}"
                         >[[${item.productName}]]</a
                       >
                     </h6>
@@ -348,7 +387,9 @@
         <div class="row">
           <div class="col">
             <div class="section-btn-25">
-              <a th:href="@{/products}" class="btn btn-outline"
+              <a
+                th:href="${selectedShopId != null} ? @{/products(shopId=${selectedShopId})} : @{/products}"
+                class="btn btn-outline"
                 ><i class="fas fa-eye"></i><span>Xem thêm</span></a
               >
             </div>
@@ -382,7 +423,7 @@
                     </button>
                     <a
                       class="product-image"
-                      th:href="@{/productDetail(id=${item.productId})}"
+                      th:href="${selectedShopId != null} ? @{/products(shopId=${selectedShopId})} : @{/productDetail(id=${item.productId})}"
                     >
                       <img
                         th:if="${item.productImage != null and !#strings.isEmpty(item.productImage)}"
@@ -398,7 +439,7 @@
                     <div class="product-widget">
                       <a
                         title="Chi tiết"
-                        th:href="@{/productDetail(id=${item.productId})}"
+                        th:href="${selectedShopId != null} ? @{/products(shopId=${selectedShopId})} : @{/productDetail(id=${item.productId})}"
                         class="fas fa-eye"
                       ></a>
                     </div>
@@ -412,7 +453,8 @@
                       ><i class="icofont-star"></i>
                     </div>
                     <h6 class="product-name">
-                      <a th:href="@{/productDetail(id=${item.productId})}"
+                      <a
+                        th:href="${selectedShopId != null} ? @{/products(shopId=${selectedShopId})} : @{/productDetail(id=${item.productId})}"
                         >[[${item.productName}]]</a
                       >
                     </h6>
@@ -519,5 +561,21 @@
     <script src="/js/slick.js"></script>
     <script src="/js/main.js"></script>
     <script src="/js/smooth-scroll.js"></script>
+
+    <script>
+      // Shop filter function for home page
+      function filterHomeByShop() {
+        const shopId = document.getElementById("homeShopSelector").value;
+        const currentUrl = new URL(window.location.href);
+
+        if (shopId) {
+          currentUrl.searchParams.set("shopId", shopId);
+        } else {
+          currentUrl.searchParams.delete("shopId");
+        }
+
+        window.location.href = currentUrl.toString();
+      }
+    </script>
   </body>
 </html>

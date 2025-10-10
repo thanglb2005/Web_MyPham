@@ -1,246 +1,197 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title th:text="${pageTitle}">Trang chủ Vendor</title>
-    <link rel="stylesheet" th:href="@{/vendor/bootstrap/bootstrap.min.css}" />
-    <link rel="stylesheet" th:href="@{/fonts/fontawesome/fontawesome.min.css}" />
-    <link rel="stylesheet" th:href="@{/css/main.css}" />
-    <link rel="stylesheet" th:href="@{/css/vendor.css}" />
-    <style>
-      .vendor-home-card {
-        background: #fff;
-        border: 1px solid #e0e0e0;
-        border-radius: 15px;
-        padding: 30px;
-        text-align: center;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-        height: 100%;
-      }
-      .vendor-home-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 8px 30px rgba(0,0,0,0.12);
-      }
-      .vendor-home-icon {
-        width: 80px;
-        height: 80px;
-        margin: 0 auto 20px;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 35px;
-        color: white;
-      }
-      .vendor-home-title {
-        font-size: 1.5rem;
-        font-weight: 600;
-        margin-bottom: 15px;
-        color: #333;
-      }
-      .vendor-home-desc {
-        color: #666;
-        margin-bottom: 25px;
-        line-height: 1.6;
-      }
-      .vendor-home-btn {
-        padding: 12px 30px;
-        font-weight: 600;
-        border-radius: 25px;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        transition: all 0.3s ease;
-      }
-      .btn-register-shop {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        border: none;
-        color: white;
-      }
-      .btn-register-shop:hover {
-        transform: scale(1.05);
-        color: white;
-      }
-      .btn-my-shop {
-        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-        border: none;
-        color: white;
-      }
-      .btn-my-shop:hover {
-        transform: scale(1.05);
-        color: white;
-      }
-      .vendor-welcome {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        padding: 40px;
-        border-radius: 15px;
-        margin-bottom: 40px;
-        text-align: center;
-      }
-      .shop-status-card {
-        background: #f8f9fa;
-        padding: 20px;
-        border-radius: 10px;
-        margin-bottom: 30px;
-      }
-      .shop-item {
-        transition: all 0.3s ease;
-        border: 1px solid #e0e0e0 !important;
-      }
-      .shop-item:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 8px 25px rgba(0,0,0,0.1);
-        border-color: #007bff !important;
-      }
-    </style>
-  </head>
-  <body class="bg-light">
-    <!-- Vendor Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-      <div class="container">
-        <a class="navbar-brand" href="#">
-          <i class="fas fa-store"></i>
-          Vendor Portal
-        </a>
-        <div class="navbar-nav ms-auto">
-          <span class="navbar-text me-3" th:text="'Xin chào, ' + ${vendor.name}">Xin chào, Vendor</span>
-          <a class="nav-link" th:href="@{/logout}">
-            <i class="fas fa-sign-out-alt"></i> Đăng xuất
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title th:text="${pageTitle}">&#84;&#7897;ng quan nh&#224; b&#225;n</title>
+  <link rel="stylesheet" th:href="@{/vendor/bootstrap/bootstrap.min.css}" />
+  <link rel="stylesheet" th:href="@{/fonts/fontawesome/fontawesome.min.css}" />
+  <link rel="stylesheet" th:href="@{/css/main.css}" />
+  <link rel="stylesheet" th:href="@{/css/vendor.css}" />
+  <style>
+    body { background-color: #f3f4f6; }
+    .vendor-hero { background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%); border-radius: 20px; padding: 48px 40px; color: #fff; margin-bottom: 32px; box-shadow: 0 20px 45px rgba(37, 99, 235, 0.25); }
+    .vendor-hero h1 { font-size: 2.15rem; font-weight: 700; margin-bottom: 0.75rem; }
+    .vendor-hero p { font-size: 1.05rem; color: rgba(255, 255, 255, 0.85); }
+    .summary-card { background: #fff; border-radius: 18px; padding: 24px; border: 1px solid rgba(15, 23, 42, 0.06); box-shadow: 0 12px 32px rgba(15, 23, 42, 0.08); height: 100%; display: flex; flex-direction: column; gap: 0.65rem; }
+    .summary-card .summary-title { font-size: 0.95rem; font-weight: 600; color: #475569; text-transform: uppercase; letter-spacing: 0.04em; }
+    .summary-card .summary-value { font-size: 2rem; font-weight: 700; color: #0f172a; }
+    .summary-card small { color: #64748b; }
+    .vendor-revenue-card { background: #0f172a; color: #f8fafc; border-radius: 20px; padding: 32px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1.5rem; box-shadow: 0 20px 40px rgba(15, 23, 42, 0.35); }
+    .vendor-revenue-card .revenue-label { text-transform: uppercase; font-weight: 600; letter-spacing: 0.08em; color: rgba(226, 232, 240, 0.7); }
+    .vendor-revenue-card .revenue-value { font-size: 2.35rem; font-weight: 700; color: #38bdf8; }
+    .vendor-revenue-card .revenue-actions a { border-radius: 999px; padding: 0.6rem 1.4rem; }
+    .shop-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; }
+    .shop-card { background: #fff; border-radius: 18px; border: 1px solid rgba(15, 23, 42, 0.08); padding: 24px; display: flex; flex-direction: column; gap: 18px; box-shadow: 0 12px 30px rgba(15, 23, 42, 0.1); transition: transform 0.2s ease, box-shadow 0.2s ease; }
+    .shop-card:hover { transform: translateY(-4px); box-shadow: 0 24px 45px rgba(37, 99, 235, 0.18); }
+    .shop-card header { display: flex; flex-direction: column; gap: 4px; }
+    .shop-card .shop-status .badge { border-radius: 999px; padding: 0.4rem 0.85rem; font-weight: 600; font-size: 0.85rem; }
+    .shop-stats { display: flex; justify-content: space-between; gap: 12px; text-align: center; }
+    .shop-stats strong { display: block; font-size: 1.2rem; color: #0f172a; }
+    .shop-card footer { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .shop-card footer a { flex: 1; }
+    .empty-state { background: #fff; border-radius: 20px; border: 1px dashed rgba(37, 99, 235, 0.35); padding: 56px 32px; text-align: center; color: #1e293b; box-shadow: 0 12px 28px rgba(37, 99, 235, 0.12); }
+    .empty-state .icon { width: 64px; height: 64px; border-radius: 16px; display: inline-flex; align-items: center; justify-content: center; font-size: 2rem; background: rgba(37, 99, 235, 0.1); color: #2563eb; margin-bottom: 16px; }
+  </style>
+</head>
+<body class="bg-light">
+  <div th:replace="~{vendor/fragments/nav :: vendorNav('home')}"></div>
+
+  <main class="container py-4">
+    <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+      <i class="fas fa-check-circle me-2"></i><span th:text="${success}">Thao tác thành công</span>
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+      <i class="fas fa-times-circle me-2"></i><span th:text="${error}">Đã xảy ra lỗi</span>
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    <div th:if="${warning}" class="alert alert-warning alert-dismissible fade show" role="alert">
+      <i class="fas fa-exclamation-triangle me-2"></i><span th:text="${warning}">Cảnh báo</span>
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+
+    <section class="vendor-hero">
+      <div class="row align-items-center g-4">
+        <div class="col-lg-8">
+          <h1 th:text="${vendor != null && vendor.name != null} ? 'Ch&#224;o m&#7915;ng tr&#7903; l&#7841;i, ' + vendor.name + '!' : 'Ch&#224;o m&#7915;ng tr&#7903; l&#7841;i!'">
+            Chào mừng trở lại!
+          </h1>
+          <p>Quản lý cửa hàng, sản phẩm và hiệu suất kinh doanh ngay tại bảng điều khiển OneShop Seller.</p>
+        </div>
+        <div class="col-lg-4 text-lg-end d-flex flex-column flex-lg-row gap-2">
+          <a class="btn btn-light text-primary me-2" th:href="@{/vendor/products}">
+            <i class="fas fa-boxes me-2"></i>Quản lý sản phẩm
+          </a>
+          <a class="btn btn-dark" th:href="@{/vendor/shop/register}">
+            <i class="fas fa-plus-circle me-2"></i>
+            <span th:text="${hasShops} ? 'Đăng ký thêm shop' : 'Đăng ký shop đầu tiên'">Đăng ký shop</span>
           </a>
         </div>
       </div>
-    </nav>
+    </section>
 
-    <main class="py-4">
-      <div class="container">
-        <!-- Welcome Section -->
-        <div class="vendor-welcome">
-          <h1 class="mb-3">
-            <i class="fas fa-store"></i>
-            Chào mừng đến với Vendor Portal
-          </h1>
-          <p class="mb-0 fs-5" th:text="'Xin chào ' + ${vendor.name} + '! Quản lý shop và sản phẩm của bạn tại đây.'">
-            Xin chào! Quản lý shop và sản phẩm của bạn tại đây.
-          </p>
+    <section class="row g-4 mb-4">
+      <div class="col-md-4">
+        <div class="summary-card">
+          <span class="summary-title">Tổng số shop</span>
+          <span class="summary-value" th:text="${totalShops}">0</span>
+          <small>Gồm cả shop đang chờ duyệt</small>
         </div>
-
-        <!-- Shop Management Header -->
-        <div class="row align-items-center mb-4">
-          <div class="col-md-8">
-            <h3 class="mb-1">
-              <i class="fas fa-store"></i>
-              Quản lý Shop
-            </h3>
-            <p class="text-muted mb-0">Đăng ký shop mới và quản lý tất cả shops của bạn</p>
-          </div>
-          <div class="col-md-4 text-end">
-            <a th:href="@{/vendor/shop/register}" class="btn btn-register-shop vendor-home-btn">
-              <i class="fas fa-plus"></i> 
-              <span th:text="${hasShops} ? 'Đăng ký thêm Shop' : 'Đăng ký Shop đầu tiên'">Đăng ký Shop</span>
-            </a>
-          </div>
-        </div>
-
-        <!-- All Shops List -->
-        <div class="card">
-          <div class="card-header bg-white">
-            <h5 class="mb-0">
-              <i class="fas fa-list"></i> 
-              Tất cả Shops của tôi
-              <span class="badge bg-primary ms-2" th:text="${totalShops}">0</span>
-            </h5>
-          </div>
-          <div class="card-body">
-            <!-- Empty State -->
-            <div th:if="${!hasShops}" class="text-center py-5">
-              <i class="fas fa-store fa-4x text-muted mb-3"></i>
-              <h5 class="text-muted">Chưa có shop nào</h5>
-              <p class="text-muted mb-4">Hãy đăng ký shop đầu tiên để bắt đầu kinh doanh trên OneShop!</p>
-              <a th:href="@{/vendor/shop/register}" class="btn btn-register-shop vendor-home-btn">
-                <i class="fas fa-plus"></i> Đăng ký Shop ngay
-              </a>
-            </div>
-
-            <!-- Shops Grid -->
-            <div th:if="${hasShops}" class="row g-4">
-              <div class="col-md-6 col-lg-4" th:each="shop : ${shops}">
-                <div class="border rounded-3 p-4 h-100 shop-item">
-                  <!-- Shop Header -->
-                  <div class="d-flex align-items-center mb-3">
-                    <div class="shop-logo me-3">
-                      <div th:if="${shop.shopLogo != null}">
-                        <img th:src="@{'/loadImage?imageName=' + ${shop.shopLogo}}"
-                             alt="Logo shop" 
-                             style="width: 50px; height: 50px; object-fit: cover; border-radius: 8px;" />
-                      </div>
-                      <div th:if="${shop.shopLogo == null}" 
-                           style="width: 50px; height: 50px; background: #f8f9fa; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
-                        <i class="fas fa-store text-muted"></i>
-                      </div>
-                    </div>
-                    <div class="flex-grow-1">
-                      <h6 class="fw-bold mb-1" th:text="${shop.shopName}">Tên Shop</h6>
-                      <small class="text-muted" th:text="${shop.shopSlug}">shop-slug</small>
-                    </div>
-                  </div>
-
-                  <!-- Status -->
-                  <div class="mb-3">
-                    <span class="badge" 
-                          th:classappend="${shop.status.name()}=='ACTIVE' ? 'bg-success' : 
-                                         (${shop.status.name()}=='PENDING' ? 'bg-warning text-dark' : 'bg-danger')"
-                          th:text="${shop.status.name()}=='ACTIVE' ? 'Hoạt động' :
-                                   (${shop.status.name()}=='PENDING' ? 'Chờ duyệt' : 'Tạm ngưng')">
-                      Status
-                    </span>
-                  </div>
-
-                  <!-- Stats -->
-                  <div class="row text-center mb-3">
-                    <div class="col-4">
-                      <div class="text-primary fw-bold" th:text="${shop.totalProducts ?: 0}">0</div>
-                      <small class="text-muted">Sản phẩm</small>
-                    </div>
-                    <div class="col-4">
-                      <div class="text-success fw-bold" th:text="${shop.totalOrders ?: 0}">0</div>
-                      <small class="text-muted">Đơn hàng</small>
-                    </div>
-                    <div class="col-4">
-                      <div class="text-info fw-bold" th:text="${#numbers.formatDecimal(shop.totalRevenue/1000000,1,'DEFAULT',1,'DEFAULT')} + 'M'">0M</div>
-                      <small class="text-muted">VNĐ</small>
-                    </div>
-                  </div>
-
-                  <!-- Actions -->
-                  <div class="d-flex gap-2">
-                    <a th:href="@{'/vendor/dashboard/' + ${shop.shopId}}" class="btn btn-primary btn-sm flex-fill">
-                      <i class="fas fa-tachometer-alt"></i> Dashboard
-                    </a>
-                    <a th:href="@{'/shop/' + ${shop.shopSlug}}" target="_blank" class="btn btn-outline-secondary btn-sm">
-                      <i class="fas fa-external-link-alt"></i>
-                    </a>
-                  </div>
-
-                  <!-- Created date -->
-                  <div class="mt-2 text-center">
-                    <small class="text-muted">
-                      <i class="fas fa-calendar"></i>
-                      <span th:text="${#temporals.format(shop.createdAt, 'dd/MM/yyyy')}">01/01/2024</span>
-                    </small>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
       </div>
-    </main>
+      <div class="col-md-4">
+        <div class="summary-card">
+          <span class="summary-title">Tổng sản phẩm đã đăng</span>
+          <span class="summary-value" th:text="${totalProductCount}">0</span>
+          <small>Được tính theo toàn bộ shop</small>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="summary-card">
+          <span class="summary-title">Tổng đơn hàng đã xử lý</span>
+          <span class="summary-value" th:text="${totalOrderCount}">0</span>
+          <small>Đơn đã tiếp nhận và xử lý</small>
+        </div>
+      </div>
+    </section>
 
-    <script th:src="@{/vendor/bootstrap/jquery-3.6.0.min.js}"></script>
-    <script th:src="@{/vendor/bootstrap/bootstrap.bundle.min.js}"></script>
-  </body>
+    <section class="vendor-revenue-card mb-5">
+      <div>
+        <span class="revenue-label">Doanh thu tích lũy</span>
+        <div class="revenue-value"
+             th:text="${#numbers.formatDecimal(totalRevenueAmount, 0, 'DEFAULT', 0, 'DEFAULT')} + ' đ'">0 đ</div>
+      </div>
+      <div class="revenue-actions d-flex gap-2">
+        <a class="btn btn-outline-light" th:href="@{/vendor/dashboard}">
+          <i class="fas fa-chart-pie me-2"></i>Xem thống kê chi tiết
+        </a>
+        <a class="btn btn-primary" th:href="@{/vendor/products}">
+          <i class="fas fa-plus me-2"></i>Thêm sản phẩm mới
+        </a>
+      </div>
+    </section>
+
+    <section>
+      <div class="d-flex align-items-center justify-content-between mb-4">
+        <div>
+          <h2 class="h5 mb-1">
+            <i class="fas fa-store text-primary me-2"></i>Shop của tôi
+          </h2>
+          <p class="text-muted mb-0">Theo dõi trạng thái và hiệu suất của từng shop.</p>
+        </div>
+        <span class="badge bg-primary rounded-pill fs-6" th:text="${totalShops}">0</span>
+      </div>
+
+      <div class="empty-state" th:if="${!hasShops}">
+        <div class="icon"><i class="fas fa-store"></i></div>
+        <h5 class="fw-semibold mb-2">Bạn chưa có shop nào</h5>
+        <p class="text-muted mb-4">Tạo shop đầu tiên để bắt đầu kinh doanh trên OneShop.</p>
+        <a class="btn btn-primary btn-lg" th:href="@{/vendor/shop/register}">
+          <i class="fas fa-plus-circle me-2"></i>Đăng ký shop ngay
+        </a>
+      </div>
+
+      <div class="shop-grid" th:if="${hasShops}">
+        <article class="shop-card" th:each="shop : ${shops}"
+                 th:with="status=${shop.status != null ? shop.status.name() : 'PENDING'}">
+          <header>
+            <div>
+              <h3 class="h6 mb-1" th:text="${shop.shopName}">Tên shop</h3>
+              <span class="text-muted small" th:text="${shop.shopSlug}">shop-slug</span>
+            </div>
+          </header>
+
+          <div class="shop-status">
+            <span class="badge"
+                  th:classappend="${status == 'ACTIVE'} ? ' bg-success-subtle text-success' :
+                                   (status == 'PENDING' ? ' bg-warning-subtle text-warning' : ' bg-danger-subtle text-danger')"
+                  th:text="${status == 'ACTIVE'} ? 'Hoạt động' :
+                           (status == 'PENDING' ? 'Chờ duyệt' : 'Tạm ngưng')">
+              Hoạt động
+            </span>
+          </div>
+
+          <div class="shop-stats">
+            <div>
+              <strong th:text="${shop.totalProducts != null ? shop.totalProducts : 0}">0</strong>
+              <span>Sản phẩm</span>
+            </div>
+            <div>
+              <strong th:text="${shop.totalOrders != null ? shop.totalOrders : 0}">0</strong>
+              <span>Đơn hàng</span>
+            </div>
+            <div>
+              <strong th:text="${shop.totalRevenue != null ?
+                                #numbers.formatDecimal(shop.totalRevenue, 0, 'DEFAULT', 0, 'DEFAULT') + ' đ' : '0 đ'}">0 đ</strong>
+              <span>Doanh thu</span>
+            </div>
+          </div>
+
+          <div class="text-muted small d-flex align-items-center gap-2">
+            <i class="fas fa-calendar-alt"></i>
+            <span th:text="${shop.createdAt != null ? #temporals.format(shop.createdAt, 'dd/MM/yyyy') : 'N/A'}">
+              01/01/2024
+            </span>
+          </div>
+
+          <footer>
+            <a class="btn btn-primary btn-sm" th:href="@{'/vendor/dashboard/' + ${shop.shopId}}">
+              <i class="fas fa-tachometer-alt me-1"></i>Dashboard
+            </a>
+            <a class="btn btn-outline-secondary btn-sm" th:href="@{'/vendor/shop/settings?shopId=' + ${shop.shopId}}">
+              <i class="fas fa-sliders-h me-1"></i>Cài đặt
+            </a>
+            <a class="btn btn-outline-secondary btn-sm" th:href="@{'/shop/' + ${shop.shopSlug}}" target="_blank">
+              <i class="fas fa-external-link-alt"></i>
+            </a>
+          </footer>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <script th:src="@{/vendor/bootstrap/jquery-3.6.0.min.js}"></script>
+  <script th:src="@{/vendor/bootstrap/bootstrap.bundle.min.js}"></script>
+</body>
 </html>
+

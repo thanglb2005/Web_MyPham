@@ -308,6 +308,25 @@
 
                         <div class="col-md-6">
                           <div class="form-group">
+                            <label class="form-label">Thuộc shop</label>
+                            <select
+                              class="form-control"
+                              name="shopId"
+                              required
+                            >
+                              <option value="">Chọn shop</option>
+                              <option
+                                th:each="shop : ${shopList}"
+                                th:value="${shop.shopId}"
+                                th:text="${shop.shopName}"
+                                th:selected="${product.shop != null and shop.shopId == product.shop.shopId}"
+                              ></option>
+                            </select>
+                          </div>
+                        </div>
+
+                        <div class="col-md-6">
+                          <div class="form-group">
                             <label class="form-label">Giá</label>
                             <input
                               th:field="*{price}"
@@ -500,6 +519,7 @@
           'select[name="categoryId"]'
         ).value;
         const brandId = document.querySelector('select[name="brandId"]').value;
+        const shopId = document.querySelector('select[name="shopId"]').value;
         const price = document.querySelector('input[name="price"]').value;
         const quantity = document.querySelector('input[name="quantity"]').value;
 
@@ -529,6 +549,16 @@
             icon: "error",
             title: "Lỗi!",
             text: "Vui lòng chọn thương hiệu",
+          });
+          return;
+        }
+
+        if (!shopId) {
+          e.preventDefault();
+          Swal.fire({
+            icon: "error",
+            title: "Lỗi!",
+            text: "Vui lòng chọn shop cho sản phẩm",
           });
           return;
         }

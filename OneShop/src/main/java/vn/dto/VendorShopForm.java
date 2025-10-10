@@ -6,6 +6,8 @@ import lombok.Data;
 @Data
 public class VendorShopForm {
 
+    private Long shopId;
+
     @NotBlank(message = "Tên shop không được để trống")
     @Size(max = 255, message = "Tên shop tối đa 255 ký tự")
     private String shopName;

@@ -38,8 +38,8 @@ public class Shop implements Serializable {
     @Column(name = "shop_banner")
     private String shopBanner;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "vendor_id", nullable = false, unique = true)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "vendor_id", nullable = false)
     private User vendor;
 
     @Column(name = "phone_number", length = 15)

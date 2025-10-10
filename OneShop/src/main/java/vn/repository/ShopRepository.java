@@ -13,15 +13,21 @@ import java.util.Optional;
 @Repository
 public interface ShopRepository extends JpaRepository<Shop, Long> {
 
-    Optional<Shop> findByVendor(User vendor);
+    Optional<Shop> findFirstByVendorOrderByCreatedAtAsc(User vendor);
 
-    Optional<Shop> findByVendor_UserId(Long vendorId);
+    Optional<Shop> findFirstByVendor_UserIdOrderByCreatedAtAsc(Long vendorId);
+
+    Optional<Shop> findByShopIdAndVendor_UserId(Long shopId, Long vendorId);
 
     List<Shop> findAllByVendor(User vendor);
 
     List<Shop> findAllByVendor_UserId(Long vendorId);
 
+    List<Shop> findAllByStatus(Shop.ShopStatus status);
+
     boolean existsByShopSlug(String slug);
+
+    Optional<Shop> findByShopSlug(String slug);
 
     @Query("SELECT COUNT(s) > 0 FROM Shop s WHERE s.shopSlug = :slug AND (:excludeId IS NULL OR s.shopId <> :excludeId)")
     boolean existsBySlugExcludingId(@Param("slug") String slug, @Param("excludeId") Long excludeId);

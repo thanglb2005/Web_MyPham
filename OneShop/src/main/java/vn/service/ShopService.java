@@ -10,19 +10,29 @@ public interface ShopService {
 
     Optional<Shop> findById(Long shopId);
 
-    Optional<Shop> findByVendor(User vendor);
+    Optional<Shop> findFirstByVendor(User vendor);
 
     List<Shop> findAllByVendor(User vendor);
 
-    Optional<Shop> findByVendorId(Long vendorId);
+    Optional<Shop> findFirstByVendorId(Long vendorId);
+
+    Optional<Shop> findByIdAndVendor(Long shopId, User vendor);
+
+    Optional<Shop> findBySlug(String slug);
 
     List<Shop> findAllByVendorId(Long vendorId);
+
+    List<Shop> findByStatus(Shop.ShopStatus status);
+
+    List<Shop> findAll();
 
     Shop registerShop(User vendor, Shop shop);
 
     Shop updateShop(Shop shop);
 
     Shop refreshStatistics(Shop shop);
+
+    Shop updateStatus(Long shopId, Shop.ShopStatus status, String rejectionReason);
 
     boolean isShopNameAvailable(String name, Long excludeId);
 

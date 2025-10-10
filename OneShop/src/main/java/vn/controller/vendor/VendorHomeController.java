@@ -33,15 +33,27 @@ public class VendorHomeController {
             return "redirect:/login";
         }
 
-        // Lấy tất cả shops của vendor
         List<Shop> shops = shopService.findAllByVendor(vendor);
-        
+
+        int totalProductCount = shops.stream()
+                .mapToInt(shop -> shop.getTotalProducts() != null ? shop.getTotalProducts() : 0)
+                .sum();
+        int totalOrderCount = shops.stream()
+                .mapToInt(shop -> shop.getTotalOrders() != null ? shop.getTotalOrders() : 0)
+                .sum();
+        double totalRevenueAmount = shops.stream()
+                .mapToDouble(shop -> shop.getTotalRevenue() != null ? shop.getTotalRevenue() : 0.0)
+                .sum();
+
         model.addAttribute("vendor", vendor);
         model.addAttribute("shops", shops);
         model.addAttribute("hasShops", !shops.isEmpty());
         model.addAttribute("totalShops", shops.size());
-        model.addAttribute("pageTitle", "Trang chủ Vendor");
-        
+        model.addAttribute("totalProductCount", totalProductCount);
+        model.addAttribute("totalOrderCount", totalOrderCount);
+        model.addAttribute("totalRevenueAmount", totalRevenueAmount);
+        model.addAttribute("pageTitle", "Trang chủ nhà bán");
+
         return "vendor/home";
     }
 
@@ -62,43 +74,11 @@ public class VendorHomeController {
         model.addAttribute("vendor", vendor);
         model.addAttribute("shops", shops);
         model.addAttribute("totalShops", shops.size());
-        model.addAttribute("pageTitle", "Danh sách Shop của tôi");
+        model.addAttribute("pageTitle", "Danh sách shop của tôi");
         
         return "vendor/my-shops";
     }
 
-    @GetMapping("/dashboard/{shopId}")
-    public String shopDashboard(@PathVariable Long shopId, HttpSession session, Model model) {
-        User vendor = ensureVendor(session);
-        if (vendor == null) {
-            return "redirect:/login";
-        }
-
-        Optional<Shop> shopOpt = shopService.findById(shopId);
-        if (shopOpt.isEmpty()) {
-            model.addAttribute("error", "Không tìm thấy shop!");
-            return "redirect:/vendor/my-shops";
-        }
-
-        Shop shop = shopOpt.get();
-        
-        // Kiểm tra vendor có sở hữu shop này không
-        if (!shop.getVendor().getUserId().equals(vendor.getUserId())) {
-            model.addAttribute("error", "Bạn không có quyền truy cập shop này!");
-            return "redirect:/vendor/my-shops";
-        }
-
-        // Lấy thống kê shop
-        shop = shopService.refreshStatistics(shop);
-        long productCount = productService.countByShopId(shopId);
-
-        model.addAttribute("vendor", vendor);
-        model.addAttribute("shop", shop);
-        model.addAttribute("productCount", productCount);
-        model.addAttribute("pageTitle", "Dashboard - " + shop.getShopName());
-        
-        return "vendor/shop-dashboard";
-    }
 
     private User ensureVendor(HttpSession session) {
         User user = (User) session.getAttribute("user");

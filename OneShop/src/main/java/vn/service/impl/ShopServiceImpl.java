@@ -1,4 +1,4 @@
-package vn.service.impl;
+﻿package vn.service.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -35,11 +35,11 @@ public class ShopServiceImpl implements ShopService {
     }
 
     @Override
-    public Optional<Shop> findByVendor(User vendor) {
+    public Optional<Shop> findFirstByVendor(User vendor) {
         if (vendor == null) {
             return Optional.empty();
         }
-        return shopRepository.findByVendor(vendor);
+        return shopRepository.findFirstByVendorOrderByCreatedAtAsc(vendor);
     }
 
     @Override
@@ -51,11 +51,19 @@ public class ShopServiceImpl implements ShopService {
     }
 
     @Override
-    public Optional<Shop> findByVendorId(Long vendorId) {
+    public Optional<Shop> findFirstByVendorId(Long vendorId) {
         if (vendorId == null) {
             return Optional.empty();
         }
-        return shopRepository.findByVendor_UserId(vendorId);
+        return shopRepository.findFirstByVendor_UserIdOrderByCreatedAtAsc(vendorId);
+    }
+
+    @Override
+    public Optional<Shop> findByIdAndVendor(Long shopId, User vendor) {
+        if (shopId == null || vendor == null) {
+            return Optional.empty();
+        }
+        return shopRepository.findByShopIdAndVendor_UserId(shopId, vendor.getUserId());
     }
 
     @Override
@@ -67,10 +75,37 @@ public class ShopServiceImpl implements ShopService {
     }
 
     @Override
+    public Optional<Shop> findBySlug(String slug) {
+        if (slug == null || slug.isBlank()) {
+            return Optional.empty();
+        }
+        return shopRepository.findByShopSlug(slug);
+    }
+
+    @Override
+    public List<Shop> findByStatus(Shop.ShopStatus status) {
+        if (status == null) {
+            return List.of();
+        }
+        return shopRepository.findAllByStatus(status);
+    }
+
+    @Override
+    public List<Shop> findAll() {
+        return shopRepository.findAll();
+    }
+
+    @Override
     @Transactional
     public Shop registerShop(User vendor, Shop shop) {
         shop.setVendor(vendor);
         shop.setShopSlug(generateSlug(shop.getShopName(), null));
+        shop.setStatus(Shop.ShopStatus.PENDING);
+        shop.setApprovedAt(null);
+        shop.setRejectionReason(null);
+        shop.setTotalProducts(0);
+        shop.setTotalOrders(0);
+        shop.setTotalRevenue(0.0);
         return shopRepository.save(shop);
     }
 
@@ -78,6 +113,21 @@ public class ShopServiceImpl implements ShopService {
     @Transactional
     public Shop updateShop(Shop shop) {
         shop.setShopSlug(generateSlug(shop.getShopName(), shop.getShopId()));
+        return shopRepository.save(shop);
+    }
+
+    @Override
+    @Transactional
+    public Shop updateStatus(Long shopId, Shop.ShopStatus status, String rejectionReason) {
+        Shop shop = shopRepository.findById(shopId).orElseThrow(() -> new IllegalArgumentException("Shop not found"));
+        shop.setStatus(status);
+        if (status == Shop.ShopStatus.REJECTED) {
+            shop.setRejectionReason(rejectionReason);
+            shop.setApprovedAt(null);
+        } else if (status == Shop.ShopStatus.ACTIVE) {
+            shop.setRejectionReason(null);
+            shop.setApprovedAt(shop.getApprovedAt() != null ? shop.getApprovedAt() : java.time.LocalDateTime.now());
+        }
         return shopRepository.save(shop);
     }
 
@@ -123,3 +173,6 @@ public class ShopServiceImpl implements ShopService {
         return candidate;
     }
 }
+
+
+
