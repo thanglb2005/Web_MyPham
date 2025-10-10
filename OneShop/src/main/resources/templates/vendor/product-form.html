@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title th:text="${pageTitle}">Quản lý sản phẩm</title>
+    <link rel="stylesheet" th:href="@{/vendor/bootstrap/bootstrap.min.css}" />
+    <link rel="stylesheet" th:href="@{/fonts/fontawesome/fontawesome.min.css}" />
+    <link rel="stylesheet" th:href="@{/css/main.css}" />
+    <link rel="stylesheet" th:href="@{/css/vendor.css}" />
+  </head>
+  <body>
+    <header th:replace="~{/web/fragments/header :: header}"></header>
+
+    <main class="section" style="padding-top: 40px;">
+      <div class="container">
+        <div th:replace="~{vendor/fragments/nav :: vendorNav('products')}"></div>
+
+        <div class="vendor-card vendor-form">
+          <h2 class="mb-3" th:text="${pageTitle}">Quản lý sản phẩm</h2>
+
+          <form th:action="${product != null} ? @{'/vendor/products/' + ${product.productId} + '/update'} : @{/vendor/products}"
+                th:object="${productForm}"
+                method="post"
+                enctype="multipart/form-data">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label for="productName">Tên sản phẩm *</label>
+                <input id="productName" type="text" class="form-control" th:field="*{productName}" />
+                <div class="text-danger small" th:if="${#fields.hasErrors('productName')}" th:errors="*{productName}"></div>
+              </div>
+              <div class="col-md-6">
+                <label for="price">Giá bán *</label>
+                <input id="price" type="number" min="0" step="0.01" class="form-control" th:field="*{price}" />
+                <div class="text-danger small" th:if="${#fields.hasErrors('price')}" th:errors="*{price}"></div>
+              </div>
+              <div class="col-md-6">
+                <label for="discount">Giảm giá (%)</label>
+                <input id="discount" type="number" min="0" max="90" class="form-control" th:field="*{discount}" />
+                <div class="text-danger small" th:if="${#fields.hasErrors('discount')}" th:errors="*{discount}"></div>
+              </div>
+              <div class="col-md-6">
+                <label for="quantity">Số lượng *</label>
+                <input id="quantity" type="number" min="0" class="form-control" th:field="*{quantity}" />
+                <div class="text-danger small" th:if="${#fields.hasErrors('quantity')}" th:errors="*{quantity}"></div>
+              </div>
+              <div class="col-md-6">
+                <label for="categoryId">Danh mục *</label>
+                <select id="categoryId" class="form-select" th:field="*{categoryId}">
+                  <option value="" disabled th:selected="${productForm.categoryId == null}">Chọn danh mục</option>
+                  <option th:each="cate : ${categories}" th:value="${cate.categoryId}" th:text="${cate.categoryName}"></option>
+                </select>
+                <div class="text-danger small" th:if="${#fields.hasErrors('categoryId')}" th:errors="*{categoryId}"></div>
+              </div>
+              <div class="col-md-6">
+                <label for="brandId">Thương hiệu *</label>
+                <select id="brandId" class="form-select" th:field="*{brandId}">
+                  <option value="" disabled th:selected="${productForm.brandId == null}">Chọn thương hiệu</option>
+                  <option th:each="brand : ${brands}" th:value="${brand.brandId}" th:text="${brand.brandName}"></option>
+                </select>
+                <div class="text-danger small" th:if="${#fields.hasErrors('brandId')}" th:errors="*{brandId}"></div>
+              </div>
+              <div class="col-12">
+                <label for="description">Mô tả</label>
+                <textarea id="description" class="form-control" rows="4" th:field="*{description}"></textarea>
+                <div class="text-danger small" th:if="${#fields.hasErrors('description')}" th:errors="*{description}"></div>
+              </div>
+              <div class="col-md-6">
+                <label for="image">Hình ảnh sản phẩm <span th:if="${product == null}">(bắt buộc)</span></label>
+                <input id="image" type="file" class="form-control" name="image" accept="image/*" />
+              </div>
+              <div class="col-md-6 d-flex align-items-end">
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="active" th:field="*{active}" />
+                  <label class="form-check-label" for="active">Hiển thị sản phẩm</label>
+                </div>
+              </div>
+              <div class="col-12" th:if="${product != null && product.productImage != null}" >
+                <label>Ảnh hiện tại</label>
+                <div class="mt-2">
+                  <img th:src="@{'/loadImage?imageName=' + ${product.productImage}}" alt="Ảnh hiện tại" class="vendor-logo-preview" />
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-4 d-flex gap-3">
+              <button class="btn btn-primary" type="submit">
+                <i class="fas" th:classappend="${product != null} ? ' fa-save' : ' fa-plus'}"></i>
+                <span th:text="${product != null} ? 'Lưu thay đổi' : 'Thêm sản phẩm'"></span>
+              </button>
+              <a class="btn btn-outline-secondary" th:href="@{/vendor/products}">Quay lại danh sách</a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </main>
+
+    <footer th:replace="~{/web/fragments/footer :: footer}"></footer>
+
+    <script th:src="@{/vendor/bootstrap/jquery-3.6.0.min.js}"></script>
+    <script th:src="@{/vendor/bootstrap/bootstrap.bundle.min.js}"></script>
+  </body>
+</html>
+

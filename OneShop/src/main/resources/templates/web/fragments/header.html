@@ -99,6 +99,13 @@
                 th:if="${session.user != null and (!#lists.isEmpty(session.user.roles.?[name=='ROLE_VENDOR']) or !#lists.isEmpty(session.user.roles.?[name=='ROLE_ADMIN']))}"
               >
                 <a
+                  th:href="@{/vendor/dashboard}"
+                  class="header-widget"
+                  title="Quản lý shop"
+                >
+                  <i class="fas fa-store"></i>
+                </a>
+                <a
                   th:href="@{/admin/vendor-chat}"
                   class="header-widget"
                   title="Vendor Chat"

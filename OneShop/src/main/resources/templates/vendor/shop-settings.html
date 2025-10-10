@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title th:text="${pageTitle}">Cài đặt shop</title>
+    <link rel="stylesheet" th:href="@{/vendor/bootstrap/bootstrap.min.css}" />
+    <link rel="stylesheet" th:href="@{/fonts/fontawesome/fontawesome.min.css}" />
+    <link rel="stylesheet" th:href="@{/css/main.css}" />
+    <link rel="stylesheet" th:href="@{/css/vendor.css}" />
+  </head>
+  <body>
+    <header th:replace="~{/web/fragments/header :: header}"></header>
+
+    <main class="section" style="padding-top: 40px;">
+      <div class="container">
+        <div th:replace="~{vendor/fragments/nav :: vendorNav('shop')}"></div>
+
+        <div class="row g-4">
+          <div class="col-lg-4">
+            <div class="vendor-card text-center">
+              <h4 class="mb-3" th:text="${shop.shopName}">Tên shop</h4>
+              <img th:if="${shop.shopBanner != null}"
+                   th:src="@{'/loadImage?imageName=' + ${shop.shopBanner}}"
+                   alt="Banner shop" class="vendor-banner-preview mb-3" />
+              <div th:if="${shop.shopBanner == null}" class="vendor-empty py-4">
+                <i class="fas fa-image"></i>
+                <p class="mb-0">Chưa có banner</p>
+              </div>
+              <img th:if="${shop.shopLogo != null}"
+                   th:src="@{'/loadImage?imageName=' + ${shop.shopLogo}}"
+                   alt="Logo shop"
+                   class="vendor-logo-preview mt-2" />
+              <p class="text-muted mt-3" th:text="${shop.shopDescription} ?: 'Chưa có mô tả chi tiết'">
+                Mô tả shop
+              </p>
+            </div>
+          </div>
+
+          <div class="col-lg-8">
+            <div class="vendor-card vendor-form">
+              <h3 class="mb-3">Cập nhật thông tin shop</h3>
+
+              <form th:action="@{/vendor/shop/settings}" th:object="${shopForm}" method="post" enctype="multipart/form-data">
+                <div class="row g-3">
+                  <div class="col-md-6">
+                    <label for="shopName">Tên shop *</label>
+                    <input id="shopName" type="text" class="form-control" th:field="*{shopName}" />
+                    <div class="text-danger small" th:if="${#fields.hasErrors('shopName')}" th:errors="*{shopName}"></div>
+                  </div>
+                  <div class="col-md-6">
+                    <label for="phoneNumber">Số điện thoại</label>
+                    <input id="phoneNumber" type="text" class="form-control" th:field="*{phoneNumber}" />
+                    <div class="text-danger small" th:if="${#fields.hasErrors('phoneNumber')}" th:errors="*{phoneNumber}"></div>
+                  </div>
+                  <div class="col-12">
+                    <label for="shopDescription">Mô tả shop</label>
+                    <textarea id="shopDescription" class="form-control" rows="4" th:field="*{shopDescription}"></textarea>
+                    <div class="text-danger small" th:if="${#fields.hasErrors('shopDescription')}" th:errors="*{shopDescription}"></div>
+                  </div>
+                  <div class="col-12">
+                    <label for="address">Địa chỉ</label>
+                    <input id="address" type="text" class="form-control" th:field="*{address}" />
+                  </div>
+                  <div class="col-md-4">
+                    <label for="city">Tỉnh/Thành</label>
+                    <input id="city" type="text" class="form-control" th:field="*{city}" />
+                  </div>
+                  <div class="col-md-4">
+                    <label for="district">Quận/Huyện</label>
+                    <input id="district" type="text" class="form-control" th:field="*{district}" />
+                  </div>
+                  <div class="col-md-4">
+                    <label for="ward">Phường/Xã</label>
+                    <input id="ward" type="text" class="form-control" th:field="*{ward}" />
+                  </div>
+                  <div class="col-md-6">
+                    <label for="logo">Logo shop (jpg, png)</label>
+                    <input id="logo" type="file" class="form-control" name="logo" accept="image/*" />
+                  </div>
+                  <div class="col-md-6">
+                    <label for="banner">Banner shop (jpg, png)</label>
+                    <input id="banner" type="file" class="form-control" name="banner" accept="image/*" />
+                  </div>
+                  <div class="col-md-6">
+                    <label for="preparationDays">Thời gian chuẩn bị (ngày)</label>
+                    <input id="preparationDays" type="number" min="1" max="14" class="form-control" th:field="*{preparationDays}" />
+                    <div class="text-danger small" th:if="${#fields.hasErrors('preparationDays')}" th:errors="*{preparationDays}"></div>
+                  </div>
+                  <div class="col-md-6 d-flex align-items-end">
+                    <div class="form-check">
+                      <input class="form-check-input" type="checkbox" id="allowCod" th:field="*{allowCod}" />
+                      <label class="form-check-label" for="allowCod">Cho phép thanh toán COD</label>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="mt-4 d-flex gap-3">
+                  <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Lưu thay đổi
+                  </button>
+                  <a class="btn btn-outline-secondary" th:href="@{/vendor/dashboard}">Về bảng điều khiển</a>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <footer th:replace="~{/web/fragments/footer :: footer}"></footer>
+
+    <script th:src="@{/vendor/bootstrap/jquery-3.6.0.min.js}"></script>
+    <script th:src="@{/vendor/bootstrap/bootstrap.bundle.min.js}"></script>
+  </body>
+</html>
+

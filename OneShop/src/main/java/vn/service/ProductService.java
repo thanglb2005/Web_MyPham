@@ -43,5 +43,13 @@ public interface ProductService {
     List<Object[]> bestSaleProduct20();
     
     List<Product> findByInventoryIds(List<Long> listProductId);
+
+    List<Product> findByShopId(Long shopId);
+
+    Page<Product> findByShopId(Long shopId, Pageable pageable);
+
+    Optional<Product> findByIdAndShop(Long productId, Long shopId);
+
+    long countByShopId(Long shopId);
 }
 

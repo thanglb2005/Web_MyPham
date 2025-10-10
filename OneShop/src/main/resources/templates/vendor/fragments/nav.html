@@ -1,0 +1,33 @@
+<div th:fragment="vendorNav(active)">
+  <div class="vendor-nav mb-4">
+    <div class="container">
+      <ul class="nav nav-pills vendor-nav__list">
+        <li class="nav-item">
+          <a class="nav-link" th:classappend="${active=='dashboard'} ? ' active'"
+             th:href="@{/vendor/dashboard}">
+            <i class="fas fa-chart-line"></i> Bảng điều khiển
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" th:classappend="${active=='products'} ? ' active'"
+             th:href="@{/vendor/products}">
+            <i class="fas fa-box"></i> Sản phẩm của tôi
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" th:classappend="${active=='shop'} ? ' active'"
+             th:href="@{/vendor/shop/settings}">
+            <i class="fas fa-store"></i> Cài đặt shop
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" th:classappend="${active=='register'} ? ' active'"
+             th:href="@{/vendor/shop/register}">
+            <i class="fas fa-sign-in-alt"></i> Đăng ký shop
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</div>
+

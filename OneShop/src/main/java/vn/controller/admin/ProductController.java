@@ -3,7 +3,6 @@ package vn.controller.admin;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.propertyeditors.CustomDateEditor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -15,11 +14,11 @@ import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import vn.entity.*;
-import vn.service.*;
+import vn.service.BrandService;
+import vn.service.CategoryService;
+import vn.service.ImageStorageService;
+import vn.service.ProductService;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -36,9 +35,9 @@ public class ProductController {
     
     @Autowired
     private BrandService brandService;
-    
-    @Value("${upload.path}")
-    private String uploadPath;
+
+    @Autowired
+    private ImageStorageService imageStorageService;
 
     @ModelAttribute("user")
     public User user(Model model, HttpSession session) {
@@ -150,7 +149,7 @@ public class ProductController {
 
             // Handle file upload
             if (file != null && !file.isEmpty()) {
-                String fileName = saveUploadedFile(file, product.getProductName());
+                String fileName = imageStorageService.store(file, product.getProductName());
                 product.setProductImage(fileName);
             }
 
@@ -195,31 +194,33 @@ public class ProductController {
         
         Product existingProduct = productService.findById(id).orElse(null);
         if (existingProduct != null) {
-            // Update fields
-            existingProduct.setProductName(product.getProductName());
-            existingProduct.setDescription(product.getDescription());
-            existingProduct.setPrice(product.getPrice());
-            existingProduct.setQuantity(product.getQuantity());
-            existingProduct.setDiscount(product.getDiscount());
-            existingProduct.setStatus(product.getStatus());
-            existingProduct.setFavorite(product.getFavorite());
-            existingProduct.setManufactureDate(product.getManufactureDate());
-            existingProduct.setExpiryDate(product.getExpiryDate());
-            
-            // Set category and brand
-            Category category = categoryService.getCategoryById(categoryId).orElse(null);
-            Brand brand = brandService.findById(brandId).orElse(null);
-            existingProduct.setCategory(category);
-            existingProduct.setBrand(brand);
-            
-            // Handle file upload only if new file is provided
-            if (file != null && !file.isEmpty()) {
-                String fileName = saveUploadedFile(file, product.getProductName());
-                existingProduct.setProductImage(fileName);
+            try {
+                existingProduct.setProductName(product.getProductName());
+                existingProduct.setDescription(product.getDescription());
+                existingProduct.setPrice(product.getPrice());
+                existingProduct.setQuantity(product.getQuantity());
+                existingProduct.setDiscount(product.getDiscount());
+                existingProduct.setStatus(product.getStatus());
+                existingProduct.setFavorite(product.getFavorite());
+                existingProduct.setManufactureDate(product.getManufactureDate());
+                existingProduct.setExpiryDate(product.getExpiryDate());
+
+                Category category = categoryService.getCategoryById(categoryId).orElse(null);
+                Brand brand = brandService.findById(brandId).orElse(null);
+                existingProduct.setCategory(category);
+                existingProduct.setBrand(brand);
+
+                if (file != null && !file.isEmpty()) {
+                    String fileName = imageStorageService.store(file, product.getProductName());
+                    existingProduct.setProductImage(fileName);
+                }
+
+                productService.save(existingProduct);
+                return "redirect:/admin/products?success=true&action=edit";
+            } catch (Exception e) {
+                e.printStackTrace();
+                return "redirect:/admin/products?error=true&action=edit";
             }
-            
-            productService.save(existingProduct);
-            return "redirect:/admin/products?success=true&action=edit";
         }
         return "redirect:/admin/products?error=true&action=edit";
     }
@@ -242,75 +243,4 @@ public class ProductController {
         binder.registerCustomEditor(Date.class, new CustomDateEditor(sdf, true));
     }
     
-    /**
-     * Save uploaded file to upload directory
-     * @param file MultipartFile to save
-     * @param productName Name of product to use as filename
-     * @return String filename for database storage
-     */
-    private String saveUploadedFile(MultipartFile file, String productName) {
-        try {
-            String workingDir = System.getProperty("user.dir");
-
-            // Determine best upload directory (be resilient to working dir at repo root)
-            File primary = new File(workingDir + File.separatorChar + uploadPath); // e.g., D:/DoAnWebMyPham/upload/images
-            File moduleRoot = new File(workingDir + File.separator + "DoAn_Web_MyPham" + File.separator + "Web_MyPham" + File.separator + "OneShop");
-            File secondary = new File(moduleRoot, uploadPath); // e.g., D:/DoAnWebMyPham/DoAn_Web_MyPham/Web_MyPham/OneShop/upload/images
-
-            // Prefer module upload folder (inside OneShop) if available; fallback to primary root folder
-            File targetDir = (moduleRoot.exists() ? secondary : primary);
-
-            if (!targetDir.exists()) {
-                System.out.println("Creating upload directory at: " + targetDir.getAbsolutePath());
-                targetDir.mkdirs();
-            }
-
-            // Get file extension
-            String originalFilename = file.getOriginalFilename();
-            String extension = "";
-            if (originalFilename != null && originalFilename.contains(".")) {
-                extension = originalFilename.substring(originalFilename.lastIndexOf("."));
-            }
-
-            // Create filename based on product name
-            String fileName = slugify(productName) + "_" + System.currentTimeMillis() + extension;
-
-            // Save file
-            File convFile = new File(targetDir, fileName);
-            System.out.println("Saving file to: " + convFile.getAbsolutePath());
-            try (FileOutputStream fos = new FileOutputStream(convFile)) {
-                fos.write(file.getBytes());
-            }
-
-            return fileName;
-
-        } catch (IOException e) {
-            System.out.println("Error saving file: " + e.getMessage());
-            e.printStackTrace();
-            return null;
-        }
-    }
-    
-    /**
-     * Convert product name to slug for filename
-     * @param productName Product name
-     * @return Slugified string
-     */
-    private String slugify(String productName) {
-        if (productName == null) return "product";
-        
-        return productName.toLowerCase()
-                .trim()
-                .replaceAll("\\s+", "-")
-                .replaceAll("[àáạảãâầấậẩẫăằắặẳẵ]", "a")
-                .replaceAll("[èéẹẻẽêềếệểễ]", "e")
-                .replaceAll("[ìíịỉĩ]", "i")
-                .replaceAll("[òóọỏõôồốộổỗơờớợởỡ]", "o")
-                .replaceAll("[ùúụủũưừứựửữ]", "u")
-                .replaceAll("[ỳýỵỷỹ]", "y")
-                .replaceAll("[đ]", "d")
-                .replaceAll("[^a-z0-9\\-]", "")
-                .replaceAll("-+", "-")
-                .replaceAll("^-|-$", "");
-    }
 }

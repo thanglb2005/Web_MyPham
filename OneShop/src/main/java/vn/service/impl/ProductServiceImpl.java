@@ -102,5 +102,25 @@ public class ProductServiceImpl implements ProductService {
     public List<Product> findByInventoryIds(List<Long> listProductId) {
         return productRepository.findByInventoryIds(listProductId);
     }
+
+    @Override
+    public List<Product> findByShopId(Long shopId) {
+        return productRepository.findByShopShopId(shopId);
+    }
+
+    @Override
+    public Page<Product> findByShopId(Long shopId, Pageable pageable) {
+        return productRepository.findByShopShopId(shopId, pageable);
+    }
+
+    @Override
+    public Optional<Product> findByIdAndShop(Long productId, Long shopId) {
+        return productRepository.findByProductIdAndShopShopId(productId, shopId);
+    }
+
+    @Override
+    public long countByShopId(Long shopId) {
+        return productRepository.countByShopShopId(shopId);
+    }
 }
 

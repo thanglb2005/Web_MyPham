@@ -3,7 +3,9 @@ package vn.entity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 import java.io.Serializable;
 import java.util.Date;
@@ -51,6 +53,12 @@ public class Product implements Serializable {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "brand_id")
     private Brand brand;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "shop_id")
+    @EqualsAndHashCode.Exclude
+    @ToString.Exclude
+    private Shop shop;
     
     @Temporal(TemporalType.DATE)
     private Date manufactureDate;

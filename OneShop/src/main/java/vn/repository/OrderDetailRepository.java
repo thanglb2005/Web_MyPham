@@ -4,6 +4,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import vn.entity.Order;
 import vn.entity.OrderDetail;
 
 import java.util.List;
@@ -88,4 +89,26 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long> 
            "WHERE o.status = 'DELIVERED' " +
            "GROUP BY u.userId, u.name, u.email ORDER BY totalRevenue DESC")
     List<Object[]> getUserStatistics();
+
+    @Query("SELECT COUNT(DISTINCT od.order.orderId) FROM OrderDetail od " +
+           "WHERE od.product.shop.shopId = :shopId " +
+           "AND od.order.status = vn.entity.Order$OrderStatus.DELIVERED")
+    Long countDistinctOrdersByShop(@Param("shopId") Long shopId);
+
+    @Query("SELECT SUM(od.totalPrice) FROM OrderDetail od " +
+           "WHERE od.product.shop.shopId = :shopId " +
+           "AND od.order.status = vn.entity.Order$OrderStatus.DELIVERED")
+    Double sumRevenueByShop(@Param("shopId") Long shopId);
+
+    @Query("SELECT COUNT(DISTINCT od.order.orderId) FROM OrderDetail od " +
+           "WHERE od.product.shop.shopId = :shopId " +
+           "AND od.order.status = :status")
+    Long countDistinctOrdersByShopAndStatus(@Param("shopId") Long shopId,
+                                            @Param("status") Order.OrderStatus status);
+
+    @Query("SELECT SUM(od.quantity) FROM OrderDetail od " +
+           "WHERE od.product.shop.shopId = :shopId " +
+           "AND od.order.status = :status")
+    Long sumQuantityByShopAndStatus(@Param("shopId") Long shopId,
+                                    @Param("status") Order.OrderStatus status);
 }

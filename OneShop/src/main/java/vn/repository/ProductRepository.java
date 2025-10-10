@@ -303,9 +303,17 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
                             "     OR c.category_name LIKE CONCAT('%', :search, '%') " +
                             "     OR b.brand_name LIKE CONCAT('%', :search, '%'))",
                     nativeQuery = true)
-            org.springframework.data.domain.Page<Object[]> getInventoryDetailsPage(
+    org.springframework.data.domain.Page<Object[]> getInventoryDetailsPage(
                     @Param("categoryId") Long categoryId,
                     @Param("search") String search,
                     org.springframework.data.domain.Pageable pageable);
+
+    List<Product> findByShopShopId(Long shopId);
+
+    Page<Product> findByShopShopId(Long shopId, Pageable pageable);
+
+    Optional<Product> findByProductIdAndShopShopId(Long productId, Long shopId);
+
+    long countByShopShopId(Long shopId);
 }
 
