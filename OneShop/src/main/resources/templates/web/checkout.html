@@ -119,7 +119,7 @@
                             <div class="row">
                                 <form class="user-form" th:action="@{/checkout}" method="post">
                                     <div class="form-group">
-                                        <input type="email" th:value="${user.email}" class="form-control" placeholder="Email" readonly="readonly" />
+                                        <input type="email" name="customerEmail" th:value="${user.email}" class="form-control" placeholder="Email" readonly="readonly" />
                                     </div>
                                     
                                     <div class="form-group">

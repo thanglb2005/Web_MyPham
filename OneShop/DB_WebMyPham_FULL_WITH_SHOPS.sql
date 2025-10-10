@@ -229,10 +229,29 @@ CREATE TABLE dbo.orders (
     order_date DATETIME2 NOT NULL DEFAULT GETDATE(),
     shipped_date DATETIME2,
     delivered_date DATETIME2,
+    cancelled_date DATETIME2,
+    cancellation_reason NVARCHAR(MAX),
+    tracking_number NVARCHAR(100),
+    shipping_fee DECIMAL(10,2) NOT NULL DEFAULT 0,
+    discount_amount DECIMAL(10,2) NOT NULL DEFAULT 0,
+    final_amount DECIMAL(18,2) NOT NULL DEFAULT 0,
+    payment_status BIT NOT NULL DEFAULT 0,
+    payment_date DATETIME2,
+    estimated_delivery_date DATETIME2,
     shipper_id BIGINT NULL,
+    shop_id BIGINT NULL,
     CONSTRAINT FK_orders_user FOREIGN KEY(user_id) REFERENCES dbo.[user](user_id),
-    CONSTRAINT FK_orders_shipper FOREIGN KEY(shipper_id) REFERENCES dbo.[user](user_id)
+    CONSTRAINT FK_orders_shipper FOREIGN KEY(shipper_id) REFERENCES dbo.[user](user_id),
+    CONSTRAINT FK_orders_shop FOREIGN KEY(shop_id) REFERENCES dbo.shops(shop_id)
 );
+
+-- Create indexes for better performance
+CREATE INDEX IX_orders_status ON orders(status);
+CREATE INDEX IX_orders_user_id ON orders(user_id);
+CREATE INDEX IX_orders_shop_id ON orders(shop_id);
+CREATE INDEX IX_orders_order_date ON orders(order_date);
+CREATE INDEX IX_orders_payment_status ON orders(payment_status);
+CREATE INDEX IX_orders_payment_method ON orders(payment_method);
 GO
 
 /* ===============================
@@ -848,6 +867,49 @@ VALUES
 GO
 
 /* =====================================================================
+   INSERT SAMPLE ORDERS FOR TESTING
+   ===================================================================== */
+INSERT INTO orders(
+    user_id, customer_name, customer_email, customer_phone, shipping_address, note,
+    status, payment_method, total_amount, final_amount, shipping_fee, discount_amount,
+    order_date, estimated_delivery_date, shop_id, payment_status
+)
+VALUES
+-- Order 1: User Chi đặt hàng từ Shop 1 (An Nguyễn)
+(1, N'Trần Thảo Chi', 'chi@gmail.com', '0901234567', 
+ N'123 Nguyễn Huệ, Quận 1, TP.HCM', N'Giao hàng vào buổi chiều',
+ 'PENDING', 'COD', 150000, 150000, 0, 0,
+ '2025-10-10 10:30:00', '2025-10-14 10:30:00', 1, 0),
+
+-- Order 2: User Đồng đặt hàng từ Shop 2 (Bình)
+(2, N'Trần Hữu Đồng', 'dong@gmail.com', '0912345678',
+ N'456 Lê Lợi, Quận 1, TP.HCM', N'Cần giao nhanh',
+ 'CONFIRMED', 'MOMO', 320000, 320000, 0, 0,
+ '2025-10-09 14:20:00', '2025-10-13 14:20:00', 2, 1),
+
+-- Order 3: User Demo đặt hàng từ Admin/Platform
+(3, N'User Demo', 'user@gmail.com', '0923456789',
+ N'789 Trần Hưng Đạo, Quận 1, TP.HCM', N'Giao hàng cuối tuần',
+ 'SHIPPING', 'BANK_TRANSFER', 2500000, 2500000, 0, 0,
+ '2025-10-08 09:15:00', '2025-10-12 09:15:00', NULL, 1);
+
+-- Insert order details
+INSERT INTO order_details(order_id, product_id, product_name, unit_price, quantity, total_price)
+VALUES
+-- Order 1 details (Ailus lipstick)
+(1, (SELECT TOP 1 product_id FROM products WHERE product_name LIKE '%Ailus%' AND product_name LIKE '%Cam%'), 
+ N'Ailus Stress Free Lipstick M4V #03 Cam Cháy', 150000, 1, 150000),
+
+-- Order 2 details (Sebamed cream)
+(2, (SELECT TOP 1 product_id FROM products WHERE product_name LIKE '%Sebamed%'), 
+ N'Sebamed Relief Face Cream 5% Urea', 320000, 1, 320000),
+
+-- Order 3 details (Chanel perfume)
+(3, (SELECT TOP 1 product_id FROM products WHERE product_name LIKE '%Chanel%' AND product_name LIKE '%No.5%'), 
+ N'Chanel No.5 Eau de Parfum 50ml', 2500000, 1, 2500000);
+GO
+
+/* =====================================================================
    CẬP NHẬT THỐNG KÊ CHO SHOPS
    (Đếm số sản phẩm thực tế đã insert)
    ===================================================================== */
@@ -891,9 +953,14 @@ PRINT '   - Categories: 10';
 PRINT '   - Brands: 58';
 PRINT '   - Users: 9 (3 vendor + 1 admin + 3 user + 1 shipper + 1 cskh)';
 PRINT '   - Shops: 3 (2 ACTIVE + 1 PENDING)';
+PRINT '   - Cart Items: Bảng cart_items đã được tạo';
+PRINT '   - Orders: 3 đơn hàng mẫu đã được tạo';
 SELECT 'Products' AS [Type], COUNT(*) AS [Count] FROM products;
 SELECT 'Shop 1 (An)' AS [Shop], COUNT(*) AS [Products] FROM products WHERE shop_id = 1;
 SELECT 'Shop 2 (Bình)' AS [Shop], COUNT(*) AS [Products] FROM products WHERE shop_id = 2;
 SELECT 'Admin/Platform' AS [Shop], COUNT(*) AS [Products] FROM products WHERE shop_id IS NULL;
+SELECT 'Orders' AS [Type], COUNT(*) AS [Count] FROM orders;
+SELECT 'Order Details' AS [Type], COUNT(*) AS [Count] FROM order_details;
+SELECT 'Cart Items' AS [Type], COUNT(*) AS [Count] FROM cart_items;
 GO
 
