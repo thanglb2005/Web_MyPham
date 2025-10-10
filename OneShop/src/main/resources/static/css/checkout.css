@@ -60,13 +60,17 @@
     margin-bottom: 15px;
     border: 2px solid #e1e5e9;
     border-radius: 10px;
-    padding: 15px;
+    padding: 20px;
     transition: all 0.3s ease;
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
 .payment-option:hover {
     border-color: #119744;
     background: #f8fff9;
+    box-shadow: 0 4px 12px rgba(17, 151, 68, 0.15);
+    transform: translateY(-2px);
 }
 
 .payment-option input[type="radio"] {
@@ -77,9 +81,33 @@
     color: #119744;
 }
 
-.payment-option input[type="radio"]:checked ~ .payment-option {
+.payment-option input[type="radio"]:checked {
+    display: none;
+}
+
+.payment-option input[type="radio"]:checked + .payment-label::before {
+    content: "✓";
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: #119744;
+    color: white;
+    border-radius: 50%;
+    width: 25px;
+    height: 25px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.payment-option:has(input[type="radio"]:checked),
+.payment-option.selected {
     border-color: #119744;
     background: #f8fff9;
+    box-shadow: 0 4px 12px rgba(17, 151, 68, 0.2);
+    transform: translateY(-1px);
 }
 
 .payment-label {
@@ -88,14 +116,51 @@
     cursor: pointer;
     margin: 0;
     font-size: 14px;
+    position: relative;
+    width: 100%;
 }
 
 .payment-label i {
-    font-size: 24px;
-    margin-right: 15px;
+    font-size: 28px;
+    margin-right: 20px;
     color: #119744;
-    width: 30px;
+    width: 40px;
     text-align: center;
+    flex-shrink: 0;
+    transition: all 0.3s ease;
+}
+
+.payment-option:hover .payment-label i {
+    transform: scale(1.1);
+    color: #0d7a37;
+}
+
+.payment-option.selected .payment-label i,
+.payment-option:has(input[type="radio"]:checked) .payment-label i {
+    transform: scale(1.1);
+    color: #0d7a37;
+}
+
+/* Special styling for MoMo */
+.payment-option input[value="momo"] + .payment-label i {
+    color: #d82d8b;
+}
+
+.payment-option:hover input[value="momo"] + .payment-label i,
+.payment-option.selected input[value="momo"] + .payment-label i,
+.payment-option:has(input[value="momo"]:checked) .payment-label i {
+    color: #b8246f;
+}
+
+/* Special styling for Bank Transfer */
+.payment-option input[value="bank_transfer"] + .payment-label i {
+    color: #007bff;
+}
+
+.payment-option:hover input[value="bank_transfer"] + .payment-label i,
+.payment-option.selected input[value="bank_transfer"] + .payment-label i,
+.payment-option:has(input[value="bank_transfer"]:checked) .payment-label i {
+    color: #0056b3;
 }
 
 .payment-label div {
@@ -104,15 +169,69 @@
 
 .payment-label strong {
     display: block;
-    font-size: 16px;
-    margin-bottom: 5px;
+    font-size: 17px;
+    margin-bottom: 8px;
     color: #333;
+    font-weight: 600;
 }
 
 .payment-label small {
     display: block;
     color: #666;
-    font-size: 12px;
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+/* Responsive Design for Payment Methods */
+@media (max-width: 768px) {
+    .payment-option {
+        padding: 15px;
+        margin-bottom: 12px;
+    }
+    
+    .payment-label i {
+        font-size: 24px;
+        margin-right: 15px;
+        width: 35px;
+    }
+    
+    .payment-label strong {
+        font-size: 15px;
+        margin-bottom: 5px;
+    }
+    
+    .payment-label small {
+        font-size: 12px;
+    }
+    
+    .payment-option input[type="radio"]:checked + .payment-label::before {
+        top: 10px;
+        right: 10px;
+        width: 20px;
+        height: 20px;
+        font-size: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .payment-methods {
+        margin-top: 15px;
+    }
+    
+    .payment-option {
+        padding: 12px;
+    }
+    
+    .payment-label {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .payment-label i {
+        margin-right: 0;
+        margin-bottom: 10px;
+        font-size: 32px;
+    }
 }
 
 /* Order Summary */

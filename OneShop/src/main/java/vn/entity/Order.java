@@ -76,7 +76,7 @@ public class Order {
 
     public enum PaymentMethod {
         COD,
-        PAYPAL,
+        MOMO,
         BANK_TRANSFER
     }
 }

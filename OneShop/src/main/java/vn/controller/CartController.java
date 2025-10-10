@@ -321,8 +321,8 @@ public class CartController {
                 case "cod":
                     paymentMethodEnum = Order.PaymentMethod.COD;
                     break;
-                case "paypal":
-                    paymentMethodEnum = Order.PaymentMethod.PAYPAL;
+                case "momo":
+                    paymentMethodEnum = Order.PaymentMethod.MOMO;
                     break;
                 case "bank_transfer":
                     paymentMethodEnum = Order.PaymentMethod.BANK_TRANSFER;
