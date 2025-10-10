@@ -9,6 +9,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import vn.entity.User;
 import vn.repository.UserRepository;
+import vn.service.CartService;
 import vn.service.CategoryService;
 import vn.service.ProductService;
 import vn.entity.Product;
@@ -27,6 +28,9 @@ public class HomeController {
 
     @Autowired
     private ProductService productService;
+    
+    @Autowired
+    private CartService cartService;
 
     @GetMapping("/")
     public String home(HttpServletRequest request, HttpSession session, Model model) {
@@ -45,9 +49,7 @@ public class HomeController {
         
         // Add cart count for header
         if (user != null) {
-            @SuppressWarnings("unchecked")
-            java.util.Map<Long, vn.entity.CartItem> cartMap = (java.util.Map<Long, vn.entity.CartItem>) session.getAttribute("cartMap");
-            int cartCount = (cartMap != null) ? cartMap.size() : 0;
+            int cartCount = cartService.getCartItemCount(user);
             model.addAttribute("totalCartItems", cartCount);
         } else {
             model.addAttribute("totalCartItems", 0);

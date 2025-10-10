@@ -1,21 +1,23 @@
 package vn.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import vn.entity.CartItem;
+import vn.entity.CartItemEntity;
 import vn.entity.Order;
 import vn.entity.Product;
 import vn.entity.User;
+import vn.service.CartService;
 import vn.service.OrderService;
 import vn.service.ProductService;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Controller
@@ -26,6 +28,9 @@ public class CartController {
 
     @Autowired
     private OrderService orderService;
+    
+    @Autowired
+    private CartService cartService;
 
     @GetMapping("/add-to-cart")
     public String addToCart(@RequestParam("productId") Long productId,
@@ -40,29 +45,12 @@ public class CartController {
 
         Product product = productService.findById(productId).orElse(null);
         if (product != null) {
-            HttpSession session = request.getSession();
-
-            @SuppressWarnings("unchecked")
-            Map<Long, CartItem> cartMap = (Map<Long, CartItem>) session.getAttribute("cartMap");
-            if (cartMap == null) {
-                cartMap = new HashMap<>();
+            try {
+                cartService.addToCart(user, product, quantity);
+                redirectAttributes.addFlashAttribute("success", "Đã thêm sản phẩm vào giỏ hàng.");
+            } catch (Exception e) {
+                redirectAttributes.addFlashAttribute("error", "Có lỗi xảy ra khi thêm sản phẩm vào giỏ hàng.");
             }
-
-            CartItem existingItem = cartMap.get(productId);
-            if (existingItem != null) {
-                existingItem.setQuantity(existingItem.getQuantity() + quantity);
-                existingItem.updateTotalPrice();
-            } else {
-                CartItem newItem = new CartItem(product, quantity);
-                cartMap.put(productId, newItem);
-            }
-
-            session.setAttribute("cartMap", cartMap);
-            session.setAttribute("cartItems", cartMap.values());
-            model.addAttribute("totalCartItems", cartMap.size());
-
-            // Flash success message for UI feedback after redirect
-            redirectAttributes.addFlashAttribute("success", "Đã thêm sản phẩm vào giỏ hàng.");
         } else {
             redirectAttributes.addFlashAttribute("error", "Sản phẩm không tồn tại hoặc đã bị gỡ.");
         }
@@ -93,19 +81,10 @@ public class CartController {
             return "redirect:/login";
         }
 
-        HttpSession session = request.getSession();
-        @SuppressWarnings("unchecked")
-        Map<Long, CartItem> cartMap = (Map<Long, CartItem>) session.getAttribute("cartMap");
-
-        if (cartMap == null) {
-            cartMap = new HashMap<>();
-        }
-
-        Collection<CartItem> cartItems = cartMap.values();
-        Integer totalItems = cartMap.size();
-        Double totalPrice = cartMap.values().stream()
-                .mapToDouble(item -> item.getQuantity() * item.getUnitPrice())
-                .sum();
+        List<CartItemEntity> cartItemEntities = cartService.getCartItems(user);
+        List<CartItem> cartItems = convertToCartItemList(cartItemEntities);
+        Integer totalItems = cartService.getCartItemCount(user);
+        Double totalPrice = cartService.getCartTotalPrice(user);
 
         model.addAttribute("cartItems", cartItems);
         model.addAttribute("totalItems", totalItems);
@@ -125,22 +104,9 @@ public class CartController {
             return "redirect:/login";
         }
 
-        HttpSession session = request.getSession();
-        @SuppressWarnings("unchecked")
-        Map<Long, CartItem> cartMap = (Map<Long, CartItem>) session.getAttribute("cartMap");
-
-        if (cartMap != null) {
-            CartItem item = cartMap.get(productId);
-            if (item != null) {
-                if (quantity <= 0) {
-                    cartMap.remove(productId);
-                } else {
-                    item.setQuantity(quantity);
-                    item.updateTotalPrice();
-                }
-                session.setAttribute("cartMap", cartMap);
-                session.setAttribute("cartItems", cartMap.values());
-            }
+        Product product = productService.findById(productId).orElse(null);
+        if (product != null) {
+            cartService.updateCartItemQuantity(user, product, quantity);
         }
 
         return "redirect:/cart";
@@ -155,14 +121,9 @@ public class CartController {
             return "redirect:/login";
         }
 
-        HttpSession session = request.getSession();
-        @SuppressWarnings("unchecked")
-        Map<Long, CartItem> cartMap = (Map<Long, CartItem>) session.getAttribute("cartMap");
-
-        if (cartMap != null) {
-            cartMap.remove(productId);
-            session.setAttribute("cartMap", cartMap);
-            session.setAttribute("cartItems", cartMap.values());
+        Product product = productService.findById(productId).orElse(null);
+        if (product != null) {
+            cartService.removeFromCart(user, product);
         }
 
         return "redirect:/cart";
@@ -175,11 +136,7 @@ public class CartController {
             return "redirect:/login";
         }
 
-        HttpSession session = request.getSession();
-        Map<Long, CartItem> cartMap = new HashMap<>();
-        session.setAttribute("cartMap", cartMap);
-        session.setAttribute("cartItems", cartMap.values());
-
+        cartService.clearCart(user);
         return "redirect:/cart";
     }
 
@@ -191,15 +148,7 @@ public class CartController {
             return 0;
         }
 
-        HttpSession session = request.getSession();
-        @SuppressWarnings("unchecked")
-        Map<Long, CartItem> cartMap = (Map<Long, CartItem>) session.getAttribute("cartMap");
-
-        if (cartMap == null) {
-            return 0;
-        }
-
-        return cartMap.size();
+        return cartService.getCartItemCount(user);
     }
 
     @GetMapping("/checkout-debug")
@@ -209,14 +158,14 @@ public class CartController {
             return "redirect:/login";
         }
 
-        HttpSession session = request.getSession();
-        @SuppressWarnings("unchecked")
-        Map<Long, CartItem> cartMap = (Map<Long, CartItem>) session.getAttribute("cartMap");
-
-        if (cartMap == null || cartMap.isEmpty()) {
+        List<CartItemEntity> cartItemEntities = cartService.getCartItems(user);
+        if (cartItemEntities.isEmpty()) {
             return "redirect:/cart";
         }
 
+        // Convert CartItemEntity to CartItem for compatibility
+        Map<Long, CartItem> cartMap = convertToCartItemMap(cartItemEntities);
+        
         Collection<CartItem> cartItems = cartMap.values();
         Integer totalItems = cartMap.size();
         Double totalPrice = cartMap.values().stream()
@@ -239,14 +188,14 @@ public class CartController {
             return "redirect:/login";
         }
 
-        HttpSession session = request.getSession();
-        @SuppressWarnings("unchecked")
-        Map<Long, CartItem> cartMap = (Map<Long, CartItem>) session.getAttribute("cartMap");
-
-        if (cartMap == null || cartMap.isEmpty()) {
+        List<CartItemEntity> cartItemEntities = cartService.getCartItems(user);
+        if (cartItemEntities.isEmpty()) {
             return "redirect:/cart";
         }
 
+        // Convert CartItemEntity to CartItem for compatibility
+        Map<Long, CartItem> cartMap = convertToCartItemMap(cartItemEntities);
+        
         Collection<CartItem> cartItems = cartMap.values();
         Integer totalItems = cartMap.size();
         Double totalPrice = cartMap.values().stream()
@@ -269,14 +218,14 @@ public class CartController {
             return "redirect:/login";
         }
 
-        HttpSession session = request.getSession();
-        @SuppressWarnings("unchecked")
-        Map<Long, CartItem> cartMap = (Map<Long, CartItem>) session.getAttribute("cartMap");
-
-        if (cartMap == null || cartMap.isEmpty()) {
+        List<CartItemEntity> cartItemEntities = cartService.getCartItems(user);
+        if (cartItemEntities.isEmpty()) {
             return "redirect:/cart";
         }
 
+        // Convert CartItemEntity to CartItem for compatibility
+        Map<Long, CartItem> cartMap = convertToCartItemMap(cartItemEntities);
+        
         Collection<CartItem> cartItems = cartMap.values();
         Integer totalItems = cartMap.size();
         Double totalPrice = cartMap.values().stream()
@@ -307,11 +256,8 @@ public class CartController {
             return "redirect:/login";
         }
 
-        HttpSession session = request.getSession();
-        @SuppressWarnings("unchecked")
-        Map<Long, CartItem> cartMap = (Map<Long, CartItem>) session.getAttribute("cartMap");
-
-        if (cartMap == null || cartMap.isEmpty()) {
+        List<CartItemEntity> cartItemEntities = cartService.getCartItems(user);
+        if (cartItemEntities.isEmpty()) {
             return "redirect:/cart";
         }
 
@@ -331,26 +277,28 @@ public class CartController {
                     paymentMethodEnum = Order.PaymentMethod.COD;
             }
 
-                   // Tạo địa chỉ đầy đủ
-                   String fullAddress = address;
-                   if (city != null && !city.trim().isEmpty()) {
-                       fullAddress = address + ", " + city;
-                   }
+            // Tạo địa chỉ đầy đủ
+            String fullAddress = address;
+            if (city != null && !city.trim().isEmpty()) {
+                fullAddress = address + ", " + city;
+            }
 
-                   Order order = orderService.createOrder(
-                       user,
-                       customerName,
-                       customerEmail,
-                       phone,
-                       fullAddress,
-                       note,
-                       paymentMethodEnum,
-                       cartMap
-                   );
+            // Convert CartItemEntity to CartItem Map for OrderService
+            Map<Long, CartItem> cartMap = convertToCartItemMap(cartItemEntities);
 
-            cartMap.clear();
-            session.setAttribute("cartMap", cartMap);
-            session.setAttribute("cartItems", cartMap.values());
+            Order order = orderService.createOrder(
+                user,
+                customerName,
+                customerEmail,
+                phone,
+                fullAddress,
+                note,
+                paymentMethodEnum,
+                cartMap
+            );
+
+            // Clear cart after successful order
+            cartService.clearCart(user);
 
             model.addAttribute("message", "Đặt hàng thành công! Mã đơn hàng: #" + order.getOrderId());
             model.addAttribute("orderId", order.getOrderId());
@@ -382,5 +330,55 @@ public class CartController {
         model.addAttribute("user", user);
 
         return "web/order-success";
+    }
+    
+    /**
+     * Helper method to convert CartItemEntity list to CartItem Map for compatibility with OrderService
+     */
+    private Map<Long, CartItem> convertToCartItemMap(List<CartItemEntity> cartItemEntities) {
+        Map<Long, CartItem> cartMap = new HashMap<>();
+        for (CartItemEntity entity : cartItemEntities) {
+            CartItem cartItem = new CartItem();
+            cartItem.setId(entity.getProduct().getProductId());
+            cartItem.setName(entity.getProduct().getProductName());
+            cartItem.setUnitPrice(entity.getUnitPrice());
+            cartItem.setQuantity(entity.getQuantity());
+            cartItem.setTotalPrice(entity.getTotalPrice());
+            cartItem.setProduct(entity.getProduct());
+            
+            // Set additional fields to avoid lazy loading issues
+            cartItem.setBrandName(entity.getProduct().getBrand() != null ? 
+                entity.getProduct().getBrand().getBrandName() : "");
+            cartItem.setCategoryName(entity.getProduct().getCategory() != null ? 
+                entity.getProduct().getCategory().getCategoryName() : "");
+            cartItem.setImageUrl(entity.getProduct().getProductImage());
+            
+            cartMap.put(entity.getProduct().getProductId(), cartItem);
+        }
+        return cartMap;
+    }
+    
+    /**
+     * Helper method to convert CartItemEntity list to CartItem list for template compatibility
+     */
+    private List<CartItem> convertToCartItemList(List<CartItemEntity> cartItemEntities) {
+        return cartItemEntities.stream().map(entity -> {
+            CartItem cartItem = new CartItem();
+            cartItem.setId(entity.getProduct().getProductId());
+            cartItem.setName(entity.getProduct().getProductName());
+            cartItem.setUnitPrice(entity.getUnitPrice());
+            cartItem.setQuantity(entity.getQuantity());
+            cartItem.setTotalPrice(entity.getTotalPrice());
+            cartItem.setProduct(entity.getProduct());
+            
+            // Set additional fields to avoid lazy loading issues
+            cartItem.setBrandName(entity.getProduct().getBrand() != null ? 
+                entity.getProduct().getBrand().getBrandName() : "");
+            cartItem.setCategoryName(entity.getProduct().getCategory() != null ? 
+                entity.getProduct().getCategory().getCategoryName() : "");
+            cartItem.setImageUrl(entity.getProduct().getProductImage());
+            
+            return cartItem;
+        }).collect(java.util.stream.Collectors.toList());
     }
 }

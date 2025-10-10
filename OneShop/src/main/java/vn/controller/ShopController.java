@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import vn.entity.Product;
 import vn.entity.User;
+import vn.service.CartService;
 import vn.service.CategoryService;
 import vn.service.ProductService;
 
@@ -33,12 +34,13 @@ public class ShopController {
     @Autowired
     private CategoryService categoryService;
     
+    @Autowired
+    private CartService cartService;
+    
     private void addCartCountToModel(HttpSession session, Model model) {
         User user = (User) session.getAttribute("user");
         if (user != null) {
-            @SuppressWarnings("unchecked")
-            java.util.Map<Long, vn.entity.CartItem> cartMap = (java.util.Map<Long, vn.entity.CartItem>) session.getAttribute("cartMap");
-            int cartCount = (cartMap != null) ? cartMap.size() : 0;
+            int cartCount = cartService.getCartItemCount(user);
             model.addAttribute("totalCartItems", cartCount);
         } else {
             model.addAttribute("totalCartItems", 0);
