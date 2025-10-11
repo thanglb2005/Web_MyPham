@@ -18,155 +18,141 @@
   <body>
     <header th:replace="~{/web/fragments/header :: header}"></header>
 
-    <!-- Banner slider -->
-    <section class="home-index-slider slider-arrow slider-dots">
-      <!-- Banner 1 - Green Nature Theme -->
-      <div class="banner-part banner-1">
+    <!-- Banner slider - Full Width -->
+    <section class="home-index-slider slider-arrow slider-dots" style="margin: 0; padding: 0;">
+      <!-- Banner 1 -->
+      <div class="banner-part banner-1" style="background-image: url('/loadImage?imageName=banner_1.jpg'); background-size: cover; background-position: center; background-repeat: no-repeat; position: relative; min-height: 100vh; width: 100%;">
         <div class="sale-badge">SALE UP TO 50%</div>
-        <div class="container">
-          <div class="row align-items-center">
-            <div class="col-md-6 col-lg-6">
-              <div class="banner-content">
-                <h1>Mỹ phẩm thiên nhiên - An toàn cho làn da</h1>
-                <p>
-                  OneShop mang đến những sản phẩm mỹ phẩm thiên nhiên, an toàn
-                  và hiệu quả. Chúng tôi cam kết mang đến vẻ đẹp tự nhiên và bền
-                  vững cho bạn.
-                </p>
-
-
-                <div class="banner-btn">
-                  <a
-                    class="btn btn-inline"
-                    th:href="${selectedShopId != null} ? @{/products(shopId=${selectedShopId})} : @{/products}"
-                  >
-                    <i class="fas fa-shopping-basket"></i
-                    ><span>Mua sắm ngay</span>
-                  </a>
-                  <a class="btn btn-outline" th:href="@{/promotions}">
-                    <i class="icofont-sale-discount"></i><span>Khuyến mãi</span>
-                  </a>
-                </div>
-              </div>
-            </div>
-            <div class="col-md-6 col-lg-6">
-              <div class="banner-img">
-                <img
-                  src="/loadImage?imageName=SonChanelCam.png"
-                  alt="OneShop"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-        <!-- Product showcase -->
-        <div class="banner-products">
-          <div class="banner-product-item">
-            <img src="/loadImage?imageName=kemCeraVe.png" alt="Kem dưỡng" />
-            <h6>Kem dưỡng</h6>
-          </div>
-          <div class="banner-product-item">
-            <img src="/loadImage?imageName=SonYSLDoCam.jpg" alt="Son môi" />
-            <h6>Son môi</h6>
-          </div>
+        <!-- Banner buttons positioned near dots -->
+        <div class="banner-buttons-bottom">
+          <a
+            class="btn btn-inline"
+            th:href="${selectedShopId != null} ? @{/products(shopId=${selectedShopId})} : @{/products}"
+          >
+            <i class="fas fa-shopping-basket"></i><span>Mua sắm ngay</span>
+          </a>
+          <a class="btn btn-outline" th:href="@{/promotions}">
+            <i class="icofont-sale-discount"></i><span>Khuyến mãi</span>
+          </a>
         </div>
       </div>
 
-      <!-- Banner 2 - Mint Green Theme -->
-      <div class="banner-part banner-2">
+      <!-- Banner 2 -->
+      <div class="banner-part banner-2" style="background-image: url('/loadImage?imageName=banner_2.jpg'); background-size: cover; background-position: center; background-repeat: no-repeat; position: relative; min-height: 100vh; width: 100%;">
         <div class="sale-badge">NEW COLLECTION</div>
-        <div class="container">
-          <div class="row align-items-center">
-            <div class="col-md-6 col-lg-6">
-              <div class="banner-content">
-                <h1>Vẻ đẹp tự nhiên - Natural Beauty</h1>
-                <p>
-                  Khám phá bộ sưu tập mới với những sản phẩm mỹ phẩm thiên
-                  nhiên, mang đến vẻ đẹp tự nhiên và khỏe mạnh cho phụ nữ hiện
-                  đại.
-                </p>
-                <div class="banner-btn">
-                  <a
-                    class="btn btn-inline"
-                    th:href="${selectedShopId != null} ? @{/products(shopId=${selectedShopId})} : @{/products}"
-                  >
-                    <i class="fas fa-star"></i><span>Khám phá ngay</span>
-                  </a>
-                  <a class="btn btn-outline" href="#categories">
-                    <i class="fas fa-th-large"></i><span>Danh mục</span>
-                  </a>
-                </div>
-              </div>
-            </div>
-            <div class="col-md-6 col-lg-6">
-              <div class="banner-img">
-                <img
-                  src="/loadImage?imageName=kemLaRoche.png"
-                  alt="Kem dưỡng cao cấp"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-        <!-- Product showcase -->
-        <div class="banner-products">
-          <div class="banner-product-item">
-            <img src="/loadImage?imageName=kemEucerin.png" alt="Serum" />
-            <h6>Serum</h6>
-          </div>
-          <div class="banner-product-item">
-            <img src="/loadImage?imageName=kemSebamed.png" alt="Toner" />
-            <h6>Toner</h6>
-          </div>
+        <!-- Banner buttons positioned near dots -->
+        <div class="banner-buttons-bottom">
+          <a
+            class="btn btn-inline"
+            th:href="${selectedShopId != null} ? @{/products(shopId=${selectedShopId})} : @{/products}"
+          >
+            <i class="fas fa-star"></i><span>Khám phá ngay</span>
+          </a>
+          <a class="btn btn-outline" href="#categories" onclick="smoothScrollTo('categories')">
+            <i class="fas fa-th-large"></i><span>Danh mục</span>
+          </a>
         </div>
       </div>
 
-      <!-- Banner 3 - Forest Green Theme -->
-      <div class="banner-part banner-3">
+      <!-- Banner 3 -->
+      <div class="banner-part banner-3" style="background-image: url('/loadImage?imageName=banner_3.jpg'); background-size: cover; background-position: center; background-repeat: no-repeat; position: relative; min-height: 100vh; width: 100%;">
         <div class="sale-badge">BEST SELLER</div>
-        <div class="container">
-          <div class="row align-items-center">
-            <div class="col-md-6 col-lg-6">
-              <div class="banner-content">
-                <h1>Sản phẩm thiên nhiên bán chạy</h1>
-                <p>
-                  Những sản phẩm thiên nhiên được yêu thích nhất với chất lượng
-                  vượt trội, được tin dùng bởi hàng triệu khách hàng trên toàn
-                  quốc.
-                </p>
-                <div class="banner-btn">
-                  <a
-                    class="btn btn-inline"
-                    th:href="${selectedShopId != null} ? @{/products(shopId=${selectedShopId})} : @{/products}"
-                  >
-                    <i class="fas fa-fire"></i><span>Xem ngay</span>
-                  </a>
-                  <a class="btn btn-outline" href="#best-sellers">
-                    <i class="fas fa-trophy"></i><span>Bán chạy</span>
-                  </a>
-                </div>
-              </div>
-            </div>
-            <div class="col-md-6 col-lg-6">
-              <div class="banner-img">
-                <img
-                  src="/loadImage?imageName=kemOlay.png"
-                  alt="Sản phẩm bán chạy"
-                />
-              </div>
-            </div>
-          </div>
+        <!-- Banner buttons positioned near dots -->
+        <div class="banner-buttons-bottom">
+          <a
+            class="btn btn-inline"
+            th:href="${selectedShopId != null} ? @{/products(shopId=${selectedShopId})} : @{/products}"
+          >
+            <i class="fas fa-fire"></i><span>Xem ngay</span>
+          </a>
+          <a class="btn btn-outline" href="#best-sellers" onclick="smoothScrollTo('best-sellers')">
+            <i class="fas fa-trophy"></i><span>Bán chạy</span>
+          </a>
         </div>
-        <!-- Product showcase -->
-        <div class="banner-products">
-          <div class="banner-product-item">
-            <img src="/loadImage?imageName=SonYSLDoTuoi.jpg" alt="Son YSL" />
-            <h6>Son YSL</h6>
-          </div>
-          <div class="banner-product-item">
-            <img src="/loadImage?imageName=kemNamZO.png" alt="Kem chống nắng" />
-            <h6>Kem chống nắng</h6>
-          </div>
+      </div>
+
+      <!-- Banner 4 -->
+      <div class="banner-part banner-4" style="background-image: url('/loadImage?imageName=banner_4.jpg'); background-size: cover; background-position: center; background-repeat: no-repeat; position: relative; min-height: 100vh; width: 100%;">
+        <div class="sale-badge">PREMIUM</div>
+        <!-- Banner buttons positioned near dots -->
+        <div class="banner-buttons-bottom">
+          <a
+            class="btn btn-inline"
+            th:href="${selectedShopId != null} ? @{/products(shopId=${selectedShopId})} : @{/products}"
+          >
+            <i class="fas fa-crown"></i><span>Cao cấp</span>
+          </a>
+          <a class="btn btn-outline" href="#featured" onclick="smoothScrollTo('featured')">
+            <i class="fas fa-gem"></i><span>Nổi bật</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Banner 5 -->
+      <div class="banner-part banner-5" style="background-image: url('/loadImage?imageName=banner_5.jpg'); background-size: cover; background-position: center; background-repeat: no-repeat; position: relative; min-height: 100vh; width: 100%;">
+        <div class="sale-badge">NATURAL</div>
+        <!-- Banner buttons positioned near dots -->
+        <div class="banner-buttons-bottom">
+          <a
+            class="btn btn-inline"
+            th:href="${selectedShopId != null} ? @{/products(shopId=${selectedShopId})} : @{/products}"
+          >
+            <i class="fas fa-leaf"></i><span>Thiên nhiên</span>
+          </a>
+          <a class="btn btn-outline" href="#categories" onclick="smoothScrollTo('categories')">
+            <i class="fas fa-seedling"></i><span>Danh mục</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Banner 6 -->
+      <div class="banner-part banner-6" style="background-image: url('/loadImage?imageName=banner_6.jpg'); background-size: cover; background-position: center; background-repeat: no-repeat; position: relative; min-height: 100vh; width: 100%;">
+        <div class="sale-badge">LUXURY</div>
+        <!-- Banner buttons positioned near dots -->
+        <div class="banner-buttons-bottom">
+          <a
+            class="btn btn-inline"
+            th:href="${selectedShopId != null} ? @{/products(shopId=${selectedShopId})} : @{/products}"
+          >
+            <i class="fas fa-gem"></i><span>Sang trọng</span>
+          </a>
+          <a class="btn btn-outline" href="#featured" onclick="smoothScrollTo('featured')">
+            <i class="fas fa-star"></i><span>Nổi bật</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Banner 7 -->
+      <div class="banner-part banner-7" style="background-image: url('/loadImage?imageName=banner_7.jpg'); background-size: cover; background-position: center; background-repeat: no-repeat; position: relative; min-height: 100vh; width: 100%;">
+        <div class="sale-badge">TRENDING</div>
+        <!-- Banner buttons positioned near dots -->
+        <div class="banner-buttons-bottom">
+          <a
+            class="btn btn-inline"
+            th:href="${selectedShopId != null} ? @{/products(shopId=${selectedShopId})} : @{/products}"
+          >
+            <i class="fas fa-trending-up"></i><span>Xu hướng</span>
+          </a>
+          <a class="btn btn-outline" href="#best-sellers" onclick="smoothScrollTo('best-sellers')">
+            <i class="fas fa-fire"></i><span>Bán chạy</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Banner 8 -->
+      <div class="banner-part banner-8" style="background-image: url('/loadImage?imageName=banner_8.jpg'); background-size: cover; background-position: center; background-repeat: no-repeat; position: relative; min-height: 100vh; width: 100%;">
+        <div class="sale-badge">EXCLUSIVE</div>
+        <!-- Banner buttons positioned near dots -->
+        <div class="banner-buttons-bottom">
+          <a
+            class="btn btn-inline"
+            th:href="${selectedShopId != null} ? @{/products(shopId=${selectedShopId})} : @{/products}"
+          >
+            <i class="fas fa-exclamation"></i><span>Độc quyền</span>
+          </a>
+          <a class="btn btn-outline" href="#featured" onclick="smoothScrollTo('featured')">
+            <i class="fas fa-lock"></i><span>Nổi bật</span>
+          </a>
         </div>
       </div>
     </section>
@@ -389,7 +375,7 @@
     </section>
 
     <!-- Featured products -->
-    <section class="section feature-part" th:if="${bestSaleProduct20} != null">
+    <section id="featured" class="section feature-part" th:if="${bestSaleProduct20} != null">
       <div class="container">
         <div class="row">
           <div class="col-lg-12">
@@ -558,6 +544,254 @@
     <script src="/js/smooth-scroll.js"></script>
 <<<<<<< Updated upstream
 
+    <style>
+      /* Full width banner styling */
+      .home-index-slider {
+        width: 100vw;
+        margin-left: calc(-50vw + 50%);
+        margin-right: calc(-50vw + 50%);
+        position: relative;
+      }
+      
+      .banner-part {
+        position: relative;
+        overflow: hidden;
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      
+      .banner-part::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.4);
+        z-index: 1;
+      }
+      
+      .banner-content {
+        position: relative;
+        z-index: 2;
+        text-align: center;
+      }
+      
+      .banner-buttons-bottom {
+        position: absolute;
+        bottom: 80px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+        flex-wrap: wrap;
+        z-index: 10;
+      }
+      
+      .banner-buttons-bottom .btn {
+        padding: 12px 24px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-size: 14px;
+        border-radius: 50px;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        transition: all 0.4s ease;
+        border: none;
+        min-width: 160px;
+      }
+      
+      .banner-buttons-bottom .btn:hover {
+        transform: translateY(-3px) scale(1.05);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+      }
+      
+      .banner-buttons-bottom .btn-inline {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: 2px solid transparent;
+      }
+      
+      .banner-buttons-bottom .btn-inline:hover {
+        background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+        color: white;
+      }
+      
+      .banner-buttons-bottom .btn-outline {
+        background: rgba(255, 255, 255, 0.95);
+        border: 2px solid #fff;
+        color: #333;
+        backdrop-filter: blur(10px);
+      }
+      
+      .banner-buttons-bottom .btn-outline:hover {
+        background: #fff;
+        color: #333;
+        transform: translateY(-3px) scale(1.05);
+      }
+      
+      .sale-badge {
+        position: absolute;
+        top: 30px;
+        right: 30px;
+        background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+        color: white;
+        padding: 12px 24px;
+        border-radius: 30px;
+        font-weight: bold;
+        font-size: 16px;
+        z-index: 3;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        animation: pulse 2s infinite;
+      }
+      
+      @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1); }
+      }
+      
+      /* Slider navigation styling */
+      .slider-arrow .slick-prev,
+      .slider-arrow .slick-next {
+        z-index: 10;
+        width: 60px;
+        height: 60px;
+        background: rgba(255, 255, 255, 0.9);
+        border-radius: 50%;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        transition: all 0.3s ease;
+      }
+      
+      .slider-arrow .slick-prev:hover,
+      .slider-arrow .slick-next:hover {
+        background: #fff;
+        transform: scale(1.1);
+      }
+      
+      .slider-arrow .slick-prev:before,
+      .slider-arrow .slick-next:before {
+        font-size: 24px;
+        color: #333;
+        font-weight: bold;
+      }
+      
+      /* Dots styling */
+      .slider-dots .slick-dots {
+        bottom: 30px;
+        z-index: 10;
+      }
+      
+      .slider-dots .slick-dots li button:before {
+        font-size: 16px;
+        color: rgba(255, 255, 255, 0.7);
+        opacity: 1;
+      }
+      
+      .slider-dots .slick-dots li.slick-active button:before {
+        color: #fff;
+        font-size: 20px;
+      }
+      
+      @media (max-width: 768px) {
+        .banner-part {
+          min-height: 70vh !important;
+        }
+        
+        .banner-buttons-bottom {
+          bottom: 60px;
+          flex-direction: column;
+          align-items: center;
+          gap: 15px;
+        }
+        
+        .banner-buttons-bottom .btn {
+          padding: 10px 20px;
+          font-size: 13px;
+          min-width: 150px;
+        }
+        
+        .sale-badge {
+          top: 20px;
+          right: 20px;
+          padding: 8px 16px;
+          font-size: 14px;
+        }
+        
+        .slider-arrow .slick-prev,
+        .slider-arrow .slick-next {
+          width: 50px;
+          height: 50px;
+        }
+        
+        .slider-arrow .slick-prev:before,
+        .slider-arrow .slick-next:before {
+          font-size: 20px;
+        }
+      }
+      
+      @media (max-width: 480px) {
+        .banner-part {
+          min-height: 60vh !important;
+        }
+        
+        .banner-buttons-bottom {
+          bottom: 50px;
+        }
+        
+        .banner-buttons-bottom .btn {
+          padding: 8px 16px;
+          font-size: 12px;
+          min-width: 140px;
+        }
+        
+        .sale-badge {
+          top: 15px;
+          right: 15px;
+          padding: 6px 12px;
+          font-size: 12px;
+        }
+      }
+
+      /* Smooth scroll highlight effect */
+      #featured, #categories, #best-sellers {
+        transition: all 0.3s ease;
+      }
+      
+      #featured.highlight {
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+        border-radius: 15px;
+        padding: 20px;
+        margin: 20px 0;
+        box-shadow: 0 10px 30px rgba(102, 126, 234, 0.2);
+        transform: scale(1.02);
+      }
+      
+      #featured.highlight .section-heading h2 {
+        color: #667eea;
+        text-shadow: 0 2px 4px rgba(102, 126, 234, 0.3);
+      }
+      
+      /* Light highlight for other sections */
+      #categories.highlight, #best-sellers.highlight {
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.05), rgba(118, 75, 162, 0.05));
+        border-radius: 10px;
+        padding: 15px;
+        margin: 15px 0;
+        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.1);
+        transform: scale(1.01);
+      }
+      
+      #categories.highlight .section-heading h2,
+      #best-sellers.highlight .section-heading h2 {
+        color: #667eea;
+        transition: color 0.3s ease;
+      }
+    </style>
+
     <script>
       // Shop filter function for home page
       function filterHomeByShop() {
@@ -572,6 +806,63 @@
 
         window.location.href = currentUrl.toString();
       }
+
+      // Smooth scroll animation function
+      function smoothScrollTo(targetId) {
+        const targetElement = document.getElementById(targetId);
+        if (targetElement) {
+          // Calculate offset to account for fixed header
+          const headerHeight = 80; // Adjust based on your header height
+          const targetPosition = targetElement.offsetTop - headerHeight;
+          
+          // Smooth scroll with easing
+          const startPosition = window.pageYOffset;
+          const distance = targetPosition - startPosition;
+          const duration = 800; // Reduced to 0.8 seconds for faster response
+          let start = null;
+
+          function animation(currentTime) {
+            if (start === null) start = currentTime;
+            const timeElapsed = currentTime - start;
+            const progress = Math.min(timeElapsed / duration, 1);
+            
+            // Easing function (ease-in-out)
+            const ease = progress < 0.5 
+              ? 2 * progress * progress 
+              : 1 - Math.pow(-2 * progress + 2, 3) / 2;
+            
+            window.scrollTo(0, startPosition + (distance * ease));
+            
+            if (timeElapsed < duration) {
+              requestAnimationFrame(animation);
+            } else {
+              // Add highlight effect for all sections
+              targetElement.classList.add('highlight');
+              setTimeout(() => {
+                targetElement.classList.remove('highlight');
+              }, targetId === 'featured' ? 3000 : 1500); // Featured: 3s, others: 1.5s
+            }
+          }
+
+          requestAnimationFrame(animation);
+        }
+      }
+
+      // Add smooth scroll to all anchor links
+      document.addEventListener('DOMContentLoaded', function() {
+        // Handle all anchor links with smooth scroll
+        const anchorLinks = document.querySelectorAll('a[href^="#"]');
+        anchorLinks.forEach(link => {
+          link.addEventListener('click', function(e) {
+            const href = this.getAttribute('href');
+            if (href && href !== '#') {
+              e.preventDefault();
+              const targetId = href.substring(1);
+              smoothScrollTo(targetId);
+            }
+          });
+        });
+      });
     </script>
 =======
     <script src="/js/favorite.js"></script>
