@@ -561,7 +561,7 @@
                                                 <tr th:if="${brands != null && !brands.empty}" th:each="brand : ${brands}">
                                                     <td th:text="${brand.brandId}"></td>
                                                     <td>
-                                                        <img th:if="${brand.brandImage != null}" th:src="@{'/images/' + ${brand.brandImage}}" class="brand-image" alt="Brand Image">
+                                                        <img th:if="${brand.brandImage != null}" th:src="@{'/brands/' + ${brand.brandImage}}" class="brand-image" alt="Brand Image">
                                                         <div th:if="${brand.brandImage == null}" class="brand-image d-flex align-items-center justify-content-center">
                                                             <i class="fas fa-image text-muted"></i>
                                                         </div>
@@ -929,7 +929,7 @@
                     // Show current image
                     const imagePreview = $('#editImagePreview');
                     if (brand.brandImage) {
-                        imagePreview.html(`<img src="/images/${brand.brandImage}" alt="Brand Image">`);
+                        imagePreview.html(`<img src="/brands/${brand.brandImage}" alt="Brand Image">`);
                         imagePreview.removeClass('empty');
                     } else {
                         imagePreview.html(`<i class="fas fa-image"></i><span>Chưa có hình ảnh</span>`);
@@ -955,7 +955,7 @@
                     // Show image
                     const imagePreview = $('#viewImagePreview');
                     if (brand.brandImage) {
-                        imagePreview.html(`<img src="/images/${brand.brandImage}" alt="Brand Image">`);
+                        imagePreview.html(`<img src="/brands/${brand.brandImage}" alt="Brand Image">`);
                         imagePreview.removeClass('empty');
                     } else {
                         imagePreview.html(`<i class="fas fa-image"></i><span>Không có hình ảnh</span>`);

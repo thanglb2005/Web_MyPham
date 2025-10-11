@@ -1635,9 +1635,16 @@ tbody tr td:last-child {
   right: 0px;
   font-size: 18px;
   color: var(--gray-chalk);
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
 }
 .product-wish.active {
-  color: var(--primary);
+  color: #ff0000;
+}
+.product-wish:hover {
+  transform: scale(1.1);
 }
 .product-image img {
   width: 100%;

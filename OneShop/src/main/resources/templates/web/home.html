@@ -216,8 +216,13 @@
                         >- [[${item.discount}]]%</label
                       >
                     </div>
-                    <button class="product-wish wish">
-                      <i class="fas fa-heart"></i>
+                    <button
+                      class="product-wish wish"
+                      title="Thêm vào yêu thích"
+                      th:onclick="'toggleFavorite(' + ${item.productId} + ', this)'"
+                      th:data-product-id="${item.productId}"
+                    >
+                      <i class="far fa-heart"></i>
                     </button>
                     <a
                       class="product-image"
@@ -307,8 +312,13 @@
                         >- [[${item.discount}]]%</label
                       >
                     </div>
-                    <button class="product-wish wish">
-                      <i class="fas fa-heart"></i>
+                    <button
+                      class="product-wish wish"
+                      title="Thêm vào yêu thích"
+                      th:onclick="'toggleFavorite(' + ${item.productId} + ', this)'"
+                      th:data-product-id="${item.productId}"
+                    >
+                      <i class="far fa-heart"></i>
                     </button>
                     <a
                       class="product-image"
@@ -398,8 +408,13 @@
                         >- [[${item.discount}]]%</label
                       >
                     </div>
-                    <button class="product-wish wish">
-                      <i class="fas fa-heart"></i>
+                    <button
+                      class="product-wish wish"
+                      title="Thêm vào yêu thích"
+                      th:onclick="'toggleFavorite(' + ${item.productId} + ', this)'"
+                      th:data-product-id="${item.productId}"
+                    >
+                      <i class="far fa-heart"></i>
                     </button>
                     <a
                       class="product-image"
@@ -541,6 +556,7 @@
     <script src="/js/slick.js"></script>
     <script src="/js/main.js"></script>
     <script src="/js/smooth-scroll.js"></script>
+<<<<<<< Updated upstream
 
     <script>
       // Shop filter function for home page
@@ -557,5 +573,8 @@
         window.location.href = currentUrl.toString();
       }
     </script>
+=======
+    <script src="/js/favorite.js"></script>
+>>>>>>> Stashed changes
   </body>
 </html>

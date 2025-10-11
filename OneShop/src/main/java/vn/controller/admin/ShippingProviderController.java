@@ -34,7 +34,7 @@ public class ShippingProviderController {
     @Autowired
     private ShippingProviderService shippingProviderService;
     
-    @Value("${upload.path}")
+    @Value("${upload.images.path}")
     private String uploadPath;
     
     /**

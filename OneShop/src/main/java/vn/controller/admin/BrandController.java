@@ -34,11 +34,9 @@ public class BrandController {
     
     @Autowired
     private BrandService brandService;
-    
-    @Value("${upload.path}")
-    private String uploadPath;
-    
-    /**
+
+    @Value("${upload.brands.path}")
+    private String uploadPath;    /**
      * Display brand management page
      */
     @GetMapping("/brands")

@@ -26,7 +26,7 @@ public class CategoryController {
     @Autowired
     private CategoryService categoryService;
     
-    @Value("${upload.path}")
+    @Value("${upload.images.path}")
     private String uploadPath;
 
     @GetMapping("/categories")

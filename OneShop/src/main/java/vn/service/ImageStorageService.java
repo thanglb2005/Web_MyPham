@@ -12,7 +12,7 @@ import java.io.IOException;
 @Service
 public class ImageStorageService {
 
-    @Value("${upload.path}")
+    @Value("${upload.images.path}")
     private String uploadPath;
 
     public String store(MultipartFile file, String referenceName) throws IOException {

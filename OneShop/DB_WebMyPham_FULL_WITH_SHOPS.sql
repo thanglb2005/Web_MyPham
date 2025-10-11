@@ -212,6 +212,22 @@ CREATE INDEX IX_products_shop ON dbo.products(shop_id);
 GO
 
 /* ===============================
+   TABLE: favorites
+   =============================== */
+IF OBJECT_ID('dbo.favorites', 'U') IS NOT NULL DROP TABLE dbo.favorites;
+CREATE TABLE dbo.favorites (
+    favorite_id BIGINT IDENTITY(1,1) PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    product_id BIGINT NOT NULL,
+    CONSTRAINT FK_favorites_user FOREIGN KEY(user_id) REFERENCES dbo.[user](user_id),
+    CONSTRAINT FK_favorites_product FOREIGN KEY(product_id) REFERENCES dbo.products(product_id),
+    CONSTRAINT UK_favorites_user_product UNIQUE(user_id, product_id)
+);
+CREATE INDEX IX_favorites_user ON dbo.favorites(user_id);
+CREATE INDEX IX_favorites_product ON dbo.favorites(product_id);
+GO
+
+/* ===============================
    TABLE: orders
    =============================== */
 IF OBJECT_ID('dbo.orders', 'U') IS NOT NULL DROP TABLE dbo.orders;

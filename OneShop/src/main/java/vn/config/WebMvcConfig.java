@@ -6,28 +6,32 @@ import org.springframework.lang.NonNull;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
-
 @Configuration
 public class WebMvcConfig implements WebMvcConfigurer {
 
-    @Value("${upload.path}")
-    private String uploadPath;
+    @Value("${upload.images.path}")
+    private String uploadImagesPath;
+    
+    @Value("${upload.brands.path}")
+    private String uploadBrandsPath;
 
     @Override
     public void addResourceHandlers(@NonNull ResourceHandlerRegistry registry) {
-        // Ánh xạ URL /images/ tới thư mục upload/images
-        Path uploadDir = Paths.get(uploadPath);
-        String uploadPath = uploadDir.toFile().getAbsolutePath();
-        
+        // Ánh xạ URL /images/ tới thư mục upload/images (sử dụng đường dẫn tương đối)
         // Ghi log để debug
-        System.out.println("Configuring resource handler: /images/ -> " + uploadPath);
-        
+        System.out.println("Configuring resource handler: /images/ -> " + uploadImagesPath);
+
         registry.addResourceHandler("/images/**")
-                .addResourceLocations("file:" + uploadPath + "/")
+                .addResourceLocations("file:" + uploadImagesPath + "/")
                 .addResourceLocations("classpath:/static/images/");
-                
+
+        // Ánh xạ URL /brands/ tới thư mục upload/brands (sử dụng đường dẫn tương đối)
+        // Ghi log để debug
+        System.out.println("Configuring resource handler: /brands/ -> " + uploadBrandsPath);
+
+        registry.addResourceHandler("/brands/**")
+                .addResourceLocations("file:" + uploadBrandsPath + "/");
+
         // Các resource handler mặc định vẫn được giữ nguyên
     }
 }

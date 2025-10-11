@@ -8,25 +8,28 @@ import lombok.NoArgsConstructor;
 import java.io.Serializable;
 
 /**
- * Favorite entity for user favorite products
+ * Favorite entity for user's favorite products
  * @author OneShop Team
  */
-@Entity
-@Table(name = "favorites")
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Entity
+@Table(name = "favorites")
 public class Favorite implements Serializable {
+    
+    private static final long serialVersionUID = 1L;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "favorite_id")
     private Long favoriteId;
-    
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_id")
-    private Product product;
-    
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_id")
+    private Product product;
 }

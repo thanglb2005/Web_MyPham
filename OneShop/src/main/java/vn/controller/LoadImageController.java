@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 @Controller
 public class LoadImageController {
 
-    @Value("${upload.path}")
+    @Value("${upload.images.path}")
     private String pathUploadImage;
 
     @GetMapping(value = "/loadImage")

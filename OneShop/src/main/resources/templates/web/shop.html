@@ -310,8 +310,10 @@
                     <button
                       class="product-wish wish"
                       title="Thêm vào yêu thích"
+                      th:onclick="'toggleFavorite(' + ${item.productId} + ', this)'"
+                      th:data-product-id="${item.productId}"
                     >
-                      <i class="fas fa-heart"></i>
+                      <i class="far fa-heart"></i>
                     </button>
                     <a
                       class="product-image"
@@ -329,11 +331,6 @@
                       />
                     </a>
                     <div class="product-widget">
-                      <a
-                        title="Yêu thích"
-                        href="javascript:void(0);"
-                        class="fas fa-heart wish"
-                      ></a>
                       <a
                         title="Xem nhanh"
                         th:href="@{/productDetail(id=${item.productId})}"
@@ -437,6 +434,7 @@
     <script src="/js/venobox.js"></script>
     <script src="/js/slick.js"></script>
     <script src="/js/main.js"></script>
+    <script src="/js/favorite.js"></script>
 
     <script>
       $(document).ready(function () {
@@ -511,6 +509,7 @@
         );
       });
 
+<<<<<<< Updated upstream
       // Shop filter function
       function filterByShop() {
         const shopId = document.getElementById("shopSelector").value;
@@ -527,6 +526,8 @@
 
         window.location.href = currentUrl.toString();
       }
+=======
+>>>>>>> Stashed changes
     </script>
   </body>
 </html>

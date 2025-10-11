@@ -728,6 +728,15 @@
 
                     </div>
 
+                    <button
+                      class="product-wish wish"
+                      title="Thêm vào yêu thích"
+                      th:onclick="'toggleFavorite(' + ${item.productId} + ', this)'"
+                      th:data-product-id="${item.productId}"
+                    >
+                      <i class="far fa-heart"></i>
+                    </button>
+
                     <a
 
                       class="product-image"
@@ -1145,6 +1154,7 @@
     <script src="/js/main.js"></script>
 
     <script src="/js/index.js"></script>
+    <script src="/js/favorite.js"></script>
 
   </body>
 
@@ -1303,6 +1313,15 @@
 
                     </div>
 
+                    <button
+                      class="product-wish wish"
+                      title="Thêm vào yêu thích"
+                      th:onclick="'toggleFavorite(' + ${item.productId} + ', this)'"
+                      th:data-product-id="${item.productId}"
+                    >
+                      <i class="far fa-heart"></i>
+                    </button>
+
                     <a
 
                       class="product-image"
@@ -1720,6 +1739,7 @@
     <script src="/js/main.js"></script>
 
     <script src="/js/index.js"></script>
+    <script src="/js/favorite.js"></script>
 
   </body>
 

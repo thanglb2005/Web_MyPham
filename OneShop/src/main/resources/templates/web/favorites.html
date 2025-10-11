@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+  <meta http-equiv="content-type" content="text/html;charset=utf-8" />
+<head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
+    <title>OneShop - Sản phẩm yêu thích</title>
+    <link rel="icon" href="/assets/img/icon.png" />
+    <link rel="stylesheet" href="/fonts/flaticon/flaticon.css" />
+    <link rel="stylesheet" href="/fonts/icofont/icofont.min.css" />
+    <link rel="stylesheet" href="/fonts/fontawesome/fontawesome.min.css" />
+    <link rel="stylesheet" href="/vendor/venobox/venobox.min.css" />
+    <link rel="stylesheet" href="/vendor/slickslider/slick.min.css" />
+    <link rel="stylesheet" href="/vendor/niceselect/nice-select.min.css" />
+    <link rel="stylesheet" href="/vendor/bootstrap/bootstrap.min.css" />
+    <link rel="stylesheet" href="/css/main.css" />
+    <style>
+      /* List view styling */
+      #product-container.list-view .product-item {
+        width: 100% !important;
+        max-width: 100% !important;
+        flex: 0 0 100% !important;
+            margin-bottom: 20px;
+      }
+      #product-container.list-view .product-card {
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center;
+      }
+      #product-container.list-view .product-media {
+        width: 200px !important;
+        min-width: 200px !important;
+        margin-right: 20px;
+      }
+      #product-container.list-view .product-content {
+        flex: 1;
+        text-align: left !important;
+        border-top: none !important;
+        padding-top: 0 !important;
+      }
+      #product-container.list-view .product-widget {
+        position: relative !important;
+        opacity: 1 !important;
+        bottom: auto !important;
+        left: auto !important;
+        margin-top: 10px;
+      }
+      /* Pagination styling - giống ảnh */
+      .pagination {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-top: 30px;
+        gap: 8px;
+      }
+      .pagination li {
+        list-style: none;
+      }
+      .pagination li a {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 38px;
+        height: 38px;
+        padding: 0 8px;
+        border-radius: 50%;
+        background: transparent;
+            border: none;
+        color: #007bff;
+        font-weight: 500;
+            text-decoration: none;
+        transition: all 0.3s;
+        font-size: 15px;
+      }
+      .pagination li a:hover {
+        background: #007bff;
+        color: #fff;
+      }
+      .pagination li.active a {
+        background: #007bff;
+        color: #fff;
+      }
+      .pagination li span {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 38px;
+        height: 38px;
+        color: #999;
+        font-weight: 500;
+      }
+      .pagination li a i {
+        font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <header th:replace="~{/web/fragments/header :: header}"></header>
+
+    <section
+      class="inner-section single-banner"
+      style="background: url(/images/single-banner.jpg) no-repeat center"
+    >
+      <div class="container">
+        <h2><i class="fas fa-heart text-danger"></i> Sản phẩm yêu thích</h2>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a th:href="@{/}">Trang chủ</a></li>
+          <li class="breadcrumb-item active" aria-current="page">Yêu thích</li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="inner-section shop-part">
+      <div class="container">
+        <div class="row content-reverse">
+          <div class="col-lg-3">
+            <!-- Search Widget -->
+            <div class="shop-widget">
+              <h6 class="shop-widget-title">Tìm kiếm yêu thích</h6>
+              <form class="shop-widget-form" id="searchForm">
+                <input
+                  type="text"
+                  id="searchInput"
+                  placeholder="Tìm kiếm..."
+                />
+                <button type="submit"><i class="icofont-search"></i></button>
+              </form>
+            </div>
+
+            <!-- Category Filter Widget -->
+            <div class="shop-widget">
+              <h6 class="shop-widget-title">Lọc theo danh mục</h6>
+              <ul class="shop-widget-list shop-widget-scroll" id="categoryList">
+                <li>
+                  <div class="shop-widget-content">
+                    <label class="filter-category active-filter" data-category="all" style="cursor: pointer; color: #0d6efd; font-weight: 600">
+                      Tất cả danh mục
+                    </label>
+                  </div>
+                  <span class="shop-widget-number" id="count-all">(<span th:text="${favorites.size()}">0</span>)</span>
+                </li>
+                <!-- Dynamic categories will be populated by JavaScript -->
+              </ul>
+            </div>
+
+            <!-- Price Range Widget -->
+            <div class="shop-widget">
+              <h6 class="shop-widget-title">Khoảng giá</h6>
+              <ul class="shop-widget-list">
+                <li>
+                  <div class="shop-widget-content">
+                    <label class="filter-price" data-min="0" data-max="999999999" style="cursor: pointer; color: #0d6efd">Tất cả</label>
+                  </div>
+                </li>
+                <li>
+                  <div class="shop-widget-content">
+                    <label class="filter-price" data-min="0" data-max="100000" style="cursor: pointer">Dưới 100.000đ</label>
+                  </div>
+                </li>
+                <li>
+                  <div class="shop-widget-content">
+                    <label class="filter-price" data-min="100000" data-max="300000" style="cursor: pointer">100.000đ - 300.000đ</label>
+                  </div>
+                </li>
+                <li>
+                  <div class="shop-widget-content">
+                    <label class="filter-price" data-min="300000" data-max="500000" style="cursor: pointer">300.000đ - 500.000đ</label>
+                  </div>
+                </li>
+                <li>
+                  <div class="shop-widget-content">
+                    <label class="filter-price" data-min="500000" data-max="999999999" style="cursor: pointer">Trên 500.000đ</label>
+                                    </div>
+                </li>
+              </ul>
+                                    </div>
+
+            <!-- Promo Banner -->
+            <div class="shop-widget-promo">
+              <div class="promo-content">
+                <h6>Ưu đãi đặc biệt!</h6>
+                <p>Giảm giá lên đến 50% cho sản phẩm mới</p>
+                <a th:href="@{/products}" class="btn btn-inline">
+                  <span>Mua ngay</span>
+                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+          
+          <div class="col-lg-9">
+            <!-- Shop Toolbar -->
+            <div class="row">
+              <div class="col-lg-12">
+                <div class="top-filter">
+                  <div class="filter-show">
+                    <label class="filter-label">
+                      Có <span id="showing-count" th:text="${favorites.size()}">0</span> sản phẩm yêu thích
+                    </label>
+                  </div>
+                  <div class="filter-short">
+                    <label class="filter-label">Sắp xếp:</label>
+                    <select class="custom-select filter-select" id="sortSelect">
+                      <option value="default" selected>Mặc định</option>
+                      <option value="name-asc">Tên A-Z</option>
+                      <option value="name-desc">Tên Z-A</option>
+                      <option value="price-asc">Giá thấp đến cao</option>
+                      <option value="price-desc">Giá cao đến thấp</option>
+                      <option value="newest">Mới nhất</option>
+                      <option value="discount">Giảm giá nhiều nhất</option>
+                    </select>
+                                    </div>
+                  <div class="filter-action">
+                    <button
+                      class="filter-btn active"
+                      data-view="grid"
+                      title="Grid View"
+                    >
+                      <i class="fas fa-th"></i>
+                    </button>
+                    <button
+                      class="filter-btn"
+                      data-view="list"
+                      title="List View"
+                    >
+                      <i class="fas fa-list"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+              </div>
+            </div>
+
+            <!-- Products Grid -->
+            <div th:if="${favorites != null and !favorites.empty}">
+              <div
+                class="row row-cols-2 row-cols-md-3 row-cols-lg-3 row-cols-xl-4"
+                id="product-container"
+              >
+                <div class="col product-item" th:each="favorite : ${favorites}"
+                     th:attr="data-name=${favorite.product.productName},
+                              data-price=${favorite.product.price - (favorite.product.price * favorite.product.discount / 100)},
+                              data-category=${favorite.product.category.categoryName},
+                              data-discount=${favorite.product.discount},
+                              data-date=${favorite.product.enteredDate}">
+                  <div class="product-card">
+                    <div class="product-media">
+                      <div class="product-label">
+                        <label
+                          class="label-text new"
+                          th:if="${favorite.product.enteredDate != null}"
+                          >New</label
+                        >
+                        <label 
+                          class="label-text sale"
+                          th:if="${favorite.product.discount > 0}"
+                          >- [[${favorite.product.discount + '%'}]]</label
+                        >
+                      </div>
+                      <button
+                        class="product-wish wish active"
+                        title="Bỏ yêu thích"
+                        th:onclick="'toggleFavorite(' + ${favorite.product.productId} + ', this)'"
+                        th:data-product-id="${favorite.product.productId}"
+                      >
+                        <i class="fas fa-heart"></i>
+                      </button>
+                      <a
+                        class="product-image"
+                        th:href="@{/productDetail(id=${favorite.product.productId})}"
+                      >
+                        <img
+                          th:if="${favorite.product.productImage != null and !#strings.isEmpty(favorite.product.productImage)}"
+                          th:src="@{'/loadImage?imageName='+${favorite.product.productImage}}"
+                          alt="product"
+                        />
+                        <img
+                          th:unless="${favorite.product.productImage != null and !#strings.isEmpty(favorite.product.productImage)}"
+                          src="/assets/img/examples/product1.jpg"
+                          alt="product"
+                        />
+                      </a>
+                      <div class="product-widget">
+                        <a
+                          title="Xem chi tiết sản phẩm"
+                          th:href="@{/productDetail(id=${favorite.product.productId})}"
+                          ><i class="fas fa-eye"></i
+                        ></a>
+                        <a
+                          title="Thêm vào giỏ hàng"
+                          th:href="@{/addToCart(productId=${favorite.product.productId})}"
+                          th:if="${favorite.product.quantity > 0}"
+                          ><i class="fas fa-shopping-basket"></i
+                        ></a>
+                      </div>
+                    </div>
+                    <div class="product-content">
+                      <div class="product-rating">
+                        <i class="active icofont-star"></i>
+                        <i class="active icofont-star"></i>
+                        <i class="active icofont-star"></i>
+                        <i class="active icofont-star"></i>
+                        <i class="active icofont-star"></i>
+                        <a href="product-details.html">(5)</a>
+                      </div>
+                      <h6 class="product-name">
+                        <a
+                          th:href="@{/productDetail(id=${favorite.product.productId})}"
+                          th:text="${favorite.product.productName}"
+                          >Tên sản phẩm</a
+                        >
+                      </h6>
+                      <h6 class="product-price">
+                        <del th:if="${favorite.product.discount > 0}">
+                          <span
+                            th:text="${#numbers.formatDecimal(favorite.product.price, 0, 'DEFAULT', 0, 'DEFAULT')}"
+                            >0</span
+                          >đ
+                        </del>
+                        <span
+                          th:text="${#numbers.formatDecimal(favorite.product.price - (favorite.product.price * favorite.product.discount / 100), 0, 'DEFAULT', 0, 'DEFAULT')}"
+                          >0</span
+                        >đ
+                      </h6>
+                      <p
+                        class="product-quantity"
+                        th:classappend="${favorite.product.quantity > 0 ? 'text-success' : 'text-danger'}"
+                      >
+                        <i class="fas fa-cube"></i>
+                        <span
+                          th:text="${favorite.product.quantity > 0 ? 'Còn hàng: ' + favorite.product.quantity : 'Hết hàng'}"
+                          >Còn hàng</span
+                        >
+                      </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Empty State -->
+            <div
+              th:if="${favorites == null or favorites.empty}"
+              class="text-center py-5"
+            >
+              <div class="empty-cart">
+                <i class="far fa-heart" style="font-size: 100px; color: #ddd"></i>
+                <h3 class="mt-4">Chưa có sản phẩm yêu thích</h3>
+                <p class="text-muted">
+                  Hãy khám phá và thêm những sản phẩm bạn yêu thích vào danh sách
+                  này!
+                </p>
+                <a href="/shop" class="btn btn-primary mt-3">
+                  <i class="fas fa-shopping-bag"></i> Khám phá sản phẩm
+                </a>
+              </div>
+            </div>
+
+            <!-- No Results Message (hidden by default) -->
+            <div id="no-results" class="text-center py-5" style="display: none;">
+              <i class="fas fa-search" style="font-size: 80px; color: #ddd"></i>
+              <h4 class="mt-4">Không tìm thấy sản phẩm</h4>
+              <p class="text-muted">Vui lòng thử lại với từ khóa khác hoặc bộ lọc khác.</p>
+            </div>
+
+            <!-- Pagination -->
+            <div class="row" th:if="${favorites != null and !favorites.empty}">
+              <div class="col-lg-12">
+                <ul class="pagination" id="pagination">
+                  <!-- Pagination will be generated by JavaScript -->
+                </ul>
+              </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    </section>
+
+    <footer th:replace="~{/web/fragments/footer :: footer}"></footer>
+
+    <script src="/vendor/bootstrap/jquery-1.12.4.min.js"></script>
+    <script src="/vendor/bootstrap/popper.min.js"></script>
+    <script src="/vendor/bootstrap/bootstrap.min.js"></script>
+    <script src="/vendor/countdown/countdown.min.js"></script>
+    <script src="/vendor/niceselect/nice-select.min.js"></script>
+    <script src="/vendor/slickslider/slick.min.js"></script>
+    <script src="/vendor/venobox/venobox.min.js"></script>
+    <script src="/js/nice-select.js"></script>
+    <script src="/js/countdown.js"></script>
+    <script src="/js/accordion.js"></script>
+    <script src="/js/venobox.js"></script>
+    <script src="/js/slick.js"></script>
+    <script src="/js/main.js"></script>
+    <script src="/js/favorite.js"></script>
+    
+    <script>
+      $(document).ready(function() {
+        let currentFilter = {
+          search: '',
+          category: 'all',
+          minPrice: 0,
+          maxPrice: 999999999
+        };
+        
+        let currentPage = 1;
+        const itemsPerPage = 12;
+        let filteredItems = [];
+
+        // Build dynamic categories from products
+        function buildCategories() {
+          const categories = {};
+          
+          $('.product-item').each(function() {
+            const category = $(this).data('category');
+            if (categories[category]) {
+              categories[category]++;
+                        } else {
+              categories[category] = 1;
+            }
+          });
+          
+          // Add categories to sidebar
+          for (const [categoryName, count] of Object.entries(categories)) {
+            const categoryHtml = `
+              <li>
+                <div class="shop-widget-content">
+                  <label class="filter-category" data-category="${categoryName}" 
+                         style="cursor: pointer; color: #0d6efd">
+                    ${categoryName}
+                  </label>
+                </div>
+                <span class="shop-widget-number">(${count})</span>
+              </li>
+            `;
+            $('#categoryList').append(categoryHtml);
+          }
+        }
+
+        // Filter and display products
+        function filterProducts() {
+          filteredItems = [];
+          
+          $('.product-item').each(function() {
+            const $item = $(this);
+            const name = $item.data('name').toLowerCase();
+            const price = parseFloat($item.data('price'));
+            const category = $item.data('category');
+            
+            let show = true;
+            
+            // Search filter
+            if (currentFilter.search && !name.includes(currentFilter.search.toLowerCase())) {
+              show = false;
+            }
+            
+            // Category filter
+            if (currentFilter.category !== 'all' && category !== currentFilter.category) {
+              show = false;
+            }
+            
+            // Price filter
+            if (price < currentFilter.minPrice || price > currentFilter.maxPrice) {
+              show = false;
+            }
+            
+            if (show) {
+              filteredItems.push($item);
+            }
+          });
+          
+          currentPage = 1; // Reset to first page
+          displayPage();
+          updatePagination();
+        }
+        
+        // Display current page
+        function displayPage() {
+          const start = (currentPage - 1) * itemsPerPage;
+          const end = start + itemsPerPage;
+          
+          // Hide all items first
+          $('.product-item').hide();
+          
+          // Show only items for current page
+          for (let i = start; i < end && i < filteredItems.length; i++) {
+            filteredItems[i].show();
+          }
+          
+          const visibleCount = filteredItems.length;
+          $('#showing-count').text(visibleCount);
+          
+          // Show/hide no results message
+          if (visibleCount === 0) {
+            $('#product-container').hide();
+            $('#pagination').hide();
+            $('#no-results').show();
+          } else {
+            $('#product-container').show();
+            $('#pagination').show();
+            $('#no-results').hide();
+          }
+        }
+        
+        // Update pagination
+        function updatePagination() {
+          const totalPages = Math.ceil(filteredItems.length / itemsPerPage);
+          const $pagination = $('#pagination');
+          $pagination.empty();
+          
+          if (totalPages <= 1) {
+            $pagination.hide();
+            return;
+          }
+          
+          $pagination.show();
+          
+          // Previous button
+          if (currentPage > 1) {
+            $pagination.append(`
+              <li><a href="#" data-page="${currentPage - 1}">
+                <i class="fas fa-angle-left"></i>
+              </a></li>
+            `);
+          }
+          
+          // Page numbers
+          for (let i = 1; i <= totalPages; i++) {
+            if (i === 1 || i === totalPages || (i >= currentPage - 2 && i <= currentPage + 2)) {
+              $pagination.append(`
+                <li class="${i === currentPage ? 'active' : ''}">
+                  <a href="#" data-page="${i}">${i}</a>
+                </li>
+              `);
+            } else if (i === currentPage - 3 || i === currentPage + 3) {
+              $pagination.append(`<li><span>...</span></li>`);
+            }
+          }
+          
+          // Next button
+          if (currentPage < totalPages) {
+            $pagination.append(`
+              <li><a href="#" data-page="${currentPage + 1}">
+                <i class="fas fa-angle-right"></i>
+              </a></li>
+            `);
+          }
+        }
+        
+        // Pagination click handler
+        $(document).on('click', '#pagination a', function(e) {
+          e.preventDefault();
+          currentPage = parseInt($(this).data('page'));
+          displayPage();
+          updatePagination();
+          $('html, body').animate({ scrollTop: 0 }, 300);
+        });
+
+        // Initialize
+        buildCategories();
+        filterProducts();
+
+        // Search functionality
+        $('#searchForm').on('submit', function(e) {
+          e.preventDefault();
+          currentFilter.search = $('#searchInput').val();
+          filterProducts();
+        });
+
+        $('#searchInput').on('keyup', function() {
+          currentFilter.search = $(this).val();
+          filterProducts();
+        });
+
+        // Category filter (use delegation for dynamic elements)
+        $(document).on('click', '.filter-category', function() {
+          currentFilter.category = $(this).data('category');
+          $('.filter-category').removeClass('active-filter').css({'font-weight': 'normal'});
+          $(this).addClass('active-filter').css({'font-weight': '600'});
+          filterProducts();
+        });
+
+        // Price filter
+        $('.filter-price').on('click', function() {
+          currentFilter.minPrice = parseFloat($(this).data('min'));
+          currentFilter.maxPrice = parseFloat($(this).data('max'));
+          $('.filter-price').css({'color': '#212529', 'font-weight': 'normal'});
+          $(this).css({'color': '#0d6efd', 'font-weight': '600'});
+          filterProducts();
+        });
+
+        // Sorting functionality
+        $('#sortSelect').on('change', function() {
+          const sortValue = $(this).val();
+          const $items = $('.product-item').get();
+          
+          $items.sort(function(a, b) {
+            const $a = $(a);
+            const $b = $(b);
+            
+            switch(sortValue) {
+              case 'name-asc':
+                return $a.data('name').localeCompare($b.data('name'));
+              case 'name-desc':
+                return $b.data('name').localeCompare($a.data('name'));
+              case 'price-asc':
+                return parseFloat($a.data('price')) - parseFloat($b.data('price'));
+              case 'price-desc':
+                return parseFloat($b.data('price')) - parseFloat($a.data('price'));
+              case 'newest':
+                return new Date($b.data('date')) - new Date($a.data('date'));
+              case 'discount':
+                return parseFloat($b.data('discount')) - parseFloat($a.data('discount'));
+              default:
+                return 0;
+            }
+          });
+          
+          $('#product-container').html($items);
+          filterProducts(); // Reapply filters and pagination
+        });
+
+        // View mode toggle
+        $('.filter-btn').on('click', function() {
+          const view = $(this).data('view');
+          $('.filter-btn').removeClass('active');
+          $(this).addClass('active');
+          
+          const $container = $('#product-container');
+          if (view === 'grid') {
+            $container.removeClass('list-view').addClass('grid-view');
+            $container.attr('class', 'row row-cols-2 row-cols-md-3 row-cols-lg-3 row-cols-xl-4');
+          } else {
+            $container.removeClass('grid-view').addClass('list-view');
+            $container.attr('class', 'row');
+            $('.product-item').addClass('col-12');
+          }
+        });
+      });
+    </script>
+</body>
+</html>

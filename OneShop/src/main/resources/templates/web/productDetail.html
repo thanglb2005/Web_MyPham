@@ -229,14 +229,15 @@
               </form>
 
               <div class="details-action-group">
-                <a
+                <button
                   class="details-wish wish"
-                  href="javascript:void(0);"
                   title="Thêm vào yêu thích"
+                  th:onclick="'toggleFavorite(' + ${product.productId} + ', this)'"
+                  th:data-product-id="${product.productId}"
                 >
-                  <i class="icofont-heart"></i>
+                  <i class="far fa-heart"></i>
                   <span>Thêm vào yêu thích</span>
-                </a>
+                </button>
               </div>
             </div>
           </div>
@@ -635,5 +636,6 @@
         });
       });
     </script>
+    <script src="/js/favorite.js"></script>
   </body>
 </html>
