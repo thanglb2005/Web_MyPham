@@ -6,6 +6,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import vn.dto.CartByShopDTO;
 import vn.entity.CartItem;
 import vn.entity.CartItemEntity;
 import vn.entity.Order;
@@ -81,14 +82,20 @@ public class CartController {
             return "redirect:/login";
         }
 
-        List<CartItemEntity> cartItemEntities = cartService.getCartItems(user);
-        List<CartItem> cartItems = convertToCartItemList(cartItemEntities);
+        // Get cart items grouped by shop (Shopee-like)
+        List<CartByShopDTO> cartItemsByShop = cartService.getCartItemsByShop(user);
+        
+        // Calculate overall totals
         Integer totalItems = cartService.getCartItemCount(user);
         Double totalPrice = cartService.getCartTotalPrice(user);
+        Integer selectedItems = cartService.getSelectedCartItemCount(user);
+        Double selectedPrice = cartService.getSelectedCartTotalPrice(user);
 
-        model.addAttribute("cartItems", cartItems);
+        model.addAttribute("cartItemsByShop", cartItemsByShop);
         model.addAttribute("totalItems", totalItems);
         model.addAttribute("totalPrice", totalPrice);
+        model.addAttribute("selectedItems", selectedItems);
+        model.addAttribute("selectedPrice", selectedPrice);
         model.addAttribute("user", user);
 
         return "web/cart";
@@ -150,6 +157,92 @@ public class CartController {
 
         return cartService.getCartItemCount(user);
     }
+    
+    @PostMapping("/cart/update-selected")
+    @ResponseBody
+    public Map<String, Object> updateCartItemSelected(@RequestParam("productId") Long productId,
+                                                     @RequestParam("selected") Boolean selected,
+                                                     HttpServletRequest request) {
+        Map<String, Object> response = new HashMap<>();
+        
+        User user = (User) request.getSession().getAttribute("user");
+        if (user == null) {
+            response.put("success", false);
+            response.put("message", "Vui lòng đăng nhập");
+            return response;
+        }
+
+        Product product = productService.findById(productId).orElse(null);
+        if (product != null) {
+            cartService.updateCartItemSelected(user, product, selected);
+            
+            // Get updated cart totals
+            Double selectedTotal = cartService.getSelectedCartTotalPrice(user);
+            Integer selectedCount = cartService.getSelectedCartItemCount(user);
+            
+            response.put("success", true);
+            response.put("selectedTotal", selectedTotal);
+            response.put("selectedCount", selectedCount);
+        } else {
+            response.put("success", false);
+            response.put("message", "Sản phẩm không tồn tại");
+        }
+
+        return response;
+    }
+    
+    @PostMapping("/cart/select-all")
+    @ResponseBody
+    public Map<String, Object> selectAllCartItems(@RequestParam("selected") Boolean selected,
+                                                 HttpServletRequest request) {
+        Map<String, Object> response = new HashMap<>();
+        
+        User user = (User) request.getSession().getAttribute("user");
+        if (user == null) {
+            response.put("success", false);
+            response.put("message", "Vui lòng đăng nhập");
+            return response;
+        }
+
+        cartService.updateAllCartItemsSelected(user, selected);
+        
+        // Get updated cart totals
+        Double selectedTotal = cartService.getSelectedCartTotalPrice(user);
+        Integer selectedCount = cartService.getSelectedCartItemCount(user);
+        
+        response.put("success", true);
+        response.put("selectedTotal", selectedTotal);
+        response.put("selectedCount", selectedCount);
+
+        return response;
+    }
+    
+    @PostMapping("/cart/select-shop")
+    @ResponseBody
+    public Map<String, Object> selectShopItems(@RequestParam("shopId") Long shopId,
+                                              @RequestParam("selected") Boolean selected,
+                                              HttpServletRequest request) {
+        Map<String, Object> response = new HashMap<>();
+        
+        User user = (User) request.getSession().getAttribute("user");
+        if (user == null) {
+            response.put("success", false);
+            response.put("message", "Vui lòng đăng nhập");
+            return response;
+        }
+
+        cartService.updateShopItemsSelected(user, shopId, selected);
+        
+        // Get updated cart totals
+        Double selectedTotal = cartService.getSelectedCartTotalPrice(user);
+        Integer selectedCount = cartService.getSelectedCartItemCount(user);
+        
+        response.put("success", true);
+        response.put("selectedTotal", selectedTotal);
+        response.put("selectedCount", selectedCount);
+
+        return response;
+    }
 
     @GetMapping("/checkout-debug")
     public String checkoutDebug(HttpServletRequest request, Model model) {
@@ -158,9 +251,9 @@ public class CartController {
             return "redirect:/login";
         }
 
-        List<CartItemEntity> cartItemEntities = cartService.getCartItems(user);
+        List<CartItemEntity> cartItemEntities = cartService.getSelectedCartItems(user);
         if (cartItemEntities.isEmpty()) {
-            return "redirect:/cart";
+            return "redirect:/cart?error=no-selected-items";
         }
 
         // Convert CartItemEntity to CartItem for compatibility
@@ -188,9 +281,9 @@ public class CartController {
             return "redirect:/login";
         }
 
-        List<CartItemEntity> cartItemEntities = cartService.getCartItems(user);
+        List<CartItemEntity> cartItemEntities = cartService.getSelectedCartItems(user);
         if (cartItemEntities.isEmpty()) {
-            return "redirect:/cart";
+            return "redirect:/cart?error=no-selected-items";
         }
 
         // Convert CartItemEntity to CartItem for compatibility
@@ -218,9 +311,9 @@ public class CartController {
             return "redirect:/login";
         }
 
-        List<CartItemEntity> cartItemEntities = cartService.getCartItems(user);
+        List<CartItemEntity> cartItemEntities = cartService.getSelectedCartItems(user);
         if (cartItemEntities.isEmpty()) {
-            return "redirect:/cart";
+            return "redirect:/cart?error=no-selected-items";
         }
 
         // Convert CartItemEntity to CartItem for compatibility
@@ -256,9 +349,9 @@ public class CartController {
             return "redirect:/login";
         }
 
-        List<CartItemEntity> cartItemEntities = cartService.getCartItems(user);
+        List<CartItemEntity> cartItemEntities = cartService.getSelectedCartItems(user);
         if (cartItemEntities.isEmpty()) {
-            return "redirect:/cart";
+            return "redirect:/cart?error=no-selected-items";
         }
 
         try {
@@ -352,33 +445,11 @@ public class CartController {
             cartItem.setCategoryName(entity.getProduct().getCategory() != null ? 
                 entity.getProduct().getCategory().getCategoryName() : "");
             cartItem.setImageUrl(entity.getProduct().getProductImage());
+            cartItem.setSelected(entity.getSelected());
             
             cartMap.put(entity.getProduct().getProductId(), cartItem);
         }
         return cartMap;
     }
     
-    /**
-     * Helper method to convert CartItemEntity list to CartItem list for template compatibility
-     */
-    private List<CartItem> convertToCartItemList(List<CartItemEntity> cartItemEntities) {
-        return cartItemEntities.stream().map(entity -> {
-            CartItem cartItem = new CartItem();
-            cartItem.setId(entity.getProduct().getProductId());
-            cartItem.setName(entity.getProduct().getProductName());
-            cartItem.setUnitPrice(entity.getUnitPrice());
-            cartItem.setQuantity(entity.getQuantity());
-            cartItem.setTotalPrice(entity.getTotalPrice());
-            cartItem.setProduct(entity.getProduct());
-            
-            // Set additional fields to avoid lazy loading issues
-            cartItem.setBrandName(entity.getProduct().getBrand() != null ? 
-                entity.getProduct().getBrand().getBrandName() : "");
-            cartItem.setCategoryName(entity.getProduct().getCategory() != null ? 
-                entity.getProduct().getCategory().getCategoryName() : "");
-            cartItem.setImageUrl(entity.getProduct().getProductImage());
-            
-            return cartItem;
-        }).collect(java.util.stream.Collectors.toList());
-    }
 }

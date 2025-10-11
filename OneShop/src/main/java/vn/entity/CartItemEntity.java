@@ -32,6 +32,10 @@ public class CartItemEntity implements Serializable {
     @JoinColumn(name = "product_id", referencedColumnName = "product_id", nullable = false)
     private Product product;
     
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "shop_id", referencedColumnName = "shop_id")
+    private Shop shop;
+    
     @Column(nullable = false)
     private Integer quantity;
     
@@ -40,6 +44,9 @@ public class CartItemEntity implements Serializable {
     
     @Column(name = "total_price", nullable = false)
     private Double totalPrice;
+    
+    @Column(name = "selected", nullable = false, columnDefinition = "BIT DEFAULT 1")
+    private Boolean selected = true;
     
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "created_date")

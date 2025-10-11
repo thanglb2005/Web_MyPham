@@ -1,4 +1,4 @@
-CREATE DATABASE WebMyPham;
+﻿CREATE DATABASE WebMyPham;
 GO
 USE WebMyPham;
 GO
@@ -210,7 +210,6 @@ CREATE TABLE dbo.products (
 );
 CREATE INDEX IX_products_shop ON dbo.products(shop_id);
 GO
-
 /* ===============================
    TABLE: favorites
    =============================== */
@@ -305,18 +304,7 @@ CREATE TABLE dbo.comments (
 );
 GO
 
-/* ===============================
-   TABLE: favorites
-   =============================== */
-IF OBJECT_ID('dbo.favorites', 'U') IS NOT NULL DROP TABLE dbo.favorites;
-CREATE TABLE dbo.favorites (
-    favorite_id BIGINT IDENTITY(1,1) PRIMARY KEY,
-    product_id BIGINT,
-    user_id BIGINT,
-    CONSTRAINT FK_favorites_product FOREIGN KEY(product_id) REFERENCES dbo.products(product_id),
-    CONSTRAINT FK_favorites_user FOREIGN KEY(user_id) REFERENCES dbo.[user](user_id)
-);
-GO
+/* duplicate favorites table removed to keep the earlier definition with UNIQUE constraint */
 
 /* ===============================
    TABLE: chat_message
@@ -941,19 +929,23 @@ CREATE TABLE cart_items (
     cart_item_id BIGINT IDENTITY(1,1) PRIMARY KEY,
     user_id BIGINT NOT NULL,
     product_id BIGINT NOT NULL,
+    shop_id BIGINT NULL,
     quantity INT NOT NULL DEFAULT 1,
     unit_price DECIMAL(10,2) NOT NULL,
     total_price DECIMAL(10,2) NOT NULL,
+    selected BIT NOT NULL CONSTRAINT DF_cart_items_selected DEFAULT 1,
     created_date DATETIME2 DEFAULT GETDATE(),
     updated_date DATETIME2 DEFAULT GETDATE(),
     FOREIGN KEY (user_id) REFERENCES [user](user_id) ON DELETE CASCADE,
     FOREIGN KEY (product_id) REFERENCES products(product_id) ON DELETE CASCADE,
+    FOREIGN KEY (shop_id) REFERENCES shops(shop_id) ON DELETE SET NULL,
     UNIQUE(user_id, product_id) -- Prevent duplicate products for same user
 );
 
 -- Create indexes for better performance
 CREATE INDEX IX_cart_items_user_id ON cart_items(user_id);
 CREATE INDEX IX_cart_items_product_id ON cart_items(product_id);
+CREATE INDEX IX_cart_items_shop_id ON cart_items(shop_id);
 
 -- Add comments for documentation
 EXEC sp_addextendedproperty 
@@ -963,20 +955,297 @@ EXEC sp_addextendedproperty
     @level1type = N'TABLE', @level1name = N'cart_items';
 GO
 
-PRINT '✅ DATABASE ĐÃ HOÀN THÀNH!';
-PRINT '📊 Tổng kết:';
-PRINT '   - Categories: 10';
-PRINT '   - Brands: 58';
-PRINT '   - Users: 9 (3 vendor + 1 admin + 3 user + 1 shipper + 1 cskh)';
-PRINT '   - Shops: 3 (2 ACTIVE + 1 PENDING)';
-PRINT '   - Cart Items: Bảng cart_items đã được tạo';
-PRINT '   - Orders: 3 đơn hàng mẫu đã được tạo';
-SELECT 'Products' AS [Type], COUNT(*) AS [Count] FROM products;
-SELECT 'Shop 1 (An)' AS [Shop], COUNT(*) AS [Products] FROM products WHERE shop_id = 1;
-SELECT 'Shop 2 (Bình)' AS [Shop], COUNT(*) AS [Products] FROM products WHERE shop_id = 2;
-SELECT 'Admin/Platform' AS [Shop], COUNT(*) AS [Products] FROM products WHERE shop_id IS NULL;
-SELECT 'Orders' AS [Type], COUNT(*) AS [Count] FROM orders;
-SELECT 'Order Details' AS [Type], COUNT(*) AS [Count] FROM order_details;
-SELECT 'Cart Items' AS [Type], COUNT(*) AS [Count] FROM cart_items;
+-- Keep cart_items.shop_id synced with products.shop_id
+IF OBJECT_ID('dbo.TR_cart_items_set_shop', 'TR') IS NOT NULL DROP TRIGGER dbo.TR_cart_items_set_shop;
+GO
+CREATE TRIGGER TR_cart_items_set_shop
+ON dbo.cart_items
+AFTER INSERT, UPDATE
+AS
+BEGIN
+    SET NOCOUNT ON;
+    UPDATE ci
+    SET ci.shop_id = p.shop_id,
+        ci.updated_date = GETDATE()
+    FROM dbo.cart_items ci
+    JOIN inserted i ON ci.cart_item_id = i.cart_item_id
+    JOIN dbo.products p ON p.product_id = ci.product_id;
+END;
 GO
 
+-- Update existing cart items to be selected by default
+UPDATE cart_items SET selected = 1 WHERE selected IS NULL;
+GO
+
+-- Add comment for documentation
+EXEC sp_addextendedproperty 
+    @name = N'MS_Description', 
+    @value = N'Indicates whether this cart item is selected for checkout (1 = selected, 0 = not selected)', 
+    @level0type = N'SCHEMA', @level0name = N'dbo', 
+    @level1type = N'TABLE', @level1name = N'cart_items',
+    @level2type = N'COLUMN', @level2name = N'selected';
+GO
+
+-- ===============================
+-- TABLE: promotions
+-- ===============================
+USE WebMyPham;
+GO
+
+-- Drop table if exists
+IF OBJECT_ID('dbo.promotions', 'U') IS NOT NULL 
+    DROP TABLE dbo.promotions;
+GO
+
+-- Create promotions table
+CREATE TABLE dbo.promotions (
+    promotion_id           BIGINT IDENTITY(1,1) PRIMARY KEY,
+    promotion_name         NVARCHAR(200) NOT NULL,
+    description            NVARCHAR(1000),
+    promotion_code         NVARCHAR(50) NOT NULL UNIQUE,
+    promotion_type         NVARCHAR(20) NOT NULL CHECK (promotion_type IN ('PRODUCT_PERCENTAGE', 'SHIPPING_DISCOUNT', 'FIXED_AMOUNT')),
+    discount_value         DECIMAL(10,2) NOT NULL CHECK (discount_value >= 0),
+    minimum_order_amount   DECIMAL(10,2) NOT NULL CHECK (minimum_order_amount >= 0),
+    maximum_discount_amount DECIMAL(10,2) NOT NULL CHECK (maximum_discount_amount >= 0),
+    usage_limit            INT NOT NULL CHECK (usage_limit > 0),
+    used_count             INT NOT NULL DEFAULT 0 CHECK (used_count >= 0),
+    start_date             DATETIME2 NOT NULL,
+    end_date               DATETIME2 NOT NULL,
+    is_active              BIT NOT NULL DEFAULT 1,
+    created_at             DATETIME2 NOT NULL DEFAULT (GETDATE()),
+    updated_at             DATETIME2 NOT NULL DEFAULT (GETDATE()),
+    
+    -- Constraints
+    CONSTRAINT CHK_promotions_dates CHECK (end_date > start_date),
+    CONSTRAINT CHK_promotions_usage CHECK (used_count <= usage_limit),
+    CONSTRAINT CHK_promotions_discount CHECK (discount_value <= maximum_discount_amount)
+);
+GO
+
+-- Create indexes for better performance
+CREATE INDEX IX_promotions_code ON dbo.promotions(promotion_code);
+CREATE INDEX IX_promotions_type ON dbo.promotions(promotion_type);
+CREATE INDEX IX_promotions_active ON dbo.promotions(is_active);
+CREATE INDEX IX_promotions_dates ON dbo.promotions(start_date, end_date);
+CREATE INDEX IX_promotions_usage ON dbo.promotions(used_count, usage_limit);
+GO
+
+-- Insert sample promotion data
+INSERT INTO dbo.promotions (
+    promotion_name, 
+    description, 
+    promotion_code, 
+    promotion_type, 
+    discount_value, 
+    minimum_order_amount, 
+    maximum_discount_amount, 
+    usage_limit, 
+    used_count, 
+    start_date, 
+    end_date, 
+    is_active
+) VALUES 
+-- Product percentage discount
+(
+    N'Giảm giá 20% cho đơn hàng từ 500k',
+    N'Áp dụng cho tất cả sản phẩm, giảm 20% cho đơn hàng từ 500,000đ trở lên',
+    'SAVE20',
+    'PRODUCT_PERCENTAGE',
+    20.00,
+    500000.00,
+    200000.00,
+    1000,
+    0,
+    '2024-01-01 00:00:00',
+    '2024-12-31 23:59:59',
+    1
+),
+-- Shipping discount
+(
+    N'Miễn phí ship cho đơn hàng từ 300k',
+    N'Miễn phí vận chuyển cho đơn hàng từ 300,000đ trở lên',
+    'FREESHIP',
+    'SHIPPING_DISCOUNT',
+    50000.00,
+    300000.00,
+    50000.00,
+    500,
+    0,
+    '2024-01-01 00:00:00',
+    '2024-12-31 23:59:59',
+    1
+),
+-- Fixed amount discount
+(
+    N'Giảm 100k cho đơn hàng từ 1 triệu',
+    N'Giảm ngay 100,000đ cho đơn hàng từ 1,000,000đ trở lên',
+    'SAVE100K',
+    'FIXED_AMOUNT',
+    100000.00,
+    1000000.00,
+    100000.00,
+    200,
+    0,
+    '2024-01-01 00:00:00',
+    '2024-12-31 23:59:59',
+    1
+),
+-- Expired promotion
+(
+    N'Khuyến mãi Tết 2024',
+    N'Giảm giá đặc biệt nhân dịp Tết Nguyên Đán 2024',
+    'TET2024',
+    'PRODUCT_PERCENTAGE',
+    15.00,
+    200000.00,
+    150000.00,
+    100,
+    95,
+    '2024-01-01 00:00:00',
+    '2024-02-15 23:59:59',
+    0
+),
+-- Expiring soon promotion
+(
+    N'Khuyến mãi Black Friday',
+    N'Giảm giá lớn nhân dịp Black Friday',
+    'BLACKFRIDAY',
+    'PRODUCT_PERCENTAGE',
+    30.00,
+    1000000.00,
+    500000.00,
+    50,
+    5,
+    '2024-11-01 00:00:00',
+    '2024-12-31 23:59:59',
+    1
+);
+GO
+
+-- Create trigger to update updated_at timestamp
+CREATE TRIGGER TR_promotions_update_timestamp
+ON dbo.promotions
+AFTER UPDATE
+AS
+BEGIN
+    SET NOCOUNT ON;
+    UPDATE dbo.promotions 
+    SET updated_at = GETDATE()
+    WHERE promotion_id IN (SELECT promotion_id FROM inserted);
+END;
+GO
+
+-- Create view for active promotions
+CREATE VIEW vw_active_promotions AS
+SELECT 
+    promotion_id,
+    promotion_name,
+    description,
+    promotion_code,
+    promotion_type,
+    discount_value,
+    minimum_order_amount,
+    maximum_discount_amount,
+    usage_limit,
+    used_count,
+    start_date,
+    end_date,
+    created_at,
+    updated_at
+FROM dbo.promotions
+WHERE is_active = 1 
+    AND start_date <= GETDATE() 
+    AND end_date >= GETDATE()
+    AND used_count < usage_limit;
+GO
+
+-- Create function to check if promotion is valid
+CREATE FUNCTION fn_is_promotion_valid(@promotion_code NVARCHAR(50))
+RETURNS BIT
+AS
+BEGIN
+    DECLARE @is_valid BIT = 0;
+    
+    IF EXISTS (
+        SELECT 1 FROM dbo.promotions 
+        WHERE promotion_code = @promotion_code 
+            AND is_active = 1 
+            AND start_date <= GETDATE() 
+            AND end_date >= GETDATE()
+            AND used_count < usage_limit
+    )
+    BEGIN
+        SET @is_valid = 1;
+    END
+    
+    RETURN @is_valid;
+END;
+GO
+
+-- Create stored procedure to apply promotion
+CREATE PROCEDURE sp_apply_promotion
+    @promotion_code NVARCHAR(50),
+    @order_amount DECIMAL(10,2),
+    @discount_amount DECIMAL(10,2) OUTPUT,
+    @is_valid BIT OUTPUT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    DECLARE @promotion_id BIGINT;
+    DECLARE @promotion_type NVARCHAR(20);
+    DECLARE @discount_value DECIMAL(10,2);
+    DECLARE @minimum_order_amount DECIMAL(10,2);
+    DECLARE @maximum_discount_amount DECIMAL(10,2);
+    DECLARE @used_count INT;
+    DECLARE @usage_limit INT;
+    
+    -- Get promotion details
+    SELECT 
+        @promotion_id = promotion_id,
+        @promotion_type = promotion_type,
+        @discount_value = discount_value,
+        @minimum_order_amount = minimum_order_amount,
+        @maximum_discount_amount = maximum_discount_amount,
+        @used_count = used_count,
+        @usage_limit = usage_limit
+    FROM dbo.promotions
+    WHERE promotion_code = @promotion_code 
+        AND is_active = 1 
+        AND start_date <= GETDATE() 
+        AND end_date >= GETDATE();
+    
+    -- Check if promotion exists and is valid
+    IF @promotion_id IS NULL OR @used_count >= @usage_limit OR @order_amount < @minimum_order_amount
+    BEGIN
+        SET @is_valid = 0;
+        SET @discount_amount = 0;
+        RETURN;
+    END
+    
+    -- Calculate discount amount based on promotion type
+    IF @promotion_type = 'PRODUCT_PERCENTAGE'
+    BEGIN
+        SET @discount_amount = @order_amount * (@discount_value / 100);
+        IF @discount_amount > @maximum_discount_amount
+            SET @discount_amount = @maximum_discount_amount;
+    END
+    ELSE IF @promotion_type = 'FIXED_AMOUNT'
+    BEGIN
+        SET @discount_amount = @discount_value;
+        IF @discount_amount > @maximum_discount_amount
+            SET @discount_amount = @maximum_discount_amount;
+    END
+    ELSE IF @promotion_type = 'SHIPPING_DISCOUNT'
+    BEGIN
+        SET @discount_amount = @discount_value;
+    END
+    
+    -- Update used count
+    UPDATE dbo.promotions 
+    SET used_count = used_count + 1
+    WHERE promotion_id = @promotion_id;
+    
+    SET @is_valid = 1;
+END;
+GO

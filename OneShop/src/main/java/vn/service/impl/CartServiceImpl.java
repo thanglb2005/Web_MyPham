@@ -3,14 +3,21 @@ package vn.service.impl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import vn.dto.CartByShopDTO;
+import vn.entity.CartItem;
 import vn.entity.CartItemEntity;
 import vn.entity.Product;
+import vn.entity.Shop;
 import vn.entity.User;
 import vn.repository.CartItemRepository;
 import vn.service.CartService;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Service implementation for Cart operations
@@ -37,6 +44,8 @@ public class CartServiceImpl implements CartService {
             newItem.setProduct(product);
             newItem.setQuantity(quantity);
             newItem.setUnitPrice(product.getPrice());
+            // Set shop from product
+            newItem.setShop(product.getShop());
             newItem.calculateTotalPrice();
             
             return cartItemRepository.save(newItem);
@@ -102,5 +111,116 @@ public class CartServiceImpl implements CartService {
     @Transactional(readOnly = true)
     public CartItemEntity getCartItem(User user, Product product) {
         return cartItemRepository.findByUserAndProduct(user, product).orElse(null);
+    }
+    
+    @Override
+    public void updateCartItemSelected(User user, Product product, Boolean selected) {
+        Optional<CartItemEntity> existingItem = cartItemRepository.findByUserAndProduct(user, product);
+        if (existingItem.isPresent()) {
+            CartItemEntity item = existingItem.get();
+            item.setSelected(selected);
+            cartItemRepository.save(item);
+        }
+    }
+    
+    @Override
+    public void updateAllCartItemsSelected(User user, Boolean selected) {
+        List<CartItemEntity> cartItems = getCartItems(user);
+        for (CartItemEntity item : cartItems) {
+            item.setSelected(selected);
+        }
+        cartItemRepository.saveAll(cartItems);
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public List<CartItemEntity> getSelectedCartItems(User user) {
+        return cartItemRepository.findByUserAndSelected(user, true);
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public Double getSelectedCartTotalPrice(User user) {
+        List<CartItemEntity> selectedItems = getSelectedCartItems(user);
+        return selectedItems.stream()
+                .mapToDouble(CartItemEntity::getTotalPrice)
+                .sum();
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public Integer getSelectedCartItemCount(User user) {
+        return (int) cartItemRepository.countByUserAndSelected(user, true);
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public List<CartByShopDTO> getCartItemsByShop(User user) {
+        List<CartItemEntity> cartItemEntities = getCartItems(user);
+        
+        // Group cart items by shop
+        Map<Shop, List<CartItem>> cartItemsByShop = new HashMap<>();
+        
+        for (CartItemEntity entity : cartItemEntities) {
+            Shop shop = entity.getShop();
+            
+            // Convert to CartItem DTO
+            CartItem cartItem = new CartItem();
+            cartItem.setId(entity.getProduct().getProductId());
+            cartItem.setName(entity.getProduct().getProductName());
+            cartItem.setUnitPrice(entity.getUnitPrice());
+            cartItem.setQuantity(entity.getQuantity());
+            cartItem.setTotalPrice(entity.getTotalPrice());
+            cartItem.setProduct(entity.getProduct());
+            cartItem.setSelected(entity.getSelected());
+            
+            // Set additional fields to avoid lazy loading issues
+            cartItem.setBrandName(entity.getProduct().getBrand() != null ? 
+                entity.getProduct().getBrand().getBrandName() : "");
+            cartItem.setCategoryName(entity.getProduct().getCategory() != null ? 
+                entity.getProduct().getCategory().getCategoryName() : "");
+            cartItem.setImageUrl(entity.getProduct().getProductImage());
+            
+            // Group by shop
+            cartItemsByShop.computeIfAbsent(shop, k -> new ArrayList<>()).add(cartItem);
+        }
+        
+        // Convert to CartByShopDTO list
+        List<CartByShopDTO> result = new ArrayList<>();
+        for (Map.Entry<Shop, List<CartItem>> entry : cartItemsByShop.entrySet()) {
+            result.add(new CartByShopDTO(entry.getKey(), entry.getValue()));
+        }
+        
+        // Sort by shop name (null shops last)
+        result.sort((a, b) -> {
+            if (a.getShop() == null && b.getShop() == null) return 0;
+            if (a.getShop() == null) return 1;
+            if (b.getShop() == null) return -1;
+            return a.getShopName().compareTo(b.getShopName());
+        });
+        
+        return result;
+    }
+    
+    @Override
+    public void updateShopItemsSelected(User user, Long shopId, Boolean selected) {
+        List<CartItemEntity> cartItems;
+        
+        if (shopId == null) {
+            // Handle items without shop
+            cartItems = cartItemRepository.findByUser(user).stream()
+                    .filter(item -> item.getShop() == null)
+                    .collect(Collectors.toList());
+        } else {
+            // Handle items with specific shop
+            cartItems = cartItemRepository.findByUser(user).stream()
+                    .filter(item -> item.getShop() != null && shopId.equals(item.getShop().getShopId()))
+                    .collect(Collectors.toList());
+        }
+        
+        for (CartItemEntity item : cartItems) {
+            item.setSelected(selected);
+        }
+        cartItemRepository.saveAll(cartItems);
     }
 }

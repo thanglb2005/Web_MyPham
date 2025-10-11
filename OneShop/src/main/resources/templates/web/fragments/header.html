@@ -46,6 +46,7 @@
     <th:block th:fragment="header">
       <div class="backdrop"></div>
       <a class="backtop fas fa-arrow-up" href="#"></a>
+      <th:block th:if="${isCartPage} == null or ${isCartPage} == false">
       <header class="header-part">
         <div class="container">
           <div class="header-content">
@@ -175,6 +176,42 @@
           </div>
         </div>
       </nav>
+      </th:block>
+         <!-- Cart page header: Logo | Giỏ Hàng + search + widgets (no navbar) -->
+         <th:block th:if="${isCartPage} == true">
+          <header class="header-part">
+            <div class="container">
+              <div class="header-content">
+                <div style="display:flex; align-items:center; gap:10px;">
+                  <a th:href="@{/}" class="header-logo" style="margin-right:0;">
+                    <img src="/images/logo/logo.png" alt="logo" />
+                  </a>
+                  <div style="width:1px; height:24px; background:#33a3cc;"></div>
+                  <span style="color:#33a3cc; font-size:24px; font-weight:600; line-height:1; white-space: nowrap;">Giỏ Hàng</span>
+                </div>
+                <form th:action="@{/searchProduct}" method="get" class="header-form" style="flex: 0 1 70%; max-width: 70%;">
+                  <input type="text" name="productName" th:value="${keyword}" placeholder="Tìm kiếm..." autocomplete="off" />
+                  <button><i class="fas fa-search"></i></button>
+                </form>
+                <div class="header-widget-group">
+                  <a th:href="@{/profile}" class="header-widget" title="Trang cá nhân"><i class="fas fa-user"></i></a>
+                  <a th:href="@{/products}" class="header-widget" title="Sản phẩm"><i class="fas fa-store"></i></a>
+            
+                  <th:block th:if="${session.user != null}">
+                    <a th:href="@{/logout}" class="header-widget" title="Đăng xuất"><i class="fas fa-sign-out-alt"></i></a>
+                  </th:block>
+                  <th:block th:if="${session.user == null or (#lists.isEmpty(session.user.roles.?[name=='ROLE_VENDOR']) and #lists.isEmpty(session.user.roles.?[name=='ROLE_ADMIN']))}">
+                    <a th:href="@{/chat}" class="header-widget" title="Chat tư vấn"><i class="fas fa-comments"></i></a>
+                  </th:block>
+                  <th:block th:if="${session.user != null and (!#lists.isEmpty(session.user.roles.?[name=='ROLE_VENDOR']) or !#lists.isEmpty(session.user.roles.?[name=='ROLE_ADMIN']))}">
+                    <a th:href="@{/vendor/dashboard}" class="header-widget" title="Quản lý shop"><i class="fas fa-store"></i></a>
+                    <a th:href="@{/cskh/chat}" class="header-widget" title="Vendor Chat"><i class="fas fa-headset"></i></a>
+                  </th:block>
+                </div>
+              </div>
+            </div>
+          </header>
+        </th:block>
       <style>
         /* Keep local override in case other styles load later */
         .header-part .header-widget .cart-count {

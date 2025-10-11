@@ -53,4 +53,14 @@ public interface CartItemRepository extends JpaRepository<CartItemEntity, Long> 
      * Check if cart item exists by user and product
      */
     boolean existsByUserAndProduct(User user, Product product);
+    
+    /**
+     * Find cart items by user and selected status
+     */
+    List<CartItemEntity> findByUserAndSelected(User user, Boolean selected);
+    
+    /**
+     * Count cart items by user and selected status
+     */
+    long countByUserAndSelected(User user, Boolean selected);
 }

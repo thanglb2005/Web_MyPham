@@ -22,6 +22,7 @@ public class CartItem implements Serializable {
     private String brandName;
     private String categoryName;
     private String imageUrl;
+    private Boolean selected = true;
 
     public CartItem(Product product, Integer quantity) {
         this.id = product.getProductId();
