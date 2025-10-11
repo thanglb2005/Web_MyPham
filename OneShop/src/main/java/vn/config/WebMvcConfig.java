@@ -14,6 +14,9 @@ public class WebMvcConfig implements WebMvcConfigurer {
     
     @Value("${upload.brands.path}")
     private String uploadBrandsPath;
+    
+    @Value("${upload.providers.path:upload/providers}")
+    private String uploadProvidersPath;
 
     @Override
     public void addResourceHandlers(@NonNull ResourceHandlerRegistry registry) {
@@ -31,6 +34,12 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
         registry.addResourceHandler("/brands/**")
                 .addResourceLocations("file:" + uploadBrandsPath + "/");
+
+        // Ánh xạ URL /upload/providers/ tới thư mục upload/providers (logo nhà vận chuyển)
+        System.out.println("Configuring resource handler: /upload/providers/ -> " + uploadProvidersPath);
+        
+        registry.addResourceHandler("/upload/providers/**")
+                .addResourceLocations("file:" + uploadProvidersPath + "/");
 
         // Các resource handler mặc định vẫn được giữ nguyên
     }

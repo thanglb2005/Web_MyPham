@@ -172,6 +172,16 @@
 
               <div th:if="${user != null}">
 
+                <!-- Icon Shipper cho user đã đăng nhập với role SHIPPER -->
+                <a th:if="${user.roles != null && user.roles.stream().anyMatch(r -> r.name == 'ROLE_SHIPPER')}" 
+                   href="/shipper/home" 
+                   class="header-shipper" 
+                   style="color: #10b981; margin-right: 15px;" 
+                   title="Dashboard Shipper">
+                  <i class="fas fa-shipping-fast"></i>
+                  <span>Shipper</span>
+                </a>
+
                 <a href="/profile" class="header-user">
 
                   <i class="icofont-user"></i>
@@ -205,6 +215,15 @@
                   <i class="icofont-user-plus"></i>
 
                   <span>Đăng ký</span>
+
+                </a>
+
+                <!-- Icon Shipper cho user chưa đăng nhập - chuyển đến trang login -->
+                <a href="/login" class="header-shipper" style="color: #10b981;" title="Đăng nhập Shipper">
+
+                  <i class="fas fa-shipping-fast"></i>
+
+                  <span>Shipper</span>
 
                 </a>
 

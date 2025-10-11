@@ -915,21 +915,21 @@
                                                     <td th:text="${#numbers.formatDecimal(item[6], 1, 'DEFAULT', 0, 'DEFAULT')} + ' ₫'"></td> <!-- Max price -->
                                                 </tr>
                                                 
-                                                <!-- User report - item[0]=user_id, item[1]=name, item[2]=total_orders, 
-                                                     item[3]=total_spent, item[4]=avg_order_value, item[5]=last_purchase_date, item[6]=customer_status -->
+                                                <!-- User report - item[0]=user_id, item[1]=name, item[2]=email, item[3]=total_orders, 
+                                                     item[4]=total_spent, item[5]=avg_order_value, item[6]=last_purchase_date, item[7]=customer_status -->
                                                 <tr th:each="item, iState : ${reportData}" th:if="${reportType == 'users'}">
                                                     <td th:text="${iState.index + 1}"></td>
                                                     <td th:text="${item[1]}"></td> <!-- Customer name -->
-                                                    <td th:text="${item[2]}"></td> <!-- Total orders (not quantity) -->
-                                                    <td th:text="${#numbers.formatDecimal(item[3], 1, 'DEFAULT', 0, 'DEFAULT')} + ' ₫'"></td> <!-- Total spent -->
-                                                    <td th:text="${#numbers.formatDecimal(item[4], 1, 'DEFAULT', 0, 'DEFAULT')} + ' ₫'"></td> <!-- Avg order value -->
-                                                    <td th:text="${#dates.format(item[5], 'dd/MM/yyyy')}"></td> <!-- Last purchase date -->
+                                                    <td th:text="${item[3]}"></td> <!-- Total orders -->
+                                                    <td th:text="${#numbers.formatDecimal(item[4], 1, 'DEFAULT', 0, 'DEFAULT')} + ' ₫'"></td> <!-- Total spent -->
+                                                    <td th:text="${#numbers.formatDecimal(item[5], 1, 'DEFAULT', 0, 'DEFAULT')} + ' ₫'"></td> <!-- Avg order value -->
+                                                    <td th:text="${#temporals.format(item[6], 'dd/MM/yyyy HH:mm')}"></td> <!-- Last purchase date -->
                                                     <td>
                                                         <span th:class="${
-                                                            item[6] == 'Khách hàng thường xuyên' ? 'badge badge-success' : 
-                                                            item[6] == 'Khách hàng thỉnh thoảng' ? 'badge badge-warning' : 
+                                                            item[7] == 'Khách hàng thường xuyên' ? 'badge badge-success' : 
+                                                            item[7] == 'Khách hàng thỉnh thoảng' ? 'badge badge-warning' : 
                                                             'badge badge-danger'}" 
-                                                              th:text="${item[6]}">
+                                                              th:text="${item[7]}">
                                                         </span>
                                                     </td> <!-- Customer status -->
                                                 </tr>

@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title th:text="${pageTitle}">Thống kê giao hàng</title>
+  <link rel="stylesheet" th:href="@{/vendor/bootstrap/bootstrap.min.css}" />
+  <link rel="stylesheet" th:href="@{/fonts/fontawesome/fontawesome.min.css}" />
+  <link rel="stylesheet" th:href="@{/css/main.css}" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif; }
+    body { background-color: #f3f4f6; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif; }
+    .provider-logo {
+      height: 40px;
+      width: auto;
+      object-fit: contain;
+      background: #fff;
+      padding: 6px 10px;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    }
+    .page-header { 
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%); 
+      border-radius: 16px; 
+      padding: 32px; 
+      color: #fff; 
+      margin-bottom: 32px;
+    }
+    .page-header h1 { font-size: 1.75rem; font-weight: 700; margin-bottom: 8px; }
+    .stat-card { 
+      background: #fff; 
+      border-radius: 12px; 
+      padding: 24px; 
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+      height: 100%;
+    }
+    .stat-card .stat-icon { 
+      width: 56px; 
+      height: 56px; 
+      border-radius: 12px; 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      font-size: 1.75rem; 
+      margin-bottom: 16px;
+    }
+    .stat-card.success .stat-icon { background: rgba(16, 185, 129, 0.1); color: #10b981; }
+    .stat-card.warning .stat-icon { background: rgba(251, 146, 60, 0.1); color: #fb923c; }
+    .stat-card.info .stat-icon { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
+    .stat-card.danger .stat-icon { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+    .stat-card .stat-value { font-size: 2.25rem; font-weight: 700; color: #0f172a; margin-bottom: 4px; }
+    .stat-card .stat-label { font-size: 0.875rem; color: #64748b; font-weight: 500; }
+    .stat-card .stat-sublabel { font-size: 0.75rem; color: #94a3b8; margin-top: 4px; }
+    .chart-container { 
+      background: #fff; 
+      border-radius: 12px; 
+      padding: 24px; 
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+      margin-bottom: 24px;
+    }
+    .chart-title { 
+      font-size: 1.125rem; 
+      font-weight: 600; 
+      color: #0f172a; 
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .table-container {
+      background: #fff;
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+    }
+    .table th {
+      background: #f8fafc;
+      font-weight: 600;
+      color: #475569;
+      border-bottom: 2px solid #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="/">
+        <i class="fas fa-shipping-fast me-2"></i>OneShop Shipper
+      </a>
+      <!-- Provider Logo in Navbar -->
+      <div th:if="${shipper != null && shipper.shippingProvider != null}" style="margin-left: 16px;">
+        <img class="provider-logo" 
+             th:src="@{/upload/providers/{logo}(logo=${#strings.toLowerCase(#strings.replace(#strings.replace(shipper.shippingProvider, '&', ''), ' ', '-')) + '-logo.png'})}" 
+             th:alt="${shipper.shippingProvider}"
+             th:title="${shipper.shippingProvider}"
+             onerror="console.error('Logo error:', this.src); this.style.display='none'">
+      </div>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav me-auto">
+          <li class="nav-item">
+            <a class="nav-link" th:href="@{/shipper/home}">
+              <i class="fas fa-home me-1"></i>Trang chủ
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" th:href="@{/shipper/my-orders}">
+              <i class="fas fa-box me-1"></i>Đơn hàng của tôi
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link active" th:href="@{/shipper/statistics}">
+              <i class="fas fa-chart-bar me-1"></i>Thống kê
+            </a>
+          </li>
+        </ul>
+        <ul class="navbar-nav">
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
+              <i class="fas fa-user-circle me-1"></i>
+              <span th:text="${shipper != null ? shipper.name : 'Shipper'}">Shipper</span>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end">
+              <li><a class="dropdown-item" th:href="@{/profile}"><i class="fas fa-user me-2"></i>Hồ sơ</a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item" th:href="@{/logout}"><i class="fas fa-sign-out-alt me-2"></i>Đăng xuất</a></li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container py-4">
+    <div class="page-header">
+      <h1><i class="fas fa-chart-line me-2"></i>Thống kê giao hàng</h1>
+      <p class="mb-0">Xem chi tiết hiệu suất và thống kê giao hàng của bạn</p>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row g-4 mb-4">
+      <div class="col-md-3">
+        <div class="stat-card success">
+          <div class="stat-icon">
+            <i class="fas fa-box"></i>
+          </div>
+          <div class="stat-value" th:text="${totalOrders}">0</div>
+          <div class="stat-label">Tổng đơn hàng</div>
+          <div class="stat-sublabel">Đã nhận và xử lý</div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="stat-card warning">
+          <div class="stat-icon">
+            <i class="fas fa-truck"></i>
+          </div>
+          <div class="stat-value" th:text="${shippingOrders}">0</div>
+          <div class="stat-label">Đang giao</div>
+          <div class="stat-sublabel">Đơn hàng đang vận chuyển</div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="stat-card info">
+          <div class="stat-icon">
+            <i class="fas fa-check-circle"></i>
+          </div>
+          <div class="stat-value" th:text="${deliveredOrders}">0</div>
+          <div class="stat-label">Đã giao</div>
+          <div class="stat-sublabel">Giao hàng thành công</div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="stat-card danger">
+          <div class="stat-icon">
+            <i class="fas fa-times-circle"></i>
+          </div>
+          <div class="stat-value" th:text="${cancelledOrders}">0</div>
+          <div class="stat-label">Đã hủy</div>
+          <div class="stat-sublabel">Đơn hàng bị hủy</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Performance Cards -->
+    <div class="row g-4 mb-4">
+      <div class="col-md-6">
+        <div class="stat-card">
+          <div class="d-flex align-items-center mb-3">
+            <div class="stat-icon" style="background: rgba(16, 185, 129, 0.1); color: #10b981; width: 48px; height: 48px; font-size: 1.5rem;">
+              <i class="fas fa-dollar-sign"></i>
+            </div>
+            <div class="ms-3">
+              <div class="stat-label">Tổng giá trị đã giao</div>
+              <div class="stat-value" style="font-size: 1.75rem;" 
+                   th:text="${#numbers.formatDecimal(totalDeliveredAmount, 0, 'DEFAULT', 0, 'DEFAULT')} + ' đ'">
+                0 đ
+              </div>
+            </div>
+          </div>
+          <small class="text-muted">Tổng giá trị các đơn hàng đã giao thành công</small>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="stat-card">
+          <div class="d-flex align-items-center mb-3">
+            <div class="stat-icon" style="background: rgba(59, 130, 246, 0.1); color: #3b82f6; width: 48px; height: 48px; font-size: 1.5rem;">
+              <i class="fas fa-percentage"></i>
+            </div>
+            <div class="ms-3">
+              <div class="stat-label">Tỷ lệ giao hàng thành công</div>
+              <div class="stat-value" style="font-size: 1.75rem;" th:text="${successRate} + '%'">0%</div>
+            </div>
+          </div>
+          <small class="text-muted">Tỷ lệ đơn hàng được giao thành công trên tổng số đơn</small>
+        </div>
+      </div>
+    </div>
+
+    <!-- Charts -->
+    <div class="row g-4 mb-4">
+      <div class="col-md-8">
+        <div class="chart-container" style="height: 400px; display: flex; flex-direction: column;">
+          <div class="chart-title">
+            <i class="fas fa-chart-line text-success"></i>
+            <span>Thống kê theo tháng</span>
+          </div>
+          <div style="flex: 1; position: relative;">
+            <canvas id="monthlyChart"></canvas>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="chart-container" style="height: 400px; display: flex; flex-direction: column;">
+          <div class="chart-title">
+            <i class="fas fa-chart-pie text-info"></i>
+            <span>Phân bố trạng thái</span>
+          </div>
+          <div style="flex: 1; position: relative;">
+            <canvas id="statusChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Monthly Statistics Table -->
+    <div class="table-container">
+      <div class="chart-title mb-3">
+        <i class="fas fa-table text-primary"></i>
+        <span>Chi tiết thống kê theo tháng</span>
+      </div>
+      <div class="table-responsive" style="overflow-x: auto;">
+        <table class="table table-bordered">
+          <thead>
+            <tr>
+              <th style="min-width: 120px;">Tháng/Năm</th>
+              <th class="text-center" style="min-width: 100px;">Tổng đơn</th>
+              <th class="text-center" style="min-width: 100px;">Đã giao</th>
+              <th class="text-center" style="min-width: 100px;">Tỷ lệ (%)</th>
+              <th class="text-end" style="min-width: 150px;">Tổng giá trị</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:if="${monthlyStats == null or monthlyStats.isEmpty()}">
+              <td colspan="5" class="text-center text-muted py-4">Chưa có dữ liệu thống kê</td>
+            </tr>
+            <tr th:each="stat : ${monthlyStats}">
+              <td>
+                <strong>
+                  Tháng <span th:text="${stat[1]}">1</span>/<span th:text="${stat[0]}">2024</span>
+                </strong>
+              </td>
+              <td class="text-center">
+                <span class="badge bg-primary" th:text="${stat[2]}">0</span>
+              </td>
+              <td class="text-center">
+                <span class="badge bg-success" th:text="${stat[3]}">0</span>
+              </td>
+              <td class="text-center">
+                <span th:text="${stat[2] > 0 ? #numbers.formatDecimal(stat[3] * 100.0 / stat[2], 1, 1) + '%' : '0.0%'}">
+                  0%
+                </span>
+              </td>
+              <td class="text-end">
+                <strong class="text-success">
+                  <span th:text="${stat[4] != null ? (#numbers.formatDecimal(stat[4], 0, 'COMMA', 0, 'POINT') + ' đ') : '0 đ'}">
+                    0 đ
+                  </span>
+                </strong>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <script th:src="@{/vendor/bootstrap/jquery-3.6.0.min.js}"></script>
+  <script th:src="@{/vendor/bootstrap/bootstrap.bundle.min.js}"></script>
+  <!-- Try multiple CDN sources for Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" 
+          onerror="this.onerror=null; this.src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js'"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Check if Chart.js is loaded
+      if (typeof Chart === 'undefined') {
+        console.error('Chart.js không tải được!');
+        return;
+      }
+
+      // Fetch data from API
+      fetch('/shipper/api/monthly-stats')
+        .then(function(response) { return response.json(); })
+        .then(function(result) {
+          createMonthlyChart(result.data || []);
+        })
+        .catch(function(error) {
+          console.error('Error fetching monthly stats:', error);
+          createMonthlyChart([]);
+        });
+
+      fetch('/shipper/api/status-stats')
+        .then(function(response) { return response.json(); })
+        .then(function(result) {
+          createStatusChart(result.data || []);
+        })
+        .catch(function(error) {
+          console.error('Error fetching status stats:', error);
+          createStatusChart([]);
+        });
+    });
+
+    function createMonthlyChart(monthlyStats) {
+
+      var monthlyLabels = (monthlyStats && monthlyStats.length > 0) 
+        ? monthlyStats.map(function(stat) { return 'Tháng ' + stat.month + '/' + stat.year; }) 
+        : ['Không có dữ liệu'];
+      var monthlyTotalOrders = (monthlyStats && monthlyStats.length > 0) 
+        ? monthlyStats.map(function(stat) { return stat.totalOrders; }) 
+        : [0];
+      var monthlyDeliveredOrders = (monthlyStats && monthlyStats.length > 0) 
+        ? monthlyStats.map(function(stat) { return stat.deliveredOrders; }) 
+        : [0];
+
+      var monthlyCtx = document.getElementById('monthlyChart');
+      if (!monthlyCtx) {
+        console.error('Monthly chart canvas not found!');
+        return;
+      }
+
+      try {
+        var monthlyChart = new Chart(monthlyCtx.getContext('2d'), {
+          type: 'line',
+          data: {
+            labels: monthlyLabels,
+            datasets: [{
+              label: 'Tổng đơn',
+              data: monthlyTotalOrders,
+              borderColor: '#3b82f6',
+              backgroundColor: 'rgba(59, 130, 246, 0.1)',
+              tension: 0.4,
+              fill: true
+            }, {
+              label: 'Đã giao',
+              data: monthlyDeliveredOrders,
+              borderColor: '#10b981',
+              backgroundColor: 'rgba(16, 185, 129, 0.1)',
+              tension: 0.4,
+              fill: true
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                display: true,
+                position: 'top',
+                labels: {
+                  padding: 15,
+                  font: {
+                    size: 13,
+                    family: "'Inter', sans-serif"
+                  },
+                  usePointStyle: true,
+                  pointStyle: 'circle'
+                }
+              },
+              tooltip: {
+                mode: 'index',
+                intersect: false,
+                callbacks: {
+                  label: function(context) {
+                    return context.dataset.label + ': ' + context.parsed.y + ' đơn';
+                  }
+                }
+              }
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                ticks: {
+                  stepSize: 1,
+                  font: {
+                    size: 12
+                  }
+                },
+                grid: {
+                  color: 'rgba(0, 0, 0, 0.05)'
+                }
+              },
+              x: {
+                ticks: {
+                  font: {
+                    size: 12
+                  }
+                },
+                grid: {
+                  display: false
+                }
+              }
+            },
+            interaction: {
+              mode: 'nearest',
+              axis: 'x',
+              intersect: false
+            }
+          }
+        });
+      } catch (error) {
+        console.error('Lỗi tạo biểu đồ tháng:', error);
+      }
+    }
+
+    function createStatusChart(statusStats) {
+      
+      var statusLabels = (statusStats && statusStats.length > 0) 
+        ? statusStats.map(function(stat) { return stat.label; })
+        : ['Không có dữ liệu'];
+      var statusCounts = (statusStats && statusStats.length > 0) 
+        ? statusStats.map(function(stat) { return stat.count; }) 
+        : [0];
+
+      // Màu sắc theo status
+      var colors = statusStats.map(function(stat) {
+        if (stat.status === 'SHIPPING') return 'rgba(251, 146, 60, 0.8)'; // Orange
+        if (stat.status === 'DELIVERED') return 'rgba(16, 185, 129, 0.8)'; // Green
+        if (stat.status === 'CANCELLED') return 'rgba(239, 68, 68, 0.8)'; // Red
+        return 'rgba(148, 163, 184, 0.8)'; // Gray
+      });
+
+      var borderColors = statusStats.map(function(stat) {
+        if (stat.status === 'SHIPPING') return '#fb923c';
+        if (stat.status === 'DELIVERED') return '#10b981';
+        if (stat.status === 'CANCELLED') return '#ef4444';
+        return '#94a3b8';
+      });
+
+      var statusCtx = document.getElementById('statusChart');
+      if (!statusCtx) {
+        console.error('Status chart canvas not found!');
+        return;
+      }
+
+      try {
+        var statusChart = new Chart(statusCtx.getContext('2d'), {
+          type: 'doughnut',
+          data: {
+            labels: statusLabels,
+            datasets: [{
+              data: statusCounts,
+              backgroundColor: colors.length > 0 ? colors : ['rgba(148, 163, 184, 0.8)'],
+              borderColor: borderColors.length > 0 ? borderColors : ['#94a3b8'],
+              borderWidth: 3
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                display: true,
+                position: 'bottom',
+                labels: {
+                  padding: 15,
+                  font: {
+                    size: 13,
+                    family: "'Inter', sans-serif"
+                  },
+                  usePointStyle: true,
+                  pointStyle: 'circle'
+                }
+              },
+              tooltip: {
+                callbacks: {
+                  label: function(context) {
+                    var label = context.label || '';
+                    var value = context.parsed || 0;
+                    var total = context.dataset.data.reduce(function(a, b) { return a + b; }, 0);
+                    var percentage = ((value / total) * 100).toFixed(1);
+                    return label + ': ' + value + ' đơn (' + percentage + '%)';
+                  }
+                }
+              }
+            }
+          }
+        });
+      } catch (error) {
+        console.error('Lỗi tạo biểu đồ trạng thái:', error);
+      }
+    }
+  </script>
+</body>
+</html>
+

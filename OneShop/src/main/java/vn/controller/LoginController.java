@@ -36,6 +36,8 @@ public class LoginController {
                 .anyMatch(role -> role.getName().equals("ROLE_CSKH"));
             boolean isVendor = user.getRoles().stream()
                 .anyMatch(role -> role.getName().equals("ROLE_VENDOR"));
+            boolean isShipper = user.getRoles().stream()
+                .anyMatch(role -> role.getName().equals("ROLE_SHIPPER"));
             
             if (isAdmin) {
                 return "redirect:/admin/home";
@@ -43,6 +45,8 @@ public class LoginController {
                 return "redirect:/cskh/chat";
             } else if (isVendor) {
                 return "redirect:/vendor/home";
+            } else if (isShipper) {
+                return "redirect:/shipper/home";
             } else {
                 return "redirect:/";
             }
@@ -76,6 +80,8 @@ public class LoginController {
                 .anyMatch(role -> role.getName().equals("ROLE_CSKH"));
             boolean isVendor = user.getRoles().stream()
                 .anyMatch(role -> role.getName().equals("ROLE_VENDOR"));
+            boolean isShipper = user.getRoles().stream()
+                .anyMatch(role -> role.getName().equals("ROLE_SHIPPER"));
             
             if (isAdmin) {
                 return "redirect:/admin/home";
@@ -83,6 +89,8 @@ public class LoginController {
                 return "redirect:/cskh/chat";
             } else if (isVendor) {
                 return "redirect:/vendor/home";
+            } else if (isShipper) {
+                return "redirect:/shipper/home";
             } else {
                 return "redirect:/";
             }

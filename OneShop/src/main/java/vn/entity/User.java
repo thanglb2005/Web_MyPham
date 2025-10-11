@@ -38,6 +38,10 @@ public class User implements Serializable {
     private Date registerDate;
     
     private Boolean status;
+    
+    // Shipping provider for shipper role (GHN, GHTK, J&T Express, Viettel Post, VNPost)
+    @Column(name = "shipping_provider")
+    private String shippingProvider;
 
     @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinTable(name = "users_roles",

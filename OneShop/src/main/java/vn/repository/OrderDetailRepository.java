@@ -111,7 +111,8 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long> 
      * Get user statistics with calculated fields
      * Returns: userId, name, totalOrders, totalRevenue, avgOrderValue, lastPurchaseDate, customerStatus
      */
-    @Query("SELECT u.userId, u.name, COUNT(DISTINCT od.order) as totalOrders, " +
+    @Query("SELECT u.userId, u.name, u.email, " +
+           "COUNT(DISTINCT od.order) as totalOrders, " +
            "SUM(od.totalPrice) as totalRevenue, " +
            "AVG(od.order.totalAmount) as avgOrderValue, " +
            "MAX(od.order.orderDate) as lastPurchaseDate, " +
@@ -119,7 +120,7 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long> 
            "     WHEN COUNT(DISTINCT od.order) >= 3 THEN 'Khách hàng thỉnh thoảng' " +
            "     ELSE 'Khách hàng mới' END as customerStatus " +
            "FROM OrderDetail od JOIN od.order o JOIN o.user u " +
-           "WHERE o.status = 'DELIVERED' " +
+           "WHERE o.status = vn.entity.Order$OrderStatus.DELIVERED " +
            "GROUP BY u.userId, u.name, u.email ORDER BY totalRevenue DESC")
     List<Object[]> getUserStatistics();
 
@@ -239,7 +240,7 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long> 
     /**
      * Get user statistics with date filter
      */
-    @Query("SELECT u.userId, u.name, COUNT(DISTINCT od.order) as totalOrders, " +
+    @Query("SELECT u.userId, u.name, u.email, COUNT(DISTINCT od.order) as totalOrders, " +
            "SUM(od.totalPrice) as totalRevenue, " +
            "AVG(od.order.totalAmount) as avgOrderValue, " +
            "MAX(od.order.orderDate) as lastPurchaseDate, " +
@@ -247,7 +248,7 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long> 
            "     WHEN COUNT(DISTINCT od.order) >= 3 THEN 'Khách hàng thỉnh thoảng' " +
            "     ELSE 'Khách hàng mới' END as customerStatus " +
            "FROM OrderDetail od JOIN od.order o JOIN o.user u " +
-           "WHERE o.status = 'DELIVERED' AND o.orderDate BETWEEN :startDate AND :endDate " +
+           "WHERE o.status = vn.entity.Order$OrderStatus.DELIVERED AND o.orderDate BETWEEN :startDate AND :endDate " +
            "GROUP BY u.userId, u.name, u.email ORDER BY totalRevenue DESC")
     List<Object[]> getUserStatisticsByDateRange(@Param("startDate") java.time.LocalDateTime startDate, 
                                                  @Param("endDate") java.time.LocalDateTime endDate);

@@ -89,6 +89,19 @@
                   <span class="cart-count" th:text="${session.cartMap != null ? session.cartMap.size() : (totalCartItems != null ? totalCartItems : 0)}">0</span>
                 </a>
               </th:block>
+              
+              <!-- Icon Shipper -->
+              <th:block th:if="${session.user != null and !#lists.isEmpty(session.user.roles.?[name=='ROLE_SHIPPER'])}">
+                <a th:href="@{/shipper/home}" class="header-widget" title="Dashboard Shipper" style="color: #10b981;">
+                  <i class="fas fa-shipping-fast"></i>
+                </a>
+              </th:block>
+              <th:block th:if="${session.user == null}">
+                <a th:href="@{/login}" class="header-widget" title="Đăng nhập Shipper" style="color: #10b981;">
+                  <i class="fas fa-shipping-fast"></i>
+                </a>
+              </th:block>
+              
               <th:block th:if="${session.user != null}">
                 <a th:href="@{/logout}" class="header-widget" title="Đăng xuất">
                   <i class="fas fa-sign-out-alt"></i>
@@ -197,6 +210,18 @@
                   <a th:href="@{/profile}" class="header-widget" title="Trang cá nhân"><i class="fas fa-user"></i></a>
                   <a th:href="@{/products}" class="header-widget" title="Sản phẩm"><i class="fas fa-store"></i></a>
             
+                  <!-- Icon Shipper -->
+                  <th:block th:if="${session.user != null and !#lists.isEmpty(session.user.roles.?[name=='ROLE_SHIPPER'])}">
+                    <a th:href="@{/shipper/home}" class="header-widget" title="Dashboard Shipper" style="color: #10b981;">
+                      <i class="fas fa-shipping-fast"></i>
+                    </a>
+                  </th:block>
+                  <th:block th:if="${session.user == null}">
+                    <a th:href="@{/login}" class="header-widget" title="Đăng nhập Shipper" style="color: #10b981;">
+                      <i class="fas fa-shipping-fast"></i>
+                    </a>
+                  </th:block>
+                  
                   <th:block th:if="${session.user != null}">
                     <a th:href="@{/logout}" class="header-widget" title="Đăng xuất"><i class="fas fa-sign-out-alt"></i></a>
                   </th:block>

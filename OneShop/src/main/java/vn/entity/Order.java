@@ -35,6 +35,15 @@ public class Order {
 
     @Column(name = "shipping_address", nullable = false)
     private String shippingAddress;
+    
+    @Column(name = "pickup_address")
+    private String pickupAddress;  // Địa chỉ lấy hàng (từ shop/vendor)
+    
+    @Column(name = "package_type")
+    private String packageType;  // Loại hàng: Hàng nhỏ, Hàng dễ vỡ, Thực phẩm, etc.
+    
+    @Column(name = "weight")
+    private Double weight;  // Khối lượng (kg)
 
     @Column(columnDefinition = "TEXT")
     private String note;
