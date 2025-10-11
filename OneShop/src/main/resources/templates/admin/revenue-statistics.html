@@ -424,6 +424,23 @@
                                             </div>
                                         </div>
                                     </form>
+                                    
+                                    <script>
+                                        // Keep form action synchronized with current page
+                                        document.addEventListener('DOMContentLoaded', function() {
+                                            var form = document.getElementById('date-filter-form');
+                                            if (form) {
+                                                // Set form action to current URL (without query params)
+                                                var currentPath = window.location.pathname;
+                                                form.action = currentPath;
+                                            }
+                                            
+                                            // Reset filter button
+                                            document.getElementById('reset-filter').addEventListener('click', function() {
+                                                window.location.href = window.location.pathname;
+                                            });
+                                        });
+                                    </script>
                                     <div class="d-flex flex-wrap justify-content-around animate__animated animate__fadeIn">
                                         <a href="/admin/revenue-statistics" class="btn btn-primary mb-2 filter-btn animate__animated animate__pulse">
                                             <i class="fas fa-chart-line"></i> Tổng quan
@@ -917,19 +934,108 @@
                                                     </td> <!-- Customer status -->
                                                 </tr>
                                                 
-                                                <!-- For other report types (categories, brands, years, months, quarters) -->
-                                                <tr th:each="item, iState : ${reportData}" th:if="${reportType != null and reportType != 'products' && reportType != 'users'}">
+                                                <!-- Categories and Brands: name, quantity, revenue, avg, min, max -->
+                                                <tr th:each="item, iState : ${reportData}" th:if="${reportType == 'categories' or reportType == 'brands'}">
                                                     <td th:text="${iState.index + 1}"></td>
-                                                    <td th:text="${item[0]}"></td>
-                                                    <td th:text="${item[1]}"></td>
-                                                    <td th:text="${#numbers.formatDecimal(item[2], 1, 'DEFAULT', 0, 'DEFAULT')} + ' ₫'"></td>
-                                                    <td th:text="${#numbers.formatDecimal(item[3], 1, 'DEFAULT', 0, 'DEFAULT')} + ' ₫'"></td>
-                                                    <td th:text="${#numbers.formatDecimal(item[4], 1, 'DEFAULT', 0, 'DEFAULT')} + ' ₫'"></td>
-                                                    <td th:text="${#numbers.formatDecimal(item[5], 1, 'DEFAULT', 0, 'DEFAULT')} + ' ₫'"></td>
+                                                    <td th:text="${item[0]}"></td> <!-- Name -->
+                                                    <td th:text="${item[1]}"></td> <!-- Quantity -->
+                                                    <td th:text="${#numbers.formatDecimal(item[2], 1, 'DEFAULT', 0, 'DEFAULT')} + ' ₫'"></td> <!-- Revenue -->
+                                                    <td th:text="${#numbers.formatDecimal(item[3], 1, 'DEFAULT', 0, 'DEFAULT')} + ' ₫'"></td> <!-- Avg -->
+                                                    <td th:text="${#numbers.formatDecimal(item[4], 1, 'DEFAULT', 0, 'DEFAULT')} + ' ₫'"></td> <!-- Min -->
+                                                    <td th:text="${#numbers.formatDecimal(item[5], 1, 'DEFAULT', 0, 'DEFAULT')} + ' ₫'"></td> <!-- Max -->
                                                 </tr>
                                                 
-                                                <!-- Default data when no report is loaded -->
-                                                <tr th:if="${reportData == null or #lists.isEmpty(reportData)}">
+                                                <!-- Months: year, month, quantity, revenue, avg, min, max -->
+                                                <tr th:each="item, iState : ${reportData}" th:if="${reportType == 'months'}">
+                                                    <td th:text="${iState.index + 1}"></td>
+                                                    <td th:text="'Tháng ' + ${item[1]} + '/' + ${item[0]}"></td> <!-- Format: Tháng M/YYYY -->
+                                                    <td th:text="${item[2]}"></td> <!-- Quantity -->
+                                                    <td th:text="${#numbers.formatDecimal(item[3], 1, 'DEFAULT', 0, 'DEFAULT')} + ' ₫'"></td> <!-- Revenue -->
+                                                    <td th:text="${#numbers.formatDecimal(item[4], 1, 'DEFAULT', 0, 'DEFAULT')} + ' ₫'"></td> <!-- Avg -->
+                                                    <td th:text="${#numbers.formatDecimal(item[5], 1, 'DEFAULT', 0, 'DEFAULT')} + ' ₫'"></td> <!-- Min -->
+                                                    <td th:text="${#numbers.formatDecimal(item[6], 1, 'DEFAULT', 0, 'DEFAULT')} + ' ₫'"></td> <!-- Max -->
+                                                </tr>
+                                                
+                                                <!-- Quarters: year, quarter, quantity, revenue, avg, min, max -->
+                                                <tr th:each="item, iState : ${reportData}" th:if="${reportType == 'quarters'}">
+                                                    <td th:text="${iState.index + 1}"></td>
+                                                    <td th:text="'Quý ' + ${item[1]} + '/' + ${item[0]}"></td> <!-- Format: Quý Q/YYYY -->
+                                                    <td th:text="${item[2]}"></td> <!-- Quantity -->
+                                                    <td th:text="${#numbers.formatDecimal(item[3], 1, 'DEFAULT', 0, 'DEFAULT')} + ' ₫'"></td> <!-- Revenue -->
+                                                    <td th:text="${#numbers.formatDecimal(item[4], 1, 'DEFAULT', 0, 'DEFAULT')} + ' ₫'"></td> <!-- Avg -->
+                                                    <td th:text="${#numbers.formatDecimal(item[5], 1, 'DEFAULT', 0, 'DEFAULT')} + ' ₫'"></td> <!-- Min -->
+                                                    <td th:text="${#numbers.formatDecimal(item[6], 1, 'DEFAULT', 0, 'DEFAULT')} + ' ₫'"></td> <!-- Max -->
+                                                </tr>
+                                                
+                                                <!-- Years: year, quantity, revenue, avg, min, max -->
+                                                <tr th:each="item, iState : ${reportData}" th:if="${reportType == 'years'}">
+                                                    <td th:text="${iState.index + 1}"></td>
+                                                    <td th:text="'Năm ' + ${item[0]}"></td> <!-- Format: Năm YYYY -->
+                                                    <td th:text="${item[1]}"></td> <!-- Quantity -->
+                                                    <td th:text="${#numbers.formatDecimal(item[2], 1, 'DEFAULT', 0, 'DEFAULT')} + ' ₫'"></td> <!-- Revenue -->
+                                                    <td th:text="${#numbers.formatDecimal(item[3], 1, 'DEFAULT', 0, 'DEFAULT')} + ' ₫'"></td> <!-- Avg -->
+                                                    <td th:text="${#numbers.formatDecimal(item[4], 1, 'DEFAULT', 0, 'DEFAULT')} + ' ₫'"></td> <!-- Min -->
+                                                    <td th:text="${#numbers.formatDecimal(item[5], 1, 'DEFAULT', 0, 'DEFAULT')} + ' ₫'"></td> <!-- Max -->
+                                                </tr>
+                                                
+                                                <!-- Default data when no report is loaded - MUST match column structure! -->
+                                                <!-- For products (7 columns) -->
+                                                <tr th:if="${(reportData == null or #lists.isEmpty(reportData)) and reportType == 'products'}">
+                                                    <td>1</td>
+                                                    <td>Sản phẩm mẫu</td>
+                                                    <td>10</td>
+                                                    <td>1,000,000 ₫</td>
+                                                    <td>100,000 ₫</td>
+                                                    <td>50,000 ₫</td>
+                                                    <td>150,000 ₫</td>
+                                                </tr>
+                                                
+                                                <!-- For categories/brands (7 columns) -->
+                                                <tr th:if="${(reportData == null or #lists.isEmpty(reportData)) and (reportType == 'categories' or reportType == 'brands')}">
+                                                    <td>1</td>
+                                                    <td>Dữ liệu mẫu</td>
+                                                    <td>10</td>
+                                                    <td>1,000,000 ₫</td>
+                                                    <td>100,000 ₫</td>
+                                                    <td>50,000 ₫</td>
+                                                    <td>150,000 ₫</td>
+                                                </tr>
+                                                
+                                                <!-- For months/quarters (7 columns) -->
+                                                <tr th:if="${(reportData == null or #lists.isEmpty(reportData)) and (reportType == 'months' or reportType == 'quarters')}">
+                                                    <td>1</td>
+                                                    <td>Dữ liệu mẫu</td>
+                                                    <td>10</td>
+                                                    <td>1,000,000 ₫</td>
+                                                    <td>100,000 ₫</td>
+                                                    <td>50,000 ₫</td>
+                                                    <td>150,000 ₫</td>
+                                                </tr>
+                                                
+                                                <!-- For years (7 columns) -->
+                                                <tr th:if="${(reportData == null or #lists.isEmpty(reportData)) and reportType == 'years'}">
+                                                    <td>1</td>
+                                                    <td>Năm mẫu</td>
+                                                    <td>10</td>
+                                                    <td>1,000,000 ₫</td>
+                                                    <td>100,000 ₫</td>
+                                                    <td>50,000 ₫</td>
+                                                    <td>150,000 ₫</td>
+                                                </tr>
+                                                
+                                                <!-- For users (7 columns) -->
+                                                <tr th:if="${(reportData == null or #lists.isEmpty(reportData)) and reportType == 'users'}">
+                                                    <td>1</td>
+                                                    <td>Khách hàng mẫu</td>
+                                                    <td>10</td>
+                                                    <td>1,000,000 ₫</td>
+                                                    <td>100,000 ₫</td>
+                                                    <td>01/10/2025</td>
+                                                    <td><span class="badge badge-info">Khách hàng mới</span></td>
+                                                </tr>
+                                                
+                                                <!-- For null/undefined report type (5 columns) -->
+                                                <tr th:if="${(reportData == null or #lists.isEmpty(reportData)) and reportType == null}">
                                                     <td>1</td>
                                                     <td>Dữ liệu mẫu</td>
                                                     <td>10</td>
@@ -1545,6 +1651,12 @@
             var data = [];
             var backgroundColor = [];
             
+            // Variables for summary statistics
+            var totalItems = 0;
+            var totalRevenue = 0;
+            var totalQuantity = 0;
+            var avgPrice = 0;
+            
             // Generate colors
             function generateColors(count) {
                 var colors = [];
@@ -1558,14 +1670,80 @@
             // Extract data from the table
             var table = document.querySelector('table');
             var rows = table.querySelectorAll('tbody tr');
+            var reportType = '[[${reportType}]]';
             
-            rows.forEach(function(row) {
-                var label = row.cells[1].textContent;
-                var value = parseFloat(row.cells[3].textContent.replace(' ₫', '').replace(/\./g, '').replace(/,/g, ''));
+            console.log('Processing report type:', reportType);
+            console.log('Total rows:', rows.length);
+            
+            rows.forEach(function(row, index) {
+                // Skip empty rows or sample data rows
+                if (row.cells.length < 3) return;
                 
+                var label, revenueValue, quantityValue;
+                
+                // All report types now have the same structure after rendering:
+                // Column 0: # (index)
+                // Column 1: Name/Period (formatted)
+                // Column 2: Quantity (for categories/brands/months/quarters/years) or Orders (for users)
+                // Column 3: Revenue/Total Spent
+                // Column 4+: Additional fields
+                
+                label = row.cells[1].textContent.trim();
+                
+                // Parse quantity (remove thousand separators)
+                var quantityText = row.cells[2].textContent.trim().replace(/\./g, '').replace(/,/g, '');
+                quantityValue = parseFloat(quantityText) || 0;
+                
+                // Parse revenue (remove currency symbol and thousand separators)
+                var revenueText = row.cells[3].textContent.trim().replace(' ₫', '').replace(/₫/g, '').replace(/\./g, '').replace(/,/g, '');
+                revenueValue = parseFloat(revenueText) || 0;
+                
+                console.log('Row ' + index + ':', {
+                    label: label,
+                    quantityText: row.cells[2].textContent.trim(),
+                    quantityValue: quantityValue,
+                    revenueText: row.cells[3].textContent.trim(),
+                    revenueValue: revenueValue
+                });
+                
+                // Add to chart data
                 labels.push(label);
-                data.push(value);
+                data.push(revenueValue);
+                
+                // Calculate summary statistics
+                totalItems++;
+                if (!isNaN(revenueValue)) {
+                    totalRevenue += revenueValue;
+                }
+                if (!isNaN(quantityValue)) {
+                    totalQuantity += quantityValue;
+                }
             });
+            
+            // Calculate average price/value
+            if (reportType === 'users') {
+                // For users report: average = total revenue / total orders (not total customers)
+                if (totalQuantity > 0) {
+                    avgPrice = totalRevenue / totalQuantity;
+                }
+            } else {
+                // For other reports: average = total revenue / total items
+                if (totalItems > 0) {
+                    avgPrice = totalRevenue / totalItems;
+                }
+            }
+            
+            // Update summary cards
+            document.getElementById('summary-total-items').textContent = totalItems.toLocaleString('vi-VN');
+            document.getElementById('summary-total-revenue').textContent = totalRevenue.toLocaleString('vi-VN') + ' ₫';
+            document.getElementById('summary-total-quantity').textContent = totalQuantity.toLocaleString('vi-VN');
+            document.getElementById('summary-avg-price').textContent = avgPrice.toLocaleString('vi-VN') + ' ₫';
+            
+            console.log('=== Summary Statistics ===');
+            console.log('Total Items:', totalItems);
+            console.log('Total Revenue:', totalRevenue);
+            console.log('Total Quantity:', totalQuantity);
+            console.log('Average Price:', avgPrice);
             
             backgroundColor = generateColors(labels.length);
             

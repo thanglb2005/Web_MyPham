@@ -69,24 +69,7 @@ public class RevenueController {
             }
         }
         
-        // Thêm một số dữ liệu mẫu để đảm bảo biểu đồ có dữ liệu (chỉ cho mục đích demo)
-        // QUAN TRỌNG: Hãy xóa phần này sau khi đã có dữ liệu thực tế
-        boolean hasData = false;
-        for (double revenue : monthlyRevenue) {
-            if (revenue > 0) {
-                hasData = true;
-                break;
-            }
-        }
-        
-        if (!hasData) {
-            // Thêm dữ liệu mẫu nếu không có dữ liệu thực
-            monthlyRevenue = new double[] {
-                5000000, 6200000, 7500000, 5800000, 8300000, 
-                7200000, 9100000, 10500000, 9200000, 11200000, 8900000, 12000000
-            };
-        }
-        
+        // Chỉ trả về dữ liệu thật từ database
         result.put("revenues", monthlyRevenue);
         result.put("orders", monthlyOrders);
         result.put("months", months);
@@ -342,13 +325,11 @@ public class RevenueController {
             System.out.println("CONTROLLER - Formatted Revenue: " + periodStats.get("formattedRevenue"));
             
             model.addAttribute("selectedPeriod", periodStats.get("periodName"));
-            // Đảm bảo giá trị không null và không phải là 0 đồng
+            // Lấy dữ liệu thật từ database, không sử dụng dữ liệu giả
             String revenueDisplay = (String)periodStats.get("formattedRevenue");
-            if (revenueDisplay == null || revenueDisplay.equals("0 đ")) {
-                if ((type.equals("month") && currentMonth == 9 && currentYear == 2025) || 
-                    (type.equals("quarter") && currentQuarter == 3 && currentYear == 2025)) {
-                    revenueDisplay = type.equals("month") ? "5.500.000 đ" : "12.500.000 đ";
-                }
+            // Nếu không có dữ liệu, hiển thị 0 đ thay vì dữ liệu giả
+            if (revenueDisplay == null) {
+                revenueDisplay = "0 đ";
             }
             model.addAttribute("selectedRevenue", revenueDisplay);
             

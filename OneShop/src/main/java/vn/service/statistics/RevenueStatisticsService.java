@@ -164,14 +164,6 @@ public class RevenueStatisticsService {
                 }
             }
             
-            // Đảm bảo có dữ liệu tháng trước để tính tỉ lệ tăng trưởng
-            if (previousMonthRevenue == 0 && currentMonthRevenue > 0) {
-                // Nếu không có dữ liệu tháng trước nhưng có dữ liệu tháng hiện tại
-                // Giả định doanh thu tháng trước là 80% tháng hiện tại để tính tỉ lệ tăng trưởng
-                previousMonthRevenue = currentMonthRevenue * 0.8;
-                System.out.println("Không có dữ liệu tháng trước, ước lượng: " + formatCurrency(previousMonthRevenue));
-            }
-            
             // Calculate growth rate
             double growthRate = 0.0;
             if (previousMonthRevenue > 0) {
@@ -270,48 +262,42 @@ public class RevenueStatisticsService {
             
             switch (type) {
                 case "month":
-                    // Monthly statistics - hiển thị dữ liệu của tháng được chọn
+                    // Monthly statistics - hiển thị dữ liệu thật của tháng được chọn
                     periodName = "Tháng " + month + "/" + year;
                     
-                    // Kiểm tra xem có phải là tháng 9/2025 không (trường hợp đặc biệt)
-                    if (month == 9 && year == 2025) {
-                        revenue = 5500000.0; // Dữ liệu mẫu cho tháng 9/2025
-                        System.out.println("Sử dụng dữ liệu mẫu cho tháng 9/2025: 5.500.000 đ");
-                    } else {
-                        // In log để debug chi tiết
-                        System.out.println("\n===== THỐNG KÊ CHO " + periodName + " =====");
-                        System.out.println("Đơn hàng trong tháng " + month + "/" + year + ":");
-                        System.out.println("------------------------------------");
-                        
-                        // IMPORTANT DEBUG: Kiểm tra tất cả đơn hàng trong hệ thống
-                        System.out.println("\n===== DANH SÁCH TẤT CẢ ĐƠN HÀNG =====");
-                        for (Order debugOrder : allOrders) {
-                            if (debugOrder.getOrderDate() != null) {
-                                Calendar debugCal = Calendar.getInstance();
-                                debugCal.setTime(java.sql.Timestamp.valueOf(debugOrder.getOrderDate()));
-                                System.out.println("DEBUG - Order ID: " + debugOrder.getOrderId() + 
-                                           ", Date: " + debugOrder.getOrderDate() + 
-                                           ", Month: " + (debugCal.get(Calendar.MONTH) + 1) +
-                                           ", Year: " + debugCal.get(Calendar.YEAR) +
-                                           ", Amount: " + (debugOrder.getTotalAmount() != null ? debugOrder.getTotalAmount() : "null"));
-                            }
+                    // In log để debug chi tiết
+                    System.out.println("\n===== THỐNG KÊ CHO " + periodName + " =====");
+                    System.out.println("Đơn hàng trong tháng " + month + "/" + year + ":");
+                    System.out.println("------------------------------------");
+                    
+                    // IMPORTANT DEBUG: Kiểm tra tất cả đơn hàng trong hệ thống
+                    System.out.println("\n===== DANH SÁCH TẤT CẢ ĐƠN HÀNG =====");
+                    for (Order debugOrder : allOrders) {
+                        if (debugOrder.getOrderDate() != null) {
+                            Calendar debugCal = Calendar.getInstance();
+                            debugCal.setTime(java.sql.Timestamp.valueOf(debugOrder.getOrderDate()));
+                            System.out.println("DEBUG - Order ID: " + debugOrder.getOrderId() + 
+                                       ", Date: " + debugOrder.getOrderDate() + 
+                                       ", Month: " + (debugCal.get(Calendar.MONTH) + 1) +
+                                       ", Year: " + debugCal.get(Calendar.YEAR) +
+                                       ", Amount: " + (debugOrder.getTotalAmount() != null ? debugOrder.getTotalAmount() : "null"));
                         }
-                        
-                        for (Order order : allOrders) {
-                            if (order.getOrderDate() != null && order.getTotalAmount() != null) {
-                                // Lọc theo tháng và năm đã chọn
-                                Calendar orderDate = Calendar.getInstance();
-                                orderDate.setTime(java.sql.Timestamp.valueOf(order.getOrderDate()));
-                                int orderMonth = orderDate.get(Calendar.MONTH) + 1; // Calendar.MONTH bắt đầu từ 0 (chuyển sang 1-12)
-                                int orderYear = orderDate.get(Calendar.YEAR);
-                                
-                                if (orderYear == year && orderMonth == month) {
-                                    revenue += order.getTotalAmount();
-                                    System.out.println("ID: " + order.getOrderId() + 
-                                                      ", Ngày: " + order.getOrderDate() + 
-                                                      ", Tháng: " + orderMonth + "/" + orderYear + 
-                                                      ", Giá trị: " + formatCurrency(order.getTotalAmount()));
-                                }
+                    }
+                    
+                    for (Order order : allOrders) {
+                        if (order.getOrderDate() != null && order.getTotalAmount() != null) {
+                            // Lọc theo tháng và năm đã chọn
+                            Calendar orderDate = Calendar.getInstance();
+                            orderDate.setTime(java.sql.Timestamp.valueOf(order.getOrderDate()));
+                            int orderMonth = orderDate.get(Calendar.MONTH) + 1; // Calendar.MONTH bắt đầu từ 0 (chuyển sang 1-12)
+                            int orderYear = orderDate.get(Calendar.YEAR);
+                            
+                            if (orderYear == year && orderMonth == month) {
+                                revenue += order.getTotalAmount();
+                                System.out.println("ID: " + order.getOrderId() + 
+                                                  ", Ngày: " + order.getOrderDate() + 
+                                                  ", Tháng: " + orderMonth + "/" + orderYear + 
+                                                  ", Giá trị: " + formatCurrency(order.getTotalAmount()));
                             }
                         }
                     }
@@ -319,35 +305,29 @@ public class RevenueStatisticsService {
                     break;
                     
                 case "quarter":
-                    // Quarterly statistics
+                    // Quarterly statistics - hiển thị dữ liệu thật
                     periodName = "Quý " + quarter + "/" + year;
                     int startMonth = (quarter - 1) * 3 + 1;
                     int endMonth = quarter * 3;
                     
-                    // Kiểm tra xem có phải là quý 3/2025 không (trường hợp đặc biệt)
-                    if (quarter == 3 && year == 2025) {
-                        revenue = 12500000.0; // Dữ liệu mẫu cho quý 3/2025
-                        System.out.println("Sử dụng dữ liệu mẫu cho quý 3/2025: 12.500.000 đ");
-                    } else {
-                        System.out.println("\n===== THỐNG KÊ CHO " + periodName + " =====");
-                        System.out.println("Đơn hàng trong quý " + quarter + "/" + year + " (tháng " + startMonth + "-" + endMonth + "):");
-                        System.out.println("------------------------------------");
-                        
-                        for (Order order : allOrders) {
-                            if (order.getOrderDate() != null && order.getTotalAmount() != null) {
-                                // Sử dụng Calendar thay vì toInstant()
-                                Calendar cal = Calendar.getInstance();
-                                cal.setTime(java.sql.Timestamp.valueOf(order.getOrderDate()));
-                                int orderMonth = cal.get(Calendar.MONTH) + 1; // Calendar.MONTH bắt đầu từ 0
-                                int orderYear = cal.get(Calendar.YEAR);
-                                
-                                if (orderYear == year && orderMonth >= startMonth && orderMonth <= endMonth) {
-                                    revenue += order.getTotalAmount();
-                                    System.out.println("ID: " + order.getOrderId() + 
-                                                      ", Ngày: " + order.getOrderDate() + 
-                                                      ", Tháng: " + orderMonth + "/" + orderYear + 
-                                                      ", Giá trị: " + formatCurrency(order.getTotalAmount()));
-                                }
+                    System.out.println("\n===== THỐNG KÊ CHO " + periodName + " =====");
+                    System.out.println("Đơn hàng trong quý " + quarter + "/" + year + " (tháng " + startMonth + "-" + endMonth + "):");
+                    System.out.println("------------------------------------");
+                    
+                    for (Order order : allOrders) {
+                        if (order.getOrderDate() != null && order.getTotalAmount() != null) {
+                            // Sử dụng Calendar thay vì toInstant()
+                            Calendar cal = Calendar.getInstance();
+                            cal.setTime(java.sql.Timestamp.valueOf(order.getOrderDate()));
+                            int orderMonth = cal.get(Calendar.MONTH) + 1; // Calendar.MONTH bắt đầu từ 0
+                            int orderYear = cal.get(Calendar.YEAR);
+                            
+                            if (orderYear == year && orderMonth >= startMonth && orderMonth <= endMonth) {
+                                revenue += order.getTotalAmount();
+                                System.out.println("ID: " + order.getOrderId() + 
+                                                  ", Ngày: " + order.getOrderDate() + 
+                                                  ", Tháng: " + orderMonth + "/" + orderYear + 
+                                                  ", Giá trị: " + formatCurrency(order.getTotalAmount()));
                             }
                         }
                     }
@@ -415,17 +395,29 @@ public class RevenueStatisticsService {
             List<Order> allOrders = orderRepository.findAll();
             
             int totalOrders = allOrders.size();
-            // Đảm bảo luôn có đơn hàng được hoàn thành
-            int completedOrders = totalOrders;
+            int completedOrders = 0;
             int cancelledOrders = 0;
+            
+            // Đếm đơn hàng theo trạng thái thực tế
+            for (Order order : allOrders) {
+                if (order.getStatus() != null) {
+                    Order.OrderStatus status = order.getStatus();
+                    if (status == Order.OrderStatus.DELIVERED) {
+                        completedOrders++;
+                    } else if (status == Order.OrderStatus.CANCELLED) {
+                        cancelledOrders++;
+                    }
+                }
+            }
             
             // In thông tin debug
             System.out.println("Thống kê hoàn thành đơn hàng:");
             System.out.println("Tổng đơn hàng: " + totalOrders);
             System.out.println("Hoàn thành: " + completedOrders);
+            System.out.println("Hủy: " + cancelledOrders);
             
-            // Tính toán tỉ lệ hoàn thành
-            double completionRate = 100.0; // Luôn là 100%
+            // Tính toán tỉ lệ hoàn thành dựa trên dữ liệu thật
+            double completionRate = totalOrders > 0 ? ((double) completedOrders / totalOrders) * 100 : 0.0;
             
             System.out.println("Thông tin hoàn thành đơn hàng: Tổng=" + totalOrders 
                 + ", Hoàn thành=" + completedOrders + ", Hủy=" + cancelledOrders 

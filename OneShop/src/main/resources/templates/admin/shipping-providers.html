@@ -27,6 +27,12 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-action-group .btn:hover {
+            transform: scale(1.1);
         }
         
         .btn-info {
@@ -162,59 +168,106 @@
                                 <div class="card">
                                     <div class="card-body">
             
-            <!-- Messages -->
-            <div class="alert alert-success" th:if="${param.success == 'added'}">
-                Thêm nhà vận chuyển thành công!
-            </div>
-            <div class="alert alert-success" th:if="${param.success == 'updated'}">
-                Cập nhật nhà vận chuyển thành công!
-            </div>
-            <div class="alert alert-success" th:if="${param.success == 'deleted'}">
-                Xóa nhà vận chuyển thành công!
-            </div>
-            <div class="alert alert-success" th:if="${param.success == 'toggled'}">
-                Thay đổi trạng thái nhà vận chuyển thành công!
-            </div>
-            <div class="alert alert-danger" th:if="${param.error == 'true'}">
-                Có lỗi xảy ra. Vui lòng thử lại!
-            </div>
-            <div class="alert alert-danger" th:if="${param.error == 'notfound'}">
-                Không tìm thấy nhà vận chuyển!
-            </div>
-            <div class="alert alert-danger" th:if="${param.error == 'duplicate'}">
-                Tên nhà vận chuyển đã tồn tại!
-            </div>
-            
-            <!-- Card -->
-            <div class="card shadow mb-4">
-                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                    <h6 class="m-0 font-weight-bold text-primary">Danh sách nhà vận chuyển</h6>
-                    <div>
-                        <button class="btn btn-primary btn-sm" data-toggle="modal" data-target="#addProviderModal">
-                            <i class="fas fa-plus"></i> Thêm mới
-                        </button>
-                    </div>
-                </div>
-                <div class="card-body">
-                    <!-- Search box -->
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <form th:action="@{/admin/shipping-providers}" method="get">
-                                <div class="input-group">
-                                    <input type="text" class="form-control" placeholder="Tìm kiếm nhà vận chuyển..." 
-                                        name="search" th:value="${search}">
-                                    <div class="input-group-append">
-                                        <button class="btn btn-primary" type="submit">
-                                            <i class="fas fa-search"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                    
-                    <!-- Table -->
-                    <div class="table-responsive">
+                                        <!-- Messages -->
+                                        <div class="alert alert-success alert-dismissible fade show" role="alert" th:if="${param.success == 'added'}">
+                                            <strong>Thành công!</strong> Thêm nhà vận chuyển thành công!
+                                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                                <span aria-hidden="true">&times;</span>
+                                            </button>
+                                        </div>
+                                        <div class="alert alert-success alert-dismissible fade show" role="alert" th:if="${param.success == 'updated'}">
+                                            <strong>Thành công!</strong> Cập nhật nhà vận chuyển thành công!
+                                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                                <span aria-hidden="true">&times;</span>
+                                            </button>
+                                        </div>
+                                        <div class="alert alert-success alert-dismissible fade show" role="alert" th:if="${param.success == 'deleted'}">
+                                            <strong>Thành công!</strong> Xóa nhà vận chuyển thành công!
+                                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                                <span aria-hidden="true">&times;</span>
+                                            </button>
+                                        </div>
+                                        <div class="alert alert-success alert-dismissible fade show" role="alert" th:if="${param.success == 'toggled'}">
+                                            <strong>Thành công!</strong> Thay đổi trạng thái nhà vận chuyển thành công!
+                                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                                <span aria-hidden="true">&times;</span>
+                                            </button>
+                                        </div>
+                                        <div class="alert alert-danger alert-dismissible fade show" role="alert" th:if="${param.error == 'true'}">
+                                            <strong>Lỗi!</strong> Có lỗi xảy ra. Vui lòng thử lại!
+                                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                                <span aria-hidden="true">&times;</span>
+                                            </button>
+                                        </div>
+                                        <div class="alert alert-danger alert-dismissible fade show" role="alert" th:if="${param.error == 'notfound'}">
+                                            <strong>Lỗi!</strong> Không tìm thấy nhà vận chuyển!
+                                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                                <span aria-hidden="true">&times;</span>
+                                            </button>
+                                        </div>
+                                        <div class="alert alert-danger alert-dismissible fade show" role="alert" th:if="${param.error == 'duplicate'}">
+                                            <strong>Lỗi!</strong> Tên nhà vận chuyển đã tồn tại!
+                                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                                <span aria-hidden="true">&times;</span>
+                                            </button>
+                                        </div>
+                                        
+                                        <!-- Toolbar: Search, Page Size, Button -->
+                                        <div class="row mb-4 align-items-center">
+                                            <div class="col-md-8">
+                                                <div class="d-flex align-items-center">
+                                                    <form th:action="@{/admin/shipping-providers}" method="get" class="flex-grow-1">
+                                                        <div class="input-group">
+                                                            <input type="text" class="form-control" placeholder="Tìm kiếm nhà vận chuyển..." 
+                                                                name="search" th:value="${search}">
+                                                            <div class="input-group-append">
+                                                                <button class="btn btn-primary" type="submit">
+                                                                    <i class="fas fa-search"></i> Tìm kiếm
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    </form>
+                                                    <div class="d-flex align-items-center ml-3" style="white-space: nowrap;">
+                                                        <label class="mb-0 mr-2">Hiển thị:</label>
+                                                        <select class="form-control" style="width: 70px;" onchange="changePageSize(this.value)">
+                                                            <option value="5" th:selected="${pageSize == 5}">5</option>
+                                                            <option value="10" th:selected="${pageSize == 10}">10</option>
+                                                            <option value="20" th:selected="${pageSize == 20}">20</option>
+                                                            <option value="50" th:selected="${pageSize == 50}">50</option>
+                                                        </select>
+                                                        <span class="ml-2">dòng</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4 text-right">
+                                                <button class="btn btn-success" data-toggle="modal" data-target="#addProviderModal" style="box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                                                    <i class="fas fa-plus-circle"></i> Thêm Nhà Vận Chuyển
+                                                </button>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Info showing entries -->
+                                        <div class="row mb-3">
+                                            <div class="col-md-12">
+                                                <div class="alert alert-info mb-0" style="padding: 10px 15px;" th:if="${totalItems > 0}">
+                                                    <i class="fas fa-info-circle"></i>
+                                                    Hiển thị 
+                                                    <strong th:text="${currentPage * pageSize + 1}">1</strong> 
+                                                    đến 
+                                                    <strong th:text="${(currentPage + 1) * pageSize > totalItems ? totalItems : (currentPage + 1) * pageSize}">10</strong> 
+                                                    trong tổng số 
+                                                    <strong th:text="${totalItems}">50</strong> 
+                                                    nhà vận chuyển
+                                                </div>
+                                                <div class="alert alert-warning" th:if="${totalItems == 0}">
+                                                    <i class="fas fa-exclamation-triangle"></i>
+                                                    Không có nhà vận chuyển nào
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Table -->
+                                        <div class="table-responsive">
                         <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
                             <thead>
                                 <tr>
@@ -255,37 +308,31 @@
                                     <td>
                                         <div class="btn-action-group">
                                             <!-- Nút xem chi tiết -->
-                                            <button class="btn btn-info btn-sm view-provider" 
-                                                    th:data-id="${provider.providerId}" 
-                                                    data-toggle="modal" 
-                                                    data-target="#viewProviderModal">
+                                            <button type="button" class="btn btn-info btn-sm view-provider" 
+                                                    th:attr="data-id=${provider.providerId}"
+                                                    title="Xem chi tiết">
                                                 <i class="fas fa-eye"></i>
                                             </button>
                                             
                                             <!-- Nút chỉnh sửa -->
-                                            <button class="btn btn-warning btn-sm edit-provider" 
-                                                    th:data-id="${provider.providerId}" 
-                                                    th:data-logo="${provider.logo}" 
-                                                    data-toggle="modal" 
-                                                    data-target="#editProviderModal">
+                                            <button type="button" class="btn btn-warning btn-sm edit-provider" 
+                                                    th:attr="data-id=${provider.providerId}"
+                                                    title="Chỉnh sửa">
                                                 <i class="fas fa-edit"></i>
                                             </button>
                                             
                                             <!-- Nút bật/tắt trạng thái -->
-                                            <button class="btn btn-primary btn-sm toggle-status" 
-                                                    th:data-id="${provider.providerId}" 
-                                                    th:data-status="${provider.status}"
-                                                    data-toggle="modal" 
-                                                    data-target="#toggleStatusModal">
+                                            <button type="button" class="btn btn-primary btn-sm toggle-status" 
+                                                    th:attr="data-id=${provider.providerId},data-status=${provider.status}"
+                                                    title="Chuyển trạng thái">
                                                 <i th:if="${provider.status}" class="fas fa-toggle-on"></i>
                                                 <i th:unless="${provider.status}" class="fas fa-toggle-off"></i>
                                             </button>
                                             
                                             <!-- Nút xóa -->
-                                            <button class="btn btn-danger btn-sm delete-provider" 
-                                                    th:data-id="${provider.providerId}" 
-                                                    th:data-name="${provider.providerName}" 
-                                                    data-toggle="modal" data-target="#deleteProviderModal">
+                                            <button type="button" class="btn btn-danger btn-sm delete-provider" 
+                                                    th:attr="data-id=${provider.providerId},data-name=${provider.providerName}"
+                                                    title="Xóa">
                                                 <i class="fas fa-trash-alt"></i>
                                             </button>
                                         </div>
@@ -293,34 +340,48 @@
                                 </tr>
                             </tbody>
                         </table>
-                    </div>
-                    
-                    <!-- Pagination -->
-                    <div th:if="${totalPages > 0}">
-                        <ul class="pagination">
-                            <li class="page-item" th:classappend="${currentPage == 0 ? 'disabled' : ''}">
-                                <a class="page-link" th:href="@{/admin/shipping-providers(page=0, size=${pageSize}, sortBy=${sortBy}, sortDir=${sortDir}, search=${search})}">&laquo;</a>
-                            </li>
-                            <li class="page-item" th:classappend="${currentPage == 0 ? 'disabled' : ''}">
-                                <a class="page-link" th:href="@{/admin/shipping-providers(page=${currentPage - 1}, size=${pageSize}, sortBy=${sortBy}, sortDir=${sortDir}, search=${search})}">&lt;</a>
-                            </li>
-                            <li class="page-item" th:each="i : ${#numbers.sequence(0, totalPages - 1)}" 
-                                th:if="${i >= currentPage - 2 && i <= currentPage + 2}"
-                                th:classappend="${currentPage == i ? 'active' : ''}">
-                                <a class="page-link" th:href="@{/admin/shipping-providers(page=${i}, size=${pageSize}, sortBy=${sortBy}, sortDir=${sortDir}, search=${search})}"
-                                   th:text="${i + 1}"></a>
-                            </li>
-                            <li class="page-item" th:classappend="${currentPage == totalPages - 1 ? 'disabled' : ''}">
-                                <a class="page-link" th:href="@{/admin/shipping-providers(page=${currentPage + 1}, size=${pageSize}, sortBy=${sortBy}, sortDir=${sortDir}, search=${search})}">&gt;</a>
-                            </li>
-                            <li class="page-item" th:classappend="${currentPage == totalPages - 1 ? 'disabled' : ''}">
-                                <a class="page-link" th:href="@{/admin/shipping-providers(page=${totalPages - 1}, size=${pageSize}, sortBy=${sortBy}, sortDir=${sortDir}, search=${search})}">&raquo;</a>
-                            </li>
-                        </ul>
+                                        </div>
+                                        
+                                        <!-- Pagination -->
+                                        <div th:if="${totalPages > 0}" class="mt-4">
+                                            <nav aria-label="Page navigation">
+                                                <ul class="pagination justify-content-center">
+                                                    <li class="page-item" th:classappend="${currentPage == 0 ? 'disabled' : ''}">
+                                                        <a class="page-link" th:href="@{/admin/shipping-providers(page=0, size=${pageSize}, sortBy=${sortBy}, sortDir=${sortDir}, search=${search})}" aria-label="First">
+                                                            <span aria-hidden="true">&laquo;&laquo;</span>
+                                                        </a>
+                                                    </li>
+                                                    <li class="page-item" th:classappend="${currentPage == 0 ? 'disabled' : ''}">
+                                                        <a class="page-link" th:href="@{/admin/shipping-providers(page=${currentPage - 1}, size=${pageSize}, sortBy=${sortBy}, sortDir=${sortDir}, search=${search})}" aria-label="Previous">
+                                                            <span aria-hidden="true">&laquo;</span>
+                                                        </a>
+                                                    </li>
+                                                    <li class="page-item" th:each="i : ${#numbers.sequence(0, totalPages - 1)}" 
+                                                        th:if="${i >= currentPage - 2 && i <= currentPage + 2}"
+                                                        th:classappend="${currentPage == i ? 'active' : ''}">
+                                                        <a class="page-link" th:href="@{/admin/shipping-providers(page=${i}, size=${pageSize}, sortBy=${sortBy}, sortDir=${sortDir}, search=${search})}"
+                                                           th:text="${i + 1}"></a>
+                                                    </li>
+                                                    <li class="page-item" th:classappend="${currentPage == totalPages - 1 ? 'disabled' : ''}">
+                                                        <a class="page-link" th:href="@{/admin/shipping-providers(page=${currentPage + 1}, size=${pageSize}, sortBy=${sortBy}, sortDir=${sortDir}, search=${search})}" aria-label="Next">
+                                                            <span aria-hidden="true">&raquo;</span>
+                                                        </a>
+                                                    </li>
+                                                    <li class="page-item" th:classappend="${currentPage == totalPages - 1 ? 'disabled' : ''}">
+                                                        <a class="page-link" th:href="@{/admin/shipping-providers(page=${totalPages - 1}, size=${pageSize}, sortBy=${sortBy}, sortDir=${sortDir}, search=${search})}" aria-label="Last">
+                                                            <span aria-hidden="true">&raquo;&raquo;</span>
+                                                        </a>
+                                                    </li>
+                                                </ul>
+                                            </nav>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
         
         <!-- Add Provider Modal -->
         <div class="modal fade" id="addProviderModal" tabindex="-1" role="dialog" aria-hidden="true">
@@ -350,6 +411,10 @@
                             <div class="form-group">
                                 <label>Email liên hệ</label>
                                 <input type="email" class="form-control" th:field="*{contactEmail}">
+                            </div>
+                            <div class="form-group">
+                                <label>Website</label>
+                                <input type="text" class="form-control" th:field="*{website}" placeholder="https://example.com">
                             </div>
                             <div class="form-group">
                                 <label>Địa chỉ</label>
@@ -422,6 +487,10 @@
                             <div class="form-group">
                                 <label>Email liên hệ</label>
                                 <input type="email" class="form-control" id="edit-provider-email" name="contactEmail">
+                            </div>
+                            <div class="form-group">
+                                <label>Website</label>
+                                <input type="text" class="form-control" id="edit-provider-website" name="website">
                             </div>
                             <div class="form-group">
                                 <label>Địa chỉ</label>
@@ -583,178 +652,6 @@
                 </div>
             </div>
         </div>
-        
-        <!-- JavaScript for CRUD operations - following brands pattern -->
-        <script>
-            $(document).ready(function() {
-                
-                // Store provider ID for modal loading
-                let currentViewProviderId = null;
-                
-                // Load data when view modal is shown
-                $('#viewProviderModal').on('show.bs.modal', function() {
-                    console.log('View modal is being shown, loading data for ID:', currentViewProviderId);
-                    if (currentViewProviderId) {
-                        loadViewProviderData(currentViewProviderId);
-                    }
-                });
-                
-                // Function to load provider data for view modal
-                function loadViewProviderData(providerId) {
-                    console.log('Loading provider data for ID:', providerId);
-                    
-                    $.get(`/admin/getShippingProviderData/${providerId}`)
-                    .done(function(provider) {
-                        console.log('Provider data loaded:', provider);
-                        
-                        $('#view-provider-id').text(provider.providerId || 'N/A');
-                        $('#view-provider-name').text(provider.providerName || 'N/A');
-                        $('#view-provider-phone').text(provider.contactPhone || 'N/A');
-                        $('#view-provider-email').text(provider.contactEmail || 'N/A');
-                        $('#view-provider-website').text(provider.website || 'N/A');
-                        $('#view-provider-address').text(provider.address || 'N/A');
-                        
-                        // Format shipping fees
-                        const formattedFees = provider.shippingFees ? 
-                            provider.shippingFees.toLocaleString('vi-VN') + ' VNĐ' : 'N/A';
-                        $('#view-provider-fees').text(formattedFees);
-                        
-                        $('#view-provider-time').text(provider.deliveryTimeRange || 'N/A');
-                        $('#view-provider-desc').text(provider.description || 'Không có mô tả');
-                        
-                        // Set status badge
-                        $('#view-provider-status-badge').html(provider.status ? 
-                            '<span class="badge badge-success">Hoạt động</span>' : 
-                            '<span class="badge badge-danger">Ngừng hoạt động</span>');
-                        
-                        // Show logo
-                        if (provider.logo) {
-                            $('#view-provider-logo').attr('src', `/images/${provider.logo}`).show();
-                            $('#view-provider-no-logo').hide();
-                        } else {
-                            $('#view-provider-logo').hide();
-                            $('#view-provider-no-logo').show();
-                        }
-                    })
-                    .fail(function(xhr, status, error) {
-                        console.error('Error loading provider data:', error);
-                        alert('Lỗi tải dữ liệu: ' + error);
-                    });
-                }
-                
-                // Edit provider
-                $('.edit-provider').on('click', function() {
-                    const providerId = $(this).data('id');
-                    
-                    // Fetch provider data
-                    $.get(`/admin/getShippingProviderData/${providerId}`, function(provider) {
-                        $('#edit-provider-id').val(provider.providerId);
-                        $('#edit-provider-name').val(provider.providerName);
-                        $('#edit-provider-phone').val(provider.contactPhone);
-                        $('#edit-provider-email').val(provider.contactEmail);
-                        $('#edit-provider-address').val(provider.address);
-                        $('#edit-provider-fees').val(provider.shippingFees);
-                        $('#edit-provider-time').val(provider.deliveryTimeRange);
-                        $('#edit-provider-status').val(provider.status.toString());
-                        $('#edit-provider-desc').val(provider.description);
-                        
-                        // Show current logo
-                        const logoPreview = $('#edit-provider-logo-preview');
-                        if (provider.logo) {
-                            logoPreview.attr('src', `/images/${provider.logo}`).show();
-                            $('#edit-provider-no-logo').hide();
-                        } else {
-                            logoPreview.hide();
-                            $('#edit-provider-no-logo').show();
-                        }
-                    });
-                });
-                
-                // View provider - store ID and let modal event handle loading
-                $('.view-provider').on('click', function() {
-                    const providerId = $(this).data('id');
-                    console.log('View provider clicked, storing ID:', providerId);
-                    
-                    // Store the provider ID for modal loading
-                    currentViewProviderId = providerId;
-                    
-                    // Clear previous data
-                    $('#view-provider-id').text('Đang tải...');
-                    $('#view-provider-name').text('Đang tải...');
-                    $('#view-provider-phone').text('Đang tải...');
-                    $('#view-provider-email').text('Đang tải...');
-                    $('#view-provider-website').text('Đang tải...');
-                    $('#view-provider-address').text('Đang tải...');
-                    $('#view-provider-fees').text('Đang tải...');
-                    $('#view-provider-time').text('Đang tải...');
-                    $('#view-provider-desc').text('Đang tải...');
-                    
-                    // Modal will be opened by data-toggle, and data will be loaded by modal event
-                });
-                
-                // Delete provider
-                $('.delete-provider').on('click', function() {
-                    const providerId = $(this).data('id');
-                    
-                    console.log('Delete provider clicked for ID:', providerId);
-                    
-                    // Fetch provider data for confirmation
-                    $.get(`/admin/getShippingProviderData/${providerId}`)
-                    .done(function(provider) {
-                        console.log('Provider data for delete:', provider);
-                        
-                        $('#delete-provider-name').text(provider.providerName);
-                        
-                        // Set form action with proper URL
-                        const actionUrl = `/admin/deleteShippingProvider/${providerId}`;
-                        console.log('Setting delete form action to:', actionUrl);
-                        $('#deleteProviderForm').attr('action', actionUrl);
-                    })
-                    .fail(function(xhr, status, error) {
-                        console.error('Error loading provider for delete:', error);
-                        alert('Lỗi tải dữ liệu: ' + error);
-                    });
-                });
-                
-                // Toggle status
-                $('.toggle-status').on('click', function() {
-                    const providerId = $(this).data('id');
-                    const currentStatus = $(this).data('status');
-                    
-                    console.log('Toggle status clicked for provider ID:', providerId);
-                    
-                    // Fetch provider data for confirmation
-                    $.get(`/admin/getShippingProviderData/${providerId}`)
-                    .done(function(provider) {
-                        console.log('Provider data for toggle:', provider);
-                        
-                        $('#toggleStatusName').text(provider.providerName);
-                        
-                        if (currentStatus) {
-                            $('#toggleStatusMessage').html('Trạng thái hiện tại: <span class="badge badge-success">Hoạt động</span><br>Sẽ chuyển sang: <span class="badge badge-danger">Ngừng hoạt động</span>');
-                        } else {
-                            $('#toggleStatusMessage').html('Trạng thái hiện tại: <span class="badge badge-danger">Ngừng hoạt động</span><br>Sẽ chuyển sang: <span class="badge badge-success">Hoạt động</span>');
-                        }
-                        
-                        // Set form action with proper URL
-                        const actionUrl = `/admin/toggleShippingProviderStatus/${providerId}`;
-                        console.log('Setting form action to:', actionUrl);
-                        $('#toggleStatusForm').attr('action', actionUrl);
-                    })
-                    .fail(function(xhr, status, error) {
-                        console.error('Error loading provider for toggle:', error);
-                        alert('Lỗi tải dữ liệu: ' + error);
-                    });
-                });
-            });
-        </script>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
             <footer class="footer">
                 <div class="container-fluid">
                     <nav class="pull-left">
@@ -788,5 +685,236 @@
 
     <!-- Atlantis JS -->
     <script src="/assets/js/atlantis.min.js"></script>
+    
+    <!-- Custom Shipping Provider JavaScript -->
+    <script>
+        // Function to change page size
+        function changePageSize(size) {
+            const currentUrl = new URL(window.location.href);
+            currentUrl.searchParams.set('size', size);
+            currentUrl.searchParams.set('page', '0'); // Reset to first page
+            window.location.href = currentUrl.toString();
+        }
+    </script>
+    <script>
+        console.log('Shipping Provider JavaScript loaded');
+        
+        $(document).ready(function() {
+            console.log('jQuery ready - Initializing event handlers');
+            console.log('Number of .view-provider buttons:', $('.view-provider').length);
+            console.log('Number of .edit-provider buttons:', $('.edit-provider').length);
+            console.log('Number of .delete-provider buttons:', $('.delete-provider').length);
+            console.log('Number of .toggle-status buttons:', $('.toggle-status').length);
+            
+            // Test if buttons are clickable
+            $('.view-provider, .edit-provider, .delete-provider, .toggle-status').each(function(index) {
+                const className = $(this).attr('class');
+                const dataId = $(this).data('id');
+                console.log(`Button ${index}: class="${className}", data-id="${dataId}"`);
+            });
+            
+            // Function to load provider data for view modal
+            function loadViewProviderData(providerId) {
+                console.log('Loading provider data for ID:', providerId);
+                
+                const url = `/admin/getShippingProviderData/${providerId}`;
+                console.log('AJAX URL:', url);
+                
+                $.ajax({
+                    url: url,
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function(provider) {
+                        console.log('Provider data loaded:', provider);
+                        
+                        if (!provider) {
+                            console.error('Provider data is null or undefined');
+                            alert('Không tìm thấy dữ liệu nhà vận chuyển');
+                            return;
+                        }
+                        
+                        $('#view-provider-id').text(provider.providerId || 'N/A');
+                        $('#view-provider-name').text(provider.providerName || 'N/A');
+                        $('#view-provider-phone').text(provider.contactPhone || 'N/A');
+                        $('#view-provider-email').text(provider.contactEmail || 'N/A');
+                        $('#view-provider-website').text(provider.website || 'N/A');
+                        $('#view-provider-address').text(provider.address || 'N/A');
+                        
+                        // Format shipping fees
+                        const formattedFees = provider.shippingFees ? 
+                            provider.shippingFees.toLocaleString('vi-VN') + ' VNĐ' : 'N/A';
+                        $('#view-provider-fees').text(formattedFees);
+                        
+                        $('#view-provider-time').text(provider.deliveryTimeRange || 'N/A');
+                        $('#view-provider-desc').text(provider.description || 'Không có mô tả');
+                        
+                        // Set status badge
+                        $('#view-provider-status-badge').html(provider.status ? 
+                            '<span class="badge badge-success">Hoạt động</span>' : 
+                            '<span class="badge badge-danger">Ngừng hoạt động</span>');
+                        
+                        // Show logo
+                        if (provider.logo) {
+                            $('#view-provider-logo').attr('src', `/images/${provider.logo}`).show();
+                            $('#view-provider-no-logo').hide();
+                        } else {
+                            $('#view-provider-logo').hide();
+                            $('#view-provider-no-logo').show();
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('AJAX Error:', {
+                            status: status,
+                            error: error,
+                            xhr: xhr,
+                            responseText: xhr.responseText
+                        });
+                        alert('Lỗi tải dữ liệu: ' + error + '\nStatus: ' + xhr.status);
+                    }
+                });
+            }
+            
+            // Edit provider - use event delegation
+            $(document).on('click', '.edit-provider', function(e) {
+                e.preventDefault();
+                const providerId = $(this).data('id');
+                console.log('Edit provider clicked, ID:', providerId);
+                
+                if (!providerId) {
+                    console.error('No provider ID found for edit!');
+                    alert('Không tìm thấy ID nhà vận chuyển');
+                    return;
+                }
+                
+                // Fetch provider data
+                $.ajax({
+                    url: `/admin/getShippingProviderData/${providerId}`,
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function(provider) {
+                        console.log('Edit provider data loaded:', provider);
+                        
+                        $('#edit-provider-id').val(provider.providerId);
+                        $('#edit-provider-name').val(provider.providerName);
+                        $('#edit-provider-phone').val(provider.contactPhone);
+                        $('#edit-provider-email').val(provider.contactEmail);
+                        $('#edit-provider-website').val(provider.website);
+                        $('#edit-provider-address').val(provider.address);
+                        $('#edit-provider-fees').val(provider.shippingFees);
+                        $('#edit-provider-time').val(provider.deliveryTimeRange);
+                        $('#edit-provider-status').val(provider.status.toString());
+                        $('#edit-provider-desc').val(provider.description);
+                        
+                        // Show current logo
+                        const logoPreview = $('#edit-provider-logo-preview');
+                        if (provider.logo) {
+                            logoPreview.attr('src', `/images/${provider.logo}`).show();
+                            $('#edit-provider-no-logo').hide();
+                        } else {
+                            logoPreview.hide();
+                            $('#edit-provider-no-logo').show();
+                        }
+                        
+                        // Show modal
+                        $('#editProviderModal').modal('show');
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error loading provider for edit:', error);
+                        alert('Lỗi tải dữ liệu: ' + error);
+                    }
+                });
+            });
+            
+            // View provider - use event delegation and load data immediately
+            $(document).on('click', '.view-provider', function(e) {
+                e.preventDefault();
+                const providerId = $(this).data('id');
+                console.log('View provider clicked, ID:', providerId);
+                console.log('Button element:', this);
+                console.log('All data attributes:', $(this).data());
+                
+                // Load data immediately
+                if (providerId) {
+                    loadViewProviderData(providerId);
+                    // Show modal manually
+                    $('#viewProviderModal').modal('show');
+                } else {
+                    console.error('No provider ID found!');
+                    alert('Không tìm thấy ID nhà vận chuyển');
+                }
+            });
+            
+            // Delete provider - use event delegation
+            $(document).on('click', '.delete-provider', function(e) {
+                e.preventDefault();
+                const providerId = $(this).data('id');
+                const providerName = $(this).data('name');
+                
+                console.log('Delete provider clicked for ID:', providerId);
+                
+                if (!providerId) {
+                    console.error('No provider ID found for delete!');
+                    alert('Không tìm thấy ID nhà vận chuyển');
+                    return;
+                }
+                
+                // Set provider name directly if available
+                if (providerName) {
+                    $('#delete-provider-name').text(providerName);
+                }
+                
+                // Set form action
+                const actionUrl = `/admin/deleteShippingProvider/${providerId}`;
+                $('#deleteProviderForm').attr('action', actionUrl);
+                
+                // Show modal
+                $('#deleteProviderModal').modal('show');
+            });
+            
+            // Toggle status - use event delegation
+            $(document).on('click', '.toggle-status', function(e) {
+                e.preventDefault();
+                const providerId = $(this).data('id');
+                const currentStatus = $(this).data('status');
+                
+                console.log('Toggle status clicked for provider ID:', providerId, 'Current status:', currentStatus);
+                
+                if (!providerId) {
+                    console.error('No provider ID found for toggle!');
+                    alert('Không tìm thấy ID nhà vận chuyển');
+                    return;
+                }
+                
+                // Fetch provider data for confirmation
+                $.ajax({
+                    url: `/admin/getShippingProviderData/${providerId}`,
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function(provider) {
+                        console.log('Provider data for toggle:', provider);
+                        
+                        $('#toggleStatusName').text(provider.providerName);
+                        
+                        if (currentStatus) {
+                            $('#toggleStatusMessage').html('Trạng thái hiện tại: <span class="badge badge-success">Hoạt động</span><br>Sẽ chuyển sang: <span class="badge badge-danger">Ngừng hoạt động</span>');
+                        } else {
+                            $('#toggleStatusMessage').html('Trạng thái hiện tại: <span class="badge badge-danger">Ngừng hoạt động</span><br>Sẽ chuyển sang: <span class="badge badge-success">Hoạt động</span>');
+                        }
+                        
+                        // Set form action
+                        const actionUrl = `/admin/toggleShippingProviderStatus/${providerId}`;
+                        $('#toggleStatusForm').attr('action', actionUrl);
+                        
+                        // Show modal
+                        $('#toggleStatusModal').modal('show');
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error loading provider for toggle:', error);
+                        alert('Lỗi tải dữ liệu: ' + error);
+                    }
+                });
+            });
+        });
+    </script>
 </body>
 </html>

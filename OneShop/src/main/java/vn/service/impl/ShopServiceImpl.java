@@ -1,4 +1,4 @@
-﻿package vn.service.impl;
+package vn.service.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -173,6 +173,4 @@ public class ShopServiceImpl implements ShopService {
         return candidate;
     }
 }
-
-
 
