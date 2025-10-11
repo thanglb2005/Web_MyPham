@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chi tiết khuyến mãi - OneShop Admin</title>
+
+    <!-- CSS Libraries -->
+    <link rel="stylesheet" href="/assets/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="/assets/css/atlantis.min.css" />
+    <link rel="stylesheet" href="/fonts/fontawesome/fontawesome.min.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
+    />
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="/assets/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="/assets/css/atlantis.css" />
+    <link rel="stylesheet" href="/assets/css/demo.css" />
+    <link rel="stylesheet" href="/assets/css/fonts.min.css" />
+    <link rel="stylesheet" href="/assets/css/atlantis.min.css" />
+    <link rel="stylesheet" href="/css/admin-fonts.css" />
+
+    <style>
+      /* Fixed Sidebar */
+      .sidebar {
+        position: fixed !important;
+        top: 60px;
+        left: 0;
+        bottom: 0;
+        z-index: 1028;
+        width: 250px;
+        background: white !important;
+        border-right: 1px solid #e9ecef;
+        margin: 0;
+        padding: 0;
+      }
+
+      /* Main Content Adjustment */
+      .main-panel {
+        margin-top: 60px !important;
+        margin-left: 250px !important;
+        padding: 0;
+        margin-right: 0;
+      }
+
+      .content {
+        padding: 0;
+        margin: 0;
+        position: relative;
+        top: 0;
+      }
+
+      .page-inner {
+        padding: 20px;
+        margin: 0;
+      }
+
+      .page-header {
+        padding: 15px 20px;
+        margin: 0;
+        background: white;
+        border-bottom: 1px solid #e9ecef;
+        position: relative;
+        top: 0;
+      }
+
+      .page-title {
+        color: #333;
+        font-size: 1.8rem;
+        margin: 0;
+        font-weight: 600;
+      }
+
+      /* Detail Container */
+      .detail-container {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+      }
+
+      .detail-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 25px 30px;
+        border: none;
+      }
+
+      .detail-header h5 {
+        margin: 0;
+        font-weight: 600;
+        font-size: 1.3rem;
+      }
+
+      .detail-header i {
+        margin-right: 10px;
+        font-size: 1.2rem;
+      }
+
+      .detail-body {
+        padding: 30px;
+      }
+
+      /* Info Cards */
+      .info-card {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 20px;
+        border-left: 4px solid #007bff;
+      }
+
+      .info-card h6 {
+        color: #495057;
+        font-weight: 600;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+      }
+
+      .info-card h6 i {
+        margin-right: 8px;
+        color: #007bff;
+      }
+
+      .info-card p {
+        color: #6c757d;
+        margin: 0;
+        font-size: 14px;
+      }
+
+      .info-card .value {
+        color: #333;
+        font-weight: 600;
+        font-size: 16px;
+      }
+
+      /* Status Badge */
+      .status-badge {
+        display: inline-block;
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 14px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .status-active {
+        background: linear-gradient(135deg, #28a745, #1e7e34);
+        color: white;
+      }
+
+      .status-inactive {
+        background: linear-gradient(135deg, #dc3545, #c82333);
+        color: white;
+      }
+
+      .status-expired {
+        background: linear-gradient(135deg, #6c757d, #545b62);
+        color: white;
+      }
+
+      .status-fully-used {
+        background: linear-gradient(135deg, #ffc107, #e0a800);
+        color: #212529;
+      }
+
+      /* Progress Bar */
+      .progress-container {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 20px;
+      }
+
+      .progress {
+        height: 12px;
+        background-color: #e9ecef;
+        border-radius: 6px;
+        overflow: hidden;
+        margin-bottom: 10px;
+      }
+
+      .progress-bar {
+        background: linear-gradient(135deg, #007bff, #0056b3);
+        border-radius: 6px;
+        transition: width 0.3s ease;
+      }
+
+      .progress-text {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 14px;
+        color: #6c757d;
+      }
+
+      .progress-percentage {
+        font-weight: 600;
+        color: #007bff;
+      }
+
+      /* Action Buttons */
+      .action-buttons {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      .btn {
+        border-radius: 8px;
+        font-weight: 500;
+        padding: 10px 20px;
+        transition: all 0.3s ease;
+        border: none;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .btn-primary {
+        background: linear-gradient(135deg, #007bff, #0056b3);
+        color: white;
+      }
+
+      .btn-primary:hover {
+        background: linear-gradient(135deg, #0056b3, #004085);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 123, 255, 0.4);
+        color: white;
+      }
+
+      .btn-warning {
+        background: linear-gradient(135deg, #ffc107, #e0a800);
+        color: #212529;
+      }
+
+      .btn-warning:hover {
+        background: linear-gradient(135deg, #e0a800, #d39e00);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(255, 193, 7, 0.4);
+        color: #212529;
+      }
+
+      .btn-danger {
+        background: linear-gradient(135deg, #dc3545, #c82333);
+        color: white;
+      }
+
+      .btn-danger:hover {
+        background: linear-gradient(135deg, #c82333, #bd2130);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(220, 53, 69, 0.4);
+        color: white;
+      }
+
+      .btn-secondary {
+        background: linear-gradient(135deg, #6c757d, #545b62);
+        color: white;
+      }
+
+      .btn-secondary:hover {
+        background: linear-gradient(135deg, #545b62, #495057);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(108, 117, 125, 0.4);
+        color: white;
+      }
+
+      /* Statistics Grid */
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+      }
+
+      .stat-card {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        text-align: center;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        border-top: 4px solid #007bff;
+      }
+
+      .stat-card h6 {
+        color: #6c757d;
+        font-size: 14px;
+        margin-bottom: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .stat-card .stat-value {
+        color: #333;
+        font-size: 24px;
+        font-weight: 700;
+        margin-bottom: 5px;
+      }
+
+      .stat-card .stat-icon {
+        font-size: 2rem;
+        color: #007bff;
+        margin-bottom: 10px;
+      }
+
+      /* Responsive */
+      @media (max-width: 768px) {
+        .page-inner {
+          padding: 10px;
+        }
+
+        .detail-body {
+          padding: 20px;
+        }
+
+        .action-buttons {
+          flex-direction: column;
+        }
+
+        .btn {
+          justify-content: center;
+        }
+
+        .stats-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      /* Animation */
+      .fade-in {
+        animation: fadeIn 0.5s ease-in;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrapper">
+      <!-- Header -->
+      <th:block th:replace="~{admin/fragments/header :: header}"></th:block>
+
+      <!-- Navbar -->
+      <th:block th:replace="~{admin/fragments/navbar :: navbar}"></th:block>
+
+      <div class="main-panel">
+        <div class="content">
+          <!-- Page Header -->
+          <div class="page-header">
+            <h2 class="page-title">Chi tiết khuyến mãi</h2>
+          </div>
+
+          <div class="page-inner">
+            <!-- Content Section -->
+            <div class="content-section">
+              <!-- Detail Container -->
+              <div class="detail-container">
+                <div class="detail-header">
+                  <h5 class="mb-0">
+                    <i class="fas fa-tags"></i>
+                    <span th:text="${promotion.promotionName}"></span>
+                  </h5>
+                </div>
+                <div class="detail-body">
+                  <!-- Statistics Grid -->
+                  <div class="stats-grid">
+                    <div class="stat-card fade-in">
+                      <div class="stat-icon">
+                        <i class="fas fa-users"></i>
+                      </div>
+                      <div class="stat-value" th:text="${promotion.usedCount}">0</div>
+                      <div class="stat-label">Đã sử dụng</div>
+                    </div>
+                    <div class="stat-card fade-in">
+                      <div class="stat-icon">
+                        <i class="fas fa-limit"></i>
+                      </div>
+                      <div class="stat-value" th:text="${promotion.usageLimit}">100</div>
+                      <div class="stat-label">Giới hạn</div>
+                    </div>
+                    <div class="stat-card fade-in">
+                      <div class="stat-icon">
+                        <i class="fas fa-percentage"></i>
+                      </div>
+                      <div class="stat-value" th:text="${#numbers.formatDecimal((promotion.usedCount * 100) / promotion.usageLimit, 1, 'DEFAULT', 0, 'DEFAULT')}">0</div>
+                      <div class="stat-label">% sử dụng</div>
+                    </div>
+                    <div class="stat-card fade-in">
+                      <div class="stat-icon">
+                        <i class="fas fa-gift"></i>
+                      </div>
+                      <div class="stat-value" th:text="${#numbers.formatDecimal(promotion.discountValue, 0, 'COMMA', 0, 'POINT')}">0</div>
+                      <div class="stat-label">Giá trị giảm</div>
+                    </div>
+                  </div>
+
+                  <!-- Progress Bar -->
+                  <div class="progress-container fade-in">
+                    <h6><i class="fas fa-chart-line"></i> Tiến độ sử dụng</h6>
+                    <div class="progress">
+                      <div class="progress-bar" 
+                           th:style="'width: ' + ${(promotion.usedCount * 100) / promotion.usageLimit} + '%'">
+                      </div>
+                    </div>
+                    <div class="progress-text">
+                      <span th:text="${promotion.usedCount} + ' / ' + ${promotion.usageLimit} + ' lần sử dụng'">0 / 100 lần sử dụng</span>
+                      <span class="progress-percentage" th:text="${#numbers.formatDecimal((promotion.usedCount * 100) / promotion.usageLimit, 1, 'DEFAULT', 0, 'DEFAULT')} + '%'">0%</span>
+                    </div>
+                  </div>
+
+                  <!-- Information Cards -->
+                  <div class="row">
+                    <div class="col-md-6">
+                      <div class="info-card fade-in">
+                        <h6><i class="fas fa-info-circle"></i> Thông tin cơ bản</h6>
+                        <p><strong>Mã khuyến mãi:</strong> <span class="value" th:text="${promotion.promotionCode}">CODE123</span></p>
+                        <p><strong>Loại khuyến mãi:</strong> <span class="value" th:text="${promotion.promotionType.name().replace('_', ' ')}">Giảm % sản phẩm</span></p>
+                        <p><strong>Trạng thái:</strong> 
+                          <span class="status-badge" 
+                                th:class="${promotion.isActive} ? 'status-active' : 'status-inactive'"
+                                th:text="${promotion.isActive} ? 'Hoạt động' : 'Tạm dừng'">Hoạt động</span>
+                        </p>
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="info-card fade-in">
+                        <h6><i class="fas fa-calendar"></i> Thời gian</h6>
+                        <p><strong>Ngày bắt đầu:</strong> <span class="value" th:text="${#temporals.format(promotion.startDate, 'dd/MM/yyyy HH:mm')}">01/01/2024 00:00</span></p>
+                        <p><strong>Ngày kết thúc:</strong> <span class="value" th:text="${#temporals.format(promotion.endDate, 'dd/MM/yyyy HH:mm')}">31/12/2024 23:59</span></p>
+                        <p><strong>Ngày tạo:</strong> <span class="value" th:text="${#temporals.format(promotion.createdAt, 'dd/MM/yyyy HH:mm')}">01/01/2024 00:00</span></p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="row">
+                    <div class="col-md-6">
+                      <div class="info-card fade-in">
+                        <h6><i class="fas fa-money-bill-wave"></i> Điều kiện áp dụng</h6>
+                        <p><strong>Đơn hàng tối thiểu:</strong> <span class="value" th:text="${#numbers.formatDecimal(promotion.minimumOrderAmount, 0, 'COMMA', 0, 'POINT')} + ' đ'">500,000 đ</span></p>
+                        <p><strong>Giảm tối đa:</strong> <span class="value" th:text="${#numbers.formatDecimal(promotion.maximumDiscountAmount, 0, 'COMMA', 0, 'POINT')} + ' đ'">200,000 đ</span></p>
+                        <p><strong>Giá trị giảm:</strong> 
+                          <span th:if="${promotion.promotionType.name() == 'PRODUCT_PERCENTAGE'}">
+                            <span class="value" th:text="${promotion.discountValue} + '%'">20%</span>
+                          </span>
+                          <span th:if="${promotion.promotionType.name() != 'PRODUCT_PERCENTAGE'}">
+                            <span class="value" th:text="${#numbers.formatDecimal(promotion.discountValue, 0, 'COMMA', 0, 'POINT')} + ' đ'">100,000 đ</span>
+                          </span>
+                        </p>
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="info-card fade-in">
+                        <h6><i class="fas fa-align-left"></i> Mô tả</h6>
+                        <p th:text="${promotion.description != null ? promotion.description : 'Không có mô tả'}">Mô tả khuyến mãi...</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Action Buttons -->
+                  <div class="action-buttons fade-in">
+                    <a th:href="@{/admin/promotions}" class="btn btn-secondary">
+                      <i class="fas fa-arrow-left"></i> Quay lại
+                    </a>
+                    <a th:href="@{/admin/promotions/edit/{id}(id=${promotion.promotionId})}" class="btn btn-warning">
+                      <i class="fas fa-edit"></i> Chỉnh sửa
+                    </a>
+                    <a th:href="@{/admin/promotions/toggle/{id}(id=${promotion.promotionId})}" 
+                       class="btn" 
+                       th:class="${promotion.isActive} ? 'btn-secondary' : 'btn-primary'"
+                       th:text="${promotion.isActive} ? 'Tạm dừng' : 'Kích hoạt'">
+                      <i th:class="${promotion.isActive} ? 'fas fa-pause' : 'fas fa-play'"></i>
+                    </a>
+                    <a th:href="@{/admin/promotions/delete/{id}(id=${promotion.promotionId})}" 
+                       class="btn btn-danger"
+                       onclick="return confirm('Bạn có chắc chắn muốn xóa khuyến mãi này?')">
+                      <i class="fas fa-trash"></i> Xóa
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/assets/js/core/jquery.3.2.1.min.js"></script>
+    <script src="/assets/js/core/popper.min.js"></script>
+    <script src="/assets/js/core/bootstrap.min.js"></script>
+    <script src="/assets/js/plugin/jquery-ui-1.12.1.custom/jquery-ui.min.js"></script>
+    <script src="/assets/js/plugin/jquery-ui-touch-punch/jquery.ui.touch-punch.min.js"></script>
+    <script src="/assets/js/plugin/jquery-scrollbar/jquery.scrollbar.min.js"></script>
+    <script src="/assets/js/plugin/chart.js/chart.min.js"></script>
+    <script src="/assets/js/plugin/jquery.sparkline/jquery.sparkline.min.js"></script>
+    <script src="/assets/js/atlantis.min.js"></script>
+    <script src="/js/main.js"></script>
+
+    <script>
+      // Kế thừa script từ admin chính - Đảm bảo function global
+      window.toggleSidebar = function() {
+        const wrapper = document.querySelector(".wrapper");
+        const minibutton = document.querySelector(".toggle-sidebar");
+
+        if (wrapper.classList.contains("sidebar_minimize")) {
+          // Expand sidebar
+          wrapper.classList.remove("sidebar_minimize");
+          minibutton.classList.remove("toggled");
+          minibutton.innerHTML = '<i class="icon-menu"></i>';
+        } else {
+          // Collapse sidebar
+          wrapper.classList.add("sidebar_minimize");
+          minibutton.classList.add("toggled");
+          minibutton.innerHTML = '<i class="icon-options-vertical"></i>';
+        }
+        // Trigger resize event
+        window.dispatchEvent(new Event("resize"));
+      };
+
+      // Đảm bảo Bootstrap collapse hoạt động cho menu - kế thừa từ admin/index.html
+      $(document).ready(function() {
+        console.log('Promotion detail page loaded');
+        
+        // Khởi tạo collapse cho menu - giống admin chính
+        $('[data-toggle="collapse"]').on('click', function(e) {
+          e.preventDefault();
+          var target = $(this).attr('href');
+          console.log('Menu clicked:', target);
+          $(target).collapse('toggle');
+        });
+
+        // Thêm class active cho menu item được click - giống admin chính
+        $('.nav-item a[data-toggle="collapse"]').on('click', function() {
+          $('.nav-item').removeClass('active');
+          $(this).closest('.nav-item').addClass('active');
+        });
+
+        // Đảm bảo menu mở đúng khi trang load - giống admin chính
+        $('.collapse').on('show.bs.collapse', function () {
+          $(this).siblings('.nav-item').addClass('active');
+        });
+        
+        $('.collapse').on('hide.bs.collapse', function () {
+          $(this).siblings('.nav-item').removeClass('active');
+        });
+
+        // Auto-highlight menu khi ở trang promotion detail
+        setTimeout(function() {
+          $('.nav-item a[href="#tables"]').closest('.nav-item').addClass('active');
+          $('#tables').addClass('show');
+          $('.nav-item a[href="/admin/promotions"]').addClass('active');
+          console.log('Menu auto-highlighted');
+        }, 100);
+      });
+
+      // Auto-refresh progress bar
+      document.addEventListener('DOMContentLoaded', function() {
+        const progressBar = document.querySelector('.progress-bar');
+        if (progressBar) {
+          const width = progressBar.style.width;
+          progressBar.style.width = '0%';
+          setTimeout(() => {
+            progressBar.style.width = width;
+          }, 500);
+        }
+      });
+    </script>
+  </body>
+</html>
