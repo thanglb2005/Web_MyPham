@@ -34,26 +34,6 @@
                   vững cho bạn.
                 </p>
 
-                <!-- Shop Selector -->
-                <div class="shop-selector mb-3">
-                  <label class="form-label text-white mb-2">
-                    <i class="fas fa-store me-2"></i>Chọn cửa hàng để xem sản
-                    phẩm:
-                  </label>
-                  <select
-                    id="homeShopSelector"
-                    class="form-select"
-                    onchange="filterHomeByShop()"
-                  >
-                    <option value="">Tất cả cửa hàng</option>
-                    <option
-                      th:each="shop : ${shopList}"
-                      th:value="${shop.shopId}"
-                      th:text="${shop.shopName}"
-                      th:selected="${selectedShopId != null and selectedShopId == shop.shopId}"
-                    ></option>
-                  </select>
-                </div>
 
                 <div class="banner-btn">
                   <a
@@ -565,7 +545,7 @@
     <script>
       // Shop filter function for home page
       function filterHomeByShop() {
-        const shopId = document.getElementById("homeShopSelector").value;
+        const shopId = document.getElementById("navbarShopSelector").value;
         const currentUrl = new URL(window.location.href);
 
         if (shopId) {

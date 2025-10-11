@@ -122,6 +122,23 @@
           <div class="row">
             <div class="col-lg-12">
               <div class="navbar-content">
+                <!-- Shop Selector -->
+                <div class="shop-selector-navbar mb-3">
+                  <select
+                    id="navbarShopSelector"
+                    class="form-select"
+                    onchange="filterHomeByShop()"
+                  >
+                    <option value="">Tất cả cửa hàng</option>
+                    <option
+                      th:each="shop : ${shopList}"
+                      th:value="${shop.shopId}"
+                      th:text="${shop.shopName}"
+                      th:selected="${selectedShopId != null and selectedShopId == shop.shopId}"
+                    ></option>
+                  </select>
+                </div>
+                
                 <ul class="navbar-list">
                   <li class="navbar-item">
                     <a class="navbar-link" th:href="@{/}">Trang chủ</a>
@@ -160,6 +177,51 @@
           color: #ffffff !important;
           font-size: 12px !important; /* smaller numeral only */
           font-weight: 600 !important;
+        }
+        
+        /* Shop selector in navbar styling */
+        .shop-selector-navbar {
+          background: #f8f9fa;
+          padding: 10px 15px;
+          border-radius: 8px;
+          margin-bottom: 10px;
+          border: 1px solid #e9ecef;
+        }
+        
+        .shop-selector-navbar .form-label {
+          font-size: 14px;
+          font-weight: 600;
+          margin-bottom: 8px;
+          color: #495057;
+        }
+        
+        .shop-selector-navbar .form-select {
+          border: 1px solid #ced4da;
+          border-radius: 6px;
+          padding: 8px 12px;
+          font-size: 14px;
+          background-color: #fff;
+        }
+        
+        .shop-selector-navbar .form-select:focus {
+          border-color: #0e98dd;
+          box-shadow: 0 0 0 0.2rem rgba(14, 152, 221, 0.25);
+        }
+        
+        @media (max-width: 768px) {
+          .shop-selector-navbar {
+            padding: 8px 12px;
+            margin-bottom: 8px;
+          }
+          
+          .shop-selector-navbar .form-label {
+            font-size: 13px;
+          }
+          
+          .shop-selector-navbar .form-select {
+            font-size: 13px;
+            padding: 6px 10px;
+          }
         }
       </style>
       <script src="/assets/js/plugin/sweetalert/sweetalert.min.js"></script>
