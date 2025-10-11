@@ -157,24 +157,131 @@
       </div>
     </section>
 
-    <!-- Suggest by category -->
-    <section
-      id="categories"
-      class="section suggest-part"
-      th:if="${coutnProductByCategory} != null"
-    >
+    <!-- Featured Categories -->
+    <section id="categories" class="section suggest-part">
       <div class="container">
-        <ul class="suggest-slider slider-arrow">
-          <li th:each="item : ${coutnProductByCategory}">
-            <a
-              class="suggest-card"
-              th:href="@{/productByCategory(id=${item[0]})}"
-            >
-              <img src="/assets/img/examples/product2.jpg" alt="suggest" />
-              <h5>[[${item[1]}]] <span>([[${item[2]}]] sản phẩm)</span></h5>
-            </a>
-          </li>
-        </ul>
+        <div class="row">
+          <div class="col-lg-12">
+            <div class="section-heading">
+              <h2>DANH MỤC NỔI BẬT</h2>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-12">
+            <div class="category-slider slider-arrow slider-dots">
+              <!-- ID 1 - Son môi -->
+              <div class="category-item">
+                <a href="/productByCategory?id=1" class="category-link">
+                  <div class="category-icon">
+                    <img src="/loadImage?imageName=icon_sonmoi.png" alt="Son môi" />
+                  </div>
+                  <span class="category-name">Son môi</span>
+                  <span class="category-count">(10 sản phẩm)</span>
+                </a>
+              </div>
+              
+              <!-- ID 2 - Kem dưỡng da -->
+              <div class="category-item">
+                <a href="/productByCategory?id=2" class="category-link">
+                  <div class="category-icon">
+                    <img src="/loadImage?imageName=icon_kemduongda.png" alt="Kem dưỡng da" />
+                  </div>
+                  <span class="category-name">Kem dưỡng da</span>
+                  <span class="category-count">(10 sản phẩm)</span>
+                </a>
+              </div>
+              
+              <!-- ID 3 - Nước hoa -->
+              <div class="category-item">
+                <a href="/productByCategory?id=3" class="category-link">
+                  <div class="category-icon">
+                    <img src="/loadImage?imageName=icon_nuochoa.png" alt="Nước hoa" />
+                  </div>
+                  <span class="category-name">Nước hoa</span>
+                  <span class="category-count">(10 sản phẩm)</span>
+                </a>
+              </div>
+              
+              <!-- ID 4 - Sữa rửa mặt -->
+              <div class="category-item">
+                <a href="/productByCategory?id=4" class="category-link">
+                  <div class="category-icon">
+                    <img src="/loadImage?imageName=icon_suaruamat.png" alt="Sữa rửa mặt" />
+                  </div>
+                  <span class="category-name">Sữa rửa mặt</span>
+                  <span class="category-count">(10 sản phẩm)</span>
+                </a>
+              </div>
+              
+              <!-- ID 5 - Toner -->
+              <div class="category-item">
+                <a href="/productByCategory?id=5" class="category-link">
+                  <div class="category-icon">
+                    <img src="/loadImage?imageName=icon_toner.png" alt="Toner" />
+                  </div>
+                  <span class="category-name">Toner</span>
+                  <span class="category-count">(10 sản phẩm)</span>
+                </a>
+              </div>
+              
+              <!-- ID 6 - Mặt nạ -->
+              <div class="category-item">
+                <a href="/productByCategory?id=6" class="category-link">
+                  <div class="category-icon">
+                    <img src="/loadImage?imageName=icon_matna.png" alt="Mặt nạ" />
+                  </div>
+                  <span class="category-name">Mặt nạ</span>
+                  <span class="category-count">(10 sản phẩm)</span>
+                </a>
+              </div>
+              
+              <!-- ID 7 - Kem chống nắng -->
+              <div class="category-item">
+                <a href="/productByCategory?id=7" class="category-link">
+                  <div class="category-icon">
+                    <img src="/loadImage?imageName=icon_kemchongnang.png" alt="Kem chống nắng" />
+                  </div>
+                  <span class="category-name">Kem chống nắng</span>
+                  <span class="category-count">(10 sản phẩm)</span>
+                </a>
+              </div>
+              
+              <!-- ID 8 - Phấn phủ -->
+              <div class="category-item">
+                <a href="/productByCategory?id=8" class="category-link">
+                  <div class="category-icon">
+                    <img src="/loadImage?imageName=icon_phanphu.png" alt="Phấn phủ" />
+                  </div>
+                  <span class="category-name">Phấn phủ</span>
+                  <span class="category-count">(10 sản phẩm)</span>
+                </a>
+              </div>
+              
+              <!-- ID 9 - Tẩy tế bào chết -->
+              <div class="category-item">
+                <a href="/productByCategory?id=9" class="category-link">
+                  <div class="category-icon">
+                    <img src="/loadImage?imageName=icon_taytebaochet.png" alt="Tẩy tế bào chết" />
+                  </div>
+                  <span class="category-name">Tẩy tế bào chết</span>
+                  <span class="category-count">(10 sản phẩm)</span>
+                </a>
+              </div>
+              
+              <!-- ID 10 - Serum dưỡng da -->
+              <div class="category-item">
+                <a href="/productByCategory?id=10" class="category-link">
+                  <div class="category-icon">
+                    <img src="/loadImage?imageName=icon_serumduongda.png" alt="Serum dưỡng da" />
+                  </div>
+                  <span class="category-name">Serum dưỡng da</span>
+                  <span class="category-count">(10 sản phẩm)</span>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -790,6 +897,207 @@
         color: #667eea;
         transition: color 0.3s ease;
       }
+
+      /* Category slider styling */
+      .category-slider {
+        padding: 20px 0;
+      }
+      
+      .category-slider .slick-slide {
+        padding: 0 10px;
+      }
+      
+      .category-item {
+        width: 300px;
+        height: 300px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto;
+      }
+      
+      .category-link {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        color: #333;
+        transition: all 0.3s ease;
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        background: #fff;
+        padding: 30px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      }
+      
+      .category-link:hover {
+        transform: translateY(-5px) scale(1.05);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+      }
+      
+      .category-icon {
+        width: 160px;
+        height: 160px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 20px;
+      }
+      
+      .category-icon img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+      }
+      
+      .category-name {
+        font-size: 24px;
+        font-weight: 600;
+        text-align: center;
+        color: #333;
+        line-height: 1.2;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 5px;
+      }
+      
+      .category-count {
+        font-size: 16px;
+        font-weight: 400;
+        text-align: center;
+        color: #666;
+        line-height: 1.2;
+        font-style: italic;
+      }
+      
+      /* Responsive design for category slider */
+      @media (max-width: 1200px) {
+        .category-item {
+          width: 260px;
+          height: 260px;
+        }
+        
+        .category-icon {
+          width: 140px;
+          height: 140px;
+        }
+        
+        .category-name {
+          font-size: 20px;
+        }
+        
+        .category-count {
+          font-size: 14px;
+        }
+      }
+      
+      @media (max-width: 768px) {
+        .category-slider {
+          padding: 15px 0;
+        }
+        
+        .category-item {
+          width: 240px;
+          height: 240px;
+        }
+        
+        .category-icon {
+          width: 120px;
+          height: 120px;
+        }
+        
+        .category-name {
+          font-size: 18px;
+        }
+        
+        .category-count {
+          font-size: 13px;
+        }
+      }
+      
+      @media (max-width: 480px) {
+        .category-slider {
+          padding: 10px 0;
+        }
+        
+        .category-item {
+          width: 200px;
+          height: 200px;
+        }
+        
+        .category-icon {
+          width: 100px;
+          height: 100px;
+        }
+        
+        .category-name {
+          font-size: 16px;
+        }
+        
+        .category-count {
+          font-size: 12px;
+        }
+      }
+
+      /* Slick slider custom styling for categories */
+      .category-slider .slick-prev,
+      .category-slider .slick-next {
+        z-index: 10;
+        width: 60px;
+        height: 60px;
+        background: rgba(102, 126, 234, 0.9);
+        border-radius: 50%;
+        border: none;
+        color: #fff;
+        font-size: 20px;
+        transition: all 0.3s ease;
+      }
+      
+      .category-slider .slick-prev:hover,
+      .category-slider .slick-next:hover {
+        background: rgba(102, 126, 234, 1);
+        transform: scale(1.1);
+      }
+      
+      .category-slider .slick-prev {
+        left: -30px;
+      }
+      
+      .category-slider .slick-next {
+        right: -30px;
+      }
+      
+      .category-slider .slick-dots {
+        bottom: -50px;
+        text-align: center;
+      }
+      
+      .category-slider .slick-dots li {
+        display: inline-block;
+        margin: 0 5px;
+      }
+      
+      .category-slider .slick-dots li button {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        border: none;
+        background: #ddd;
+        transition: all 0.3s ease;
+      }
+      
+      .category-slider .slick-dots li button:before {
+        display: none;
+      }
+      
+      .category-slider .slick-dots li.slick-active button {
+        background: #667eea;
+        transform: scale(1.2);
+      }
     </style>
 
     <script>
@@ -862,6 +1170,46 @@
             }
           });
         });
+
+        // Initialize category slider
+        if (typeof $ !== 'undefined' && $.fn.slick) {
+          $('.category-slider').slick({
+            infinite: true,
+            slidesToShow: 3,
+            slidesToScroll: 1,
+            autoplay: true,
+            autoplaySpeed: 3000,
+            speed: 800,
+            arrows: true,
+            dots: true,
+            pauseOnHover: true,
+            centerMode: false,
+            variableWidth: false,
+            responsive: [
+              {
+                breakpoint: 1200,
+                settings: {
+                  slidesToShow: 2,
+                  slidesToScroll: 1
+                }
+              },
+              {
+                breakpoint: 768,
+                settings: {
+                  slidesToShow: 2,
+                  slidesToScroll: 1
+                }
+              },
+              {
+                breakpoint: 480,
+                settings: {
+                  slidesToShow: 1,
+                  slidesToScroll: 1
+                }
+              }
+            ]
+          });
+        }
       });
     </script>
 =======
