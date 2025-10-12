@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Vendor Functions</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="mb-0">
+                            <i class="fas fa-store me-2"></i>
+                            Test Vendor Functions
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Đây là trang test để kiểm tra các chức năng quản lý đơn hàng của vendor.
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <a href="/vendor/home" class="btn btn-primary btn-lg w-100">
+                                    <i class="fas fa-tachometer-alt me-2"></i>
+                                    Vendor Dashboard
+                                </a>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <a href="/vendor/orders" class="btn btn-success btn-lg w-100">
+                                    <i class="fas fa-clipboard-list me-2"></i>
+                                    Quản lý đơn hàng
+                                </a>
+                            </div>
+                        </div>
+                        
+                        <hr>
+                        
+                        <h5>Chức năng đã implement:</h5>
+                        <ul class="list-group">
+                            <li class="list-group-item">
+                                <i class="fas fa-check text-success me-2"></i>
+                                VendorOrderController - Quản lý đơn hàng
+                            </li>
+                            <li class="list-group-item">
+                                <i class="fas fa-check text-success me-2"></i>
+                                OrderRepository - Query methods cho vendor
+                            </li>
+                            <li class="list-group-item">
+                                <i class="fas fa-check text-success me-2"></i>
+                                OrderService - Service methods cho vendor
+                            </li>
+                            <li class="list-group-item">
+                                <i class="fas fa-check text-success me-2"></i>
+                                ShopService - Tìm shop IDs của vendor
+                            </li>
+                            <li class="list-group-item">
+                                <i class="fas fa-check text-success me-2"></i>
+                                UserUtils - Utility functions
+                            </li>
+                            <li class="list-group-item">
+                                <i class="fas fa-check text-success me-2"></i>
+                                Templates - Layout và trang quản lý
+                            </li>
+                        </ul>
+                        
+                        <hr>
+                        
+                        <h5>Trạng thái đơn hàng được hỗ trợ:</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <span class="badge bg-info me-2">NEW</span>
+                                <span class="badge bg-primary me-2">CONFIRMED</span>
+                                <span class="badge bg-warning me-2">SHIPPING</span>
+                            </div>
+                            <div class="col-md-6">
+                                <span class="badge bg-success me-2">DELIVERED</span>
+                                <span class="badge bg-danger me-2">CANCELLED</span>
+                                <span class="badge bg-secondary me-2">RETURNED_REFUNDED</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

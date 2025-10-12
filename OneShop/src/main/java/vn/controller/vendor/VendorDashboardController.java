@@ -75,7 +75,8 @@ public class VendorDashboardController {
 
         Long shopIdFinal = shop.getShopId();
         long productCount = productService.countByShopId(shopIdFinal);
-        Long pendingOrders = orderDetailRepository.countDistinctOrdersByShopAndStatus(shopIdFinal, Order.OrderStatus.PENDING);
+        long pendingOrders = defaultZero(orderDetailRepository.countDistinctOrdersByShopAndStatus(shopIdFinal, Order.OrderStatus.NEW))
+                + defaultZero(orderDetailRepository.countDistinctOrdersByShopAndStatus(shopIdFinal, Order.OrderStatus.PENDING));
         Long confirmedOrders = orderDetailRepository.countDistinctOrdersByShopAndStatus(shopIdFinal, Order.OrderStatus.CONFIRMED);
         Long shippingOrders = orderDetailRepository.countDistinctOrdersByShopAndStatus(shopIdFinal, Order.OrderStatus.SHIPPING);
         Long deliveredOrders = orderDetailRepository.countDistinctOrdersByShopAndStatus(shopIdFinal, Order.OrderStatus.DELIVERED);
@@ -92,7 +93,7 @@ public class VendorDashboardController {
         model.addAttribute("products", products);
         model.addAttribute("shopStatus", shop.getStatus());
         model.addAttribute("productCount", productCount);
-        model.addAttribute("pendingOrders", defaultZero(pendingOrders));
+        model.addAttribute("pendingOrders", pendingOrders);
         model.addAttribute("confirmedOrders", defaultZero(confirmedOrders));
         model.addAttribute("shippingOrders", defaultZero(shippingOrders));
         model.addAttribute("deliveredOrders", defaultZero(deliveredOrders));
@@ -162,3 +163,4 @@ public class VendorDashboardController {
         return isVendor ? user : null;
     }
 }
+

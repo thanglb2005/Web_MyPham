@@ -172,5 +172,13 @@ public class ShopServiceImpl implements ShopService {
         }
         return candidate;
     }
+
+    @Override
+    public List<Long> findShopIdsByVendor(User vendor) {
+        if (vendor == null) {
+            return List.of();
+        }
+        return shopRepository.findShopIdsByVendor(vendor);
+    }
 }
 

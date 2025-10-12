@@ -6,7 +6,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import vn.dto.VendorPromotionForm;
 import vn.entity.Promotion;
+import vn.entity.User;
 import vn.repository.PromotionRepository;
 import vn.service.PromotionService;
 
@@ -38,6 +40,7 @@ public class PromotionServiceImpl implements PromotionService {
         return promotionRepository.findById(id);
     }
     
+    
     @Override
     public Optional<Promotion> getPromotionByCode(String code) {
         return promotionRepository.findByPromotionCode(code);
@@ -56,6 +59,27 @@ public class PromotionServiceImpl implements PromotionService {
     @Override
     public Promotion updatePromotion(Promotion promotion) {
         return promotionRepository.save(promotion);
+    }
+    
+    @Override
+    public Promotion updatePromotion(Long id, VendorPromotionForm form, User actor) {
+        Promotion existing = promotionRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Promotion not found with id: " + id));
+        
+        // Update fields from form
+        existing.setPromotionName(form.getPromotionName());
+        existing.setDescription(form.getDescription());
+        existing.setPromotionCode(form.getPromotionCode());
+        existing.setPromotionType(form.getPromotionType());
+        existing.setDiscountValue(form.getDiscountValue());
+        existing.setMinimumOrderAmount(form.getMinimumOrderAmount());
+        existing.setMaximumDiscountAmount(form.getMaximumDiscountAmount());
+        existing.setUsageLimit(form.getUsageLimit());
+        existing.setStartDate(form.getStartDate());
+        existing.setEndDate(form.getEndDate());
+        existing.setIsActive(form.getIsActive());
+        
+        return promotionRepository.save(existing);
     }
     
     // Search and filter operations

@@ -2,7 +2,9 @@ package vn.service;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import vn.dto.VendorPromotionForm;
 import vn.entity.Promotion;
+import vn.entity.User;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -18,6 +20,7 @@ public interface PromotionService {
     Promotion savePromotion(Promotion promotion);
     void deletePromotion(Long id);
     Promotion updatePromotion(Promotion promotion);
+    Promotion updatePromotion(Long id, VendorPromotionForm form, User actor);
     
     // Search and filter operations
     Page<Promotion> searchPromotionsByName(String name, Pageable pageable);

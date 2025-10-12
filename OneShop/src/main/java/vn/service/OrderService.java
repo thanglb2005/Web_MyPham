@@ -1,11 +1,15 @@
 package vn.service;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import vn.entity.CartItem;
 import vn.entity.Order;
 import vn.entity.User;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 public interface OrderService {
     Order createOrder(User user, String customerName, String customerEmail, String customerPhone,
@@ -19,4 +23,41 @@ public interface OrderService {
     void updateOrderStatus(Long orderId, Order.OrderStatus newStatus);
 
     void assignShipper(Long orderId, User shipper);
+
+    // ===== VENDOR ORDER MANAGEMENT METHODS =====
+
+    /**
+     * Find orders by shop IDs with status filter
+     */
+    Page<Order> findByShopIdInAndStatus(List<Long> shopIds, Order.OrderStatus status, Pageable pageable);
+
+    /**
+     * Find orders by shop IDs with search term
+     */
+    Page<Order> findByShopIdInAndOrderIdContaining(List<Long> shopIds, String search, Pageable pageable);
+
+    /**
+     * Find orders by shop IDs with status and search term
+     */
+    Page<Order> findByShopIdInAndStatusAndOrderIdContaining(List<Long> shopIds, Order.OrderStatus status, String search, Pageable pageable);
+
+    /**
+     * Find orders by shop IDs only
+     */
+    Page<Order> findByShopIdIn(List<Long> shopIds, Pageable pageable);
+
+    /**
+     * Find order by ID and shop IDs (for vendor access control)
+     */
+    Optional<Order> findByIdAndShopIdIn(Long orderId, List<Long> shopIds);
+
+    /**
+     * Count orders by shop IDs and status
+     */
+    Long countByShopIdInAndStatus(List<Long> shopIds, Order.OrderStatus status);
+
+    /**
+     * Count orders by shop IDs
+     */
+    Long countByShopIdIn(List<Long> shopIds);
 }

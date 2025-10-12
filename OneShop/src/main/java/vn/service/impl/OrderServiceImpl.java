@@ -1,6 +1,8 @@
 package vn.service.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import vn.entity.CartItem;
@@ -49,7 +51,7 @@ public class OrderServiceImpl implements OrderService {
         order.setShippingAddress(shippingAddress);
         order.setNote(note);
         order.setPaymentMethod(paymentMethod);
-        order.setStatus(Order.OrderStatus.PENDING);
+        order.setStatus(Order.OrderStatus.NEW);
         order.setOrderDate(LocalDateTime.now());
 
         double totalAmount = cartItems.values().stream()
@@ -110,5 +112,42 @@ public class OrderServiceImpl implements OrderService {
             order.setShipper(shipper);
             orderRepository.save(order);
         });
+    }
+
+    // ===== VENDOR ORDER MANAGEMENT METHODS =====
+
+    @Override
+    public Page<Order> findByShopIdInAndStatus(List<Long> shopIds, Order.OrderStatus status, Pageable pageable) {
+        return orderRepository.findByShopIdInAndStatus(shopIds, status, pageable);
+    }
+
+    @Override
+    public Page<Order> findByShopIdInAndOrderIdContaining(List<Long> shopIds, String search, Pageable pageable) {
+        return orderRepository.findByShopIdInAndOrderIdContaining(shopIds, search, pageable);
+    }
+
+    @Override
+    public Page<Order> findByShopIdInAndStatusAndOrderIdContaining(List<Long> shopIds, Order.OrderStatus status, String search, Pageable pageable) {
+        return orderRepository.findByShopIdInAndStatusAndOrderIdContaining(shopIds, status, search, pageable);
+    }
+
+    @Override
+    public Page<Order> findByShopIdIn(List<Long> shopIds, Pageable pageable) {
+        return orderRepository.findByShopIdIn(shopIds, pageable);
+    }
+
+    @Override
+    public Optional<Order> findByIdAndShopIdIn(Long orderId, List<Long> shopIds) {
+        return orderRepository.findByIdAndShopIdIn(orderId, shopIds);
+    }
+
+    @Override
+    public Long countByShopIdInAndStatus(List<Long> shopIds, Order.OrderStatus status) {
+        return orderRepository.countByShopIdInAndStatus(shopIds, status);
+    }
+
+    @Override
+    public Long countByShopIdIn(List<Long> shopIds) {
+        return orderRepository.countByShopIdIn(shopIds);
     }
 }

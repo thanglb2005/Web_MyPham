@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{vendor/layouts/dashboard-layout}">
+<head>
+    <title th:text="${pageTitle}">Quản lý đơn hàng</title>
+    <style>
+        .status-badge {
+            font-size: 0.8rem;
+            padding: 0.25rem 0.5rem;
+        }
+        .nav-tabs .nav-link {
+            border: none;
+            color: #6c757d;
+        }
+        .nav-tabs .nav-link.active {
+            color: #007bff;
+            border-bottom: 2px solid #007bff;
+        }
+        .table th {
+            background-color: #f8f9fa;
+            border-top: none;
+        }
+    </style>
+</head>
+<body>
+    <div layout:fragment="content">
+        <!-- Alert messages -->
+        <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle"></i>
+            <span th:text="${success}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        
+        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-circle"></i>
+            <span th:text="${error}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <!-- Status Tabs -->
+        <ul class="nav nav-tabs mb-3" id="orderTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <a class="nav-link" th:classappend="${currentStatus == null ? 'active' : ''}" 
+                   th:href="@{/vendor/orders}">
+                    Tất cả <span class="badge bg-secondary ms-1" th:text="${totalOrders}">0</span>
+                </a>
+            </li>
+            <li class="nav-item" role="presentation" th:each="status : ${orderStatuses}">
+                <a class="nav-link" th:classappend="${currentStatus == status ? 'active' : ''}" 
+                   th:href="@{/vendor/orders(status=${status})}">
+                    <span th:text="${status}"></span>
+                    <span class="badge bg-secondary ms-1" th:text="${orderCounts.get(status) ?: 0}">0</span>
+                </a>
+            </li>
+        </ul>
+
+        <!-- Search Form -->
+        <form th:action="@{/vendor/orders}" method="get" class="mb-3">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="input-group">
+                        <input type="hidden" name="status" th:value="${currentStatus != null ? currentStatus.name() : ''}">
+                        <input type="text" name="search" class="form-control" 
+                               placeholder="Tìm kiếm theo mã đơn hàng..." th:value="${search}">
+                        <button class="btn btn-primary" type="submit">
+                            <i class="fas fa-search"></i> Tìm kiếm
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+
+        <!-- Orders Table -->
+        <div th:if="${orders.isEmpty()}" class="alert alert-warning">
+            <i class="fas fa-info-circle"></i>
+            Không có đơn hàng nào trong trạng thái này.
+        </div>
+
+        <div th:unless="${orders.isEmpty()}" class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>Mã đơn</th>
+                        <th>Thời gian</th>
+                        <th>Tổng tiền</th>
+                        <th>Thanh toán</th>
+                        <th>Địa chỉ</th>
+                        <th>Trạng thái</th>
+                        <th>Hành động</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="order : ${orders}">
+                        <td>
+                            <strong th:text="${order.orderId}"></strong>
+                        </td>
+                        <td th:text="${#temporals.format(order.orderDate, 'dd-MM-yyyy HH:mm')}"></td>
+                        <td>
+                            <span class="text-success fw-bold" 
+                                  th:text="${#numbers.formatDecimal(order.totalAmount, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'"></span>
+                        </td>
+                        <td>
+                            <span class="badge" th:classappend="${order.paymentMethod == T(vn.entity.Order.PaymentMethod).COD ? 'bg-warning' : 'bg-info'}"
+                                  th:text="${order.paymentMethod}"></span>
+                        </td>
+                        <td>
+                            <small th:text="${order.shippingAddress}" class="text-muted"></small>
+                        </td>
+                        <td>
+                            <span th:classappend="${order.status == T(vn.entity.Order.OrderStatus).PENDING ? 'badge bg-secondary' :
+                                                  (order.status == T(vn.entity.Order.OrderStatus).NEW ? 'badge bg-info' :
+                                                  (order.status == T(vn.entity.Order.OrderStatus).CONFIRMED ? 'badge bg-primary' :
+                                                  (order.status == T(vn.entity.Order.OrderStatus).SHIPPING ? 'badge bg-warning' :
+                                                  (order.status == T(vn.entity.Order.OrderStatus).DELIVERED ? 'badge bg-success' :
+                                                  (order.status == T(vn.entity.Order.OrderStatus).CANCELLED ? 'badge bg-danger' :
+                                                  (order.status == T(vn.entity.Order.OrderStatus).CANCELED ? 'badge bg-danger' :
+                                                  (order.status == T(vn.entity.Order.OrderStatus).RETURNED_REFUNDED ? 'badge bg-secondary' : 'badge bg-light'))))))}"
+                                  th:text="${order.status}" class="status-badge"></span>
+                        </td>
+                        <td>
+                            <div class="btn-group" role="group">
+                                <a th:href="@{/vendor/orders/{id}(id=${order.orderId})}" 
+                                   class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-eye"></i> Chi tiết
+                                </a>
+                                
+                                <!-- Quick Actions based on status -->
+                                <div th:if="${order.status == T(vn.entity.Order.OrderStatus).NEW}">
+                                    <form th:action="@{/vendor/orders/{id}/confirm(id=${order.orderId})}" method="post" style="display:inline;">
+                                        <button type="submit" class="btn btn-sm btn-success">
+                                            <i class="fas fa-check"></i> Xác nhận
+                                        </button>
+                                    </form>
+                                    <button type="button" class="btn btn-sm btn-danger" 
+                                            data-bs-toggle="modal" th:data-bs-target="'#cancelModal' + ${order.orderId}">
+                                        <i class="fas fa-times"></i> Hủy
+                                    </button>
+                                </div>
+                                
+                                <div th:if="${order.status == T(vn.entity.Order.OrderStatus).CONFIRMED}">
+                                    <button type="button" class="btn btn-sm btn-info">
+                                        <i class="fas fa-truck"></i> Phân công
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-danger" 
+                                            data-bs-toggle="modal" th:data-bs-target="'#cancelModal' + ${order.orderId}">
+                                        <i class="fas fa-times"></i> Hủy
+                                    </button>
+                                </div>
+                                
+                                <div th:if="${order.status == T(vn.entity.Order.OrderStatus).DELIVERED}">
+                                    <button type="button" class="btn btn-sm btn-warning">
+                                        <i class="fas fa-undo"></i> Duyệt hoàn
+                                    </button>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        <nav th:unless="${orders.isEmpty()}" aria-label="Page navigation">
+            <ul class="pagination justify-content-center">
+                <li class="page-item" th:classappend="${orders.first ? 'disabled' : ''}">
+                    <a class="page-link" th:href="@{/vendor/orders(page=${orders.number - 1}, size=${orders.size}, status=${currentStatus}, search=${search})}">
+                        <i class="fas fa-chevron-left"></i> Trước
+                    </a>
+                </li>
+                <li class="page-item" th:each="i : ${#numbers.sequence(0, orders.totalPages - 1)}" 
+                    th:classappend="${i == orders.number ? 'active' : ''}">
+                    <a class="page-link" th:href="@{/vendor/orders(page=${i}, size=${orders.size}, status=${currentStatus}, search=${search})}" 
+                       th:text="${i + 1}"></a>
+                </li>
+                <li class="page-item" th:classappend="${orders.last ? 'disabled' : ''}">
+                    <a class="page-link" th:href="@{/vendor/orders(page=${orders.number + 1}, size=${orders.size}, status=${currentStatus}, search=${search})}">
+                        Sau <i class="fas fa-chevron-right"></i>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Cancel Modal -->
+        <div th:each="order : ${orders}" class="modal fade" th:id="'cancelModal' + ${order.orderId}" tabindex="-1" aria-labelledby="cancelModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <form th:action="@{/vendor/orders/{id}/cancel(id=${order.orderId})}" method="post">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="cancelModalLabel">Hủy đơn hàng #<span th:text="${order.orderId}"></span></h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label for="cancelReason" class="form-label">Lý do hủy:</label>
+                                <textarea class="form-control" id="cancelReason" name="reason" rows="3" required></textarea>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                            <button type="submit" class="btn btn-danger">Xác nhận hủy</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+
+
+

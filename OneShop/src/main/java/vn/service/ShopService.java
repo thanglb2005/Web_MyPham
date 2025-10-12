@@ -37,5 +37,10 @@ public interface ShopService {
     boolean isShopNameAvailable(String name, Long excludeId);
 
     String generateSlug(String shopName, Long excludeId);
+
+    /**
+     * Find shop IDs by vendor
+     */
+    List<Long> findShopIdsByVendor(User vendor);
 }
 

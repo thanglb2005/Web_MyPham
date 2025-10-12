@@ -31,5 +31,11 @@ public interface ShopRepository extends JpaRepository<Shop, Long> {
 
     @Query("SELECT COUNT(s) > 0 FROM Shop s WHERE s.shopSlug = :slug AND (:excludeId IS NULL OR s.shopId <> :excludeId)")
     boolean existsBySlugExcludingId(@Param("slug") String slug, @Param("excludeId") Long excludeId);
+
+    /**
+     * Find shop IDs by vendor
+     */
+    @Query("SELECT s.shopId FROM Shop s WHERE s.vendor = :vendor")
+    List<Long> findShopIdsByVendor(@Param("vendor") User vendor);
 }
 

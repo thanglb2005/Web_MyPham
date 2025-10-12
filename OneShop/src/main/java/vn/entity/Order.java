@@ -49,8 +49,8 @@ public class Order {
     private String note;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private OrderStatus status = OrderStatus.PENDING;
+    @Column(name = "status", length = 50, nullable = false)
+    private OrderStatus status = OrderStatus.NEW;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "payment_method", nullable = false)
@@ -76,11 +76,14 @@ public class Order {
     private List<OrderDetail> orderDetails;
 
     public enum OrderStatus {
-        PENDING,
-        CONFIRMED,
-        SHIPPING,
-        DELIVERED,
-        CANCELLED
+        PENDING,                // Cho xac nhan
+        NEW,                    // Don hang moi
+        CONFIRMED,              // Da xac nhan
+        SHIPPING,               // Dang giao
+        DELIVERED,              // Da giao
+        CANCELLED,              // Huy (2 chu L - British spelling)
+        CANCELED,               // Huy (1 chu L - American spelling)
+        RETURNED_REFUNDED       // Tra hang - hoan tien
     }
 
     public enum PaymentMethod {
@@ -88,5 +91,11 @@ public class Order {
         MOMO,
         BANK_TRANSFER,
         VIETQR
+    }
+
+    public enum PaymentStatus {
+        PENDING,    // Chờ thanh toán
+        PAID,       // Đã thanh toán
+        FAILED      // Thanh toán thất bại
     }
 }

@@ -1,12 +1,16 @@
 package vn.repository;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import vn.entity.Order;
 import vn.entity.User;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface OrderRepository extends JpaRepository<Order, Long> {
@@ -110,4 +114,64 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
            "FROM Order o " +
            "WHERE o.shipper = :shipper AND o.status = 'DELIVERED'")
     Double getTotalDeliveredAmountByShipper(User shipper);
+
+    // ===== VENDOR ORDER MANAGEMENT METHODS =====
+
+    /**
+     * Find orders by shop IDs with status filter
+     */
+    @Query("SELECT DISTINCT o FROM Order o JOIN o.orderDetails od JOIN od.product p WHERE p.shop.shopId IN :shopIds " +
+           "AND (:status IS NULL OR o.status = :status) " +
+           "ORDER BY o.orderDate DESC")
+    Page<Order> findByShopIdInAndStatus(@Param("shopIds") List<Long> shopIds, 
+                                       @Param("status") Order.OrderStatus status, 
+                                       Pageable pageable);
+
+    /**
+     * Find orders by shop IDs with search term
+     */
+    @Query("SELECT DISTINCT o FROM Order o JOIN o.orderDetails od JOIN od.product p WHERE p.shop.shopId IN :shopIds " +
+           "AND (:search IS NULL OR CAST(o.orderId AS string) LIKE %:search%) " +
+           "ORDER BY o.orderDate DESC")
+    Page<Order> findByShopIdInAndOrderIdContaining(@Param("shopIds") List<Long> shopIds, 
+                                                  @Param("search") String search, 
+                                                  Pageable pageable);
+
+    /**
+     * Find orders by shop IDs with status and search term
+     */
+    @Query("SELECT DISTINCT o FROM Order o JOIN o.orderDetails od JOIN od.product p WHERE p.shop.shopId IN :shopIds " +
+           "AND (:status IS NULL OR o.status = :status) " +
+           "AND (:search IS NULL OR CAST(o.orderId AS string) LIKE %:search%) " +
+           "ORDER BY o.orderDate DESC")
+    Page<Order> findByShopIdInAndStatusAndOrderIdContaining(@Param("shopIds") List<Long> shopIds, 
+                                                          @Param("status") Order.OrderStatus status, 
+                                                          @Param("search") String search, 
+                                                          Pageable pageable);
+
+    /**
+     * Find orders by shop IDs only
+     */
+    @Query("SELECT DISTINCT o FROM Order o JOIN o.orderDetails od JOIN od.product p WHERE p.shop.shopId IN :shopIds " +
+           "ORDER BY o.orderDate DESC")
+    Page<Order> findByShopIdIn(@Param("shopIds") List<Long> shopIds, Pageable pageable);
+
+    /**
+     * Find order by ID and shop IDs (for vendor access control)
+     */
+    @Query("SELECT DISTINCT o FROM Order o JOIN o.orderDetails od JOIN od.product p WHERE o.orderId = :orderId AND p.shop.shopId IN :shopIds")
+    Optional<Order> findByIdAndShopIdIn(@Param("orderId") Long orderId, @Param("shopIds") List<Long> shopIds);
+
+    /**
+     * Count orders by shop IDs and status
+     */
+    @Query("SELECT COUNT(DISTINCT o) FROM Order o JOIN o.orderDetails od JOIN od.product p WHERE p.shop.shopId IN :shopIds " +
+           "AND (:status IS NULL OR o.status = :status)")
+    Long countByShopIdInAndStatus(@Param("shopIds") List<Long> shopIds, @Param("status") Order.OrderStatus status);
+
+    /**
+     * Count orders by shop IDs
+     */
+    @Query("SELECT COUNT(DISTINCT o) FROM Order o JOIN o.orderDetails od JOIN od.product p WHERE p.shop.shopId IN :shopIds")
+    Long countByShopIdIn(@Param("shopIds") List<Long> shopIds);
 }
