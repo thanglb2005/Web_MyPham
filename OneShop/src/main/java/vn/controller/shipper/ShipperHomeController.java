@@ -11,10 +11,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import vn.entity.Order;
+import vn.entity.Shop;
 import vn.entity.User;
 import vn.repository.OrderRepository;
+import vn.repository.ShopRepository;
 import vn.service.OrderService;
-import vn.util.ShippingProviderHelper;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -36,6 +37,9 @@ public class ShipperHomeController {
     @Autowired
     private OrderService orderService;
 
+    @Autowired
+    private ShopRepository shopRepository;
+
     /**
      * Trang chủ shipper - hiển thị dashboard với các đơn hàng được phân công
      */
@@ -46,11 +50,22 @@ public class ShipperHomeController {
             return "redirect:/login";
         }
 
+        // Lấy các shop mà shipper được gán
+        List<Shop> assignedShops = shopRepository.findShopsByShipper(shipper);
+        
+        // Xác định tên hiển thị
+        String displayName = "OneShop Shipper";
+        if (assignedShops.size() == 1) {
+            displayName = assignedShops.get(0).getShopName() + " - Shipper";
+        }
+
         // Lấy các đơn hàng được phân công cho shipper này
-        List<Order> assignedOrders = orderRepository.findByShipperOrderByOrderDateDesc(shipper);
+        List<Order> assignedOrders = orderRepository.findOrdersByShipper(shipper);
         
         // Lấy các đơn hàng đang chờ giao (CONFIRMED) mà chưa có shipper
-        List<Order> availableOrders = orderRepository.findByStatusAndShipperIsNullOrderByOrderDateDesc(
+        // Chỉ lấy đơn hàng từ các shop mà shipper được gán
+        List<Order> availableOrders = orderRepository.findAvailableOrdersForShipper(
+            shipper,
             Order.OrderStatus.CONFIRMED
         );
 
@@ -63,17 +78,9 @@ public class ShipperHomeController {
             .filter(order -> order.getStatus() == Order.OrderStatus.DELIVERED)
             .count();
 
-        // Thêm thông tin nhà vận chuyển
-        String providerFullName = shipper.getShippingProvider() != null 
-            ? ShippingProviderHelper.getFullName(shipper.getShippingProvider())
-            : null;
-        String providerLogo = shipper.getShippingProvider() != null
-            ? ShippingProviderHelper.getLogoPath(shipper.getShippingProvider())
-            : null;
-
         model.addAttribute("shipper", shipper);
-        model.addAttribute("providerFullName", providerFullName);
-        model.addAttribute("providerLogo", providerLogo);
+        model.addAttribute("displayName", displayName);
+        model.addAttribute("assignedShops", assignedShops);
         model.addAttribute("assignedOrders", assignedOrders);
         model.addAttribute("availableOrders", availableOrders);
         model.addAttribute("totalOrders", totalOrders);
@@ -161,6 +168,25 @@ public class ShipperHomeController {
             return "redirect:/login";
         }
 
+        // Lấy các shop mà shipper được gán
+        List<Shop> assignedShops = shopRepository.findShopsByShipper(shipper);
+        
+        // Xác định tên hiển thị
+        String displayName = "OneShop Shipper";
+        if (assignedShops.size() == 1) {
+            displayName = assignedShops.get(0).getShopName() + " - Shipper";
+        }
+        
+        // Tạo mô tả shop
+        String shopDescription = "";
+        if (assignedShops.isEmpty()) {
+            shopDescription = "Chưa được phân công shop nào";
+        } else if (assignedShops.size() == 1) {
+            shopDescription = "Phụ trách giao hàng cho shop: " + assignedShops.get(0).getShopName();
+        } else {
+            shopDescription = "Phụ trách giao hàng cho " + assignedShops.size() + " shop";
+        }
+
         List<Order> myOrders = orderRepository.findByShipperOrderByOrderDateDesc(shipper);
 
         // Tính toán thống kê
@@ -181,6 +207,9 @@ public class ShipperHomeController {
             .collect(Collectors.toList());
 
         model.addAttribute("shipper", shipper);
+        model.addAttribute("displayName", displayName);
+        model.addAttribute("assignedShops", assignedShops);
+        model.addAttribute("shopDescription", shopDescription);
         model.addAttribute("orders", myOrders);
         model.addAttribute("shippingOrders", shippingOrdersList);
         model.addAttribute("deliveredOrders", deliveredOrdersList);
@@ -200,6 +229,25 @@ public class ShipperHomeController {
         User shipper = ensureShipper(session);
         if (shipper == null) {
             return "redirect:/login";
+        }
+
+        // Lấy các shop mà shipper được gán
+        List<Shop> assignedShops = shopRepository.findShopsByShipper(shipper);
+        
+        // Xác định tên hiển thị
+        String displayName = "OneShop Shipper";
+        if (assignedShops.size() == 1) {
+            displayName = assignedShops.get(0).getShopName() + " - Shipper";
+        }
+        
+        // Tạo mô tả shop
+        String shopDescription = "";
+        if (assignedShops.isEmpty()) {
+            shopDescription = "Chưa được phân công shop nào";
+        } else if (assignedShops.size() == 1) {
+            shopDescription = "Phụ trách giao hàng cho shop: " + assignedShops.get(0).getShopName();
+        } else {
+            shopDescription = "Phụ trách giao hàng cho " + assignedShops.size() + " shop";
         }
 
         // Lấy tất cả đơn hàng của shipper
@@ -227,6 +275,9 @@ public class ShipperHomeController {
         List<Object[]> statusStats = orderRepository.getShipperOrderStatsByStatus(shipper);
 
         model.addAttribute("shipper", shipper);
+        model.addAttribute("displayName", displayName);
+        model.addAttribute("assignedShops", assignedShops);
+        model.addAttribute("shopDescription", shopDescription);
         model.addAttribute("totalOrders", totalOrders);
         model.addAttribute("shippingOrders", shippingOrders);
         model.addAttribute("deliveredOrders", deliveredOrders);
@@ -368,6 +419,25 @@ public class ShipperHomeController {
             return "redirect:/login";
         }
 
+        // Lấy các shop mà shipper được gán
+        List<Shop> assignedShops = shopRepository.findShopsByShipper(shipper);
+        
+        // Xác định tên hiển thị
+        String displayName = "OneShop Shipper";
+        if (assignedShops.size() == 1) {
+            displayName = assignedShops.get(0).getShopName() + " - Shipper";
+        }
+        
+        // Tạo mô tả shop
+        String shopDescription = "";
+        if (assignedShops.isEmpty()) {
+            shopDescription = "Chưa được phân công shop nào";
+        } else if (assignedShops.size() == 1) {
+            shopDescription = "Phụ trách giao hàng cho shop: " + assignedShops.get(0).getShopName();
+        } else {
+            shopDescription = "Phụ trách giao hàng cho " + assignedShops.size() + " shop";
+        }
+
         Order order = orderService.getOrderById(orderId);
         
         // Kiểm tra đơn hàng có thuộc về shipper này không
@@ -384,6 +454,9 @@ public class ShipperHomeController {
         }
         
         model.addAttribute("shipper", shipper);
+        model.addAttribute("displayName", displayName);
+        model.addAttribute("assignedShops", assignedShops);
+        model.addAttribute("shopDescription", shopDescription);
         model.addAttribute("order", order);
         model.addAttribute("pageTitle", "Chi tiết đơn hàng #" + orderId);
 

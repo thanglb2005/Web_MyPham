@@ -7,6 +7,8 @@ import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Shop entity mapping vendor owned storefronts.
@@ -84,6 +86,16 @@ public class Shop implements Serializable {
 
     @Column(name = "preparation_days")
     private Integer preparationDays = 2;
+
+    // Quan hệ Many-to-Many với Shipper (User)
+    // Một shop có thể có nhiều shipper, một shipper có thể thuộc nhiều shop
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+        name = "shop_shippers",
+        joinColumns = @JoinColumn(name = "shop_id"),
+        inverseJoinColumns = @JoinColumn(name = "shipper_id")
+    )
+    private Set<User> shippers = new HashSet<>();
 
     public enum ShopStatus {
         PENDING,

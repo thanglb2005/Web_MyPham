@@ -328,5 +328,8 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
             "GROUP BY s.shop_id, s.shop_name, s.status, u.name " +
             "ORDER BY s.shop_name", nativeQuery = true)
     List<Object[]> getShopProductStatistics();
+
+    @Query(value = "SELECT DISTINCT s.shop_id, s.shop_name FROM shops s ORDER BY s.shop_name", nativeQuery = true)
+    List<Object[]> findAllShops();
 }
 

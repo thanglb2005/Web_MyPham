@@ -13,28 +13,45 @@
     <link rel="stylesheet" href="/css/admin-fonts.css" />
     <style>
       :root {
-        --section-gap: 30px;
+        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        --warning-gradient: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        --danger-gradient: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+        --info-gradient: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+        --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        --hover-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
       }
+
       body {
-        background: #f4f6f9;
+        background: #f8fafc;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
           "Helvetica Neue", Arial, sans-serif;
-        font-size: 14px;
-        line-height: 1.5;
       }
-      .header {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+
+      .admin-header {
+        background: var(--primary-gradient);
+        color: white;
         padding: 30px;
-        border-radius: 15px;
-        color: #fff;
-        margin-bottom: var(--section-gap);
-        box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        border-radius: 20px;
+        margin-bottom: 30px;
+        box-shadow: var(--card-shadow);
       }
+
+      .admin-header h2 {
+        font-weight: 700;
+        margin-bottom: 10px;
+      }
+
+      .admin-header p {
+        opacity: 0.9;
+        margin: 0;
+      }
+
       .stats-card {
-        background: #fff;
-        border-radius: 15px;
+        background: white;
+        border-radius: 20px;
         padding: 25px;
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+        box-shadow: var(--card-shadow);
         border: 1px solid rgba(0, 0, 0, 0.05);
         height: 180px;
         display: flex;
@@ -44,247 +61,325 @@
         cursor: pointer;
         transition: all 0.3s ease;
         margin-bottom: 20px;
+        position: relative;
+        overflow: hidden;
       }
 
-      .action-button-card {
-        background: #fff;
-        border-radius: 15px;
-        padding: 20px;
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
-        border: 1px solid rgba(0, 0, 0, 0.05);
+      .stats-card::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: var(--primary-gradient);
+      }
+
+      .stats-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--hover-shadow);
+      }
+
+      .stats-card .icon {
+        font-size: 2.5rem;
+        margin-bottom: 15px;
+        opacity: 0.8;
+      }
+
+      .stats-card .number {
+        font-size: 2.2rem;
+        font-weight: 800;
+        color: #2c3e50;
+        margin-bottom: 5px;
+      }
+
+      .stats-card .label {
+        color: #7f8c8d;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 600;
+        text-align: center;
+      }
+
+      .filter-card {
+        background: white;
+        border-radius: 20px;
+        padding: 25px;
+        box-shadow: var(--card-shadow);
+        margin-bottom: 30px;
+      }
+
+      .filter-card h5 {
+        color: #2c3e50;
+        font-weight: 700;
         margin-bottom: 20px;
       }
 
-      .action-button-card .btn {
-        border-radius: 10px;
-        font-size: 1.1rem;
-        font-weight: 600;
-        padding: 15px 20px;
+      .form-control,
+      .form-select {
+        border: 2px solid #e9ecef;
+        border-radius: 12px;
+        padding: 12px 16px;
+        font-size: 0.95rem;
         transition: all 0.3s ease;
       }
 
-      /* Responsive improvements */
+      .form-control:focus,
+      .form-select:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+      }
+
+      .btn-primary {
+        background: var(--primary-gradient);
+        border: none;
+        border-radius: 12px;
+        padding: 12px 24px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+      }
+
+      .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+      }
+
+      .btn-outline-secondary {
+        border: 2px solid #e9ecef;
+        border-radius: 12px;
+        padding: 12px 24px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+      }
+
+      .btn-outline-secondary:hover {
+        background: #f8f9fa;
+        border-color: #dee2e6;
+      }
+
+      .table-card {
+        background: white;
+        border-radius: 20px;
+        padding: 25px;
+        box-shadow: var(--card-shadow);
+        margin-bottom: 30px;
+      }
+
+      .table-card h5 {
+        color: #2c3e50;
+        font-weight: 700;
+        margin-bottom: 20px;
+      }
+
+      .table {
+        margin-bottom: 0;
+      }
+
+      .table thead th {
+        background: rgba(102, 126, 234, 0.1);
+        color: #2c3e50;
+        border: none;
+        font-weight: 700;
+        padding: 15px;
+        font-size: 0.9rem;
+      }
+
+      .table tbody td {
+        border: none;
+        padding: 15px;
+        vertical-align: middle;
+      }
+
+      .table tbody tr:hover {
+        background: rgba(102, 126, 234, 0.05);
+      }
+
+      .status-badge {
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .status-active {
+        background: var(--success-gradient);
+        color: white;
+      }
+
+      .status-pending {
+        background: var(--warning-gradient);
+        color: white;
+      }
+
+      .status-rejected {
+        background: var(--danger-gradient);
+        color: white;
+      }
+
+      .status-suspended {
+        background: var(--info-gradient);
+        color: #2c3e50;
+      }
+
+      .shop-overview {
+        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        color: #1e293b;
+        border-radius: 20px;
+        padding: 24px;
+        margin-bottom: 24px;
+        box-shadow: var(--card-shadow);
+        border: 1px solid rgba(0, 0, 0, 0.1);
+      }
+
+      .shop-overview h5 {
+        color: #1e293b;
+        font-weight: bold;
+        margin-bottom: 20px;
+      }
+
+      .shop-stats-table th {
+        background: rgba(102, 126, 234, 0.1);
+        color: #1e293b;
+        border: none;
+        font-weight: 700;
+      }
+
+      .shop-stats-table td {
+        border: none;
+        color: #1e293b;
+        font-weight: 600;
+      }
+
+      .shop-stats-table tbody tr:hover {
+        background: rgba(102, 126, 234, 0.05);
+      }
+
+      .pagination .page-link {
+        border-radius: 12px;
+        margin: 0 2px;
+        border: none;
+        color: #667eea;
+        font-weight: 600;
+        padding: 10px 16px;
+      }
+
+      .pagination .page-item.active .page-link {
+        background: var(--primary-gradient);
+        color: white;
+      }
+
+      .pagination .page-link:hover {
+        background: rgba(102, 126, 234, 0.1);
+        color: #667eea;
+      }
+
+      .alert {
+        border-radius: 15px;
+        border: none;
+        padding: 20px;
+        margin-bottom: 20px;
+      }
+
+      .alert-success {
+        background: var(--success-gradient);
+        color: white;
+      }
+
+      .alert-warning {
+        background: var(--warning-gradient);
+        color: white;
+      }
+
+      .alert-danger {
+        background: var(--danger-gradient);
+        color: white;
+      }
+
+      .alert-info {
+        background: var(--info-gradient);
+        color: #2c3e50;
+      }
+
       @media (max-width: 768px) {
         .stats-card {
           height: 160px;
           padding: 20px;
           margin-bottom: 15px;
         }
+
         .stats-card .number {
           font-size: 1.8rem;
         }
+
         .stats-card .label {
-          font-size: 0.75rem;
+          font-size: 0.7rem;
         }
-        .action-button-card {
-          margin-bottom: 15px;
-        }
-      }
-
-      @media (max-width: 576px) {
-        .stats-card {
-          height: 140px;
-          padding: 15px;
-        }
-        .stats-card .number {
-          font-size: 1.5rem;
-        }
-      }
-      .stats-card .icon {
-        font-size: 2.6rem;
-        margin-bottom: 10px;
-      }
-      .stats-card .number {
-        font-size: 2.2rem;
-        font-weight: 800;
-        color: #2c3e50;
-      }
-      .stats-card .label {
-        color: #7f8c8d;
-        font-size: 0.7rem;
-        text-transform: uppercase;
-        letter-spacing: 0.3px;
-        font-weight: 600;
-      }
-      .table-responsive {
-        background: #fff;
-        border-radius: 15px;
-        padding: 25px;
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
-        border: 1px solid rgba(0, 0, 0, 0.05);
-        margin-bottom: var(--section-gap);
-      }
-      .chart-container {
-        background: #fff;
-        border-radius: 15px;
-        padding: 25px;
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
-        border: 1px solid rgba(0, 0, 0, 0.05);
-        margin-bottom: var(--section-gap);
-        min-height: 520px;
-        position: relative;
-        overflow: hidden;
-      }
-      .chart-container canvas {
-        width: 100% !important;
-        height: 450px !important;
-        max-height: 450px;
-        display: block;
-      }
-      .chart-title {
-        font-weight: 700;
-        color: #2c3e50;
-        margin-bottom: 15px;
-      }
-      .nav-tabs {
-        border: none;
-        /* Use previous section margin for top spacing; keep bottom equal */
-        margin-top: 0;
-        margin-bottom: var(--section-gap);
-      }
-      /* Keep spacing above tabs equal to below (one margin source only) */
-      .alert-tables-section {
-        margin-bottom: var(--section-gap) !important;
-      }
-      .nav-tabs .nav-link {
-        border: none;
-        background: #fff;
-        margin-right: 12px;
-        padding: 14px 28px;
-        border-radius: 12px;
-        color: #7f8c8d;
-        font-weight: 700;
-        font-size: 1rem;
-        line-height: 1;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
-        border: 1px solid rgba(0, 0, 0, 0.05);
-      }
-      .nav-tabs .nav-link i {
-        margin-right: 8px;
-        font-size: 1rem;
-      }
-      .nav-tabs .nav-link.active {
-        color: #fff;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        border: 1px solid transparent;
-      }
-      /* Show the Products tab before Overview without changing HTML order */
-      .nav-tabs {
-        display: flex;
-      }
-      .nav-tabs .nav-item:nth-child(1) {
-        order: 2;
-      }
-      .nav-tabs .nav-item:nth-child(2) {
-        order: 1;
-      }
-      .qty-low {
-        font-size: 1.25rem;
-        font-weight: 800;
-        white-space: nowrap;
-      }
-      .favorite-desc,
-      .kpi-desc-big {
-        font-size: 0.9rem !important;
-        font-weight: 700;
-        position: relative;
-        top: -2px;
-        margin-top: 0 !important;
-      }
-      .statistics-page .admin-footer {
-        display: none !important;
-      }
-      /* Keep left sidebar width consistent with Products page */
-      .sidebar {
-        width: 250px !important;
-      }
-      .main-panel {
-        margin-left: 250px !important;
-      }
-      @media (min-width: 991px) {
-        .sidebar_minimize .main-panel {
-          width: calc(100% - 75px);
-          margin-left: 75px !important;
-        }
-      }
-      /* Force uniform vertical spacing across sections */
-      .row.mb-4 {
-        margin-bottom: var(--section-gap) !important;
-      }
-
-      /* Loading states for KPI cards */
-      .stats-card.loading {
-        opacity: 0.7;
-        transition: opacity 0.3s ease;
-      }
-
-      .loading-overlay {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        font-size: 1.2rem;
-        color: #007bff;
-        z-index: 10;
-      }
-
-      .stats-card {
-        position: relative;
-        cursor: pointer;
-        transition: all 0.3s ease;
-      }
-
-      .stats-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 10px 35px rgba(102, 126, 234, 0.25);
-      }
-
-      .stats-card:active {
-        transform: translateY(0);
       }
     </style>
   </head>
-  <body class="statistics-page">
+  <body>
     <div class="wrapper">
       <th:block th:replace="~{admin/fragments/header :: header}"></th:block>
       <th:block th:replace="~{admin/fragments/navbar :: navbar}"></th:block>
+
       <div class="main-panel">
         <div class="content">
-          <div class="header">
-            <h3 class="mb-1">
-              <i class="fas fa-chart-line"></i> Thống kê sản phẩm
-            </h3>
-            <div class="text-light" style="opacity: 0.9">
-              Tổng quan tồn kho, sản phẩm yêu thích, hạn dùng và khuyến mãi
+          <!-- Header Section -->
+          <div class="admin-header">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <h2><i class="fas fa-chart-line"></i> Thống kê sản phẩm</h2>
+                <p>
+                  Tổng quan tồn kho, sản phẩm yêu thích, hạn dùng và khuyến mãi
+                </p>
+              </div>
+              <div>
+                <a href="/admin/products" class="btn btn-light btn-lg">
+                  <i class="fas fa-arrow-left"></i> Quay lại quản lý sản phẩm
+                </a>
+              </div>
             </div>
           </div>
 
-          <!-- KPI Cards - Row 1 -->
-          <div class="row mb-3">
+          <!-- KPI Cards Row 1 -->
+          <div class="row mb-4">
             <div class="col-xl-3 col-lg-6 col-md-6">
               <div
                 class="stats-card text-center"
                 data-show="bestseller"
-                title="Hiển thị Sản phẩm bán chạy"
+                title="Hiển thị sản phẩm bán chạy"
               >
                 <div class="icon text-success">
                   <i class="fas fa-trophy"></i>
                 </div>
-                <div class="number" id="best-sellers" th:text="${#numbers.formatInteger(bestSellers,0)}">0</div>
-                <div class="label">BÁN CHẠY</div>
+                <div
+                  class="number"
+                  th:text="${#numbers.formatInteger(bestSellers,0)}"
+                >
+                  0
+                </div>
+                <div class="label">Bán chạy</div>
               </div>
             </div>
             <div class="col-xl-3 col-lg-6 col-md-6">
               <div
                 class="stats-card text-center"
                 data-show="newest"
-                title="Hiển thị Sản phẩm mới nhập"
+                title="Hiển thị sản phẩm mới nhập"
               >
                 <div class="icon text-info">
                   <i class="fas fa-box"></i>
                 </div>
-                <div class="number" id="new-products" th:text="${#numbers.formatInteger(newProducts,0)}">0</div>
-                <div class="label">MỚI NHẬP</div>
+                <div
+                  class="number"
+                  th:text="${#numbers.formatInteger(newProducts,0)}"
+                >
+                  0
+                </div>
+                <div class="label">Mới nhập</div>
               </div>
             </div>
             <div class="col-xl-3 col-lg-6 col-md-6">
@@ -296,8 +391,13 @@
                 <div class="icon text-warning">
                   <i class="fas fa-exclamation-circle"></i>
                 </div>
-                <div class="number" id="slow-moving" th:text="${#numbers.formatInteger(slowMoving,0)}">0</div>
-                <div class="label">BÁN CHẬM 30D</div>
+                <div
+                  class="number"
+                  th:text="${#numbers.formatInteger(slowMoving,0)}"
+                >
+                  0
+                </div>
+                <div class="label">Bán chậm 30D</div>
               </div>
             </div>
             <div class="col-xl-3 col-lg-6 col-md-6">
@@ -309,13 +409,18 @@
                 <div class="icon text-success">
                   <i class="fas fa-chart-bar"></i>
                 </div>
-                <div class="number" id="trending-up" th:text="${#numbers.formatInteger(trendingUp,0)}">0</div>
-                <div class="label">TĂNG TRƯỞNG</div>
+                <div
+                  class="number"
+                  th:text="${#numbers.formatInteger(trendingUp,0)}"
+                >
+                  0
+                </div>
+                <div class="label">Tăng trưởng</div>
               </div>
             </div>
           </div>
 
-          <!-- KPI Cards - Row 2 -->
+          <!-- KPI Cards Row 2 -->
           <div class="row mb-4">
             <div class="col-xl-3 col-lg-6 col-md-6">
               <div
@@ -326,8 +431,13 @@
                 <div class="icon text-danger">
                   <i class="fas fa-exclamation-triangle"></i>
                 </div>
-                <div class="number" id="low-stock" th:text="${#numbers.formatInteger(lowStockCount,0)}">0</div>
-                <div class="label">SỐ LƯỢNG CÒN LẠI ≤ 10</div>
+                <div
+                  class="number"
+                  th:text="${#numbers.formatInteger(lowStockCount,0)}"
+                >
+                  0
+                </div>
+                <div class="label">Số lượng còn lại ≤ 10</div>
               </div>
             </div>
             <div class="col-xl-3 col-lg-6 col-md-6">
@@ -339,8 +449,13 @@
                 <div class="icon text-warning">
                   <i class="fas fa-hourglass-end"></i>
                 </div>
-                <div class="number" id="expiring-products" th:text="${#numbers.formatInteger(expiringSoonCount,0)}">0</div>
-                <div class="label">HẠN DÙNG ≤ 30 NGÀY</div>
+                <div
+                  class="number"
+                  th:text="${#numbers.formatInteger(expiringSoonCount,0)}"
+                >
+                  0
+                </div>
+                <div class="label">Hạn dùng ≤ 30 ngày</div>
               </div>
             </div>
             <div class="col-xl-3 col-lg-6 col-md-6">
@@ -349,9 +464,16 @@
                 data-show="favorites"
                 title="Hiển thị bảng được ưa chuộng"
               >
-                <div class="icon text-danger"><i class="fas fa-heart"></i></div>
-                <div class="number" id="favorite-products" th:text="${#numbers.formatInteger(favoritesCount,0)}">0</div>
-                <div class="label">ĐƯỢC KHÁCH HÀNG ƯA CHUỘNG</div>
+                <div class="icon text-danger">
+                  <i class="fas fa-heart"></i>
+                </div>
+                <div
+                  class="number"
+                  th:text="${#numbers.formatInteger(favoritesCount,0)}"
+                >
+                  0
+                </div>
+                <div class="label">Được khách hàng ưa chuộng</div>
               </div>
             </div>
             <div class="col-xl-3 col-lg-6 col-md-6">
@@ -363,315 +485,301 @@
                 <div class="icon text-primary">
                   <i class="fas fa-percent"></i>
                 </div>
-                <div class="number" id="discounted-products" th:text="${#numbers.formatInteger(discountedCount,0)}">0</div>
-                <div class="label">ĐANG KHUYẾN MÃI</div>
+                <div
+                  class="number"
+                  th:text="${#numbers.formatInteger(discountedCount,0)}"
+                >
+                  0
+                </div>
+                <div class="label">Đang khuyến mãi</div>
               </div>
             </div>
           </div>
 
-
-
-          <!-- Inventory Table Section with filters -->
-          <div class="row mb-4">
-            <div class="col-12">
-              <div class="search-bar" style="background:#fff;padding:14px;border-radius:12px;border:1px solid rgba(0,0,0,0.05);box-shadow:0 6px 18px rgba(0,0,0,0.06);">
-                <form method="get" th:action="@{/admin/statistics}">
-                  <div class="row g-2 align-items-end">
-                    <div class="col-lg-4 col-md-6">
-                      <label class="form-label text-muted" style="font-size:0.85rem;font-weight:600;margin-bottom:6px">
-                        <i class="fas fa-layer-group text-primary"></i> Danh mục
-                      </label>
-                      <select class="form-select form-control" name="categoryId" style="height:38px;border:2px solid #e9ecef;border-radius:8px">
-                        <option th:selected="${selectedCategoryId == null}" th:value="${null}">Tất cả danh mục</option>
-                        <option th:each="c : ${categories}"
-                                th:value="${c.categoryId}"
-                                th:selected="${selectedCategoryId != null and c.categoryId == selectedCategoryId}"
-                                th:text="${c.categoryName}">Danh mục</option>
-                      </select>
-                    </div>
-                    <div class="col-lg-5 col-md-6">
-                      <label class="form-label text-muted" style="font-size:0.85rem;font-weight:600;margin-bottom:6px">
-                        <i class="fas fa-search text-primary"></i> Tìm kiếm sản phẩm/brand
-                      </label>
-                      <input class="form-control" type="text" name="search" th:value="${searchTerm}"
-                             placeholder="Nhập tên sản phẩm, danh mục hoặc thương hiệu..."
-                             style="height:38px;border:2px solid #e9ecef;border-radius:8px" />
-                    </div>
-                    <div class="col-lg-2 col-md-4">
-                      <label class="form-label text-muted" style="font-size:0.85rem;font-weight:600;margin-bottom:6px">
-                        <i class="fas fa-list text-primary"></i> Hiển thị
-                      </label>
-                      <select class="form-select form-control" name="size" style="height:38px;border:2px solid #e9ecef;border-radius:8px">
-                        <option th:selected="${pageSize == 10}" value="10">📄 10 mục</option>
-                        <option th:selected="${pageSize == 20}" value="20">📄 20 mục</option>
-                        <option th:selected="${pageSize == 50}" value="50">📄 50 mục</option>
-                      </select>
-                    </div>
-                    <div class="col-lg-1 col-md-2">
-                      <label class="form-label text-muted d-block" style="opacity:0">&nbsp;</label>
-                      <button class="btn btn-primary w-100" type="submit" style="height:38px;border-radius:8px;font-weight:600">
-                        Lọc
-                      </button>
-                    </div>
-                  </div>
-                </form>
-              </div>
-
-              <div class="table-responsive">
-                <div class="chart-title"><i class="fas fa-cubes"></i> Tồn kho chi tiết theo danh mục</div>
-                <table class="table table-hover align-middle">
-                  <thead>
-                    <tr>
-                      <th style="width: 22%">DANH MỤC</th>
-                      <th style="width: 35%">TÊN SẢN PHẨM</th>
-                      <th style="width: 18%">THƯƠNG HIỆU</th>
-                      <th class="text-end" style="width: 8%">SỐ LƯỢNG</th>
-                      <th class="text-end" style="width: 8%">ĐƠN GIÁ</th>
-                      <th class="text-end" style="width: 9%">GIÁ TRỊ</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr th:if="${inventoryDetails == null or #lists.isEmpty(inventoryDetails)}">
-                      <td colspan="6" class="text-center text-muted">Không có dữ liệu tồn kho</td>
-                    </tr>
-                    <tr th:each="r, stat : ${inventoryDetails}">
-                      <!-- r: [category_name, product_name, brand_name, quantity, price, total_value] -->
-                      <td th:text="${r[0]}"></td>
-                      <td><strong th:text="${r[1]}"></strong></td>
-                      <td th:text="${r[2]}"></td>
-                      <td class="text-end" th:text="${#numbers.formatInteger(r[3],0)}"></td>
-                      <td class="text-end" th:text="${#numbers.formatInteger(r[4],0)}"></td>
-                      <td class="text-end" th:text="${#numbers.formatInteger(r[5],0)}"></td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-
-              <!-- Pagination -->
-              <nav aria-label="Pagination" class="p-2" th:if="${totalPages > 0}">
-                <ul class="pagination justify-content-end">
-                  <li class="page-item" th:classappend="${currentPage == 0} ? ' disabled'">
-                    <a class="page-link"
-                       th:href="@{/admin/statistics(page=0, size=${pageSize}, search=${searchTerm}, categoryId=${selectedCategoryId})}">&laquo;</a>
-                  </li>
-                  <li class="page-item" th:classappend="${currentPage == 0} ? ' disabled'">
-                    <a class="page-link"
-                       th:href="@{/admin/statistics(page=${currentPage-1}, size=${pageSize}, search=${searchTerm}, categoryId=${selectedCategoryId})}">&lsaquo;</a>
-                  </li>
-                  <li class="page-item" th:each="p : ${#numbers.sequence(0, totalPages-1)}" th:classappend="${p==currentPage} ? ' active'">
-                    <a class="page-link"
-                       th:text="${p+1}"
-                       th:href="@{/admin/statistics(page=${p}, size=${pageSize}, search=${searchTerm}, categoryId=${selectedCategoryId})}"></a>
-                  </li>
-                  <li class="page-item" th:classappend="${currentPage >= totalPages-1} ? ' disabled'">
-                    <a class="page-link"
-                       th:href="@{/admin/statistics(page=${currentPage+1}, size=${pageSize}, search=${searchTerm}, categoryId=${selectedCategoryId})}">&rsaquo;</a>
-                  </li>
-                  <li class="page-item" th:classappend="${currentPage >= totalPages-1} ? ' disabled'">
-                    <a class="page-link"
-                       th:href="@{/admin/statistics(page=${totalPages-1}, size=${pageSize}, search=${searchTerm}, categoryId=${selectedCategoryId})}">&raquo;</a>
-                  </li>
-                </ul>
-              </nav>
+          <!-- Shop Overview Section -->
+          <div class="shop-overview">
+            <h5><i class="fas fa-store"></i> Tổng quan theo shop</h5>
+            <div class="table-responsive">
+              <table class="table shop-stats-table">
+                <thead>
+                  <tr>
+                    <th><i class="fas fa-store"></i> Shop</th>
+                    <th><i class="fas fa-info-circle"></i> Trạng thái</th>
+                    <th><i class="fas fa-cube"></i> Sản phẩm</th>
+                    <th><i class="fas fa-warehouse"></i> Tồn kho</th>
+                    <th><i class="fas fa-chart-line"></i> Giá trị tồn</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr th:each="stat : ${shopStats}">
+                    <td>
+                      <div class="fw-bold text-dark" th:text="${stat.shopName}">
+                        Shop name
+                      </div>
+                      <div
+                        class="text-muted small"
+                        th:text="${stat.vendorName}"
+                      >
+                        Vendor
+                      </div>
+                    </td>
+                    <td>
+                      <span
+                        class="status-badge status-active"
+                        th:if="${stat.status.name() == 'ACTIVE'}"
+                        >Hoạt động</span
+                      >
+                      <span
+                        class="status-badge status-pending"
+                        th:if="${stat.status.name() == 'PENDING'}"
+                        >Chờ duyệt</span
+                      >
+                      <span
+                        class="status-badge status-rejected"
+                        th:if="${stat.status.name() == 'REJECTED'}"
+                        >Từ chối</span
+                      >
+                      <span
+                        class="status-badge status-suspended"
+                        th:if="${stat.status.name() == 'SUSPENDED'}"
+                        >Tạm ngưng</span
+                      >
+                    </td>
+                    <td
+                      class="text-end fw-bold text-dark"
+                      th:text="${stat.productCount}"
+                    >
+                      0
+                    </td>
+                    <td
+                      class="text-end fw-bold text-dark"
+                      th:text="${stat.totalQuantity}"
+                    >
+                      0
+                    </td>
+                    <td
+                      class="text-end fw-bold text-dark"
+                      th:text="${#numbers.formatDecimal(stat.totalInventoryValue, 0, 'DEFAULT', 0, 'DEFAULT')} + ' ₫'"
+                    >
+                      0 ₫
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </div>
+
+          <!-- Filter Section -->
+          <div class="filter-card">
+            <h5><i class="fas fa-filter"></i> Bộ lọc thống kê</h5>
+            <form method="get" th:action="@{/admin/statistics}">
+              <div class="row g-3 align-items-end">
+                <div class="col-lg-3 col-md-6">
+                  <label class="form-label text-muted fw-bold">
+                    <i class="fas fa-layer-group text-primary"></i> Danh mục
+                  </label>
+                  <select class="form-select" name="categoryId">
+                    <option
+                      th:selected="${selectedCategoryId == null}"
+                      th:value="${null}"
+                    >
+                      Tất cả danh mục
+                    </option>
+                    <option
+                      th:each="c : ${categories}"
+                      th:value="${c.categoryId}"
+                      th:selected="${selectedCategoryId != null and c.categoryId == selectedCategoryId}"
+                      th:text="${c.categoryName}"
+                    >
+                      Danh mục
+                    </option>
+                  </select>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                  <label class="form-label text-muted fw-bold">
+                    <i class="fas fa-store text-primary"></i> Shop
+                  </label>
+                  <select class="form-select" name="shopId">
+                    <option
+                      th:selected="${selectedShopId == null}"
+                      th:value="${null}"
+                    >
+                      Tất cả shop
+                    </option>
+                    <option
+                      th:each="shop : ${shops}"
+                      th:value="${shop[0]}"
+                      th:selected="${selectedShopId != null and shop[0] == selectedShopId}"
+                      th:text="${shop[1]}"
+                    >
+                      Shop name
+                    </option>
+                  </select>
+                </div>
+                <div class="col-lg-4 col-md-6">
+                  <label class="form-label text-muted fw-bold">
+                    <i class="fas fa-search text-primary"></i> Tìm kiếm
+                  </label>
+                  <input
+                    class="form-control"
+                    type="text"
+                    name="search"
+                    th:value="${searchTerm}"
+                    placeholder="Nhập tên sản phẩm, danh mục hoặc thương hiệu..."
+                  />
+                </div>
+                <div class="col-lg-2 col-md-6">
+                  <label class="form-label text-muted fw-bold">
+                    <i class="fas fa-list text-primary"></i> Hiển thị
+                  </label>
+                  <select class="form-select" name="size">
+                    <option th:selected="${pageSize == 10}" value="10">
+                      10 mục
+                    </option>
+                    <option th:selected="${pageSize == 20}" value="20">
+                      20 mục
+                    </option>
+                    <option th:selected="${pageSize == 50}" value="50">
+                      50 mục
+                    </option>
+                  </select>
+                </div>
+              </div>
+              <div class="row mt-3">
+                <div class="col-12">
+                  <button class="btn btn-primary me-2" type="submit">
+                    <i class="fas fa-filter"></i> Lọc dữ liệu
+                  </button>
+                  <a
+                    th:href="@{/admin/statistics}"
+                    class="btn btn-outline-secondary"
+                  >
+                    <i class="fas fa-refresh"></i> Làm mới
+                  </a>
+                </div>
+              </div>
+            </form>
+          </div>
+
+          <!-- Inventory Details Table -->
+          <div class="table-card">
+            <h5><i class="fas fa-cubes"></i> Chi tiết tồn kho</h5>
+            <div class="table-responsive">
+              <table class="table table-hover align-middle">
+                <thead>
+                  <tr>
+                    <th style="width: 20%">Danh mục</th>
+                    <th style="width: 30%">Tên sản phẩm</th>
+                    <th style="width: 20%">Thương hiệu</th>
+                    <th style="width: 15%" class="text-end">Số lượng</th>
+                    <th style="width: 15%" class="text-end">Đơn giá</th>
+                    <th style="width: 15%" class="text-end">Giá trị</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr
+                    th:if="${inventoryDetails == null or #lists.isEmpty(inventoryDetails)}"
+                  >
+                    <td colspan="6" class="text-center text-muted py-4">
+                      <i class="fas fa-inbox fa-2x mb-2"></i><br />
+                      Không có dữ liệu tồn kho
+                    </td>
+                  </tr>
+                  <tr th:each="r, stat : ${inventoryDetails}">
+                    <td th:text="${r[0]}"></td>
+                    <td><strong th:text="${r[1]}"></strong></td>
+                    <td th:text="${r[2]}"></td>
+                    <td
+                      class="text-end fw-bold"
+                      th:text="${#numbers.formatInteger(r[3],0)}"
+                    ></td>
+                    <td
+                      class="text-end fw-bold"
+                      th:text="${#numbers.formatInteger(r[4],0)}"
+                    ></td>
+                    <td
+                      class="text-end fw-bold text-success"
+                      th:text="${#numbers.formatInteger(r[5],0)}"
+                    ></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Pagination -->
+            <nav aria-label="Pagination" class="mt-4" th:if="${totalPages > 0}">
+              <ul class="pagination justify-content-center">
+                <li
+                  class="page-item"
+                  th:classappend="${currentPage == 0} ? ' disabled'"
+                >
+                  <a
+                    class="page-link"
+                    th:href="@{/admin/statistics(page=0, size=${pageSize}, search=${searchTerm}, categoryId=${selectedCategoryId}, shopId=${selectedShopId})}"
+                  >
+                    <i class="fas fa-angle-double-left"></i>
+                  </a>
+                </li>
+                <li
+                  class="page-item"
+                  th:classappend="${currentPage == 0} ? ' disabled'"
+                >
+                  <a
+                    class="page-link"
+                    th:href="@{/admin/statistics(page=${currentPage-1}, size=${pageSize}, search=${searchTerm}, categoryId=${selectedCategoryId}, shopId=${selectedShopId})}"
+                  >
+                    <i class="fas fa-angle-left"></i>
+                  </a>
+                </li>
+                <li
+                  class="page-item"
+                  th:each="p : ${#numbers.sequence(0, totalPages-1)}"
+                  th:classappend="${p==currentPage} ? ' active'"
+                >
+                  <a
+                    class="page-link"
+                    th:text="${p+1}"
+                    th:href="@{/admin/statistics(page=${p}, size=${pageSize}, search=${searchTerm}, categoryId=${selectedCategoryId}, shopId=${selectedShopId})}"
+                  ></a>
+                </li>
+                <li
+                  class="page-item"
+                  th:classappend="${currentPage >= totalPages-1} ? ' disabled'"
+                >
+                  <a
+                    class="page-link"
+                    th:href="@{/admin/statistics(page=${currentPage+1}, size=${pageSize}, search=${searchTerm}, categoryId=${selectedCategoryId}, shopId=${selectedShopId})}"
+                  >
+                    <i class="fas fa-angle-right"></i>
+                  </a>
+                </li>
+                <li
+                  class="page-item"
+                  th:classappend="${currentPage >= totalPages-1} ? ' disabled'"
+                >
+                  <a
+                    class="page-link"
+                    th:href="@{/admin/statistics(page=${totalPages-1}, size=${pageSize}, search=${searchTerm}, categoryId=${selectedCategoryId}, shopId=${selectedShopId})}"
+                  >
+                    <i class="fas fa-angle-double-right"></i>
+                  </a>
+                </li>
+              </ul>
+            </nav>
+          </div>
+        </div>
       </div>
+
       <th:block th:replace="~{admin/fragments/footer :: footer}"></th:block>
     </div>
+
     <script src="/assets/js/core/jquery.3.2.1.min.js"></script>
     <script src="/assets/js/core/popper.min.js"></script>
     <script src="/assets/js/core/bootstrap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
-  <script th:inline="javascript">
-  /**
-   * ONESHOP ADMIN STATISTICS DASHBOARD (Server-side render)
-   * - KPI cards và charts được render dữ liệu ngay từ server (Thymeleaf)
-   * - Click KPI card để mở danh sách chi tiết: /admin/statistics/view?type={type}
-   */
-      $(function () {
-        const charts = {};
-        const store = {
-          lowstock: { pageSize: 10 },
-          expiring: { pageSize: 10 },
-          discounted: { pageSize: 10 },
-          favorites: { pageSize: 10 },
-        };
-        const baseOpts = {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: {
-              position: "bottom",
-              labels: { usePointStyle: true, font: { size: 12 } },
-            },
-          },
-        };
-        function makeChart(id) {
-          console.log("Creating chart for:", id);
-          const ctx = document.getElementById(id);
-          
-          if (!ctx) {
-            console.error("Canvas element not found:", id);
-            return null;
-          }
-          
-          if (!window.Chart) {
-            console.error("Chart.js library not loaded");
-            return null;
-          }
-          
-          try {
-            const chart = new Chart(ctx, {
-              type: "doughnut",
-              data: {
-                labels: [],
-                datasets: [
-                  {
-                    data: [],
-                    backgroundColor: [
-                      "#667eea",
-                      "#764ba2",
-                      "#a29bfe",
-                      "#fd79a8",
-                      "#fdcb6e",
-                      "#55efc4",
-                      "#81ecec",
-                      "#74b9ff",
-                    ],
-                    borderWidth: 2,
-                  },
-                ],
-              },
-              options: baseOpts,
-            });
-            console.log("Chart created successfully:", id);
-            return chart;
-          } catch (error) {
-            console.error("Error creating chart:", id, error);
-            return null;
-          }
-        }
-        
-        // Initialize everything when DOM is ready (server-side data)
-        $(document).ready(function() {
-          // Charts removed; server-side table only
-        });
-        
-        // Charts removed
-        
-        // Removed client-side fetch; charts use server-provided data
 
-        function buildPagination(pagerId, totalRows, pageSize, onPageChange) {
-          const ul = document.getElementById(pagerId);
-          if (!ul) return;
-          const totalPages = Math.max(1, Math.ceil(totalRows / pageSize));
-          let current = 1;
-          function render() {
-            const span = 2;
-            let html = "";
-            const li = (dis, text, page, active) =>
-              `<li class="page-item ${dis ? "disabled" : ""} ${
-                active ? "active" : ""
-              }"><a class="page-link" href="#" data-page="${page}">${text}</a></li>`;
-            html += li(current === 1, "«", 1, false);
-            html += li(current === 1, "‹", Math.max(1, current - 1), false);
-            const start = Math.max(1, current - span);
-            const end = Math.min(totalPages, current + span);
-            for (let i = start; i <= end; i++)
-              html += li(false, String(i), i, i === current);
-            html += li(
-              current === totalPages,
-              "›",
-              Math.min(totalPages, current + 1),
-              false
-            );
-            html += li(current === totalPages, "»", totalPages, false);
-            ul.innerHTML = html;
-            ul.querySelectorAll("a[data-page]").forEach((a) => {
-              a.addEventListener("click", (e) => {
-                e.preventDefault();
-                const p = Number(a.getAttribute("data-page")) || 1;
-                if (p >= 1 && p <= totalPages) {
-                  current = p;
-                  onPageChange(p);
-                  render();
-                }
-              });
-            });
-          }
-          render();
-          return {
-            go: (p) => {
-              current = p;
-              render();
-            },
-          };
-        }
-
-        function paginateExistingTable(bodySelector, pagerId, pageSize) {
-          const rows = Array.from(
-            document.querySelectorAll(bodySelector + " > tr")
-          );
-          if (!rows.length) return;
-          function showPage(page) {
-            const start = (page - 1) * pageSize;
-            const end = start + pageSize;
-            rows.forEach((tr, idx) => {
-              tr.style.display = idx >= start && idx < end ? "" : "none";
-            });
-          }
-          const pager = buildPagination(
-            pagerId,
-            rows.length,
-            pageSize,
-            showPage
-          );
-          showPage(1);
-          return pager;
-        }
-
-        function setChartTitle(canvasId, icon, text) {
-          const cv = document.getElementById(canvasId);
-          if (!cv) return;
-          const t = cv.previousElementSibling;
-          if (t && t.classList.contains("chart-title")) {
-            t.innerHTML = `<i class="fas ${icon}"></i> ${text}`;
-          }
-        }
-        /* Old client-side fetch logic removed: dashboard now uses server data */
-        
-        /* Old KPI fetch removed */
-        function lowStock() {
-          // Commented out - tables removed
-          return;
-        }
-        function expiring() {
-          // Stub - tables removed
-          return;
-        }
-        function discounted() {
-          // Stub - tables removed  
-          return;
-        }
-        function favorites() {
-          // Stub - tables removed
-          return;
-        }
-
-        // Show corresponding table when clicking KPI cards
-        $(
-          "#section-lowstock,#section-expiring,#section-discounted,#section-favorites"
-        ).hide();
-        function showSection(id) {
-          $(
-            "#section-lowstock,#section-expiring,#section-discounted,#section-favorites"
-          ).hide();
-          $(id).show();
-          document
-            .querySelector(id)
-            .scrollIntoView({ behavior: "smooth", block: "start" });
-        }
-        // Enhanced KPI card click handling with visual feedback
+    <script th:inline="javascript">
+      $(document).ready(function () {
+        // KPI card click handling
         $(".stats-card[data-show]").on("click", function () {
           const $card = $(this);
           const which = $card.data("show");
@@ -689,82 +797,25 @@
             "slowmoving",
             "trending_up",
           ];
+
           if (!validTypes.includes(which)) {
             console.error("Invalid statistics type:", which);
             alert("Loại thống kê không hợp lệ: " + which);
             return;
           }
 
-          // Add loading state visual feedback - DISABLED
-          // $card.addClass("loading").css("pointer-events", "none");
-          // $card.find(".number").text("...");
-          // $card.append(
-          //   '<div class="loading-overlay"><i class="fas fa-spinner fa-spin"></i></div>'
-          // );
-
           // Navigate to detailed view
-          console.log("Navigating to statistics view:", which);
           const url =
             "/admin/statistics/view?type=" + encodeURIComponent(which);
           console.log("Target URL:", url);
           window.location.href = url;
         });
-        $('a[data-toggle="tab"]').on("shown.bs.tab", function (e) {
-          const target = $(e.target).attr("href");
-          if (history.replaceState) {
-            history.replaceState(null, null, target);
-          } else {
-            location.hash = target;
-          }
-          if (target === "#products") {
-            loadProductCharts();
-            setTimeout(() => {
-              Object.values(charts).forEach((c) => c && c.resize());
-            }, 100);
-          }
-        });
-        // Handle URL hash navigation
-        function initializeTabFromURL() {
-          const hash = location.hash;
-          const validTabs = ["#overview", "#products"];
 
-          console.log("Current URL hash:", hash);
-
-          if (validTabs.includes(hash)) {
-            const targetTab = `a[href="${hash}"]`;
-            if ($(targetTab).length > 0) {
-              console.log("Activating tab:", hash);
-              $(targetTab).tab("show");
-
-              if (hash === "#products") {
-                setTimeout(loadProductCharts, 100);
-              }
-            }
-          } else if (hash) {
-            console.warn("Invalid tab hash:", hash);
-            // Default to overview
-            $('a[href="#overview"]').tab("show");
-          }
-        }
-
-        // Initialize on page load
-        initializeTabFromURL();
-
-        // Handle back/forward browser navigation
-        $(window).on("hashchange", initializeTabFromURL);
-
-        // Action button functions
-        window.showAllProducts = function () {
-          $('a[href="#products"]').tab("show");
-        };
-
-        window.showFavoriteProducts = function () {
-          window.location.href = "/admin/statistics/view?type=favorites";
-        };
-        
-  // Auto refresh disabled
-        
-      }); // End $(function())
+        // Auto-dismiss alerts
+        setTimeout(function () {
+          $(".alert").fadeOut("slow");
+        }, 5000);
+      });
     </script>
   </body>
 </html>

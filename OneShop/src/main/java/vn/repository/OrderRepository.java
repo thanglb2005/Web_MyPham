@@ -115,6 +115,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
            "WHERE o.shipper = :shipper AND o.status = 'DELIVERED'")
     Double getTotalDeliveredAmountByShipper(User shipper);
 
+
     // ===== VENDOR ORDER MANAGEMENT METHODS =====
 
     /**
@@ -174,4 +175,28 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
      */
     @Query("SELECT COUNT(DISTINCT o) FROM Order o JOIN o.orderDetails od JOIN od.product p WHERE p.shop.shopId IN :shopIds")
     Long countByShopIdIn(@Param("shopIds") List<Long> shopIds);
+
+
+    /**
+     * Find available orders for shipper based on their assigned shops
+     * Returns orders with status CONFIRMED, no shipper assigned, and from shops the shipper is assigned to
+     */
+    @Query("SELECT DISTINCT o FROM Order o " +
+           "JOIN o.orderDetails od " +
+           "JOIN od.product p " +
+           "JOIN p.shop s " +
+           "JOIN s.shippers shipper " +
+           "WHERE o.status = :status " +
+           "AND o.shipper IS NULL " +
+           "AND shipper = :shipper " +
+           "ORDER BY o.orderDate DESC")
+    List<Order> findAvailableOrdersForShipper(User shipper, Order.OrderStatus status);
+
+    /**
+     * Find orders assigned to shipper (for their assigned shops)
+     */
+    @Query("SELECT DISTINCT o FROM Order o " +
+           "WHERE o.shipper = :shipper " +
+           "ORDER BY o.orderDate DESC")
+    List<Order> findOrdersByShipper(User shipper);
 }

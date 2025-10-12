@@ -1,0 +1,943 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CSKH Chat - Hỗ trợ khách hàng</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        height: 100vh;
+        overflow: hidden;
+      }
+
+      .chat-container {
+        display: flex;
+        height: 100vh;
+        max-width: 1400px;
+        margin: 0 auto;
+        background: white;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+      }
+
+      .sidebar {
+        width: 350px;
+        background: #2c3e50;
+        color: white;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .sidebar-header {
+        padding: 20px;
+        background: #34495e;
+        border-bottom: 1px solid #34495e;
+      }
+
+      .sidebar-header h2 {
+        color: #ecf0f1;
+        font-size: 1.5rem;
+        margin-bottom: 5px;
+      }
+
+      .sidebar-header p {
+        color: #bdc3c7;
+        font-size: 0.9rem;
+      }
+
+      .search-box {
+        padding: 15px;
+        background: #34495e;
+      }
+
+      .search-box input {
+        width: 100%;
+        padding: 10px;
+        border: none;
+        border-radius: 20px;
+        background: #ecf0f1;
+        font-size: 0.9rem;
+      }
+
+      .rooms-list {
+        flex: 1;
+        overflow-y: auto;
+        padding: 10px;
+      }
+
+      .room-item {
+        padding: 15px;
+        margin-bottom: 10px;
+        background: #34495e;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border-left: 4px solid transparent;
+      }
+
+      .room-item:hover {
+        background: #3498db;
+        transform: translateX(5px);
+      }
+
+      .room-item.active {
+        background: #e74c3c;
+        border-left-color: #c0392b;
+      }
+
+      .room-item .room-name {
+        font-weight: bold;
+        margin-bottom: 5px;
+      }
+
+      .room-item .room-preview {
+        font-size: 0.8rem;
+        color: #bdc3c7;
+        margin-bottom: 5px;
+      }
+
+      .room-item .room-time {
+        font-size: 0.7rem;
+        color: #95a5a6;
+      }
+
+      .room-item .room-badge {
+        background: #e74c3c;
+        color: white;
+        border-radius: 50%;
+        width: 20px;
+        height: 20px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.7rem;
+        float: right;
+        margin-top: -5px;
+      }
+
+      .chat-area {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .chat-header {
+        padding: 20px;
+        background: #ecf0f1;
+        border-bottom: 1px solid #bdc3c7;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .chat-actions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .action-btn {
+        padding: 8px 12px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 12px;
+        font-weight: 500;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+
+      .delete-btn {
+        background: #dc3545;
+        color: white;
+      }
+
+      .delete-btn:hover {
+        background: #c82333;
+      }
+
+      .logout-btn {
+        background: #6c757d;
+        color: white;
+      }
+
+      .logout-btn:hover {
+        background: #5a6268;
+      }
+
+      .chat-header h3 {
+        color: #2c3e50;
+        font-size: 1.2rem;
+      }
+
+      .chat-header .status {
+        color: #27ae60;
+        font-size: 0.9rem;
+      }
+
+      .chat-messages {
+        flex: 1;
+        padding: 20px;
+        overflow-y: auto;
+        background: #f8f9fa;
+      }
+
+      .message {
+        margin-bottom: 15px;
+        display: flex;
+        align-items: flex-start;
+      }
+
+      .message.customer {
+        justify-content: flex-start;
+      }
+
+      .message.cskh {
+        justify-content: flex-end;
+      }
+
+      .message-content {
+        max-width: 70%;
+        padding: 12px 16px;
+        border-radius: 18px;
+        position: relative;
+      }
+
+      .message.customer .message-content {
+        background: #3498db;
+        color: white;
+        border-bottom-left-radius: 5px;
+      }
+
+      .message.cskh .message-content {
+        background: #e74c3c;
+        color: white;
+        border-bottom-right-radius: 5px;
+      }
+
+      .message-time {
+        font-size: 0.7rem;
+        color: #7f8c8d;
+        margin-top: 5px;
+      }
+
+      .message.customer .message-time {
+        text-align: left;
+      }
+
+      .message.cskh .message-time {
+        text-align: right;
+      }
+
+      .chat-input {
+        padding: 20px;
+        background: white;
+        border-top: 1px solid #bdc3c7;
+        display: flex;
+        gap: 10px;
+      }
+
+      .chat-input input {
+        flex: 1;
+        padding: 12px;
+        border: 1px solid #bdc3c7;
+        border-radius: 25px;
+        font-size: 1rem;
+        outline: none;
+      }
+
+      .chat-input input:focus {
+        border-color: #3498db;
+      }
+
+      .chat-input button {
+        padding: 12px 20px;
+        background: #e74c3c;
+        color: white;
+        border: none;
+        border-radius: 25px;
+        cursor: pointer;
+        font-size: 1rem;
+        transition: background 0.3s ease;
+      }
+
+      .chat-input button:hover {
+        background: #c0392b;
+      }
+
+      .chat-input button:disabled {
+        background: #bdc3c7;
+        cursor: not-allowed;
+      }
+
+      .typing-indicator {
+        padding: 10px 20px;
+        color: #7f8c8d;
+        font-style: italic;
+        font-size: 0.9rem;
+      }
+
+      .no-room-selected {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        color: #7f8c8d;
+        text-align: center;
+      }
+
+      .no-room-selected i {
+        font-size: 4rem;
+        margin-bottom: 20px;
+        color: #bdc3c7;
+      }
+
+      .no-room-selected h3 {
+        margin-bottom: 10px;
+        color: #2c3e50;
+      }
+
+      .no-room-selected p {
+        font-size: 0.9rem;
+      }
+
+      .cskh-badge {
+        background: #e74c3c;
+        color: white;
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 0.7rem;
+        font-weight: bold;
+        margin-left: 10px;
+      }
+
+      .customer-badge {
+        background: #3498db;
+        color: white;
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 0.7rem;
+        font-weight: bold;
+        margin-right: 10px;
+      }
+
+      @media (max-width: 768px) {
+        .chat-container {
+          flex-direction: column;
+        }
+
+        .sidebar {
+          width: 100%;
+          height: 200px;
+        }
+
+        .chat-area {
+          height: calc(100vh - 200px);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="chat-container">
+      <!-- Sidebar -->
+      <div class="sidebar">
+        <div class="sidebar-header">
+          <h2><i class="fas fa-headset"></i> CSKH Chat</h2>
+          <p>Hỗ trợ khách hàng toàn hệ thống</p>
+        </div>
+
+        <div class="search-box">
+          <input
+            type="text"
+            id="searchRooms"
+            placeholder="Tìm kiếm cuộc trò chuyện..."
+          />
+        </div>
+
+        <div class="rooms-list" id="roomsList">
+          <!-- Rooms will be loaded here -->
+        </div>
+      </div>
+
+      <!-- Chat Area -->
+      <div class="chat-area">
+        <div class="chat-header">
+          <div>
+            <h3 id="currentRoomName">Chọn cuộc trò chuyện</h3>
+            <span class="status" id="connectionStatus">Đang kết nối...</span>
+          </div>
+          <div class="chat-actions">
+            <button
+              id="clearHistoryBtn"
+              title="Xóa lịch sử phòng"
+              class="action-btn delete-btn"
+              style="display: none"
+            >
+              <i class="fas fa-trash"></i> Xóa lịch sử
+            </button>
+            <button
+              id="logoutBtn"
+              title="Đăng xuất"
+              class="action-btn logout-btn"
+            >
+              <i class="fas fa-sign-out-alt"></i> Đăng xuất
+            </button>
+            <span class="cskh-badge">CSKH</span>
+          </div>
+        </div>
+
+        <div class="chat-messages" id="chatMessages">
+          <div class="no-room-selected">
+            <i class="fas fa-comments"></i>
+            <h3>Chào mừng đến với CSKH Chat</h3>
+            <p>
+              Chọn một cuộc trò chuyện từ danh sách bên trái để bắt đầu hỗ trợ
+              khách hàng
+            </p>
+          </div>
+        </div>
+
+        <div
+          class="typing-indicator"
+          id="typingIndicator"
+          style="display: none"
+        >
+          <span id="typingText"></span>
+        </div>
+
+        <div class="chat-input">
+          <input
+            type="text"
+            id="messageInput"
+            placeholder="Nhập tin nhắn hỗ trợ..."
+            disabled
+          />
+          <button id="sendButton" disabled>
+            <i class="fas fa-paper-plane"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+
+    <script th:inline="javascript">
+      // CSKH Context from server
+      const cskhContext = /*[[${chatVendorContext}]]*/ {};
+
+      console.log("=== CSKH CHAT DEBUG ===");
+      console.log("cskhContext:", cskhContext);
+
+      let stompClient = null;
+      let currentRoom = null;
+      let isConnected = false;
+      let typingTimer = null;
+      let currentRoomSubscription = null;
+      let currentTypingSubscription = null;
+
+      // Initialize
+      document.addEventListener("DOMContentLoaded", function () {
+        connect();
+        loadRoomsList();
+        setupEventListeners();
+      });
+
+      function connect() {
+        const socket = new SockJS("/ws");
+        stompClient = Stomp.over(socket);
+
+        stompClient.connect(
+          {},
+          function (frame) {
+            console.log("Connected: " + frame);
+            isConnected = true;
+            updateConnectionStatus("Đã kết nối", "#27ae60");
+
+            // Subscribe to rooms list updates
+            stompClient.subscribe("/topic/rooms", function (message) {
+              const room = JSON.parse(message.body);
+              updateRoomInList(room);
+            });
+
+            // Subscribe to messages - CSKH subscribe với tất cả rooms
+            // Sẽ subscribe động khi chọn room
+            // Subscribe to typing indicators - cũng sẽ subscribe động
+
+            // Subscribe to errors
+            stompClient.subscribe("/user/queue/errors", function (message) {
+              const error = JSON.parse(message.body);
+              alert("Lỗi: " + error.message);
+            });
+          },
+          function (error) {
+            console.log("Connection error: " + error);
+            isConnected = false;
+            updateConnectionStatus("Lỗi kết nối", "#e74c3c");
+          }
+        );
+      }
+
+      function loadRoomsList() {
+        fetch("/api/chat/rooms?limit=100")
+          .then((response) => response.json())
+          .then((rooms) => {
+            console.log("=== CSKH ROOMS LOADED ===");
+            console.log("Total rooms:", rooms.length);
+            console.log("All rooms:", rooms);
+
+            // Filter để chỉ hiện support rooms và shop rooms
+            const supportRooms = rooms.filter(
+              (room) =>
+                room.roomId.startsWith("support-") ||
+                room.roomId.startsWith("shop-")
+            );
+            console.log("Filtered rooms:", supportRooms);
+
+            displayRooms(supportRooms);
+          })
+          .catch((error) => {
+            console.error("Error loading rooms:", error);
+          });
+      }
+
+      function displayRooms(rooms) {
+        const roomsList = document.getElementById("roomsList");
+        roomsList.innerHTML = "";
+
+        rooms.forEach((room) => {
+          const roomElement = document.createElement("div");
+          roomElement.className = "room-item";
+          roomElement.dataset.roomId = room.roomId;
+
+          // Loại bỏ "- CSKH" khỏi tên customer nếu có
+          let customerName = room.customerName || "Khách hàng";
+          if (customerName.includes(" - CSKH")) {
+            customerName = customerName.replace(" - CSKH", "");
+          }
+
+          const roomName = room.roomId.includes("shop-")
+            ? `Shop ${extractShopIdFromRoomId(room.roomId)} - ${customerName}`
+            : customerName;
+
+          roomElement.innerHTML = `
+                    <div class="room-name">${roomName}</div>
+                    <div class="room-preview">${
+                      room.preview || "Chưa có tin nhắn"
+                    }</div>
+                    <div class="room-time">${formatTime(room.sentAt)}</div>
+                    ${
+                      room.pendingCount > 0
+                        ? `<div class="room-badge">${room.pendingCount}</div>`
+                        : ""
+                    }
+                `;
+
+          roomElement.addEventListener("click", () => {
+            selectRoom(room.roomId);
+          });
+
+          roomsList.appendChild(roomElement);
+        });
+      }
+
+      function selectRoom(roomId) {
+        console.log("=== CSKH SELECT ROOM ===");
+        console.log("Selected room:", roomId);
+
+        if (currentRoom === roomId) return;
+
+        // Update UI
+        document.querySelectorAll(".room-item").forEach((item) => {
+          item.classList.remove("active");
+        });
+        document
+          .querySelector(`[data-room-id="${roomId}"]`)
+          .classList.add("active");
+
+        // Update current room
+        currentRoom = roomId;
+
+        // Update header
+        const roomName = roomId.includes("shop-")
+          ? `Shop ${extractShopIdFromRoomId(
+              roomId
+            )} - ${extractCustomerNameFromRoomId(roomId)}`
+          : "Hỗ trợ chung";
+        document.getElementById("currentRoomName").textContent = roomName;
+
+        // Enable input
+        document.getElementById("messageInput").disabled = false;
+        document.getElementById("sendButton").disabled = false;
+
+        // Show clear history button
+        document.getElementById("clearHistoryBtn").style.display = "block";
+
+        // Clear messages
+        document.getElementById("chatMessages").innerHTML = "";
+
+        // Load message history
+        loadMessageHistory(roomId);
+
+        // Subscribe to this specific room
+        if (isConnected) {
+          // Unsubscribe from previous room if any
+          if (currentRoomSubscription) {
+            currentRoomSubscription.unsubscribe();
+          }
+
+          // Subscribe to new room
+          currentRoomSubscription = stompClient.subscribe(
+            "/topic/room/" + roomId,
+            function (message) {
+              console.log("=== CSKH MESSAGE RECEIVED ===");
+              console.log("Room:", roomId);
+              console.log("Message:", message.body);
+              const msg = JSON.parse(message.body);
+              displayMessage(msg);
+            }
+          );
+
+          // Subscribe to typing indicators for this room
+          if (currentTypingSubscription) {
+            currentTypingSubscription.unsubscribe();
+          }
+
+          currentTypingSubscription = stompClient.subscribe(
+            "/topic/typing/" + roomId,
+            function (message) {
+              const typing = JSON.parse(message.body);
+              showTypingIndicator(typing);
+            }
+          );
+        }
+
+        // Join room
+        if (isConnected) {
+          stompClient.send(
+            "/app/chat.join",
+            {},
+            JSON.stringify({
+              roomId: roomId,
+              userType: "cskh",
+              userName: cskhContext.displayName || "CSKH",
+            })
+          );
+        }
+      }
+
+      function loadMessageHistory(roomId) {
+        console.log("=== CSKH LOAD HISTORY ===");
+        console.log("Loading history for room:", roomId);
+
+        fetch(`/api/chat/history?roomId=${roomId}&limit=50`)
+          .then((response) => {
+            console.log("History API response status:", response.status);
+            return response.json();
+          })
+          .then((messages) => {
+            console.log("History messages:", messages);
+            console.log("Number of messages:", messages.length);
+            messages.forEach((msg) => {
+              // Bỏ qua tin nhắn cũ có customerName sai
+              if (msg.senderName && msg.senderName.includes(" - CSKH")) {
+                console.log(
+                  "Skipping old history message with wrong customerName:",
+                  msg.senderName
+                );
+                return;
+              }
+              displayMessage(msg);
+            });
+          })
+          .catch((error) => {
+            console.error("Error loading message history:", error);
+          });
+      }
+
+      function displayMessage(message) {
+        if (message.roomId !== currentRoom) return;
+
+        console.log("=== CSKH DISPLAY MESSAGE ===");
+        console.log("Message:", message);
+        console.log("Sender Type:", message.senderType);
+        console.log("Sender Name:", message.senderName);
+        console.log("CSKH Context:", cskhContext);
+        console.log("Is CSKH:", message.senderType === "cskh");
+        console.log("=============================");
+
+        const messagesContainer = document.getElementById("chatMessages");
+        const messageElement = document.createElement("div");
+
+        // CSKH messages should be on the right, customer messages on the left
+        // Kiểm tra cả senderType và senderName để tránh duplicate
+        const isCskhMessage =
+          message.senderType === "cskh" ||
+          message.senderName === (cskhContext.displayName || "CSKH") ||
+          message.senderName === "CSKH";
+
+        // Tránh duplicate tin nhắn từ chính mình và tin nhắn cũ có customerName sai
+        const currentCskhName = cskhContext.displayName || "CSKH";
+        console.log("Current CSKH name:", currentCskhName);
+        console.log("Message sender name:", message.senderName);
+        console.log("Is from self:", message.senderName === currentCskhName);
+
+        // Bỏ qua tin nhắn từ chính mình
+        if (isCskhMessage && message.senderName === currentCskhName) {
+          console.log("Skipping duplicate CSKH message from self");
+          return;
+        }
+
+        // Bỏ qua tin nhắn cũ có customerName sai (chứa "- CSKH")
+        if (message.senderName && message.senderName.includes(" - CSKH")) {
+          console.log(
+            "Skipping old message with wrong customerName:",
+            message.senderName
+          );
+          return;
+        }
+
+        messageElement.className = `message ${
+          isCskhMessage ? "cskh" : "customer"
+        }`;
+
+        messageElement.innerHTML = `
+                <div class="message-content">
+                    ${message.messageContent}
+                    <div class="message-time">${formatTime(
+                      message.sentAt
+                    )}</div>
+                </div>
+            `;
+
+        messagesContainer.appendChild(messageElement);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+      }
+
+      function sendMessage() {
+        const messageInput = document.getElementById("messageInput");
+        const content = messageInput.value.trim();
+
+        if (!content || !currentRoom || !isConnected) return;
+
+        const message = {
+          roomId: currentRoom,
+          messageContent: content,
+          senderName: cskhContext.displayName || "CSKH",
+          senderType: "cskh",
+          messageType: "TEXT",
+        };
+
+        console.log("=== CSKH SENDING MESSAGE ===");
+        console.log("Message:", message);
+        console.log("CSKH Context:", cskhContext);
+        console.log("=============================");
+
+        stompClient.send("/app/chat.send", {}, JSON.stringify(message));
+        messageInput.value = "";
+      }
+
+      function setupEventListeners() {
+        document
+          .getElementById("sendButton")
+          .addEventListener("click", sendMessage);
+
+        document
+          .getElementById("messageInput")
+          .addEventListener("keypress", function (e) {
+            if (e.key === "Enter") {
+              sendMessage();
+            }
+          });
+
+        document
+          .getElementById("messageInput")
+          .addEventListener("input", function () {
+            if (isConnected && currentRoom) {
+              // Send typing indicator
+              stompClient.send(
+                "/app/chat.typing",
+                {},
+                JSON.stringify({
+                  roomId: currentRoom,
+                  userName: cskhContext.displayName || "CSKH",
+                  userType: "cskh",
+                })
+              );
+
+              // Clear previous timer
+              if (typingTimer) {
+                clearTimeout(typingTimer);
+              }
+
+              // Set new timer
+              typingTimer = setTimeout(() => {
+                stompClient.send(
+                  "/app/chat.typing",
+                  {},
+                  JSON.stringify({
+                    roomId: currentRoom,
+                    userName: cskhContext.displayName || "CSKH",
+                    userType: "cskh",
+                    typing: false,
+                  })
+                );
+              }, 1000);
+            }
+          });
+
+        // Setup clear history button
+        setupClearHistoryButton();
+
+        // Setup logout button
+        setupLogoutButton();
+      }
+
+      function showTypingIndicator(typing) {
+        const indicator = document.getElementById("typingIndicator");
+        const text = document.getElementById("typingText");
+
+        if (typing.typing && typing.userType !== "cskh") {
+          text.textContent = `${typing.userName} đang nhập...`;
+          indicator.style.display = "block";
+        } else {
+          indicator.style.display = "none";
+        }
+      }
+
+      function updateConnectionStatus(text, color) {
+        const status = document.getElementById("connectionStatus");
+        status.textContent = text;
+        status.style.color = color;
+      }
+
+      function extractShopIdFromRoomId(roomId) {
+        const match = roomId.match(/^shop-(\d+)-/);
+        return match ? match[1] : null;
+      }
+
+      function extractCustomerNameFromRoomId(roomId) {
+        // Extract customer name from room ID
+        const match = roomId.match(/^shop-\d+-(?:customer|guest)-(.+)$/);
+        return match ? match[1] : "Khách hàng";
+      }
+
+      function formatTime(timestamp) {
+        if (!timestamp) return "";
+        const date = new Date(timestamp);
+        return date.toLocaleTimeString("vi-VN", {
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+      }
+
+      function updateRoomInList(room) {
+        // Update room in the list
+        const roomElement = document.querySelector(
+          `[data-room-id="${room.roomId}"]`
+        );
+        if (roomElement) {
+          const preview = roomElement.querySelector(".room-preview");
+          const time = roomElement.querySelector(".room-time");
+          const badge = roomElement.querySelector(".room-badge");
+
+          if (preview) preview.textContent = room.preview || "Chưa có tin nhắn";
+          if (time) time.textContent = formatTime(room.sentAt);
+          if (badge) {
+            if (room.pendingCount > 0) {
+              badge.textContent = room.pendingCount;
+              badge.style.display = "inline-flex";
+            } else {
+              badge.style.display = "none";
+            }
+          }
+        }
+      }
+
+      // Clear History button
+      function setupClearHistoryButton() {
+        document
+          .getElementById("clearHistoryBtn")
+          .addEventListener("click", async function () {
+            if (!currentRoom) {
+              alert("Chưa chọn phòng chat.");
+              return;
+            }
+
+            if (!confirm("Bạn có chắc muốn xóa lịch sử phòng này?")) return;
+
+            try {
+              const res = await fetch(
+                `/api/chat/history/clear?roomId=${encodeURIComponent(
+                  currentRoom
+                )}`,
+                {
+                  method: "POST",
+                  credentials: "include",
+                  headers: { "X-Requested-With": "XMLHttpRequest" },
+                }
+              );
+
+              const ok = res.ok ? (await res.json()).success !== false : false;
+
+              if (ok) {
+                // Clear messages from UI
+                document.getElementById("chatMessages").innerHTML = "";
+
+                // Update room preview
+                const roomElement = document.querySelector(
+                  `[data-room-id="${currentRoom}"]`
+                );
+                if (roomElement) {
+                  const previewElement =
+                    roomElement.querySelector(".room-preview");
+                  if (previewElement) {
+                    previewElement.textContent = "Đã xóa lịch sử";
+                  }
+                }
+
+                console.log("History cleared successfully");
+              } else {
+                alert("Không thể xóa lịch sử.");
+              }
+            } catch (error) {
+              console.error("Error clearing history:", error);
+              alert("Có lỗi khi xóa lịch sử.");
+            }
+          });
+      }
+
+      // Logout button
+      function setupLogoutButton() {
+        document
+          .getElementById("logoutBtn")
+          .addEventListener("click", function () {
+            if (confirm("Bạn có chắc muốn đăng xuất?")) {
+              // Disconnect WebSocket
+              if (stompClient && stompClient.connected) {
+                stompClient.disconnect();
+              }
+
+              // Redirect to home page
+              window.location.href = "/";
+            }
+          });
+      }
+    </script>
+  </body>
+</html>

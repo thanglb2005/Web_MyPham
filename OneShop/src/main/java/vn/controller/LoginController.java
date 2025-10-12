@@ -41,10 +41,10 @@ public class LoginController {
             
             if (isAdmin) {
                 return "redirect:/admin/home";
+            } else if (isVendor) {
+                return "redirect:/vendor/dashboard";
             } else if (isCSKH) {
                 return "redirect:/cskh/chat";
-            } else if (isVendor) {
-                return "redirect:/vendor/home";
             } else if (isShipper) {
                 return "redirect:/shipper/home";
             } else {
@@ -85,17 +85,17 @@ public class LoginController {
             
             if (isAdmin) {
                 return "redirect:/admin/home";
+            } else if (isVendor) {
+                return "redirect:/vendor/dashboard";
             } else if (isCSKH) {
                 return "redirect:/cskh/chat";
-            } else if (isVendor) {
-                return "redirect:/vendor/home";
             } else if (isShipper) {
                 return "redirect:/shipper/home";
             } else {
                 return "redirect:/";
             }
         } else {
-            model.addAttribute("error", "Email hoặc mật khẩu không đúng!");
+            model.addAttribute("error", "Email hoáº·c máº­t kháº©u khÃ´ng Ä‘Ãºng!");
             return "login";
         }
     }

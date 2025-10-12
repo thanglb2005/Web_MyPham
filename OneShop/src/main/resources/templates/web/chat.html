@@ -1,40 +1,74 @@
 <!DOCTYPE html>
+
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
   <head>
     <meta charset="UTF-8" />
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
     <title>Chat Tư Vấn - OneShop</title>
+
     <link rel="stylesheet" th:href="@{/vendor/bootstrap/bootstrap.min.css}" />
+
     <link rel="stylesheet" th:href="@{/vendor/fontawesome/css/all.min.css}" />
+
     <!-- FontAwesome CDN backup -->
+
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     />
+
     <link rel="stylesheet" th:href="@{/css/main.css}" />
+
     <script th:inline="javascript">
       // Server suggested identity and preloaded messages to keep room stable across reload/login
+
       window.CHAT_INIT = {
         roomId: /*[[${chatRoomId}]]*/ null,
+
         userName: /*[[${chatUserName}]]*/ null,
+
         messages: /*[[${chatInitMessages}]]*/ [],
+
+        shop: /*[[${chatShopInfo}]]*/ {},
+
+        shopId: /*[[${chatShopId}]]*/ null,
+
+        userId: /*[[${session.user?.userId}]]*/ null,
+
+        shopEnabled: /*[[${shopChatEnabled}]]*/ false,
       };
     </script>
+
     <style>
       :root {
         /* Blue theme colors matching OneShop logo */
+
         --chat-primary: #2563eb;
+
         --chat-primary-light: #3b82f6;
+
         --chat-secondary: #f1f5f9;
+
         --chat-success: #11b76b;
+
         --chat-danger: #ff3838;
+
         --chat-warning: #ffab10;
+
         --chat-dark: #39404a;
+
         --chat-light: #f8fafc;
+
         --chat-border: #e2e8f0;
+
         --chat-shadow: 0 8px 30px rgba(37, 99, 235, 0.1);
+
         --chat-shadow-lg: 0 15px 40px rgba(37, 99, 235, 0.15);
+
         --chat-accent: #1d4ed8;
+
         --chat-gradient: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
       }
 
@@ -42,41 +76,63 @@
         background: linear-gradient(
           135deg,
           #eff6ff 0%,
+
           #f1f5f9 50%,
+
           #f8fafc 100%
         );
+
         min-height: 100vh;
+
         font-family: "Lora", serif;
+
         position: relative;
       }
 
       body::before {
         content: "";
+
         position: fixed;
+
         top: 0;
+
         left: 0;
+
         width: 100%;
+
         height: 100%;
+
         background-image: radial-gradient(
             circle at 20% 80%,
+
             rgba(37, 99, 235, 0.05) 0%,
+
             transparent 50%
           ),
           radial-gradient(
             circle at 80% 20%,
+
             rgba(29, 78, 216, 0.05) 0%,
+
             transparent 50%
           );
+
         pointer-events: none;
+
         z-index: -1;
       }
 
       .chat-container {
         max-width: 1200px;
+
         margin: 0 auto;
+
         padding: 20px;
+
         min-height: 100vh;
+
         display: flex;
+
         flex-direction: column;
       }
 
@@ -84,88 +140,134 @@
         background: linear-gradient(
           135deg,
           rgba(255, 255, 255, 0.95) 0%,
+
           rgba(248, 250, 252, 0.95) 100%
         );
+
         backdrop-filter: blur(20px);
+
         border-radius: 20px 20px 0 0;
+
         padding: 24px 30px;
+
         box-shadow: var(--chat-shadow-lg);
+
         border: 1px solid rgba(37, 99, 235, 0.1);
+
         position: relative;
+
         overflow: hidden;
       }
 
       .chat-header-main::before {
         content: "";
+
         position: absolute;
+
         top: 0;
+
         left: 0;
+
         right: 0;
+
         height: 3px;
+
         background: var(--chat-gradient);
       }
 
       .chat-title {
         display: flex;
+
         align-items: center;
+
         gap: 15px;
+
         margin-bottom: 18px;
       }
 
       .chat-title i {
         background: var(--chat-gradient);
+
         -webkit-background-clip: text;
+
         -webkit-text-fill-color: transparent;
+
         background-clip: text;
+
         font-size: 28px;
+
         filter: drop-shadow(0 2px 4px rgba(37, 99, 235, 0.3));
       }
 
       .chat-title h3 {
         margin: 0;
+
         color: var(--chat-dark);
+
         font-weight: 600;
+
         font-size: 22px;
+
         letter-spacing: -0.5px;
       }
 
       .chat-controls {
         display: flex;
+
         gap: 12px;
+
         align-items: center;
+
         flex-wrap: wrap;
       }
 
       .room-selector {
         display: flex;
+
         gap: 8px;
+
         align-items: center;
+
         background: var(--chat-light);
+
         padding: 8px 12px;
+
         border-radius: 8px;
+
         border: 1px solid var(--chat-border);
       }
 
       .room-selector input {
         border: none;
+
         background: transparent;
+
         outline: none;
+
         min-width: 150px;
+
         font-size: 14px;
       }
 
       .btn-join {
         background: var(--chat-primary);
+
         color: white;
+
         border: none;
+
         padding: 8px 16px;
+
         border-radius: 8px;
+
         font-weight: 500;
+
         transition: all 0.2s;
       }
 
       .btn-join:hover {
         background: var(--chat-primary-light);
+
         transform: translateY(-1px);
       }
 
@@ -173,14 +275,22 @@
         background: linear-gradient(
           135deg,
           rgba(255, 255, 255, 0.9) 0%,
+
           rgba(248, 250, 252, 0.9) 100%
         );
+
         backdrop-filter: blur(20px);
+
         flex: 1;
+
         display: flex;
+
         flex-direction: column;
+
         box-shadow: var(--chat-shadow-lg);
+
         border: 1px solid rgba(37, 99, 235, 0.1);
+
         border-top: none;
       }
 
@@ -188,26 +298,40 @@
         background: linear-gradient(
           180deg,
           var(--chat-light) 0%,
+
           rgba(248, 250, 252, 0.8) 100%
         );
+
         border-right: 2px solid rgba(37, 99, 235, 0.1);
+
         width: 320px;
+
         padding: 25px;
+
         display: none; /* Will show on larger screens */
+
         position: relative;
       }
 
       .chat-sidebar::before {
         content: "";
+
         position: absolute;
+
         top: 0;
+
         right: 0;
+
         width: 1px;
+
         height: 100%;
+
         background: linear-gradient(
           180deg,
           transparent 0%,
+
           rgba(37, 99, 235, 0.2) 50%,
+
           transparent 100%
         );
       }
@@ -218,85 +342,131 @@
 
       .online-users h5 {
         color: var(--chat-dark);
+
         font-weight: 600;
+
         margin-bottom: 12px;
+
         display: flex;
+
         align-items: center;
+
         gap: 8px;
       }
 
       .user-item {
         display: flex;
+
         align-items: center;
+
         gap: 12px;
+
         padding: 12px 16px;
+
         border-radius: 15px;
+
         margin-bottom: 8px;
+
         transition: all 0.3s ease;
+
         background: rgba(255, 255, 255, 0.6);
+
         border: 1px solid rgba(37, 99, 235, 0.1);
       }
 
       .user-item:hover {
         background: rgba(255, 255, 255, 0.9);
+
         transform: translateX(5px);
+
         box-shadow: 0 5px 15px rgba(37, 99, 235, 0.15);
       }
 
       .user-avatar {
         width: 38px;
+
         height: 38px;
+
         border-radius: 50%;
+
         background: var(--chat-gradient);
+
         display: flex;
+
         align-items: center;
+
         justify-content: center;
+
         color: white;
+
         font-weight: 600;
+
         font-size: 14px;
+
         box-shadow: 0 3px 10px rgba(37, 99, 235, 0.3);
       }
 
       .user-status {
         width: 8px;
+
         height: 8px;
+
         border-radius: 50%;
+
         background: var(--chat-success);
+
         margin-left: auto;
       }
 
       .chat-content {
         flex: 1;
+
         display: flex;
+
         flex-direction: column;
       }
 
       .chat-messages {
         flex: 1;
+
         padding: 25px;
+
         overflow-y: auto;
+
         background: linear-gradient(
           180deg,
           rgba(248, 250, 252, 0.3) 0%,
+
           rgba(255, 255, 255, 0.5) 100%
         );
+
         min-height: 450px;
+
         max-height: 550px;
+
         position: relative;
       }
 
       .chat-messages::before {
         content: "";
+
         position: absolute;
+
         top: 0;
+
         left: 0;
+
         right: 0;
+
         height: 20px;
+
         background: linear-gradient(
           180deg,
           rgba(37, 99, 235, 0.05) 0%,
+
           transparent 100%
         );
+
         pointer-events: none;
       }
 
@@ -306,17 +476,22 @@
 
       .message {
         display: flex;
+
         margin-bottom: 8px;
+
         animation: slideIn 0.3s ease-out;
       }
 
       @keyframes slideIn {
         from {
           opacity: 0;
+
           transform: translateY(10px);
         }
+
         to {
           opacity: 1;
+
           transform: translateY(0);
         }
       }
@@ -327,33 +502,53 @@
 
       .message-avatar {
         width: 42px;
+
         height: 42px;
+
         border-radius: 50%;
+
         background: var(--chat-gradient);
+
         display: flex;
+
         align-items: center;
+
         justify-content: center;
+
         color: white;
+
         font-weight: 600;
+
         font-size: 16px;
+
         margin: 0 12px;
+
         flex-shrink: 0;
+
         box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+
         border: 2px solid rgba(255, 255, 255, 0.8);
       }
 
       .message.own .message-avatar {
         background: linear-gradient(135deg, #11b76b 0%, #0ea5e9 100%);
+
         box-shadow: 0 4px 12px rgba(17, 183, 107, 0.25);
       }
 
       .message-bubble {
         max-width: 75%;
+
         padding: 16px 20px;
+
         border-radius: 20px;
+
         position: relative;
+
         word-wrap: break-word;
+
         backdrop-filter: blur(10px);
+
         box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
       }
 
@@ -361,36 +556,50 @@
         background: linear-gradient(
           135deg,
           rgba(255, 255, 255, 0.9) 0%,
+
           rgba(248, 250, 252, 0.8) 100%
         );
+
         border: 1px solid rgba(37, 99, 235, 0.15);
+
         border-bottom-left-radius: 8px;
+
         color: var(--chat-dark);
       }
 
       .message.own .message-bubble {
         background: var(--chat-gradient);
+
         color: white;
+
         border-bottom-right-radius: 8px;
+
         box-shadow: 0 6px 20px rgba(37, 99, 235, 0.3);
       }
 
       .message-sender {
         font-weight: 600;
+
         font-size: 12px;
+
         margin-bottom: 4px;
+
         opacity: 0.8;
       }
 
       .message-content {
         line-height: 1.4;
+
         font-size: 14px;
       }
 
       .message-time {
         font-size: 11px;
+
         opacity: 0.7;
+
         margin-top: 4px;
+
         text-align: right;
       }
 
@@ -400,31 +609,44 @@
 
       .typing-indicator {
         padding: 12px 20px;
+
         font-style: italic;
+
         color: var(--chat-primary);
+
         font-size: 14px;
+
         min-height: 20px;
+
         background: var(--chat-light);
+
         border-top: 1px solid var(--chat-border);
       }
 
       .typing-dots {
         display: inline-flex;
+
         gap: 2px;
+
         margin-left: 8px;
       }
 
       .typing-dots span {
         width: 4px;
+
         height: 4px;
+
         border-radius: 50%;
+
         background: var(--chat-primary);
+
         animation: typing 1.4s infinite;
       }
 
       .typing-dots span:nth-child(2) {
         animation-delay: 0.2s;
       }
+
       .typing-dots span:nth-child(3) {
         animation-delay: 0.4s;
       }
@@ -435,6 +657,7 @@
         100% {
           transform: translateY(0);
         }
+
         30% {
           transform: translateY(-10px);
         }
@@ -442,85 +665,131 @@
 
       .chat-input-area {
         padding: 25px;
+
         background: linear-gradient(
           135deg,
           rgba(255, 255, 255, 0.95) 0%,
+
           rgba(248, 250, 252, 0.95) 100%
         );
+
         backdrop-filter: blur(20px);
+
         border-top: 2px solid rgba(37, 99, 235, 0.1);
+
         border-radius: 0 0 20px 20px;
+
         position: relative;
       }
 
       .chat-input-area::before {
         content: "";
+
         position: absolute;
+
         top: 0;
+
         left: 0;
+
         right: 0;
+
         height: 1px;
+
         background: linear-gradient(
           90deg,
           transparent 0%,
+
           rgba(37, 99, 235, 0.3) 50%,
+
           transparent 100%
         );
       }
 
       .input-group {
         display: flex;
+
         gap: 15px;
+
         align-items: flex-end;
       }
 
       .message-input {
         flex: 1;
+
         border: 2px solid rgba(37, 99, 235, 0.2);
+
         border-radius: 25px;
+
         padding: 15px 22px;
+
         font-size: 15px;
+
         outline: none;
+
         transition: all 0.3s ease;
+
         resize: none;
+
         max-height: 120px;
+
         min-height: 50px;
+
         font-family: "Lora", serif;
+
         background: rgba(255, 255, 255, 0.8);
+
         backdrop-filter: blur(10px);
       }
 
       .message-input:focus {
         border-color: var(--chat-primary);
+
         box-shadow: 0 0 20px rgba(37, 99, 235, 0.2);
+
         background: rgba(255, 255, 255, 0.95);
       }
 
       .input-buttons {
         display: flex;
+
         gap: 8px;
+
         align-items: flex-end;
       }
 
       .image-button {
         background: linear-gradient(135deg, #1e40af, #1d4ed8);
+
         color: white;
+
         border: none;
+
         border-radius: 16px;
+
         width: 50px;
+
         height: 50px;
+
         display: flex;
+
         align-items: center;
+
         justify-content: center;
+
         cursor: pointer;
+
         transition: all 0.3s ease;
+
         font-size: 18px;
+
         box-shadow: 0 4px 15px rgba(29, 78, 216, 0.4);
       }
 
       .image-button:hover {
         background: linear-gradient(135deg, #1e40af, #1d4ed8);
+
         transform: translateY(-3px);
+
         box-shadow: 0 6px 20px rgba(29, 78, 216, 0.5);
       }
 
@@ -530,31 +799,49 @@
 
       .send-button {
         background: var(--chat-gradient);
+
         color: white;
+
         border: none;
+
         border-radius: 16px;
+
         width: 54px;
+
         height: 54px;
+
         display: flex;
+
         align-items: center;
+
         justify-content: center;
+
         cursor: pointer;
+
         transition: all 0.3s ease;
+
         font-size: 20px;
+
         box-shadow: 0 4px 15px rgba(37, 99, 235, 0.4);
       }
 
       .send-button:hover:not(:disabled) {
         background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+
         transform: translateY(-3px);
+
         box-shadow: 0 6px 20px rgba(37, 99, 235, 0.5);
       }
 
       .send-button:disabled {
         background: linear-gradient(135deg, #e2e8f0, #cbd5e1);
+
         cursor: not-allowed;
+
         transform: none;
+
         box-shadow: none;
+
         opacity: 0.7;
       }
 
@@ -563,61 +850,86 @@
       }
 
       /* FontAwesome fallback - only show emoji if FontAwesome fails to load */
+
       .fa-image:not([class*="fa-"]):before {
-        content: "📷";
+        content: "";
       }
+
       .fa-paper-plane:not([class*="fa-"]):before {
-        content: "➤";
+        content: "";
       }
+
       .fa-hand-wave:not([class*="fa-"]):before {
-        content: "👋";
+        content: "";
       }
+
       .fa-tag:not([class*="fa-"]):before {
-        content: "🏷️";
+        content: "";
       }
+
       .fa-box:not([class*="fa-"]):before {
-        content: "📦";
+        content: "";
       }
+
       .fa-comments:not([class*="fa-"]):before {
-        content: "💬";
+        content: "";
       }
+
       .fa-trash:not([class*="fa-"]):before {
-        content: "🗑️";
+        content: "";
       }
+
       .fa-sign-out-alt:not([class*="fa-"]):before {
-        content: "🚪";
+        content: "";
       }
+
       .fa-users:not([class*="fa-"]):before {
-        content: "👥";
+        content: "";
       }
+
       .fa-bolt:not([class*="fa-"]):before {
-        content: "⚡";
+        content: "";
       }
 
       .quick-action-btn {
         transition: all 0.3s ease;
+
         border-radius: 12px !important;
+
         font-weight: 500;
+
         border: 2px solid rgba(37, 99, 235, 0.2) !important;
+
         background: rgba(255, 255, 255, 0.7) !important;
+
         color: var(--chat-dark) !important;
+
         backdrop-filter: blur(10px);
       }
 
       .quick-action-btn:hover {
         background: var(--chat-gradient) !important;
+
         color: white !important;
+
         border-color: transparent !important;
+
         transform: translateY(-2px);
+
         box-shadow: 0 5px 15px rgba(37, 99, 235, 0.3);
       }
 
       .connection-status {
         display: flex;
+
         align-items: center;
+
         gap: 8px;
+
         font-size: 12px;
+
         color: var(--chat-success);
+
         margin-left: auto;
       }
 
@@ -627,9 +939,13 @@
 
       .status-dot {
         width: 8px;
+
         height: 8px;
+
         border-radius: 50%;
+
         background: currentColor;
+
         animation: pulse 2s infinite;
       }
 
@@ -638,6 +954,7 @@
         100% {
           opacity: 1;
         }
+
         50% {
           opacity: 0.5;
         }
@@ -645,25 +962,38 @@
 
       .system-message {
         text-align: center;
+
         margin: 16px 0;
+
         padding: 8px 16px;
+
         background: var(--chat-warning);
+
         color: white;
+
         border-radius: 16px;
+
         font-size: 12px;
+
         display: inline-block;
+
         margin-left: 50%;
+
         transform: translateX(-50%);
       }
 
       /* Enhanced Animations */
+
       @keyframes fadeInUp {
         from {
           opacity: 0;
+
           transform: translateY(20px);
         }
+
         to {
           opacity: 1;
+
           transform: translateY(0);
         }
       }
@@ -671,17 +1001,23 @@
       @keyframes bounceIn {
         0% {
           opacity: 0;
+
           transform: scale(0.3);
         }
+
         50% {
           opacity: 1;
+
           transform: scale(1.05);
         }
+
         70% {
           transform: scale(0.95);
         }
+
         100% {
           opacity: 1;
+
           transform: scale(1);
         }
       }
@@ -698,15 +1034,19 @@
       .user-item:nth-child(2) {
         animation-delay: 0.1s;
       }
+
       .user-item:nth-child(3) {
         animation-delay: 0.2s;
       }
+
       .quick-action-btn:nth-child(1) {
         animation-delay: 0.1s;
       }
+
       .quick-action-btn:nth-child(2) {
         animation-delay: 0.2s;
       }
+
       .quick-action-btn:nth-child(3) {
         animation-delay: 0.3s;
       }
@@ -718,6 +1058,7 @@
       }
 
       /* Responsive Design */
+
       @media (min-width: 768px) {
         .chat-main {
           flex-direction: row;
@@ -739,6 +1080,7 @@
 
         .chat-header-main {
           padding: 16px 18px;
+
           border-radius: 16px 16px 0 0;
         }
 
@@ -748,7 +1090,9 @@
 
         .chat-controls {
           flex-direction: column;
+
           align-items: stretch;
+
           gap: 8px;
         }
 
@@ -758,12 +1102,15 @@
 
         .message-bubble {
           max-width: 85%;
+
           padding: 14px 16px;
         }
 
         .message-avatar {
           width: 36px;
+
           height: 36px;
+
           font-size: 14px;
         }
 
@@ -773,18 +1120,23 @@
 
         .message-input {
           padding: 12px 18px;
+
           min-height: 45px;
         }
 
         .send-button {
           width: 48px;
+
           height: 48px;
+
           font-size: 18px;
         }
 
         .image-button {
           width: 44px;
+
           height: 44px;
+
           font-size: 16px;
         }
       }
@@ -800,31 +1152,64 @@
 
         .message-bubble {
           max-width: 90%;
+
           padding: 12px 14px;
         }
 
         .quick-action-btn {
           font-size: 12px;
+
           padding: 8px 12px;
         }
       }
     </style>
   </head>
+
   <body>
     <div class="chat-container">
       <!-- Chat Header -->
+
       <div
         class="chat-header-main"
         style="
           display: flex;
+
           align-items: center;
+
           justify-content: space-between;
+
           gap: 12px;
         "
       >
         <div class="chat-title">
           <i class="fas fa-comments"></i>
-          <h3>Chat Tư Vấn Trực Tuyến</h3>
+
+          <h3
+            th:if="${shopChatEnabled}"
+            th:text="'Chat vi ' + ${chatShopInfo.name}"
+          >
+            Chat vi shop
+          </h3>
+
+          <h3 th:unless="${shopChatEnabled}">Chat Tư Vấn Trực Tuyến</h3>
+        </div>
+
+        <div
+          class="chat-subtitle text-muted"
+          th:if="${shopChatEnabled}"
+          style="font-size: 13px"
+        >
+          <span class="me-2"><i class="fas fa-store text-primary"></i></span>
+
+          <span th:text="${chatShopInfo.name}">Tên shop</span>
+
+          <span class="mx-2">-</span>
+
+          <a
+            th:href="@{/shop/{slug}(slug=${chatShopInfo.slug})}"
+            class="text-decoration-none"
+            >Xem trang shop</a
+          >
         </div>
 
         <div
@@ -833,9 +1218,30 @@
         >
           <div class="connection-status" id="connectionStatus">
             <div class="status-dot"></div>
+
             <span>Đang kết nối...</span>
           </div>
+
+          <!-- Debug info (chỉ hiển thị khi có shop) -->
+          <div
+            th:if="${shopChatEnabled}"
+            class="debug-info"
+            style="
+              font-size: 11px;
+              color: #666;
+              background: #f8f9fa;
+              padding: 4px 8px;
+              border-radius: 4px;
+              margin-right: 8px;
+            "
+          >
+            <strong>Debug:</strong>
+            Room: <span th:text="${chatRoomId}"></span> | Shop:
+            <span th:text="${chatShopInfo.name}"></span>
+          </div>
+
           <!-- Hidden for customers: only seller/admin can clear on their UI -->
+
           <button
             type="button"
             id="clearHistoryBtn"
@@ -844,32 +1250,42 @@
             style="display: none"
           >
             <i class="fas fa-trash"></i>
+
             Xóa lịch sử
           </button>
+
           <a href="/logout" class="btn btn-outline-danger btn-sm">
             <i class="fas fa-sign-out-alt"></i>
-            Đăng xuất
+
+            &#272;&#258;NG XU&#7844;T
           </a>
         </div>
       </div>
 
       <!-- Main Chat Area -->
+
       <div class="chat-main">
         <!-- Sidebar (Desktop only) -->
+
         <div class="chat-sidebar">
           <div class="online-users">
             <h5>
               <i class="fas fa-users"></i>
+
               Người dùng trực tuyến
             </h5>
+
             <div class="user-item">
               <div class="user-avatar">TV</div>
+
               <div>
                 <div style="font-weight: 600; font-size: 13px">Tư vấn viên</div>
+
                 <div style="font-size: 11px; color: #64748b">
                   Đang hoạt động
                 </div>
               </div>
+
               <div class="user-status"></div>
             </div>
           </div>
@@ -877,23 +1293,27 @@
           <div class="quick-actions">
             <h5>
               <i class="fas fa-bolt"></i>
+
               Hành động nhanh
             </h5>
+
             <button
               class="btn btn-sm btn-outline-primary mb-2 w-100 quick-action-btn"
               onclick="sendQuickMessage('Xin chào! Tôi cần tư vấn sản phẩm.')"
             >
               <i class="fas fa-hand-wave"></i> Chào hỏi
             </button>
+
             <button
               class="btn btn-sm btn-outline-primary mb-2 w-100 quick-action-btn"
               onclick="sendQuickMessage('Tôi muốn hỏi về giá sản phẩm.')"
             >
               <i class="fas fa-tag"></i> Hỏi giá
             </button>
+
             <button
               class="btn btn-sm btn-outline-primary mb-2 w-100 quick-action-btn"
-              onclick="sendQuickMessage('Sản phẩm này có còn hàng không?')"
+              onclick="sendQuickMessage('Sản phẩm này còn hàng không?')"
             >
               <i class="fas fa-box"></i> Tồn kho
             </button>
@@ -901,14 +1321,18 @@
         </div>
 
         <!-- Chat Content -->
+
         <div class="chat-content">
           <!-- Messages Area -->
+
           <div class="chat-messages" id="messages"></div>
 
           <!-- Typing Indicator -->
+
           <div class="typing-indicator" id="typingIndicator"></div>
 
           <!-- Input Area -->
+
           <div class="chat-input-area">
             <form id="chatForm" class="input-group">
               <input
@@ -917,6 +1341,7 @@
                 accept="image/*"
                 style="display: none"
               />
+
               <textarea
                 id="messageInput"
                 class="message-input"
@@ -924,6 +1349,7 @@
                 rows="1"
                 autocomplete="off"
               ></textarea>
+
               <div class="input-buttons">
                 <button
                   type="button"
@@ -933,6 +1359,7 @@
                 >
                   <i class="fas fa-image"></i>
                 </button>
+
                 <button
                   type="submit"
                   class="send-button"
@@ -949,15 +1376,29 @@
     </div>
 
     <script th:src="@{/vendor/jquery/jquery.min.js}"></script>
+
     <script th:src="@{/vendor/bootstrap/bootstrap.bundle.min.js}"></script>
+
     <script th:src="@{/webjars/sockjs-client/1.5.1/sockjs.min.js}"></script>
+
     <script th:src="@{/webjars/stomp-websocket/2.3.4/stomp.min.js}"></script>
+
     <script>
       (function () {
         let stompClient = null;
+
         // Persist room and name across reload/login using localStorage + cookie + server-suggested
+
         const qp = new URLSearchParams(window.location.search);
+
         const sInit = window.CHAT_INIT || {};
+
+        const shopContext = sInit.shop || {};
+
+        let currentShopId = shopContext.id || null;
+
+        const shopEnabled = !!sInit.shopEnabled;
+
         function getCookie(name) {
           const m = document.cookie.match(
             new RegExp(
@@ -966,66 +1407,106 @@
                 "=([^;]*)"
             )
           );
+
           return m ? decodeURIComponent(m[1]) : null;
         }
+
         const storedRoom = localStorage.getItem("oneshop.chat.roomId");
+
         const storedName = localStorage.getItem("oneshop.chat.userName");
+
         const cookieRoom = getCookie("oneshop_chat_room");
+
         const cookieName = getCookie("oneshop_chat_name");
+
         // Precedence: query > server-init > cookie > localStorage > random
+
         let currentRoom =
           qp.get("room") ||
           sInit.roomId ||
           cookieRoom ||
           storedRoom ||
           "support-" + Math.floor(Math.random() * 1e6);
+
+        // Server đã tạo room ID rồi, không cần tạo lại
+        // Chỉ sử dụng room ID từ server nếu có
+        if (sInit.roomId && !currentRoom) {
+          currentRoom = sInit.roomId;
+        }
+
         let userName =
           qp.get("user") ||
           sInit.userName ||
           cookieName ||
           storedName ||
           "khach_" + Math.floor(Math.random() * 1000);
+
         // If server provided identity and no query override, force-persist it
+
         if (!qp.get("room") && sInit.roomId) {
           currentRoom = sInit.roomId;
         }
+
         if (!qp.get("user") && sInit.userName) {
           userName = sInit.userName;
         }
+
         persistIdentity(currentRoom, userName);
 
         // Ensure URL carries room/user so reload always has highest-priority identity
+
         try {
           const url = new URL(window.location.href);
+
           const params = url.searchParams;
+
           if (params.get("room") !== currentRoom)
             params.set("room", currentRoom);
+
           if (params.get("user") !== userName) params.set("user", userName);
+
+          // Giữ lại shopId parameter nếu có
+          const shopId = params.get("shopId") || sInit.shopId;
+          if (shopId) {
+            params.set("shopId", shopId);
+          }
+
           const newUrl = url.pathname + "?" + params.toString();
+
           if (window.history && window.history.replaceState) {
             window.history.replaceState({}, "", newUrl);
           }
         } catch (e) {}
+
         let isConnected = false;
+
         let typingTimer = null;
+
         let seenKeys = new Set();
 
         // Initialize
+
         // Auto room for customer; no input required
 
         function updateConnectionStatus(connected, message) {
           const statusEl = document.getElementById("connectionStatus");
+
           const sendBtn = document.getElementById("sendButton");
 
           isConnected = connected;
+
           statusEl.className = connected
             ? "connection-status"
             : "connection-status disconnected";
+
           statusEl.innerHTML = `
+
             <div class="status-dot"></div>
+
             <span>${
               message || (connected ? "Đã kết nối" : "Mất kết nối")
             }</span>
+
           `;
 
           sendBtn.disabled = !connected;
@@ -1034,14 +1515,17 @@
         function persistIdentity(room, name) {
           try {
             localStorage.setItem("oneshop.chat.roomId", room);
+
             localStorage.setItem("oneshop.chat.userName", name);
           } catch (e) {}
+
           try {
             document.cookie =
               "oneshop_chat_room=" +
               encodeURIComponent(room) +
               "; path=/; max-age=" +
               60 * 60 * 24 * 30;
+
             document.cookie =
               "oneshop_chat_name=" +
               encodeURIComponent(name) +
@@ -1051,25 +1535,37 @@
         }
 
         // Clear history handler
+
         document
+
           .getElementById("clearHistoryBtn")
+
           .addEventListener("click", async function () {
             if (!currentRoom) return;
+
             if (!confirm("Bạn có chắc muốn xóa toàn bộ lịch sử trò chuyện?"))
               return;
+
             try {
               // Use POST alias to avoid DELETE being blocked by proxies/CSRF
+
               const res = await fetch(
                 `/api/chat/history/clear?roomId=${encodeURIComponent(
                   currentRoom
                 )}`,
+
                 { method: "POST" }
               );
+
               const ok = res.ok ? (await res.json()).success !== false : false;
+
               if (ok) {
                 // Reset UI state
+
                 seenKeys.clear();
+
                 const messages = document.getElementById("messages");
+
                 messages.innerHTML =
                   '<div class="system-message"><i class="fas fa-trash"></i> Lịch sử trò chuyện đã được xóa.</div>';
               } else {
@@ -1084,31 +1580,48 @@
           updateConnectionStatus(false, "Đang kết nối...");
 
           const socket = new SockJS("/ws");
+
           stompClient = Stomp.over(socket);
 
           stompClient.connect(
             {},
+
             function (frame) {
               console.log("Connected: " + frame);
-              updateConnectionStatus(true, "Đã kết nối");
+
+              updateConnectionStatus(true, " kết nối");
+
               // If server already provided messages, render them immediately
+
               if (Array.isArray((window.CHAT_INIT || {}).messages)) {
                 seenKeys.clear();
+
                 window.CHAT_INIT.messages.forEach(appendMessage);
+
                 const container = document.getElementById("messages");
+
                 container.scrollTop = container.scrollHeight;
               }
 
               // Then load latest from API to ensure we don't miss anything, subscribe after
+
               loadHistory(currentRoom, 50).finally(() => {
                 subscribeRoom(currentRoom);
+
                 // Announce join so vendors see this new room
+
                 stompClient.send(
                   "/app/chat.join",
+
                   {},
+
                   JSON.stringify({
                     roomId: currentRoom,
+
+                    shopId: currentShopId,
+
                     userType: "customer",
+
                     senderName: userName,
                   })
                 );
@@ -1116,9 +1629,12 @@
 
               if (callback) callback();
             },
+
             function (error) {
               console.log("Connection error: ", error);
+
               updateConnectionStatus(false, "Lỗi kết nối");
+
               setTimeout(() => connect(), 3000);
             }
           );
@@ -1128,23 +1644,31 @@
           if (!stompClient || !stompClient.connected) return;
 
           // Unsubscribe previous subscriptions
+
           if (window._roomSub) window._roomSub.unsubscribe();
+
           if (window._typingSub) window._typingSub.unsubscribe();
 
           // Subscribe to room messages
+
           window._roomSub = stompClient.subscribe(
             "/topic/room/" + roomId,
+
             function (message) {
               const data = JSON.parse(message.body);
+
               appendMessage(data);
             }
           );
 
           // Subscribe to typing indicators
+
           window._typingSub = stompClient.subscribe(
             "/topic/room/" + roomId + "/typing",
+
             function (message) {
               const data = JSON.parse(message.body);
+
               showTypingIndicator(data);
             }
           );
@@ -1155,58 +1679,80 @@
         function messageKey(msg) {
           return [
             msg.sender || "",
+
             msg.sentAt || "",
+
             msg.messageContent || "",
           ].join("|");
         }
 
         function appendMessage(msg) {
           const key = messageKey(msg);
+
           if (seenKeys.has(key)) return;
+
           seenKeys.add(key);
+
           const isMe = msg.sender === userName;
+
           const isSystem = msg.sender === "system";
+
           const container = document.getElementById("messages");
 
           if (isSystem) {
             const systemEl = document.createElement("div");
+
             systemEl.className = "system-message";
+
             systemEl.innerHTML = `<i class="fas fa-info-circle"></i> ${msg.messageContent}`;
+
             container.appendChild(systemEl);
           } else {
             const messageEl = document.createElement("div");
+
             messageEl.className = "message" + (isMe ? " own" : "");
 
             const avatarLetter = (msg.sender || "?").charAt(0).toUpperCase();
+
             const timeStr = new Date(
               msg.sentAt || Date.now()
             ).toLocaleTimeString("vi-VN", {
               hour: "2-digit",
+
               minute: "2-digit",
             });
 
             const isImage = (msg.messageType || "").toUpperCase() === "IMAGE";
+
             const contentHtml = isImage
               ? `<a href="${msg.messageContent}" target="_blank"><img src="${msg.messageContent}" style="max-width:240px;border-radius:8px"/></a>`
               : `${
                   !isMe ? `<div class="message-sender">${msg.sender}</div>` : ""
                 }
+
                  <div class="message-content">${escapeHtml(
                    msg.messageContent || ""
                  )}</div>`;
 
             messageEl.innerHTML = `
+
               <div class="message-avatar">${avatarLetter}</div>
+
               <div class="message-bubble">
+
                 ${contentHtml}
+
                 <div class="message-time">${timeStr}</div>
+
               </div>
+
             `;
 
             container.appendChild(messageEl);
           }
 
           // Auto scroll to bottom
+
           container.scrollTop = container.scrollHeight;
         }
 
@@ -1215,13 +1761,21 @@
 
           if (data.isTyping && data.userName !== userName) {
             indicator.innerHTML = `
+
               <i class="fas fa-user"></i>
+
               ${data.userName} đang nhập
+
               <div class="typing-dots">
+
                 <span></span>
+
                 <span></span>
+
                 <span></span>
+
               </div>
+
             `;
           } else {
             indicator.innerHTML = "";
@@ -1229,17 +1783,25 @@
         }
 
         // Image button wiring
+
         document
+
           .getElementById("imageButton")
+
           .addEventListener("click", function () {
             document.getElementById("imageInput").click();
           });
+
         document
+
           .getElementById("imageInput")
+
           .addEventListener("change", function (e) {
             const file = e.target.files && e.target.files[0];
+
             if (file)
               uploadAndSendImage(file).catch(() => alert("Tải ảnh thất bại"));
+
             e.target.value = "";
           });
 
@@ -1248,12 +1810,20 @@
 
           stompClient.send(
             "/app/chat.send",
+
             {},
+
             JSON.stringify({
               roomId: currentRoom,
+
+              shopId: currentShopId,
+
               messageContent: text.trim(),
+
               messageType: "TEXT",
+
               userType: "customer",
+
               senderName: userName,
             })
           );
@@ -1261,31 +1831,49 @@
 
         async function uploadAndSendImage(file) {
           if (!file) return;
+
           const form = new FormData();
+
           form.append("file", file);
+
           const res = await fetch("/api/chat/uploadImage", {
             method: "POST",
+
             body: form,
           });
+
           if (!res.ok) {
             alert("Tải ảnh thất bại");
+
             return;
           }
+
           const data = await res.json();
+
           if (!data.success || !data.url) {
             alert("Tải ảnh thất bại");
+
             return;
           }
 
           // Send IMAGE message with URL
+
           stompClient.send(
             "/app/chat.send",
+
             {},
+
             JSON.stringify({
               roomId: currentRoom,
+
+              shopId: currentShopId,
+
               messageContent: data.url, // URL to the image
+
               messageType: "IMAGE",
+
               userType: "customer",
+
               senderName: userName,
             })
           );
@@ -1296,11 +1884,18 @@
 
           stompClient.send(
             "/app/chat.typing",
+
             {},
+
             JSON.stringify({
               roomId: currentRoom,
+
+              shopId: currentShopId,
+
               isTyping: !!isTyping,
+
               senderName: userName,
+
               userType: "customer",
             })
           );
@@ -1308,7 +1903,9 @@
 
         function escapeHtml(text) {
           const div = document.createElement("div");
+
           div.textContent = text;
+
           return div.innerHTML;
         }
 
@@ -1319,11 +1916,17 @@
                 limit || 50
               }`
             );
+
             if (!res.ok) return;
+
             const items = await res.json();
+
             seenKeys.clear();
+
             items.forEach(appendMessage);
+
             const container = document.getElementById("messages");
+
             container.scrollTop = container.scrollHeight;
           } catch (e) {
             console.warn("loadHistory failed", e);
@@ -1331,50 +1934,71 @@
         }
 
         // Auto-resize textarea
+
         function autoResizeTextarea(textarea) {
           textarea.style.height = "auto";
+
           textarea.style.height = Math.min(textarea.scrollHeight, 120) + "px";
         }
 
         // Quick message function
+
         window.sendQuickMessage = function (message) {
           document.getElementById("messageInput").value = message;
+
           document.getElementById("messageInput").focus();
         };
 
         // Event Listeners
+
         document
+
           .getElementById("chatForm")
+
           .addEventListener("submit", function (e) {
             e.preventDefault();
+
             const input = document.getElementById("messageInput");
+
             const text = input.value.trim();
 
             if (text) {
               sendMessage(text);
+
               input.value = "";
+
               autoResizeTextarea(input);
             }
           });
 
         document
+
           .getElementById("messageInput")
+
           .addEventListener("input", function (e) {
             autoResizeTextarea(e.target);
 
             // Send typing indicator
+
             sendTyping(true);
+
             clearTimeout(typingTimer);
+
             typingTimer = setTimeout(() => sendTyping(false), 1000);
           });
 
         document
+
           .getElementById("messageInput")
+
           .addEventListener("keydown", function (e) {
             if (e.key === "Enter" && !e.shiftKey) {
               e.preventDefault();
+
               document
+
                 .getElementById("chatForm")
+
                 .dispatchEvent(new Event("submit"));
             }
           });
@@ -1382,9 +2006,11 @@
         // No manual join needed on customer side
 
         // Initialize connection
+
         connect();
 
         // Handle page unload
+
         window.addEventListener("beforeunload", function () {
           if (stompClient && stompClient.connected) {
             stompClient.disconnect();

@@ -1,57 +1,91 @@
 <!DOCTYPE html>
+
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
   <head>
     <meta charset="UTF-8" />
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
     <title>Quản Lý Chat - Vendor Dashboard</title>
+
     <link rel="stylesheet" th:href="@{/vendor/bootstrap/bootstrap.min.css}" />
+
     <link rel="stylesheet" th:href="@{/vendor/fontawesome/css/all.min.css}" />
+
     <!-- FontAwesome CDN backup -->
+
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     />
+
     <style>
       :root {
         /* Professional blue admin colors */
+
         --vendor-primary: #2563eb;
+
         --vendor-primary-light: #3b82f6;
+
         --vendor-success: #10b981;
+
         --vendor-warning: #f59e0b;
+
         --vendor-danger: #ef4444;
+
         --vendor-dark: #1e293b;
+
         --vendor-light: #f8fafc;
+
         --vendor-border: #e2e8f0;
+
         --vendor-shadow: 0 8px 25px rgba(37, 99, 235, 0.1);
+
         --vendor-gradient: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+
         --vendor-accent: #1e40af;
+
         --vendor-bg: linear-gradient(135deg, #fefeff 0%, #f8fafc 100%);
       }
 
       body {
         background: var(--vendor-bg);
+
         font-family: "Lora", serif;
+
         position: relative;
       }
 
       body::before {
         content: "";
+
         position: fixed;
+
         top: 0;
+
         left: 0;
+
         width: 100%;
+
         height: 100%;
+
         background-image: radial-gradient(
             circle at 15% 85%,
+
             rgba(37, 99, 235, 0.03) 0%,
+
             transparent 50%
           ),
           radial-gradient(
             circle at 85% 15%,
+
             rgba(29, 78, 216, 0.03) 0%,
+
             transparent 50%
           );
+
         pointer-events: none;
+
         z-index: -1;
       }
 
@@ -59,101 +93,155 @@
         background: linear-gradient(
           135deg,
           rgba(255, 255, 255, 0.95) 0%,
+
           rgba(248, 250, 252, 0.95) 100%
         );
+
         backdrop-filter: blur(20px);
+
         padding: 1.5rem 2.5rem;
+
         box-shadow: var(--vendor-shadow);
+
         border-bottom: 2px solid rgba(37, 99, 235, 0.1);
+
         position: relative;
       }
 
       .vendor-header::before {
         content: "";
+
         position: absolute;
+
         top: 0;
+
         left: 0;
+
         right: 0;
+
         height: 3px;
+
         background: var(--vendor-gradient);
       }
 
       .vendor-title {
         display: flex;
+
         align-items: center;
+
         gap: 15px;
+
         margin: 0;
+
         color: var(--vendor-dark);
+
         font-weight: 600;
+
         font-size: 20px;
       }
 
       .vendor-title i {
         background: var(--vendor-gradient);
+
         -webkit-background-clip: text;
+
         -webkit-text-fill-color: transparent;
+
         background-clip: text;
+
         font-size: 26px;
+
         filter: drop-shadow(0 2px 4px rgba(37, 99, 235, 0.3));
       }
 
       .chat-dashboard {
         display: flex;
+
         height: calc(100vh - 80px);
+
         max-width: 1400px;
+
         margin: 0 auto;
+
         padding: 20px;
+
         gap: 20px;
       }
 
       .chat-rooms-panel {
         width: 380px;
+
         background: linear-gradient(
           135deg,
           rgba(255, 255, 255, 0.9) 0%,
+
           rgba(248, 250, 252, 0.8) 100%
         );
+
         backdrop-filter: blur(20px);
+
         border-radius: 18px;
+
         box-shadow: var(--vendor-shadow);
+
         border: 1px solid rgba(37, 99, 235, 0.1);
+
         display: flex;
+
         flex-direction: column;
+
         overflow: hidden;
       }
 
       .rooms-header {
         padding: 25px;
+
         border-bottom: 2px solid rgba(37, 99, 235, 0.1);
+
         background: linear-gradient(
           135deg,
           var(--vendor-light) 0%,
+
           rgba(248, 250, 252, 0.9) 100%
         );
+
         position: relative;
       }
 
       .rooms-header::after {
         content: "";
+
         position: absolute;
+
         bottom: 0;
+
         left: 0;
+
         right: 0;
+
         height: 1px;
+
         background: linear-gradient(
           90deg,
           transparent 0%,
+
           rgba(37, 99, 235, 0.3) 50%,
+
           transparent 100%
         );
       }
 
       .rooms-header h5 {
         margin: 0;
+
         color: var(--vendor-dark);
+
         font-weight: 600;
+
         display: flex;
+
         align-items: center;
+
         gap: 8px;
       }
 
@@ -163,113 +251,170 @@
 
       .rooms-search input {
         width: 100%;
+
         padding: 8px 12px;
+
         border: 1px solid var(--vendor-border);
+
         border-radius: 6px;
+
         font-size: 14px;
       }
 
       .rooms-list {
         flex: 1;
+
         overflow-y: auto;
+
         padding: 12px;
       }
 
       .room-item {
         display: flex;
+
         align-items: center;
+
         padding: 16px;
+
         border-radius: 15px;
+
         cursor: pointer;
+
         transition: all 0.3s ease;
+
         margin-bottom: 10px;
+
         border: 1px solid rgba(37, 99, 235, 0.1);
+
         background: rgba(255, 255, 255, 0.6);
+
         backdrop-filter: blur(10px);
       }
 
       .room-item:hover {
         background: rgba(255, 255, 255, 0.9);
+
         transform: translateX(8px);
+
         box-shadow: 0 8px 25px rgba(37, 99, 235, 0.15);
       }
 
       .room-item.active {
         background: var(--vendor-gradient);
+
         color: white;
+
         border-color: transparent;
+
         box-shadow: 0 10px 30px rgba(37, 99, 235, 0.4);
+
         transform: translateX(8px);
       }
 
       .room-avatar {
         width: 44px;
+
         height: 44px;
+
         border-radius: 50%;
+
         background: linear-gradient(
           135deg,
           var(--vendor-accent) 0%,
+
           #3b82f6 100%
         );
+
         display: flex;
+
         align-items: center;
+
         justify-content: center;
+
         color: white;
+
         font-weight: 600;
+
         margin-right: 15px;
+
         flex-shrink: 0;
+
         box-shadow: 0 4px 12px rgba(29, 78, 216, 0.3);
+
         border: 2px solid rgba(255, 255, 255, 0.8);
       }
 
       .room-item.active .room-avatar {
         background: rgba(255, 255, 255, 0.25);
+
         box-shadow: 0 4px 12px rgba(255, 255, 255, 0.3);
+
         border-color: rgba(255, 255, 255, 0.9);
       }
 
       .room-info {
         flex: 1;
+
         min-width: 0;
       }
 
       .room-name {
         font-weight: 600;
+
         font-size: 14px;
+
         margin-bottom: 4px;
+
         white-space: nowrap;
+
         overflow: hidden;
+
         text-overflow: ellipsis;
       }
 
       .room-last-message {
         font-size: 12px;
+
         opacity: 0.7;
+
         white-space: nowrap;
+
         overflow: hidden;
+
         text-overflow: ellipsis;
       }
 
       .room-meta {
         display: flex;
+
         flex-direction: column;
+
         align-items: flex-end;
+
         gap: 4px;
       }
 
       .room-time {
         font-size: 11px;
+
         opacity: 0.6;
       }
 
       .room-badge {
         background: var(--vendor-danger);
+
         color: white;
+
         border-radius: 10px;
+
         padding: 2px 6px;
+
         font-size: 10px;
+
         font-weight: 600;
+
         min-width: 18px;
+
         text-align: center;
       }
 
@@ -279,104 +424,158 @@
 
       .chat-main-panel {
         flex: 1;
+
         background: linear-gradient(
           135deg,
           rgba(255, 255, 255, 0.9) 0%,
+
           rgba(248, 250, 252, 0.8) 100%
         );
+
         backdrop-filter: blur(20px);
+
         border-radius: 18px;
+
         box-shadow: var(--vendor-shadow);
+
         border: 1px solid rgba(37, 99, 235, 0.1);
+
         display: flex;
+
         flex-direction: column;
+
         overflow: hidden;
       }
 
       .chat-header {
         padding: 25px;
+
         border-bottom: 2px solid rgba(37, 99, 235, 0.1);
+
         background: linear-gradient(
           135deg,
           var(--vendor-light) 0%,
+
           rgba(248, 250, 252, 0.9) 100%
         );
+
         display: flex;
+
         align-items: center;
+
         justify-content: space-between;
+
         position: relative;
       }
 
       .chat-header::after {
         content: "";
+
         position: absolute;
+
         bottom: 0;
+
         left: 0;
+
         right: 0;
+
         height: 1px;
+
         background: linear-gradient(
           90deg,
           transparent 0%,
+
           rgba(37, 99, 235, 0.3) 50%,
+
           transparent 100%
         );
       }
 
       .chat-customer-info {
         display: flex;
+
         align-items: center;
+
         gap: 12px;
       }
 
       .customer-avatar {
         width: 52px;
+
         height: 52px;
+
         border-radius: 50%;
+
         background: var(--vendor-gradient);
+
         display: flex;
+
         align-items: center;
+
         justify-content: center;
+
         color: white;
+
         font-weight: 600;
+
         font-size: 20px;
+
         box-shadow: 0 6px 18px rgba(37, 99, 235, 0.4);
+
         border: 3px solid rgba(255, 255, 255, 0.8);
       }
 
       .customer-details h6 {
         margin: 0;
+
         color: var(--vendor-dark);
+
         font-weight: 600;
       }
 
       .customer-status {
         font-size: 12px;
+
         color: var(--vendor-success);
+
         display: flex;
+
         align-items: center;
+
         gap: 4px;
       }
 
       .status-dot {
         width: 6px;
+
         height: 6px;
+
         border-radius: 50%;
+
         background: var(--vendor-success);
       }
 
       .chat-actions {
         display: flex;
+
         gap: 8px;
       }
 
       .chat-actions button {
         padding: 8px 12px;
+
         border: 1px solid var(--vendor-border);
+
         background: white;
+
         border-radius: 6px;
+
         color: var(--vendor-dark);
+
         font-size: 12px;
+
         cursor: pointer;
+
         transition: all 0.2s;
       }
 
@@ -386,28 +585,41 @@
 
       .chat-messages-area {
         flex: 1;
+
         padding: 25px;
+
         overflow-y: auto;
+
         background: linear-gradient(
           180deg,
           rgba(248, 250, 252, 0.4) 0%,
+
           rgba(255, 255, 255, 0.6) 100%
         );
+
         position: relative;
       }
 
       .chat-messages-area::before {
         content: "";
+
         position: absolute;
+
         top: 0;
+
         left: 0;
+
         right: 0;
+
         height: 20px;
+
         background: linear-gradient(
           180deg,
           rgba(37, 99, 235, 0.05) 0%,
+
           transparent 100%
         );
+
         pointer-events: none;
       }
 
@@ -417,17 +629,22 @@
 
       .message {
         display: flex;
+
         margin-bottom: 12px;
+
         animation: slideIn 0.3s ease-out;
       }
 
       @keyframes slideIn {
         from {
           opacity: 0;
+
           transform: translateY(10px);
         }
+
         to {
           opacity: 1;
+
           transform: translateY(0);
         }
       }
@@ -438,37 +655,58 @@
 
       .message-avatar {
         width: 38px;
+
         height: 38px;
+
         border-radius: 50%;
+
         background: linear-gradient(
           135deg,
           var(--vendor-accent) 0%,
+
           #3b82f6 100%
         );
+
         display: flex;
+
         align-items: center;
+
         justify-content: center;
+
         color: white;
+
         font-weight: 600;
+
         font-size: 14px;
+
         margin: 0 10px;
+
         flex-shrink: 0;
+
         box-shadow: 0 4px 12px rgba(29, 78, 216, 0.3);
+
         border: 2px solid rgba(255, 255, 255, 0.8);
       }
 
       .message.vendor .message-avatar {
         background: var(--vendor-gradient);
+
         box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
       }
 
       .message-bubble {
         max-width: 75%;
+
         padding: 16px 20px;
+
         border-radius: 20px;
+
         position: relative;
+
         word-wrap: break-word;
+
         backdrop-filter: blur(10px);
+
         box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
       }
 
@@ -476,29 +714,40 @@
         background: linear-gradient(
           135deg,
           rgba(255, 255, 255, 0.9) 0%,
+
           rgba(248, 250, 252, 0.8) 100%
         );
+
         border: 1px solid rgba(29, 78, 216, 0.15);
+
         border-bottom-left-radius: 8px;
+
         color: var(--vendor-dark);
       }
 
       .message.vendor .message-bubble {
         background: var(--vendor-gradient);
+
         color: white;
+
         border-bottom-right-radius: 8px;
+
         box-shadow: 0 6px 20px rgba(37, 99, 235, 0.3);
       }
 
       .message-content {
         line-height: 1.4;
+
         font-size: 14px;
       }
 
       .message-time {
         font-size: 11px;
+
         opacity: 0.7;
+
         margin-top: 4px;
+
         text-align: right;
       }
 
@@ -508,105 +757,160 @@
 
       .typing-indicator {
         padding: 12px 20px;
+
         font-style: italic;
+
         color: var(--vendor-primary);
+
         font-size: 14px;
+
         min-height: 20px;
+
         background: var(--vendor-light);
+
         border-top: 1px solid var(--vendor-border);
       }
 
       .chat-input-area {
         padding: 25px;
+
         background: linear-gradient(
           135deg,
           rgba(255, 255, 255, 0.95) 0%,
+
           rgba(248, 250, 252, 0.95) 100%
         );
+
         backdrop-filter: blur(20px);
+
         border-top: 2px solid rgba(37, 99, 235, 0.1);
+
         position: relative;
       }
 
       .chat-input-area::before {
         content: "";
+
         position: absolute;
+
         top: 0;
+
         left: 0;
+
         right: 0;
+
         height: 1px;
+
         background: linear-gradient(
           90deg,
           transparent 0%,
+
           rgba(37, 99, 235, 0.3) 50%,
+
           transparent 100%
         );
       }
 
       .quick-replies {
         display: flex;
+
         gap: 8px;
+
         margin-bottom: 12px;
+
         flex-wrap: wrap;
       }
 
       .quick-reply-btn {
         padding: 10px 18px;
+
         background: linear-gradient(
           135deg,
           rgba(255, 255, 255, 0.9) 0%,
+
           rgba(248, 250, 252, 0.8) 100%
         );
+
         border: 2px solid rgba(37, 99, 235, 0.2);
+
         border-radius: 25px;
+
         font-size: 13px;
+
         cursor: pointer;
+
         transition: all 0.3s ease;
+
         font-weight: 500;
+
         box-shadow: 0 3px 10px rgba(37, 99, 235, 0.1);
+
         backdrop-filter: blur(10px);
+
         color: var(--vendor-dark);
       }
 
       .quick-reply-btn:hover {
         background: var(--vendor-gradient);
+
         color: white;
+
         border-color: transparent;
+
         transform: translateY(-2px);
+
         box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
       }
 
       .input-group {
         display: flex;
+
         gap: 12px;
+
         align-items: flex-end;
       }
 
       .message-input {
         flex: 1;
+
         border: 2px solid rgba(37, 99, 235, 0.2);
+
         border-radius: 25px;
+
         padding: 15px 22px;
+
         font-size: 15px;
+
         outline: none;
+
         transition: all 0.3s ease;
+
         resize: none;
+
         max-height: 120px;
+
         min-height: 50px;
+
         font-family: "Lora", serif;
+
         background: rgba(255, 255, 255, 0.8);
+
         backdrop-filter: blur(10px);
       }
 
       .message-input:focus {
         border-color: var(--vendor-primary);
+
         box-shadow: 0 0 20px rgba(37, 99, 235, 0.2);
+
         background: rgba(255, 255, 255, 0.95);
       }
 
       .input-buttons {
         display: flex;
+
         gap: 8px;
+
         align-items: flex-end;
       }
 
@@ -614,25 +918,40 @@
         background: linear-gradient(
           135deg,
           var(--vendor-accent) 0%,
+
           #3b82f6 100%
         );
+
         color: white;
+
         border: none;
+
         border-radius: 16px;
+
         width: 50px;
+
         height: 50px;
+
         display: flex;
+
         align-items: center;
+
         justify-content: center;
+
         cursor: pointer;
+
         transition: all 0.3s ease;
+
         font-size: 18px;
+
         box-shadow: 0 4px 15px rgba(29, 78, 216, 0.4);
       }
 
       .image-button:hover {
         background: linear-gradient(135deg, #3b82f6, #60a5fa);
+
         transform: translateY(-3px);
+
         box-shadow: 0 6px 20px rgba(29, 78, 216, 0.5);
       }
 
@@ -642,31 +961,49 @@
 
       .send-button {
         background: var(--vendor-gradient);
+
         color: white;
+
         border: none;
+
         border-radius: 16px;
+
         width: 54px;
+
         height: 54px;
+
         display: flex;
+
         align-items: center;
+
         justify-content: center;
+
         cursor: pointer;
+
         transition: all 0.3s ease;
+
         font-size: 20px;
+
         box-shadow: 0 4px 15px rgba(37, 99, 235, 0.4);
       }
 
       .send-button:hover:not(:disabled) {
         background: linear-gradient(135deg, #3b82f6, #93c5fd);
+
         transform: translateY(-3px);
+
         box-shadow: 0 6px 20px rgba(37, 99, 235, 0.5);
       }
 
       .send-button:disabled {
         background: linear-gradient(135deg, #e2e8f0, #cbd5e1);
+
         cursor: not-allowed;
+
         transform: none;
+
         box-shadow: none;
+
         opacity: 0.7;
       }
 
@@ -675,86 +1012,121 @@
       }
 
       /* FontAwesome fallback - only show emoji if FontAwesome fails to load */
+
       .fa-image:not([class*="fa-"]):before {
-        content: "📷";
+        content: "";
       }
+
       .fa-paper-plane:not([class*="fa-"]):before {
-        content: "➤";
+        content: "";
       }
+
       .fa-exchange-alt:not([class*="fa-"]):before {
-        content: "🔄";
+        content: "";
       }
+
       .fa-times:not([class*="fa-"]):before {
-        content: "✖️";
+        content: "";
       }
+
       .fa-trash:not([class*="fa-"]):before {
-        content: "🗑️";
+        content: "";
       }
+
       .fa-comments:not([class*="fa-"]):before {
-        content: "💬";
+        content: "";
       }
+
       .fa-search:not([class*="fa-"]):before {
-        content: "🔍";
+        content: "";
       }
+
       .fa-info-circle:not([class*="fa-"]):before {
-        content: "ℹ️";
+        content: "";
       }
 
       .action-btn {
         transition: all 0.3s ease;
+
         border-radius: 8px;
+
         font-weight: 500;
+
         font-size: 12px;
       }
 
       .transfer-btn:hover {
         background: linear-gradient(135deg, #f59e0b, #d97706) !important;
+
         color: white !important;
+
         border-color: #f59e0b !important;
+
         transform: translateY(-1px);
+
         box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
       }
 
       .close-btn:hover {
         background: linear-gradient(135deg, #ef4444, #dc2626) !important;
+
         color: white !important;
+
         border-color: #ef4444 !important;
+
         transform: translateY(-1px);
+
         box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
       }
 
       .delete-btn:hover {
         background: linear-gradient(135deg, #8b5cf6, #7c3aed) !important;
+
         color: white !important;
+
         border-color: #8b5cf6 !important;
+
         transform: translateY(-1px);
+
         box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
       }
 
       .empty-state {
         display: flex;
+
         flex-direction: column;
+
         align-items: center;
+
         justify-content: center;
+
         height: 100%;
+
         color: #64748b;
+
         text-align: center;
       }
 
       .empty-state i {
         font-size: 48px;
+
         margin-bottom: 16px;
+
         opacity: 0.5;
       }
 
       /* Enhanced Animations */
+
       @keyframes slideInLeft {
         from {
           opacity: 0;
+
           transform: translateX(-30px);
         }
+
         to {
           opacity: 1;
+
           transform: translateX(0);
         }
       }
@@ -762,10 +1134,13 @@
       @keyframes slideInRight {
         from {
           opacity: 0;
+
           transform: translateX(30px);
         }
+
         to {
           opacity: 1;
+
           transform: translateX(0);
         }
       }
@@ -774,9 +1149,11 @@
         0% {
           box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.4);
         }
+
         70% {
           box-shadow: 0 0 0 10px rgba(37, 99, 235, 0);
         }
+
         100% {
           box-shadow: 0 0 0 0 rgba(37, 99, 235, 0);
         }
@@ -797,9 +1174,11 @@
       .room-item:nth-child(1) {
         animation-delay: 0.1s;
       }
+
       .room-item:nth-child(2) {
         animation-delay: 0.2s;
       }
+
       .room-item:nth-child(3) {
         animation-delay: 0.3s;
       }
@@ -811,12 +1190,15 @@
       .quick-reply-btn:nth-child(1) {
         animation-delay: 0.1s;
       }
+
       .quick-reply-btn:nth-child(2) {
         animation-delay: 0.2s;
       }
+
       .quick-reply-btn:nth-child(3) {
         animation-delay: 0.3s;
       }
+
       .quick-reply-btn:nth-child(4) {
         animation-delay: 0.4s;
       }
@@ -827,16 +1209,21 @@
       }
 
       /* Responsive */
+
       @media (max-width: 768px) {
         .chat-dashboard {
           flex-direction: column;
+
           padding: 8px;
+
           gap: 15px;
         }
 
         .chat-rooms-panel {
           width: 100%;
+
           height: 220px;
+
           border-radius: 15px;
         }
 
@@ -846,15 +1233,21 @@
 
         .rooms-list {
           display: flex;
+
           overflow-x: auto;
+
           padding: 10px;
+
           gap: 8px;
         }
 
         .room-item {
           min-width: 220px;
+
           margin-right: 0;
+
           margin-bottom: 0;
+
           flex-shrink: 0;
         }
 
@@ -868,17 +1261,21 @@
 
         .customer-avatar {
           width: 44px;
+
           height: 44px;
+
           font-size: 18px;
         }
 
         .quick-replies {
           flex-wrap: wrap;
+
           gap: 6px;
         }
 
         .quick-reply-btn {
           font-size: 12px;
+
           padding: 8px 14px;
         }
 
@@ -888,18 +1285,23 @@
 
         .message-input {
           padding: 12px 18px;
+
           min-height: 45px;
         }
 
         .send-button {
           width: 48px;
+
           height: 48px;
+
           font-size: 18px;
         }
 
         .image-button {
           width: 44px;
+
           height: 44px;
+
           font-size: 16px;
         }
       }
@@ -927,11 +1329,13 @@
 
         .room-item {
           min-width: 180px;
+
           padding: 12px;
         }
 
         .room-avatar {
           width: 36px;
+
           height: 36px;
         }
 
@@ -945,41 +1349,50 @@
 
         .quick-reply-btn {
           font-size: 11px;
+
           padding: 6px 12px;
         }
       }
     </style>
   </head>
+
   <body>
     <div
       class="vendor-header"
       style="
         display: flex;
+
         align-items: center;
+
         justify-content: space-between;
+
         gap: 12px;
       "
     >
       <h4 class="vendor-title" style="margin: 0">
         <i class="fas fa-headset"></i>
-        Quản Lý Chat Khách Hàng
+        <span id="chatTitle">Quản Lý Chat Khách Hàng</span>
       </h4>
+
       <div>
         <a href="/logout" class="btn btn-outline-danger btn-sm">
           <i class="fas fa-sign-out-alt"></i>
-          Đăng xuất
+          &#272;&#258;NG XU&#7844;T
         </a>
       </div>
     </div>
 
     <div class="chat-dashboard">
       <!-- Chat Rooms Panel -->
+
       <div class="chat-rooms-panel">
         <div class="rooms-header">
           <h5>
             <i class="fas fa-inbox"></i>
+
             Cuộc trò chuyện
           </h5>
+
           <div class="rooms-search">
             <input
               type="text"
@@ -993,14 +1406,18 @@
       </div>
 
       <!-- Main Chat Panel -->
+
       <div class="chat-main-panel">
         <div class="chat-header" id="chatHeader">
           <div class="chat-customer-info">
             <div class="customer-avatar">KH</div>
+
             <div class="customer-details">
               <h6>Khách hàng #001</h6>
+
               <div class="customer-status">
                 <div class="status-dot"></div>
+
                 Đang hoạt động
               </div>
             </div>
@@ -1022,15 +1439,22 @@
             class="system-message"
             style="
               text-align: center;
+
               margin: 20px 0;
+
               padding: 8px 16px;
+
               background: var(--vendor-warning);
+
               color: white;
+
               border-radius: 16px;
+
               font-size: 12px;
             "
           >
             <i class="fas fa-info-circle"></i>
+
             Cuộc trò chuyện với Khách hàng #001
           </div>
         </div>
@@ -1045,18 +1469,21 @@
             >
               👋 Chào hỏi
             </div>
+
             <div
               class="quick-reply-btn"
               onclick="sendQuickReply('Cảm ơn bạn đã liên hệ. Tôi sẽ kiểm tra và phản hồi ngay.')"
             >
               ⏰ Đang kiểm tra
             </div>
+
             <div
               class="quick-reply-btn"
               onclick="sendQuickReply('Sản phẩm này hiện đang có sẵn. Bạn có muốn đặt hàng không?')"
             >
               ✅ Có sẵn
             </div>
+
             <div
               class="quick-reply-btn"
               onclick="sendQuickReply('Rất tiếc, sản phẩm này hiện đang hết hàng. Chúng tôi sẽ nhập thêm trong tuần tới.')"
@@ -1072,6 +1499,7 @@
               accept="image/*"
               style="display: none"
             />
+
             <textarea
               id="messageInput"
               class="message-input"
@@ -1079,6 +1507,7 @@
               rows="1"
               autocomplete="off"
             ></textarea>
+
             <div class="input-buttons">
               <button
                 type="button"
@@ -1088,6 +1517,7 @@
               >
                 <i class="fas fa-image"></i>
               </button>
+
               <button
                 type="submit"
                 class="send-button"
@@ -1102,120 +1532,257 @@
       </div>
     </div>
 
+    <script th:inline="javascript">
+      // Server context for vendor chat
+      window.CHAT_VENDOR_CONTEXT = /*[[${chatVendorContext}]]*/ {
+        displayName: "Vendor",
+        userId: 0,
+        roles: [],
+        isVendor: false,
+        isAdmin: false,
+        isCskh: false,
+        shops: [],
+        canChatAllCustomers: false,
+      };
+    </script>
+
     <script th:src="@{/vendor/jquery/jquery.min.js}"></script>
+
     <script th:src="@{/vendor/bootstrap/bootstrap.bundle.min.js}"></script>
+
     <script th:src="@{/webjars/sockjs-client/1.5.1/sockjs.min.js}"></script>
+
     <script th:src="@{/webjars/stomp-websocket/2.3.4/stomp.min.js}"></script>
+
     <script>
       (function () {
         let stompClient = null;
+
         let currentRoom = null;
-        let vendorName = "vendor_" + Math.floor(Math.random() * 1000);
+
+        // Get vendor context from server
+        const vendorContext = window.CHAT_VENDOR_CONTEXT || {};
+        let vendorName =
+          vendorContext.displayName ||
+          "vendor_" + Math.floor(Math.random() * 1000);
+        const isVendor = vendorContext.isVendor || false;
+        const isAdmin = vendorContext.isAdmin || false;
+        const isCskh = vendorContext.isCskh || false;
+        const canChatAllCustomers = vendorContext.canChatAllCustomers || false;
+        const userShops = vendorContext.shops || [];
+
+        // Debug log để kiểm tra vendorName
+        console.log("=== VENDOR CHAT DEBUG ===");
+        console.log("vendorName:", vendorName);
+        console.log("vendorContext:", vendorContext);
+        console.log("isVendor:", isVendor);
+        console.log("isAdmin:", isAdmin);
+        console.log("isCskh:", isCskh);
+        console.log("userShops:", userShops);
+
         let isConnected = false;
+
         let typingTimer = null;
+
         let seenKeys = new Set();
+
+        // Update UI based on user role
+        function updateUIForRole() {
+          const titleElement = document.getElementById("chatTitle");
+          if (titleElement) {
+            if (isCskh) {
+              titleElement.textContent = "CSKH - Chat Hỗ Trợ Khách Hàng";
+            } else if (isAdmin) {
+              titleElement.textContent = "Admin - Quản Lý Chat Toàn Hệ Thống";
+            } else if (isVendor) {
+              titleElement.textContent = "Vendor - Chat Khách Hàng Shop";
+            } else {
+              titleElement.textContent = "Quản Lý Chat Khách Hàng";
+            }
+          }
+        }
 
         function getQueryParam(name) {
           const params = new URLSearchParams(window.location.search);
+
           return params.get(name);
+        }
+
+        function extractShopIdFromRoomId(roomId) {
+          const match = roomId.match(/^shop-(\d+)-/);
+          return match ? parseInt(match[1]) : null;
         }
 
         function connect() {
           const socket = new SockJS("/ws");
+
           stompClient = Stomp.over(socket);
 
           // Optional vendorName/room overrides via query
+
           // Persist vendor name across reloads
+
           const savedVendor = localStorage.getItem("oneshop.vendor.name");
+
           const qpVendor = getQueryParam("vn") || getQueryParam("vendorName");
+
           vendorName = qpVendor || savedVendor || vendorName;
+
           localStorage.setItem("oneshop.vendor.name", vendorName);
+
           const qpRoom = getQueryParam("room");
+
           if (qpRoom) currentRoom = qpRoom;
+
           if (!currentRoom) {
             const savedRoom = localStorage.getItem(
               "oneshop.vendor.currentRoom"
             );
+
             if (savedRoom) currentRoom = savedRoom;
           }
 
           stompClient.connect(
             {},
+
             function (frame) {
               console.log("Vendor connected");
+
               isConnected = true;
+
               // Load recent rooms from DB first so dashboard recovers after reload
+
               loadRoomsList(100).then(() => {
                 if (currentRoom) {
                   loadHistory(currentRoom, 50).finally(() => {
                     subscribeRoom(currentRoom);
+
                     stompClient.send(
                       "/app/chat.join",
+
                       {},
+
                       JSON.stringify({
                         roomId: currentRoom,
+
                         userType: "vendor",
+
                         senderName: vendorName,
                       })
                     );
                   });
                 } else {
                   // Pick first room if any
+
                   const first = document.querySelector("#roomsList .room-item");
+
                   if (first) onRoomItemClick.call(first);
                 }
               });
+
               // Subscribe to global room events so vendors see new rooms instantly
+
               if (window._roomsGlobalSub)
                 window._roomsGlobalSub.unsubscribe &&
                   window._roomsGlobalSub.unsubscribe();
+
               window._roomsGlobalSub = stompClient.subscribe(
                 "/topic/rooms",
+
                 function (message) {
                   const data = JSON.parse(message.body);
+
                   switch (data.type) {
                     case "ROOM_OPEN":
                       addOrActivateRoom(data.roomId, data.customerName);
+
                       // Auto-open the first incoming room if none selected yet
+
                       if (!currentRoom) {
                         const item = document.querySelector(
                           `[data-room="${data.roomId}"]`
                         );
+
                         if (item) onRoomItemClick.call(item);
                       }
+
                       break;
+
                     case "ROOM_MESSAGE":
                       updateRoomFromMessage(
                         data.roomId,
+
                         data.from,
+
                         data.preview,
+
                         data.pendingCount || 0,
+
                         data.sentAt
                       );
+
                       if (!currentRoom) {
                         const item = document.querySelector(
                           `[data-room="${data.roomId}"]`
                         );
+
                         if (item) onRoomItemClick.call(item);
                       }
+
                       break;
+
                     case "ROOM_ASSIGNED":
+
                     case "ROOM_UPDATED":
                       updateRoomFromMessage(
                         data.roomId,
+
                         data.lastMessageBy || "Khách hàng",
+
                         data.preview || "",
+
                         data.pendingCount || 0,
+
                         data.sentAt
                       );
+
                       break;
                   }
                 }
               );
+
+              // Subscribe to error messages
+              if (window._errorSub)
+                window._errorSub.unsubscribe && window._errorSub.unsubscribe();
+
+              window._errorSub = stompClient.subscribe(
+                "/user/queue/errors",
+                function (message) {
+                  const data = JSON.parse(message.body);
+                  if (data.type === "ACCESS_DENIED") {
+                    alert(data.message);
+                    // Remove the room from UI if access denied
+                    const roomItem = document.querySelector(
+                      `[data-room="${data.roomId}"]`
+                    );
+                    if (roomItem) {
+                      roomItem.remove();
+                    }
+                    // If current room is the denied room, clear it
+                    if (currentRoom === data.roomId) {
+                      currentRoom = null;
+                      document.getElementById("messages").innerHTML = "";
+                    }
+                  }
+                }
+              );
             },
+
             function (error) {
               console.log("Connection error: ", error);
+
               isConnected = false;
+
               setTimeout(() => connect(), 3000);
             }
           );
@@ -1224,54 +1791,126 @@
         async function loadRoomsList(limit) {
           try {
             const res = await fetch(`/api/chat/rooms?limit=${limit || 100}`);
+
             if (!res.ok) return;
+
             let rooms = await res.json();
-            // Filter out legacy/guest rooms (support-*) to avoid phantom entries
+
+            // Debug log để xem rooms được load
+            console.log("=== ROOMS LOADED ===");
+            console.log("Total rooms:", rooms.length);
+            console.log("All rooms:", rooms);
+
+            // Filter rooms based on user role and shop ownership
             rooms = rooms.filter((r) => {
               const id = String(r.roomId || "");
-              return /^user-\d+(?:-seller-\d+)?$/.test(id);
+
+              // Only show shop-specific rooms
+              if (!/^shop-\d+-(?:customer|guest)-[A-Za-z0-9_-]+$/.test(id)) {
+                return false;
+              }
+
+              // CSKH and Admin can see all rooms
+              if (canChatAllCustomers) {
+                console.log("Admin/CSKH can see all rooms:", id);
+                return true;
+              }
+
+              // Vendor can only see rooms from their shops
+              if (isVendor && userShops.length > 0) {
+                const shopIds = userShops.map((shop) => shop.id);
+                const roomShopId = extractShopIdFromRoomId(id);
+                const hasAccess = roomShopId && shopIds.includes(roomShopId);
+                console.log("Vendor room filter:", {
+                  roomId: id,
+                  roomShopId: roomShopId,
+                  userShopIds: shopIds,
+                  hasAccess: hasAccess,
+                });
+                return hasAccess;
+              }
+
+              console.log("No access to room:", id);
+              return false;
             });
+
             const roomsList = document.getElementById("roomsList");
+
             if (!roomsList) return;
+
             roomsList.innerHTML = "";
+
             rooms.forEach((r) => {
               // Prefer stored customerName; fallback to lastMessageBy (not system); else parse from roomId
+
               let displayName = (r.customerName || "").toString().trim();
+
               if (!displayName) {
                 const lastBy = (r.lastMessageBy || "").toString().trim();
+
                 if (lastBy && lastBy.toLowerCase() !== "system")
                   displayName = lastBy;
               }
+
               if (!displayName) {
                 const roomIdStr = String(r.roomId || "");
-                const m = roomIdStr.match(/^user-(\d+)/);
+
+                const m = roomIdStr.match(/customer-(\d+)/);
+
                 displayName = m ? "User #" + m[1] : "Khách hàng";
               }
+
               const avatar = displayName.trim().charAt(0).toUpperCase();
+
               const item = document.createElement("div");
+
               item.className = "room-item";
+
               item.setAttribute("data-room", r.roomId);
+
               const preview = (r.lastMessage || "").toString();
+
               const timeStr = r.sentAt
                 ? new Date(r.sentAt).toLocaleTimeString("vi-VN", {
                     hour: "2-digit",
+
                     minute: "2-digit",
                   })
                 : "";
+
+              // Get shop info for this room
+              const roomShopId = extractShopIdFromRoomId(r.roomId);
+              const shopInfo = userShops.find((shop) => shop.id === roomShopId);
+              const shopName = shopInfo ? shopInfo.name : `Shop #${roomShopId}`;
+
               item.innerHTML = `
+
                 <div class="room-avatar">${avatar}</div>
+
                 <div class="room-info">
+
                   <div class="room-name">${displayName || r.roomId}</div>
+
+                  <div class="room-shop-info" style="font-size: 11px; color: #666; margin-bottom: 2px;">
+                    <i class="fas fa-store" style="margin-right: 4px;"></i>${shopName}
+                  </div>
+
                   <div class="room-last-message">${
                     preview.length > 100
                       ? preview.substring(0, 100) + "..."
                       : preview
                   }</div>
+
                 </div>
+
                 <div class="room-meta">
+
                   <div class="room-time">${timeStr}</div>
+
                 </div>`;
+
               item.addEventListener("click", onRoomItemClick);
+
               roomsList.appendChild(item);
             });
           } catch (e) {
@@ -1283,23 +1922,31 @@
           if (!stompClient || !stompClient.connected) return;
 
           // Unsubscribe previous
+
           if (window._roomSub) window._roomSub.unsubscribe();
+
           if (window._typingSub) window._typingSub.unsubscribe();
 
           // Subscribe to room messages
+
           window._roomSub = stompClient.subscribe(
             "/topic/room/" + roomId,
+
             function (message) {
               const data = JSON.parse(message.body);
+
               appendMessage(data);
             }
           );
 
           // Subscribe to typing indicators
+
           window._typingSub = stompClient.subscribe(
             "/topic/room/" + roomId + "/typing",
+
             function (message) {
               const data = JSON.parse(message.body);
+
               showTypingIndicator(data);
             }
           );
@@ -1308,40 +1955,55 @@
         function messageKey(msg) {
           return [
             msg.sender || "",
+
             msg.sentAt || "",
+
             msg.messageContent || "",
           ].join("|");
         }
 
         function appendMessage(msg) {
           const key = messageKey(msg);
+
           if (seenKeys.has(key)) return;
+
           seenKeys.add(key);
+
           const isVendor =
             msg.sender === vendorName || msg.sender.startsWith("vendor");
+
           const isSystem = msg.sender === "system";
+
           const container = document.getElementById("chatMessages");
 
           if (isSystem) {
             const systemEl = document.createElement("div");
+
             systemEl.className = "system-message";
+
             systemEl.style.cssText =
               "text-align: center; margin: 16px 0; padding: 8px 16px; background: var(--vendor-warning); color: white; border-radius: 16px; font-size: 12px;";
+
             systemEl.innerHTML = `<i class="fas fa-info-circle"></i> ${msg.messageContent}`;
+
             container.appendChild(systemEl);
           } else {
             const messageEl = document.createElement("div");
+
             messageEl.className = "message" + (isVendor ? " vendor" : "");
 
             const avatarLetter = (msg.sender || "?").charAt(0).toUpperCase();
+
             const timeStr = new Date(
               msg.sentAt || Date.now()
             ).toLocaleTimeString("vi-VN", {
               hour: "2-digit",
+
               minute: "2-digit",
             });
 
             const isImage = (msg.messageType || "").toUpperCase() === "IMAGE";
+
             const contentHtml = isImage
               ? `<a href="${msg.messageContent}" target="_blank"><img src="${msg.messageContent}" style="max-width:240px;border-radius:8px"/></a>`
               : `<div class=\"message-content\">${escapeHtml(
@@ -1349,11 +2011,17 @@
                 )}</div>`;
 
             messageEl.innerHTML = `
+
                         <div class="message-avatar">${avatarLetter}</div>
+
                         <div class="message-bubble">
+
                             ${contentHtml}
+
                             <div class="message-time">${timeStr}</div>
+
                         </div>
+
                     `;
 
             container.appendChild(messageEl);
@@ -1367,8 +2035,11 @@
 
           if (data.isTyping && data.userName !== vendorName) {
             indicator.innerHTML = `
+
                         <i class="fas fa-user"></i>
+
                         ${data.userName} đang nhập tin nhắn...
+
                     `;
           } else {
             indicator.innerHTML = "";
@@ -1380,12 +2051,18 @@
 
           stompClient.send(
             "/app/chat.send",
+
             {},
+
             JSON.stringify({
               roomId: currentRoom,
+
               messageContent: text.trim(),
+
               messageType: "TEXT",
+
               userType: "vendor",
+
               senderName: vendorName,
             })
           );
@@ -1393,29 +2070,45 @@
 
         async function uploadAndSendImage(file) {
           if (!file) return;
+
           const form = new FormData();
+
           form.append("file", file);
+
           const res = await fetch("/api/chat/uploadImage", {
             method: "POST",
+
             body: form,
           });
+
           if (!res.ok) {
             alert("Tải ảnh thất bại");
+
             return;
           }
+
           const data = await res.json();
+
           if (!data.success || !data.url) {
             alert("Tải ảnh thất bại");
+
             return;
           }
+
           stompClient.send(
             "/app/chat.send",
+
             {},
+
             JSON.stringify({
               roomId: currentRoom,
+
               messageContent: data.url,
+
               messageType: "IMAGE",
+
               userType: "vendor",
+
               senderName: vendorName,
             })
           );
@@ -1426,11 +2119,16 @@
 
           stompClient.send(
             "/app/chat.typing",
+
             {},
+
             JSON.stringify({
               roomId: currentRoom,
+
               isTyping: !!isTyping,
+
               senderName: vendorName,
+
               userType: "vendor",
             })
           );
@@ -1438,12 +2136,15 @@
 
         function escapeHtml(text) {
           const div = document.createElement("div");
+
           div.textContent = text;
+
           return div.innerHTML;
         }
 
         function autoResizeTextarea(textarea) {
           textarea.style.height = "auto";
+
           textarea.style.height = Math.min(textarea.scrollHeight, 120) + "px";
         }
 
@@ -1454,13 +2155,21 @@
                 limit || 50
               }`
             );
+
             if (!res.ok) return;
+
             const items = await res.json();
+
             // reset seen keys for new room
+
             seenKeys.clear();
+
             items.forEach(appendMessage);
+
             // scroll after initial render
+
             const container = document.getElementById("chatMessages");
+
             container.scrollTop = container.scrollHeight;
           } catch (e) {
             console.warn("loadHistory failed", e);
@@ -1468,6 +2177,7 @@
         }
 
         // Global functions
+
         window.sendQuickReply = function (message) {
           sendMessage(message);
         };
@@ -1485,56 +2195,78 @@
         };
 
         // Event listeners
+
         document
+
           .getElementById("chatForm")
+
           .addEventListener("submit", function (e) {
             e.preventDefault();
+
             const input = document.getElementById("messageInput");
+
             const text = input.value.trim();
 
             if (text) {
               sendMessage(text);
+
               input.value = "";
+
               autoResizeTextarea(input);
             }
           });
 
         document
+
           .getElementById("messageInput")
+
           .addEventListener("input", function (e) {
             autoResizeTextarea(e.target);
 
             sendTyping(true);
+
             clearTimeout(typingTimer);
+
             typingTimer = setTimeout(() => sendTyping(false), 1000);
           });
 
         document
+
           .getElementById("messageInput")
+
           .addEventListener("keydown", function (e) {
             if (e.key === "Enter" && !e.shiftKey) {
               e.preventDefault();
+
               document
+
                 .getElementById("chatForm")
+
                 .dispatchEvent(new Event("submit"));
             }
           });
 
         // Image button wiring (vendor)
+
         (function () {
           const imgBtn = document.getElementById("imageButton");
+
           const imgInput = document.getElementById("imageInput");
+
           if (imgBtn && imgInput) {
             imgBtn.addEventListener("click", function () {
               imgInput.click();
             });
+
             imgInput.addEventListener("change", function (e) {
               const file = e.target.files && e.target.files[0];
+
               if (file) {
                 uploadAndSendImage(file).catch(function () {
                   alert("Tải ảnh thất bại");
                 });
               }
+
               e.target.value = "";
             });
           }
@@ -1542,34 +2274,58 @@
 
         function addOrActivateRoom(roomId, customerName) {
           const roomsList = document.getElementById("roomsList");
+
           let existing = roomsList.querySelector(`[data-room="${roomId}"]`);
+
           if (!existing) {
             const avatar = (customerName || "KH")
+
               .trim()
+
               .charAt(0)
+
               .toUpperCase();
+
             const wrapper = document.createElement("div");
+
             wrapper.className = "room-item";
+
             wrapper.setAttribute("data-room", roomId);
+
             wrapper.innerHTML = `
+
               <div class="room-avatar">${avatar}</div>
+
               <div class="room-info">
+
                 <div class="room-name">${
                   customerName || "Khách hàng " + roomId
                 }</div>
-                <div class="room-last-message">Phòng mới được tạo</div>
+
+                <div class="room-last-message">phòng mới được tạo</div>
+
               </div>
+
               <div class="room-meta">
+
                 <div class="room-time">${new Date().toLocaleTimeString(
                   "vi-VN",
+
                   { hour: "2-digit", minute: "2-digit" }
                 )}</div>
+
                 <div class="room-badge">1</div>
+
               </div>
+
             `;
+
             roomsList.prepend(wrapper);
+
             // attach click handler and auto-open if first room
+
             wrapper.addEventListener("click", onRoomItemClick);
+
             if (!currentRoom) {
               onRoomItemClick.call(wrapper);
             }
@@ -1578,34 +2334,50 @@
 
         function onRoomItemClick() {
           // Remove active class from all rooms
+
           document
+
             .querySelectorAll(".room-item")
+
             .forEach((r) => r.classList.remove("active"));
 
           // Add active class to clicked room
+
           this.classList.add("active");
 
           // Switch room
+
           const newRoom = this.dataset.room;
+
           if (newRoom !== currentRoom) {
             currentRoom = newRoom;
+
             try {
               localStorage.setItem("oneshop.vendor.currentRoom", currentRoom);
             } catch (e) {}
+
             // clear previous state and load history first
+
             seenKeys.clear();
 
             // Join as vendor to notify and assign
+
             if (stompClient && stompClient.connected) {
               // Load history then subscribe and join
+
               loadHistory(currentRoom, 50).finally(() => {
                 subscribeRoom(currentRoom);
+
                 stompClient.send(
                   "/app/chat.join",
+
                   {},
+
                   JSON.stringify({
                     roomId: currentRoom,
+
                     userType: "vendor",
+
                     senderName: vendorName,
                   })
                 );
@@ -1613,46 +2385,67 @@
             }
 
             // Clear messages
+
             const messagesContainer = document.getElementById("chatMessages");
+
             messagesContainer.innerHTML = `
+
               <div class="system-message" style="text-align: center; margin: 20px 0; padding: 8px 16px; background: var(--vendor-warning); color: white; border-radius: 16px; font-size: 12px;">
+
                 <i class="fas fa-door-open"></i>
-                Đã chuyển sang phòng: ${currentRoom}
+
+                 chuyển sang phòng: ${currentRoom}
+
               </div>
+
             `;
 
             // Update header
+
             const roomName = this.querySelector(".room-name").textContent;
+
             const customerAvatar =
               this.querySelector(".room-avatar").textContent;
+
             document.querySelector(".customer-avatar").textContent =
               customerAvatar;
+
             document.querySelector(".customer-details h6").textContent =
               roomName;
 
             // Reset unread badge for this room
+
             const badgeEl = this.querySelector(".room-badge");
+
             if (badgeEl) {
               badgeEl.textContent = "0";
+
               badgeEl.style.display = "none";
             }
 
             // Focus input for quick reply
+
             const input = document.getElementById("messageInput");
+
             input && input.focus();
           }
         }
 
         // Room switching (initial items)
+
         document.querySelectorAll(".room-item").forEach((item) => {
           item.addEventListener("click", onRoomItemClick);
         });
 
         // Event delegation for dynamically added rooms
+
         document
+
           .getElementById("roomsList")
+
           .addEventListener("click", function (e) {
             const item = e.target.closest(".room-item");
+
             if (item && this.contains(item)) {
               onRoomItemClick.call(item, e);
             }
@@ -1660,34 +2453,50 @@
 
         function updateRoomFromMessage(
           roomId,
+
           from,
+
           preview,
+
           pendingCount,
+
           sentAt
         ) {
           const roomsList = document.getElementById("roomsList");
+
           let item = roomsList.querySelector(`[data-room="${roomId}"]`);
+
           if (!item) {
             addOrActivateRoom(roomId, from || "Khách hàng");
+
             item = roomsList.querySelector(`[data-room="${roomId}"]`);
           }
+
           if (!item) return;
 
           const lastMsgEl = item.querySelector(".room-last-message");
+
           const timeEl = item.querySelector(".room-time");
+
           const nameEl = item.querySelector(".room-name");
+
           const badgeEl = item.querySelector(".room-badge");
 
           if (lastMsgEl) lastMsgEl.textContent = preview || "Tin nhắn mới";
+
           if (timeEl && sentAt) {
             timeEl.textContent = new Date(sentAt).toLocaleTimeString("vi-VN", {
               hour: "2-digit",
+
               minute: "2-digit",
             });
           }
+
           // If we have a customer name (from) and current label looks generic or 'system', update it
+
           if (nameEl && from && from.toLowerCase() !== "system") {
             const currentName = nameEl.textContent && nameEl.textContent.trim();
+
             if (
               !currentName ||
               currentName.toLowerCase() === "system" ||
@@ -1696,35 +2505,52 @@
               nameEl.textContent = from;
             }
           }
+
           if (badgeEl) {
             const count = Number(pendingCount || 0);
+
             badgeEl.textContent = String(count);
+
             badgeEl.style.display = count > 0 ? "inline-block" : "none";
           } else if (pendingCount > 0) {
             const meta = item.querySelector(".room-meta");
+
             if (meta) {
               const newBadge = document.createElement("div");
+
               newBadge.className = "room-badge";
+
               newBadge.textContent = String(pendingCount);
+
               meta.appendChild(newBadge);
             }
           }
 
           // Move room to top on new message
+
           roomsList.prepend(item);
         }
 
         // Search functionality
+
         document
+
           .getElementById("roomSearch")
+
           .addEventListener("input", function (e) {
             const searchTerm = e.target.value.toLowerCase();
+
             document.querySelectorAll(".room-item").forEach((room) => {
               const roomName = room
+
                 .querySelector(".room-name")
+
                 .textContent.toLowerCase();
+
               const lastMessage = room
+
                 .querySelector(".room-last-message")
+
                 .textContent.toLowerCase();
 
               if (
@@ -1739,40 +2565,60 @@
           });
 
         // Initialize connection
+
         // Clear History button
+
         document
+
           .getElementById("clearHistoryBtn")
+
           .addEventListener("click", async function () {
             if (!currentRoom) {
               alert("Chưa chọn phòng chat.");
+
               return;
             }
+
             if (!confirm("Bạn có chắc muốn xóa lịch sử phòng này?")) return;
+
             try {
               // Use POST alias and include credentials to ensure session is sent
+
               const res = await fetch(
                 `/api/chat/history/clear?roomId=${encodeURIComponent(
                   currentRoom
                 )}`,
+
                 {
                   method: "POST",
+
                   credentials: "include",
+
                   headers: { "X-Requested-With": "XMLHttpRequest" },
                 }
               );
+
               const ok = res.ok ? (await res.json()).success !== false : false;
+
               if (ok) {
                 // Clear messages UI
+
                 seenKeys.clear();
+
                 const messagesContainer =
                   document.getElementById("chatMessages");
+
                 messagesContainer.innerHTML = `<div class=\"system-message\" style=\"text-align: center; margin: 20px 0; padding: 8px 16px; background: var(--vendor-warning); color: white; border-radius: 16px; font-size: 12px;\"><i class=\"fas fa-trash\"></i> Lịch sử đã được xóa.</div>`;
+
                 // Update room preview
+
                 const item = document.querySelector(
                   `[data-room=\"${currentRoom}\"]`
                 );
+
                 if (item) {
                   const lastMsgEl = item.querySelector(".room-last-message");
+
                   if (lastMsgEl) lastMsgEl.textContent = "Đã xóa lịch sử";
                 }
               } else {
@@ -1782,6 +2628,9 @@
               alert("Có lỗi khi xóa lịch sử.");
             }
           });
+
+        // Initialize UI and connect
+        updateUIForRole();
         connect();
       })();
     </script>

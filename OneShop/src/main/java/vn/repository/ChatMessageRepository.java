@@ -24,6 +24,12 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> 
 
     @Query("SELECT m.customerName FROM ChatMessage m WHERE m.roomId = :roomId AND m.customerName IS NOT NULL ORDER BY m.sentAt DESC")
     List<String> findLatestCustomerName(@Param("roomId") String roomId, Pageable pageable);
+
+    @Query("SELECT m FROM ChatMessage m WHERE m.customerName = :customerName AND m.roomId LIKE :roomIdPattern ORDER BY m.sentAt DESC")
+    List<ChatMessage> findByCustomerNameAndRoomIdStartingWith(@Param("customerName") String customerName, @Param("roomIdPattern") String roomIdPattern);
+
+    @Query("SELECT m FROM ChatMessage m WHERE m.roomId LIKE :roomIdPattern ORDER BY m.sentAt DESC")
+    List<ChatMessage> findByRoomIdStartingWith(@Param("roomIdPattern") String roomIdPattern);
 }
 
 

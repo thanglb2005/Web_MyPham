@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import vn.entity.User;
+import vn.entity.Shop;
+import vn.dto.ShopProductStatistics;
 import vn.repository.OrderDetailRepository;
 import vn.repository.ProductRepository;
 import vn.repository.CategoryRepository;
@@ -38,16 +40,13 @@ public class StatisticsController {
             Model model,
             Principal principal,
             @RequestParam(name = "categoryId", required = false) Long categoryId,
+            @RequestParam(name = "shopId", required = false) Long shopId,
             @RequestParam(name = "search", required = false) String search,
             @RequestParam(name = "page", defaultValue = "0") int page,
             @RequestParam(name = "size", defaultValue = "10") int size) {
         User user = resolveUser(principal);
         model.addAttribute("user", user);
  
-        // Optional legacy stats (kept for compatibility if used elsewhere)
-        List<Object[]> productStats = orderDetailRepository.getProductSalesStatistics();
-        model.addAttribute("productStats", productStats);
-
         // Build KPI values on server-side
         Map<String, Number> kpis = productStatisticsService.buildKpis();
         model.addAttribute("bestSellers", kpis.getOrDefault("bestSellers", 0));
@@ -59,24 +58,41 @@ public class StatisticsController {
         model.addAttribute("favoritesCount", kpis.getOrDefault("favorites", 0));
         model.addAttribute("discountedCount", kpis.getOrDefault("discounted", 0));
 
-    // Filters and pagination for inventory table
-    int safePage = Math.max(page, 0);
-    int safeSize = Math.min(Math.max(size, 5), 100);
-    String normSearch = (search == null || search.trim().isEmpty()) ? null : search.trim();
+        // Filters and pagination for inventory table
+        int safePage = Math.max(page, 0);
+        int safeSize = Math.min(Math.max(size, 5), 100);
+        String normSearch = (search == null || search.trim().isEmpty()) ? null : search.trim();
 
-    var pageable = org.springframework.data.domain.PageRequest.of(safePage, safeSize);
-    var pageResult = productRepository.getInventoryDetailsPage(categoryId, normSearch, pageable);
+        var pageable = org.springframework.data.domain.PageRequest.of(safePage, safeSize);
+        var pageResult = productRepository.getInventoryDetailsPage(categoryId, normSearch, pageable);
 
-    model.addAttribute("inventoryDetails", pageResult.getContent());
-    model.addAttribute("currentPage", pageResult.getNumber());
-    model.addAttribute("totalPages", pageResult.getTotalPages());
-    model.addAttribute("pageSize", pageResult.getSize());
-    model.addAttribute("totalElements", pageResult.getTotalElements());
+        model.addAttribute("inventoryDetails", pageResult.getContent());
+        model.addAttribute("currentPage", pageResult.getNumber());
+        model.addAttribute("totalPages", pageResult.getTotalPages());
+        model.addAttribute("pageSize", pageResult.getSize());
+        model.addAttribute("totalElements", pageResult.getTotalElements());
 
-    // Category dropdown
-    model.addAttribute("categories", categoryRepository.findAll());
-    model.addAttribute("selectedCategoryId", categoryId);
-    model.addAttribute("searchTerm", search);
+        // Category and Shop dropdowns
+        model.addAttribute("categories", categoryRepository.findAll());
+        model.addAttribute("shops", productRepository.findAllShops());
+        model.addAttribute("selectedCategoryId", categoryId);
+        model.addAttribute("selectedShopId", shopId);
+        model.addAttribute("searchTerm", search);
+
+        // Add shop statistics
+        List<Object[]> shopStatsRaw = productRepository.getShopProductStatistics();
+        List<ShopProductStatistics> shopStats = shopStatsRaw.stream()
+                .map(row -> ShopProductStatistics.builder()
+                        .shopId((Long) row[0])
+                        .shopName((String) row[1])
+                        .status(Shop.ShopStatus.valueOf((String) row[2]))
+                        .vendorName((String) row[3])
+                        .productCount(((Number) row[4]).longValue())
+                        .totalQuantity(((Number) row[5]).longValue())
+                        .totalInventoryValue(((Number) row[6]).doubleValue())
+                        .build())
+                .collect(java.util.stream.Collectors.toList());
+        model.addAttribute("shopStats", shopStats);
 
         return "admin/statistics";
     }
@@ -85,7 +101,7 @@ public class StatisticsController {
 
     @GetMapping("/statistics/products")
     public String productStatistics(Model model, Principal principal) {
-        return statistics(model, principal, null, null, 0, 10);
+        return statistics(model, principal, null, null, null, 0, 10);
     }
     @GetMapping("/statistics/view")
     public String statisticsListView(
