@@ -39,6 +39,133 @@ public class ChatHistoryController {
     @Autowired
     private ShopService shopService;
 
+    @GetMapping("/api/chat/conversations")
+    public ResponseEntity<List<Map<String, Object>>> getUserConversations(HttpSession session) {
+        User user = currentUser(session);
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Collections.emptyList());
+        }
+
+        // Chỉ cho phép user thường (không phải admin/vendor/cskh)
+        boolean admin = hasRole(user, "ROLE_ADMIN");
+        boolean cskh = hasRole(user, "ROLE_CSKH");
+        boolean vendor = hasRole(user, "ROLE_VENDOR");
+        
+        if (admin || cskh || vendor) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Collections.emptyList());
+        }
+
+        try {
+            System.out.println("=== CONVERSATIONS API DEBUG ===");
+            System.out.println("User: " + user.getName());
+            System.out.println("User roles: " + user.getRoles());
+            
+            // Debug: Lấy tất cả tin nhắn để xem customer_name thực tế
+            List<ChatMessage> allMessages = chatMessageRepository.findAll();
+            System.out.println("Total messages in database: " + allMessages.size());
+            for (ChatMessage msg : allMessages) {
+                System.out.println("Message customer_name: '" + msg.getCustomerName() + "' | Room: " + msg.getRoomId() + " | Content: " + msg.getContent().substring(0, Math.min(30, msg.getContent().length())));
+            }
+            
+            // Lấy tất cả tin nhắn của user này với các shop
+            // Thử cách 1: Tìm theo tên user
+            List<ChatMessage> userMessages = chatMessageRepository.findByCustomerNameAndRoomIdStartingWith(
+                user.getName(), "shop-"
+            );
+            
+            // Nếu không tìm thấy, thử cách 2: Tìm theo user ID trong room ID
+            if (userMessages.isEmpty()) {
+                System.out.println("No messages found by name, trying by user ID...");
+                String roomPattern = "shop-%customer-" + user.getUserId();
+                userMessages = chatMessageRepository.findByRoomIdStartingWith(roomPattern);
+                System.out.println("Found " + userMessages.size() + " messages by user ID pattern: " + roomPattern);
+            }
+            
+            // Nếu vẫn không tìm thấy, thử cách 3: Tìm tất cả shop messages và filter
+            if (userMessages.isEmpty()) {
+                System.out.println("No messages found by user ID, trying all shop messages...");
+                List<ChatMessage> allShopMessages = chatMessageRepository.findByRoomIdStartingWith("shop-%");
+                System.out.println("Total shop messages: " + allShopMessages.size());
+                
+                // Filter messages where room ID contains user ID
+                userMessages = allShopMessages.stream()
+                    .filter(msg -> msg.getRoomId().contains("customer-" + user.getUserId()))
+                    .collect(Collectors.toList());
+                System.out.println("Filtered messages for user " + user.getUserId() + ": " + userMessages.size());
+            }
+            
+            System.out.println("Found " + userMessages.size() + " messages for user " + user.getName());
+            for (ChatMessage msg : userMessages) {
+                System.out.println("Message: " + msg.getRoomId() + " | " + msg.getContent().substring(0, Math.min(50, msg.getContent().length())));
+            }
+
+            // Group theo shop và tìm tin nhắn cuối cùng
+            Map<Long, ChatMessage> latestMessagesByShop = new HashMap<>();
+            Map<Long, Integer> unreadCountByShop = new HashMap<>();
+            
+            for (ChatMessage message : userMessages) {
+                Long shopId = ChatRoomUtils.extractShopId(message.getRoomId()).orElse(null);
+                if (shopId == null) continue;
+                
+                // Cập nhật tin nhắn cuối cùng
+                ChatMessage latest = latestMessagesByShop.get(shopId);
+                if (latest == null || message.getSentAt() > latest.getSentAt()) {
+                    latestMessagesByShop.put(shopId, message);
+                }
+                
+                // Đếm tin nhắn chưa đọc (từ vendor/cskh)
+                if ("vendor".equals(message.getSenderType()) || "cskh".equals(message.getSenderType())) {
+                    unreadCountByShop.put(shopId, unreadCountByShop.getOrDefault(shopId, 0) + 1);
+                }
+            }
+
+            System.out.println("Latest messages by shop: " + latestMessagesByShop.size());
+            for (Map.Entry<Long, ChatMessage> entry : latestMessagesByShop.entrySet()) {
+                System.out.println("Shop " + entry.getKey() + ": " + entry.getValue().getRoomId() + " | " + entry.getValue().getContent().substring(0, Math.min(30, entry.getValue().getContent().length())));
+            }
+
+            // Tạo danh sách conversations
+            List<Map<String, Object>> conversations = new ArrayList<>();
+            for (Map.Entry<Long, ChatMessage> entry : latestMessagesByShop.entrySet()) {
+                Long shopId = entry.getKey();
+                ChatMessage latestMessage = entry.getValue();
+                
+                // Lấy thông tin shop
+                Optional<Shop> shopOpt = shopService.findById(shopId);
+                if (shopOpt.isEmpty()) continue;
+                
+                Shop shop = shopOpt.get();
+                
+                Map<String, Object> conversation = new HashMap<>();
+                conversation.put("shopId", shopId);
+                conversation.put("shopName", shop.getShopName());
+                conversation.put("shopLogo", shop.getShopLogo());
+                conversation.put("roomId", latestMessage.getRoomId());
+                conversation.put("room", latestMessage.getRoomId()); // Thêm room parameter
+                conversation.put("user", user.getName()); // Thêm user parameter
+                conversation.put("lastMessage", latestMessage.getContent());
+                conversation.put("lastMessageTime", latestMessage.getSentAt());
+                conversation.put("unreadCount", unreadCountByShop.getOrDefault(shopId, 0));
+                
+                conversations.add(conversation);
+            }
+
+            // Sort theo thời gian tin nhắn cuối
+            conversations.sort((a, b) -> {
+                Long timeA = (Long) a.get("lastMessageTime");
+                Long timeB = (Long) b.get("lastMessageTime");
+                return timeB.compareTo(timeA);
+            });
+
+            return ResponseEntity.ok(conversations);
+            
+        } catch (Exception e) {
+            System.err.println("Error loading conversations: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Collections.emptyList());
+        }
+    }
+
     @GetMapping("/api/chat/history")
     public List<Map<String, Object>> getHistory(
             @RequestParam("roomId") String roomId,
@@ -203,19 +330,36 @@ public class ChatHistoryController {
         if (admin || cskh) {
             return;
         }
+        
         Optional<Long> shopIdOpt = ChatRoomUtils.extractShopId(roomId);
         if (shopIdOpt.isEmpty()) {
+            // Support rooms or other rooms without shopId
             if (hasRole(user, "ROLE_VENDOR")) {
                 throw new ResponseStatusException(HttpStatus.FORBIDDEN);
             }
             return;
         }
+        
         Long shopId = shopIdOpt.get();
+        
+        // Check if user is vendor and owns the shop
         boolean ownsShop = hasRole(user, "ROLE_VENDOR")
                 && shopService.findByIdAndVendor(shopId, user).isPresent();
-        if (!ownsShop) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+        if (ownsShop) {
+            return;
         }
+        
+        // Check if user is customer and has access to this shop room
+        boolean isCustomer = !hasRole(user, "ROLE_VENDOR") && !hasRole(user, "ROLE_ADMIN") && !hasRole(user, "ROLE_CSKH");
+        if (isCustomer) {
+            // For customers, check if roomId contains their user ID
+            Optional<Long> customerIdOpt = ChatRoomUtils.extractCustomerId(roomId);
+            if (customerIdOpt.isPresent() && customerIdOpt.get().equals(user.getUserId())) {
+                return; // Customer can access their own room
+            }
+        }
+        
+        throw new ResponseStatusException(HttpStatus.FORBIDDEN);
     }
 
     private User currentUser(HttpSession session) {
