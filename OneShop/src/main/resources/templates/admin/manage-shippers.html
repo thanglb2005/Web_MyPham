@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${pageTitle}">Quản lý Shipper</title>
+    <link rel="stylesheet" th:href="@{/vendor/bootstrap/bootstrap.min.css}" />
+    <link rel="stylesheet" th:href="@{/fonts/fontawesome/fontawesome.min.css}" />
+    <style>
+        body { background-color: #f5f7fa; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .page-header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; border-radius: 10px; margin-bottom: 30px; }
+        .shop-card { background: white; border-radius: 10px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .shop-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 2px solid #e9ecef; }
+        .shop-name { font-size: 1.3rem; font-weight: 600; color: #2c3e50; }
+        .shipper-badge { display: inline-block; background: #e3f2fd; color: #1976d2; padding: 8px 15px; border-radius: 20px; margin: 5px; font-size: 0.9rem; }
+        .shipper-badge i { margin-left: 10px; cursor: pointer; color: #d32f2f; }
+        .shipper-badge i:hover { color: #b71c1c; }
+        .btn-assign { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; color: white; padding: 8px 20px; border-radius: 5px; }
+        .btn-assign:hover { opacity: 0.9; color: white; }
+        .no-shippers { color: #95a5a6; font-style: italic; padding: 15px; text-align: center; background: #f8f9fa; border-radius: 5px; }
+        .select-shipper { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/admin/home">
+                <i class="fas fa-tachometer-alt me-2"></i>Admin Panel
+            </a>
+            <div class="collapse navbar-collapse">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/admin/home">
+                            <i class="fas fa-home me-1"></i>Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/logout">
+                            <i class="fas fa-sign-out-alt me-1"></i>Đăng xuất
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <!-- Page Header -->
+        <div class="page-header">
+            <h1><i class="fas fa-user-friends me-2"></i>Quản lý Shipper theo Shop</h1>
+            <p class="mb-0">Gán shipper cho các shop để họ có thể nhận và giao đơn hàng</p>
+        </div>
+
+        <!-- Success/Error Messages -->
+        <div id="alertMessage" class="alert" style="display: none;"></div>
+
+        <!-- Shop List -->
+        <div th:if="${shops == null or shops.isEmpty()}" class="alert alert-info">
+            <i class="fas fa-info-circle me-2"></i>Chưa có shop nào trong hệ thống
+        </div>
+
+        <div th:each="shop : ${shops}" class="shop-card">
+            <div class="shop-header">
+                <div>
+                    <div class="shop-name">
+                        <i class="fas fa-store me-2"></i>
+                        <span th:text="${shop.shopName}">Tên Shop</span>
+                    </div>
+                    <small class="text-muted">
+                        <i class="fas fa-map-marker-alt me-1"></i>
+                        <span th:text="${shop.address}">Địa chỉ</span>
+                    </small>
+                </div>
+            </div>
+
+            <!-- Current Shippers -->
+            <div class="mb-3">
+                <strong><i class="fas fa-users me-2"></i>Shipper hiện tại:</strong>
+                <div th:if="${shop.shippers != null and !shop.shippers.isEmpty()}">
+                    <span th:each="shipper : ${shop.shippers}" class="shipper-badge">
+                        <i class="fas fa-user"></i>
+                        <span th:text="${shipper.name}">Shipper Name</span>
+                        <i class="fas fa-times" 
+                           th:attr="data-shop-id=${shop.shopId}, data-shipper-id=${shipper.userId}"
+                           onclick="removeShipper(this)"></i>
+                    </span>
+                </div>
+                <div th:if="${shop.shippers == null or shop.shippers.isEmpty()}" class="no-shippers">
+                    Chưa có shipper nào được gán cho shop này
+                </div>
+            </div>
+
+            <!-- Add Shipper Form -->
+            <div class="mt-3">
+                <div class="row">
+                    <div class="col-md-8">
+                        <select class="select-shipper" th:id="'shipper-select-' + ${shop.shopId}">
+                            <option value="">-- Chọn shipper để gán --</option>
+                            <option th:each="shipper : ${allShippers}" 
+                                    th:value="${shipper.userId}"
+                                    th:text="${shipper.name + ' (' + shipper.email + ')'}">
+                                Shipper Name
+                            </option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <button class="btn btn-assign w-100" 
+                                th:onclick="'assignShipper(' + ${shop.shopId} + ')'">
+                            <i class="fas fa-plus me-2"></i>Gán Shipper
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script th:src="@{/vendor/bootstrap/jquery-3.6.0.min.js}"></script>
+    <script th:src="@{/vendor/bootstrap/bootstrap.bundle.min.js}"></script>
+    <script>
+        function showAlert(message, type) {
+            const alertDiv = document.getElementById('alertMessage');
+            alertDiv.className = 'alert alert-' + type;
+            alertDiv.textContent = message;
+            alertDiv.style.display = 'block';
+            setTimeout(() => {
+                alertDiv.style.display = 'none';
+            }, 3000);
+        }
+
+        function assignShipper(shopId) {
+            const selectElement = document.getElementById('shipper-select-' + shopId);
+            const shipperId = selectElement.value;
+
+            if (!shipperId) {
+                showAlert('Vui lòng chọn shipper', 'warning');
+                return;
+            }
+
+            $.ajax({
+                url: '/admin/assign-shipper',
+                method: 'POST',
+                data: { shopId: shopId, shipperId: shipperId },
+                success: function(response) {
+                    if (response === 'success') {
+                        showAlert('Đã gán shipper thành công!', 'success');
+                        setTimeout(() => location.reload(), 1000);
+                    } else if (response === 'duplicate') {
+                        showAlert('Shipper này đã được gán cho shop rồi!', 'warning');
+                    } else {
+                        showAlert('Có lỗi xảy ra!', 'danger');
+                    }
+                },
+                error: function() {
+                    showAlert('Có lỗi kết nối đến server!', 'danger');
+                }
+            });
+        }
+
+        function removeShipper(element) {
+            const shopId = element.getAttribute('data-shop-id');
+            const shipperId = element.getAttribute('data-shipper-id');
+
+            if (!confirm('Bạn có chắc muốn xóa shipper này khỏi shop?')) {
+                return;
+            }
+
+            $.ajax({
+                url: '/admin/remove-shipper',
+                method: 'POST',
+                data: { shopId: shopId, shipperId: shipperId },
+                success: function(response) {
+                    if (response === 'success') {
+                        showAlert('Đã xóa shipper thành công!', 'success');
+                        setTimeout(() => location.reload(), 1000);
+                    } else {
+                        showAlert('Có lỗi xảy ra!', 'danger');
+                    }
+                },
+                error: function() {
+                    showAlert('Có lỗi kết nối đến server!', 'danger');
+                }
+            });
+        }
+    </script>
+</body>
+</html>
+

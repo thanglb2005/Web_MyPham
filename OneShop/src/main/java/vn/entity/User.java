@@ -8,6 +8,8 @@ import lombok.NoArgsConstructor;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * User entity for authentication and user management
@@ -38,14 +40,15 @@ public class User implements Serializable {
     private Date registerDate;
     
     private Boolean status;
-    
-    // Shipping provider for shipper role (GHN, GHTK, J&T Express, Viettel Post, VNPost)
-    @Column(name = "shipping_provider")
-    private String shippingProvider;
 
     @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinTable(name = "users_roles",
             joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id", referencedColumnName = "id"))
     private Collection<Role> roles;
+
+    // Quan hệ Many-to-Many với Shop (cho shipper)
+    // Một shipper có thể thuộc nhiều shop, một shop có thể có nhiều shipper
+    @ManyToMany(mappedBy = "shippers", fetch = FetchType.LAZY)
+    private Set<Shop> assignedShops = new HashSet<>();
 }
