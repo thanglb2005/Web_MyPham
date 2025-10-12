@@ -53,11 +53,11 @@ public class ProductController {
         return user;
     }
 
-    @ModelAttribute("products")
-    public List<Product> showProduct(Model model) {
-        List<Product> products = productService.findAll();
-        model.addAttribute("products", products);
-        return products;
+    @ModelAttribute("shopList")
+    public List<Shop> showShopList(Model model) {
+        List<Shop> shopList = shopService.findAll();
+        model.addAttribute("shopList", shopList);
+        return shopList;
     }
 
     @ModelAttribute("categoryList")

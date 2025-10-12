@@ -41,6 +41,11 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public Optional<User> findByName(String name) {
+        return userRepository.findByName(name);
+    }
+
+    @Override
     public List<User> findByStatus(Boolean status) {
         return userRepository.findByStatus(status);
     }

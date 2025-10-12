@@ -44,28 +44,6 @@
 
     <section class="inner-section shop-part">
       <div class="container">
-        <div
-          class="alert alert-warning d-flex align-items-center gap-2 mb-4"
-          th:if="${inactiveShop}"
-        >
-          <i class="fas fa-info-circle fa-lg"></i>
-          <span th:switch="${shopStatusLabel}">
-            <span th:case="${T(vn.entity.Shop$ShopStatus).PENDING}"
-              >Cửa hàng đang chờ duyệt. Sản phẩm sẽ được mở bán sau khi hệ thống
-              phê duyệt.</span
-            >
-            <span th:case="${T(vn.entity.Shop$ShopStatus).SUSPENDED}"
-              >Cửa hàng đang tạm ngưng hoạt động. Vui lòng quay lại sau.</span
-            >
-            <span th:case="${T(vn.entity.Shop$ShopStatus).REJECTED}"
-              >Cửa hàng tạm thời chưa khả dụng do chưa được phê duyệt. Vui lòng
-              thử lại sau.</span
-            >
-            <span th:case="*"
-              >Cửa hàng hiện chưa hoạt động. Vui lòng quay lại sau.</span
-            >
-          </span>
-        </div>
         <div class="row content-reverse">
           <div class="col-lg-3">
             <!-- Search Widget -->
@@ -245,6 +223,85 @@
             </div>
           </div>
           <div class="col-lg-9">
+            <!-- Shop Information Card -->
+            <div class="card border-0 shadow-sm mb-4" th:if="${shop != null}">
+              <div
+                class="card-body d-flex flex-column flex-md-row align-items-md-center gap-3"
+              >
+                <div class="shop-avatar-wrapper">
+                  <img
+                    class="rounded-circle border"
+                    th:if="${shop.shopLogo != null}"
+                    th:src="@{'/loadImage?imageName=' + ${shop.shopLogo}}"
+                    alt="Shop logo"
+                    style="width: 72px; height: 72px; object-fit: cover"
+                  />
+                  <div
+                    class="rounded-circle border d-flex align-items-center justify-content-center bg-light"
+                    th:unless="${shop.shopLogo != null}"
+                    style="width: 72px; height: 72px; font-weight: 600"
+                  >
+                    [[${!#strings.isEmpty(shop.shopName) ?
+                    shop.shopName.substring(0, 1).toUpperCase() : 'S'}]]
+                  </div>
+                </div>
+                <div class="flex-grow-1">
+                  <h5 class="mb-1" th:text="${shop.shopName}">Tên shop</h5>
+                  <p
+                    class="mb-2 text-muted small"
+                    th:text="${shop.shopDescription}"
+                  >
+                    Mô tả shop
+                  </p>
+                  <div class="d-flex flex-wrap gap-3 small text-secondary">
+                    <span>
+                      <i class="fas fa-box-open me-1 text-primary"></i>
+                      [[${shop.totalProducts ?: 0}]] sản phẩm
+                    </span>
+                    <span>
+                      <i class="fas fa-shopping-basket me-1 text-primary"></i>
+                      [[${shop.totalOrders ?: 0}]] đơn hàng
+                    </span>
+                    <span>
+                      <i class="fas fa-store-alt me-1 text-primary"></i>
+                      <span th:switch="${shop.status}">
+                        <span
+                          th:case="${T(vn.entity.Shop$ShopStatus).ACTIVE}"
+                          class="badge bg-success"
+                          >ACTIVE</span
+                        >
+                        <span
+                          th:case="${T(vn.entity.Shop$ShopStatus).PENDING}"
+                          class="badge bg-warning"
+                          >PENDING</span
+                        >
+                        <span
+                          th:case="${T(vn.entity.Shop$ShopStatus).REJECTED}"
+                          class="badge bg-danger"
+                          >REJECTED</span
+                        >
+                        <span
+                          th:case="${T(vn.entity.Shop$ShopStatus).SUSPENDED}"
+                          class="badge bg-secondary"
+                          >SUSPENDED</span
+                        >
+                        <span th:case="*" class="badge bg-secondary"
+                          >[[${shop.status}]]</span
+                        >
+                      </span>
+                    </span>
+                  </div>
+                </div>
+                <a
+                  class="btn btn-primary px-4"
+                  th:href="@{/chat(shopId=${shop.shopId})}"
+                  target="_blank"
+                >
+                  <i class="fas fa-comments me-2"></i>Chat với shop
+                </a>
+              </div>
+            </div>
+
             <!-- Shop Toolbar -->
             <div class="row">
               <div class="col-lg-12">

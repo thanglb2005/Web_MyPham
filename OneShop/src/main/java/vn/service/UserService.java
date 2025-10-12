@@ -10,6 +10,7 @@ public interface UserService {
     User saveUser(User user);
     void deleteUser(Long id);
     User findByEmail(String email);
+    Optional<User> findByName(String name);
     List<User> findByStatus(Boolean status);
     boolean existsByEmail(String email);
     

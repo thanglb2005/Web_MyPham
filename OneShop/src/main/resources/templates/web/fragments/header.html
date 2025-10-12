@@ -9,7 +9,9 @@
     <script src="/assets/js/plugin/sweetalert/sweetalert.min.js"></script>
     <style>
       /* Improve visibility of cart count badge */
-      .header-part .header-widget { position: relative; }
+      .header-part .header-widget {
+        position: relative;
+      }
       .header-part .header-widget .cart-count {
         position: absolute;
         top: -6px;
@@ -25,11 +27,23 @@
         font-size: 8px;
         font-weight: 700;
         text-align: center;
-        box-shadow: 0 2px 6px rgba(0,0,0,.2);
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
         transform-origin: center;
       }
-      @keyframes cart-bump { 0% { transform: scale(1); } 30% { transform: scale(1.15); } 100% { transform: scale(1); } }
-      .header-part .header-widget .cart-count.badge-bump { animation: cart-bump .25s ease-out; }
+      @keyframes cart-bump {
+        0% {
+          transform: scale(1);
+        }
+        30% {
+          transform: scale(1.15);
+        }
+        100% {
+          transform: scale(1);
+        }
+      }
+      .header-part .header-widget .cart-count.badge-bump {
+        animation: cart-bump 0.25s ease-out;
+      }
       @media (min-width: 992px) {
         .header-part .header-widget .cart-count {
           top: -8px;
@@ -47,196 +61,327 @@
       <div class="backdrop"></div>
       <a class="backtop fas fa-arrow-up" href="#"></a>
       <th:block th:if="${isCartPage} == null or ${isCartPage} == false">
-      <header class="header-part">
-        <div class="container">
-          <div class="header-content">
-            <a th:href="@{/}" class="header-logo">
-              <img src="/images/logo/logo.png" alt="logo" />
-            </a>
-            <form
-              th:action="@{/searchProduct}"
-              method="get"
-              class="header-form"
-            >
-              <input
-                type="text"
-                name="productName"
-                th:value="${keyword}"
-                placeholder="Tìm kiếm..."
-                autocomplete="off"
-              />
-              <button><i class="fas fa-search"></i></button>
-            </form>
-            <div class="header-widget-group">
-              <a
-                th:href="@{/profile}"
-                class="header-widget"
-                title="Trang cá nhân"
-              >
-                <i class="fas fa-user"></i>
+        <header class="header-part">
+          <div class="container">
+            <div class="header-content">
+              <a th:href="@{/}" class="header-logo">
+                <img src="/images/logo/logo.png" alt="logo" />
               </a>
-              <a th:href="@{/products}" class="header-widget" title="Sản phẩm">
-                <i class="fas fa-store"></i>
-              </a>
-              <th:block th:if="${session.user != null}">
-                <a th:href="@{/favorites}" class="header-widget" title="Yêu thích">
-                  <i class="fas fa-heart"></i>
-                </a>
-              </th:block>
-              <th:block th:if="${session.user != null}">
-                <a th:href="@{/cart}" class="header-widget" title="Giỏ hàng">
-                  <i class="fas fa-shopping-cart"></i>
-                  <span class="cart-count" th:text="${session.cartMap != null ? session.cartMap.size() : (totalCartItems != null ? totalCartItems : 0)}">0</span>
-                </a>
-              </th:block>
-              
-              <!-- Icon Shipper -->
-              <th:block th:if="${session.user != null and !#lists.isEmpty(session.user.roles.?[name=='ROLE_SHIPPER'])}">
-                <a th:href="@{/shipper/home}" class="header-widget" title="Dashboard Shipper" style="color: #10b981;">
-                  <i class="fas fa-shipping-fast"></i>
-                </a>
-              </th:block>
-              <th:block th:if="${session.user == null}">
-                <a th:href="@{/login}" class="header-widget" title="Đăng nhập Shipper" style="color: #10b981;">
-                  <i class="fas fa-shipping-fast"></i>
-                </a>
-              </th:block>
-              
-              <th:block th:if="${session.user != null}">
-                <a th:href="@{/logout}" class="header-widget" title="Đăng xuất">
-                  <i class="fas fa-sign-out-alt"></i>
-                </a>
-              </th:block>
-              <th:block
-                th:if="${session.user == null or (#lists.isEmpty(session.user.roles.?[name=='ROLE_VENDOR']) and #lists.isEmpty(session.user.roles.?[name=='ROLE_ADMIN']))}"
+              <form
+                th:action="@{/searchProduct}"
+                method="get"
+                class="header-form"
               >
-                <a th:href="@{/chat}" class="header-widget" title="Chat tư vấn">
-                  <i class="fas fa-comments"></i>
-                </a>
-              </th:block>
-              <th:block
-                th:if="${session.user != null and (!#lists.isEmpty(session.user.roles.?[name=='ROLE_VENDOR']) or !#lists.isEmpty(session.user.roles.?[name=='ROLE_ADMIN']))}"
-              >
+                <input
+                  type="text"
+                  name="productName"
+                  th:value="${keyword}"
+                  placeholder="Tìm kiếm..."
+                  autocomplete="off"
+                />
+                <button><i class="fas fa-search"></i></button>
+              </form>
+              <div class="header-widget-group">
                 <a
-                  th:href="@{/vendor/dashboard}"
+                  th:href="@{/profile}"
                   class="header-widget"
-                  title="Quản lý shop"
+                  title="Trang cá nhân"
+                >
+                  <i class="fas fa-user"></i>
+                </a>
+                <a
+                  th:href="@{/products}"
+                  class="header-widget"
+                  title="Sản phẩm"
                 >
                   <i class="fas fa-store"></i>
                 </a>
-                <a
-                  th:href="@{/cskh/chat}"
-                  class="header-widget"
-                  title="Vendor Chat"
-                >
-                  <i class="fas fa-headset"></i>
-                </a>
-              </th:block>
-            </div>
-          </div>
-        </div>
-      </header>
-      <nav class="navbar-part">
-        <div class="container">
-          <div class="row">
-            <div class="col-lg-12">
-              <div class="navbar-content">
-                <!-- Shop Selector -->
-                <div class="shop-selector-navbar mb-3">
-                  <select
-                    id="navbarShopSelector"
-                    class="form-select"
-                    onchange="filterHomeByShop()"
+                <th:block th:if="${session.user != null}">
+                  <a
+                    th:href="@{/favorites}"
+                    class="header-widget"
+                    title="Yêu thích"
                   >
-                    <option value="">Tất cả cửa hàng</option>
-                    <option
-                      th:each="shop : ${shopList}"
-                      th:value="${shop.shopId}"
-                      th:text="${shop.shopName}"
-                      th:selected="${selectedShopId != null and selectedShopId == shop.shopId}"
-                    ></option>
-                  </select>
-                </div>
-                
-                <ul class="navbar-list">
-                  <li class="navbar-item">
-                    <a class="navbar-link" th:href="@{/}">Trang chủ</a>
-                  </li>
-                  <li class="navbar-item">
-                    <a class="navbar-link" th:href="@{/products}">Sản phẩm</a>
-                  </li>
-                  <li class="navbar-item dropdown">
-                    <a
-                      class="navbar-link dropdown-arrow"
-                      href="javascript:void(0);"
-                      >Thể loại</a
+                    <i class="fas fa-heart"></i>
+                  </a>
+                </th:block>
+                <th:block th:if="${session.user != null}">
+                  <a th:href="@{/cart}" class="header-widget" title="Giỏ hàng">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span
+                      class="cart-count"
+                      th:text="${session.cartMap != null ? session.cartMap.size() : (totalCartItems != null ? totalCartItems : 0)}"
+                      >0</span
                     >
-                    <ul class="dropdown-position-list">
-                      <li th:each="item : ${categories}">
-                        <a
-                          th:href="@{/productByCategory(id=${item.categoryId})}"
-                          >[[${item.categoryName}]]</a
-                        >
-                      </li>
-                    </ul>
-                  </li>
-                  <li class="navbar-item">
-                    <a class="navbar-link" th:href="@{/contact}">Liên hệ</a>
-                  </li>
-                </ul>
+                  </a>
+                </th:block>
+
+                <!-- Icon Shipper -->
+                <th:block
+                  th:if="${session.user != null and !#lists.isEmpty(session.user.roles.?[name=='ROLE_SHIPPER'])}"
+                >
+                  <a
+                    th:href="@{/shipper/home}"
+                    class="header-widget"
+                    title="Dashboard Shipper"
+                    style="color: #10b981"
+                  >
+                    <i class="fas fa-shipping-fast"></i>
+                  </a>
+                </th:block>
+                <th:block th:if="${session.user == null}">
+                  <a
+                    th:href="@{/login}"
+                    class="header-widget"
+                    title="Đăng nhập Shipper"
+                    style="color: #10b981"
+                  >
+                    <i class="fas fa-shipping-fast"></i>
+                  </a>
+                </th:block>
+
+                <th:block th:if="${session.user != null}">
+                  <a
+                    th:href="@{/logout}"
+                    class="header-widget"
+                    title="Đăng xuất"
+                  >
+                    <i class="fas fa-sign-out-alt"></i>
+                  </a>
+                </th:block>
+                <th:block
+                  th:if="${session.user == null or (#lists.isEmpty(session.user.roles.?[name=='ROLE_VENDOR']) and #lists.isEmpty(session.user.roles.?[name=='ROLE_ADMIN']))}"
+                >
+                  <!-- Nút Store chỉ hiện khi đã chọn shop -->
+                  <th:block
+                    th:if="${param.shopId != null and param.shopId.size() > 0}"
+                    th:with="shopIdValue=${param.shopId[0]}"
+                  >
+                    <a
+                      th:href="@{/chat(shopId=${shopIdValue})}"
+                      class="header-widget"
+                      title="Chat với Shop"
+                      style="display: inline-block; margin-right: 5px"
+                    >
+                      <i class="fas fa-store"></i>
+                    </a>
+                  </th:block>
+                  <!-- Nút CSKH riêng biệt -->
+                  <a
+                    th:href="@{/chat}"
+                    class="header-widget"
+                    title="Chat với CSKH - Hỗ trợ khách hàng"
+                    style="
+                      color: #6c757d;
+                      display: inline-block;
+                      margin-left: 5px;
+                    "
+                  >
+                    <i class="fas fa-headset"></i>
+                  </a>
+                </th:block>
+                <th:block
+                  th:if="${session.user != null and (!#lists.isEmpty(session.user.roles.?[name=='ROLE_VENDOR']) or !#lists.isEmpty(session.user.roles.?[name=='ROLE_ADMIN']))}"
+                >
+                  <a
+                    th:href="@{/vendor/dashboard}"
+                    class="header-widget"
+                    title="Quản lý shop"
+                  >
+                    <i class="fas fa-store"></i>
+                  </a>
+                  <a
+                    th:href="@{/cskh/chat}"
+                    class="header-widget"
+                    title="Vendor Chat"
+                  >
+                    <i class="fas fa-headset"></i>
+                  </a>
+                </th:block>
               </div>
             </div>
           </div>
-        </div>
-      </nav>
-      </th:block>
-         <!-- Cart page header: Logo | Giỏ Hàng + search + widgets (no navbar) -->
-         <th:block th:if="${isCartPage} == true">
-          <header class="header-part">
-            <div class="container">
-              <div class="header-content">
-                <div style="display:flex; align-items:center; gap:10px;">
-                  <a th:href="@{/}" class="header-logo" style="margin-right:0;">
-                    <img src="/images/logo/logo.png" alt="logo" />
-                  </a>
-                  <div style="width:1px; height:24px; background:#33a3cc;"></div>
-                  <span style="color:#33a3cc; font-size:24px; font-weight:600; line-height:1; white-space: nowrap;">Giỏ Hàng</span>
-                </div>
-                <form th:action="@{/searchProduct}" method="get" class="header-form" style="flex: 0 1 70%; max-width: 70%;">
-                  <input type="text" name="productName" th:value="${keyword}" placeholder="Tìm kiếm..." autocomplete="off" />
-                  <button><i class="fas fa-search"></i></button>
-                </form>
-                <div class="header-widget-group">
-                  <a th:href="@{/profile}" class="header-widget" title="Trang cá nhân"><i class="fas fa-user"></i></a>
-                  <a th:href="@{/products}" class="header-widget" title="Sản phẩm"><i class="fas fa-store"></i></a>
-            
-                  <!-- Icon Shipper -->
-                  <th:block th:if="${session.user != null and !#lists.isEmpty(session.user.roles.?[name=='ROLE_SHIPPER'])}">
-                    <a th:href="@{/shipper/home}" class="header-widget" title="Dashboard Shipper" style="color: #10b981;">
-                      <i class="fas fa-shipping-fast"></i>
-                    </a>
-                  </th:block>
-                  <th:block th:if="${session.user == null}">
-                    <a th:href="@{/login}" class="header-widget" title="Đăng nhập Shipper" style="color: #10b981;">
-                      <i class="fas fa-shipping-fast"></i>
-                    </a>
-                  </th:block>
-                  
-                  <th:block th:if="${session.user != null}">
-                    <a th:href="@{/logout}" class="header-widget" title="Đăng xuất"><i class="fas fa-sign-out-alt"></i></a>
-                  </th:block>
-                  <th:block th:if="${session.user == null or (#lists.isEmpty(session.user.roles.?[name=='ROLE_VENDOR']) and #lists.isEmpty(session.user.roles.?[name=='ROLE_ADMIN']))}">
-                    <a th:href="@{/chat}" class="header-widget" title="Chat tư vấn"><i class="fas fa-comments"></i></a>
-                  </th:block>
-                  <th:block th:if="${session.user != null and (!#lists.isEmpty(session.user.roles.?[name=='ROLE_VENDOR']) or !#lists.isEmpty(session.user.roles.?[name=='ROLE_ADMIN']))}">
-                    <a th:href="@{/vendor/dashboard}" class="header-widget" title="Quản lý shop"><i class="fas fa-store"></i></a>
-                    <a th:href="@{/cskh/chat}" class="header-widget" title="Vendor Chat"><i class="fas fa-headset"></i></a>
-                  </th:block>
+        </header>
+        <nav class="navbar-part">
+          <div class="container">
+            <div class="row">
+              <div class="col-lg-12">
+                <div class="navbar-content">
+                  <!-- Shop Selector -->
+                  <div class="shop-selector-navbar mb-3">
+                    <select
+                      id="navbarShopSelector"
+                      class="form-select"
+                      onchange="filterHomeByShop()"
+                    >
+                      <option value="">Tất cả cửa hàng</option>
+                      <option
+                        th:each="shop : ${shopList}"
+                        th:value="${shop.shopId}"
+                        th:text="${shop.shopName}"
+                        th:selected="${selectedShopId != null and selectedShopId == shop.shopId}"
+                      ></option>
+                    </select>
+                  </div>
+
+                  <ul class="navbar-list">
+                    <li class="navbar-item">
+                      <a class="navbar-link" th:href="@{/}">Trang chủ</a>
+                    </li>
+                    <li class="navbar-item">
+                      <a class="navbar-link" th:href="@{/products}">Sản phẩm</a>
+                    </li>
+                    <li class="navbar-item dropdown">
+                      <a
+                        class="navbar-link dropdown-arrow"
+                        href="javascript:void(0);"
+                        >Thể loại</a
+                      >
+                      <ul class="dropdown-position-list">
+                        <li th:each="item : ${categories}">
+                          <a
+                            th:href="@{/productByCategory(id=${item.categoryId})}"
+                            >[[${item.categoryName}]]</a
+                          >
+                        </li>
+                      </ul>
+                    </li>
+                    <li class="navbar-item">
+                      <a class="navbar-link" th:href="@{/contact}">Liên hệ</a>
+                    </li>
+                  </ul>
                 </div>
               </div>
             </div>
-          </header>
-        </th:block>
+          </div>
+        </nav>
+      </th:block>
+      <!-- Cart page header: Logo | Giỏ Hàng + search + widgets (no navbar) -->
+      <th:block th:if="${isCartPage} == true">
+        <header class="header-part">
+          <div class="container">
+            <div class="header-content">
+              <div style="display: flex; align-items: center; gap: 10px">
+                <a th:href="@{/}" class="header-logo" style="margin-right: 0">
+                  <img src="/images/logo/logo.png" alt="logo" />
+                </a>
+                <div
+                  style="width: 1px; height: 24px; background: #33a3cc"
+                ></div>
+                <span
+                  style="
+                    color: #33a3cc;
+                    font-size: 24px;
+                    font-weight: 600;
+                    line-height: 1;
+                    white-space: nowrap;
+                  "
+                  >Giỏ Hàng</span
+                >
+              </div>
+              <form
+                th:action="@{/searchProduct}"
+                method="get"
+                class="header-form"
+                style="flex: 0 1 70%; max-width: 70%"
+              >
+                <input
+                  type="text"
+                  name="productName"
+                  th:value="${keyword}"
+                  placeholder="Tìm kiếm..."
+                  autocomplete="off"
+                />
+                <button><i class="fas fa-search"></i></button>
+              </form>
+              <div class="header-widget-group">
+                <a
+                  th:href="@{/profile}"
+                  class="header-widget"
+                  title="Trang cá nhân"
+                  ><i class="fas fa-user"></i
+                ></a>
+                <a th:href="@{/products}" class="header-widget" title="Sản phẩm"
+                  ><i class="fas fa-store"></i
+                ></a>
+
+                <!-- Icon Shipper -->
+                <th:block
+                  th:if="${session.user != null and !#lists.isEmpty(session.user.roles.?[name=='ROLE_SHIPPER'])}"
+                >
+                  <a
+                    th:href="@{/shipper/home}"
+                    class="header-widget"
+                    title="Dashboard Shipper"
+                    style="color: #10b981"
+                  >
+                    <i class="fas fa-shipping-fast"></i>
+                  </a>
+                </th:block>
+                <th:block th:if="${session.user == null}">
+                  <a
+                    th:href="@{/login}"
+                    class="header-widget"
+                    title="Đăng nhập Shipper"
+                    style="color: #10b981"
+                  >
+                    <i class="fas fa-shipping-fast"></i>
+                  </a>
+                </th:block>
+
+                <th:block th:if="${session.user != null}">
+                  <a
+                    th:href="@{/logout}"
+                    class="header-widget"
+                    title="Đăng xuất"
+                    ><i class="fas fa-sign-out-alt"></i
+                  ></a>
+                </th:block>
+                <th:block
+                  th:if="${session.user == null or (#lists.isEmpty(session.user.roles.?[name=='ROLE_VENDOR']) and #lists.isEmpty(session.user.roles.?[name=='ROLE_ADMIN']))}"
+                >
+                  <th:block
+                    th:with="shopIdValue=${param.shopId != null and param.shopId.size() > 0 ? param.shopId[0] : null}"
+                  >
+                    <a
+                      th:href="${shopIdValue != null} ? @{/chat(shopId=${shopIdValue})} : @{/chat}"
+                      class="header-widget"
+                      title="Chat tư vấn"
+                      ><i class="fas fa-comments"></i
+                    ></a>
+                  </th:block>
+                </th:block>
+                <th:block
+                  th:if="${session.user != null and !#lists.isEmpty(session.user.roles.?[name=='ROLE_VENDOR'])}"
+                >
+                  <a
+                    th:href="@{/vendor/dashboard}"
+                    class="header-widget"
+                    title="Quản lý shop"
+                    ><i class="fas fa-store"></i
+                  ></a>
+                  <a
+                    th:href="@{/admin/vendor-chat}"
+                    class="header-widget"
+                    title="Chat cửa hàng"
+                    ><i class="fas fa-headset"></i
+                  ></a>
+                </th:block>
+                <th:block
+                  th:if="${session.user != null and #lists.isEmpty(session.user.roles.?[name=='ROLE_VENDOR']) and (!#lists.isEmpty(session.user.roles.?[name=='ROLE_CSKH']) or !#lists.isEmpty(session.user.roles.?[name=='ROLE_ADMIN']))}"
+                >
+                  <a
+                    th:href="@{/cskh/chat}"
+                    class="header-widget"
+                    title="Chat chăm sóc khách hàng"
+                    ><i class="fas fa-headset"></i
+                  ></a>
+                </th:block>
+              </div>
+            </div>
+          </div>
+        </header>
+      </th:block>
       <style>
         /* Keep local override in case other styles load later */
         .header-part .header-widget .cart-count {
@@ -245,7 +390,7 @@
           font-size: 12px !important; /* smaller numeral only */
           font-weight: 600 !important;
         }
-        
+
         /* Shop selector in navbar styling */
         .shop-selector-navbar {
           background: #f8f9fa;
@@ -254,14 +399,14 @@
           margin-bottom: 10px;
           border: 1px solid #e9ecef;
         }
-        
+
         .shop-selector-navbar .form-label {
           font-size: 14px;
           font-weight: 600;
           margin-bottom: 8px;
           color: #495057;
         }
-        
+
         .shop-selector-navbar .form-select {
           border: 1px solid #ced4da;
           border-radius: 6px;
@@ -269,22 +414,22 @@
           font-size: 14px;
           background-color: #fff;
         }
-        
+
         .shop-selector-navbar .form-select:focus {
           border-color: #0e98dd;
           box-shadow: 0 0 0 0.2rem rgba(14, 152, 221, 0.25);
         }
-        
+
         @media (max-width: 768px) {
           .shop-selector-navbar {
             padding: 8px 12px;
             margin-bottom: 8px;
           }
-          
+
           .shop-selector-navbar .form-label {
             font-size: 13px;
           }
-          
+
           .shop-selector-navbar .form-select {
             font-size: 13px;
             padding: 6px 10px;
@@ -294,59 +439,75 @@
       <script src="/assets/js/plugin/sweetalert/sweetalert.min.js"></script>
       <script th:inline="javascript">
         /*<![CDATA[*/
-        document.addEventListener('DOMContentLoaded', function () {
+        document.addEventListener("DOMContentLoaded", function () {
           // Ensure cart-count reflects current session value
           try {
             if (window.fetch) {
-              fetch('/cart/count', { credentials: 'same-origin' })
-                .then(function(res){ return res.ok ? res.text() : '0'; })
-                .then(function(txt){
+              fetch("/cart/count", { credentials: "same-origin" })
+                .then(function (res) {
+                  return res.ok ? res.text() : "0";
+                })
+                .then(function (txt) {
                   var val = parseInt(txt, 10);
                   if (!isNaN(val)) {
-                    var el = document.querySelector('.cart-count');
+                    var el = document.querySelector(".cart-count");
                     if (el) {
                       var old = el.textContent;
                       el.textContent = String(val);
                       if (old !== String(val)) {
-                        el.classList.remove('badge-bump');
+                        el.classList.remove("badge-bump");
                         // force reflow for animation restart
                         void el.offsetWidth;
-                        el.classList.add('badge-bump');
-                        setTimeout(function(){ el.classList.remove('badge-bump'); }, 300);
+                        el.classList.add("badge-bump");
+                        setTimeout(function () {
+                          el.classList.remove("badge-bump");
+                        }, 300);
                       }
                     }
                   }
                 })
-                .catch(function(){});
+                .catch(function () {});
             }
           } catch (e) {}
 
           var successMsg = /*[[${success}]]*/ null;
           var errorMsg = /*[[${error}]]*/ null;
           function showFallbackToast(text, type) {
-            var el = document.createElement('div');
+            var el = document.createElement("div");
             el.textContent = text;
-            el.style.position = 'fixed';
-            el.style.top = '16px';
-            el.style.right = '16px';
-            el.style.zIndex = '9999';
-            el.style.padding = '10px 14px';
-            el.style.borderRadius = '6px';
-            el.style.color = '#fff';
-            el.style.background = type === 'error' ? '#dc3545' : '#198754';
-            el.style.boxShadow = '0 4px 12px rgba(0,0,0,.15)';
+            el.style.position = "fixed";
+            el.style.top = "16px";
+            el.style.right = "16px";
+            el.style.zIndex = "9999";
+            el.style.padding = "10px 14px";
+            el.style.borderRadius = "6px";
+            el.style.color = "#fff";
+            el.style.background = type === "error" ? "#dc3545" : "#198754";
+            el.style.boxShadow = "0 4px 12px rgba(0,0,0,.15)";
             document.body.appendChild(el);
-            setTimeout(function(){ el.remove(); }, 2000);
+            setTimeout(function () {
+              el.remove();
+            }, 2000);
           }
           function showAlert(text, type) {
             if (window.swal) {
-              swal({ title: type === 'error' ? 'Lỗi' : 'Thành công', text: text, icon: type === 'error' ? 'error' : 'success', timer: 1800, buttons: false });
+              swal({
+                title: type === "error" ? "Lỗi" : "Thành công",
+                text: text,
+                icon: type === "error" ? "error" : "success",
+                timer: 1800,
+                buttons: false,
+              });
             } else {
               showFallbackToast(text, type);
             }
           }
-          if (typeof successMsg === 'string' && successMsg.length > 0) { showAlert(successMsg, 'success'); }
-          if (typeof errorMsg === 'string' && errorMsg.length > 0) { showAlert(errorMsg, 'error'); }
+          if (typeof successMsg === "string" && successMsg.length > 0) {
+            showAlert(successMsg, "success");
+          }
+          if (typeof errorMsg === "string" && errorMsg.length > 0) {
+            showAlert(errorMsg, "error");
+          }
         });
         /*]]>*/
       </script>

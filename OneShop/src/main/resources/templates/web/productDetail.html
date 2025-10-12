@@ -238,6 +238,21 @@
                   <i class="far fa-heart"></i>
                   <span>Thêm vào yêu thích</span>
                 </button>
+                <a
+                  th:if="${product.shop != null}"
+                  class="details-wish"
+                  th:href="@{/chat(shopId=${product.shop.shopId})}"
+                  target="_blank"
+                  title="Chat với shop về sản phẩm này"
+                  style="
+                    background: #28a745;
+                    color: white;
+                    text-decoration: none;
+                  "
+                >
+                  <i class="fas fa-comments"></i>
+                  <span>Chat với shop</span>
+                </a>
               </div>
             </div>
           </div>

@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import vn.entity.ChatMessage;
 import vn.repository.ChatMessageRepository;
+import vn.util.chat.ChatRoomUtils;
 
 import java.util.*;
 
@@ -25,6 +26,10 @@ public class ChatHistoryService {
     public void appendMessage(String roomId, Map<String, Object> message) {
         if (roomId == null || roomId.isEmpty() || message == null) return;
         try {
+            message.putIfAbsent("roomId", roomId);
+            ChatRoomUtils.extractShopId(roomId).ifPresent(id -> message.putIfAbsent("shopId", id));
+            ChatRoomUtils.extractCustomerId(roomId).ifPresent(id -> message.putIfAbsent("customerId", id));
+            ChatRoomUtils.extractGuestKey(roomId).ifPresent(key -> message.putIfAbsent("guestKey", key));
             ChatMessage cm = new ChatMessage();
             cm.setRoomId(roomId);
             cm.setSender(Objects.toString(message.getOrDefault("sender", "system"), "system"));
@@ -57,8 +62,14 @@ public class ChatHistoryService {
             map.put("messageType", m.getMessageType());
             map.put("messageContent", m.getContent());
             map.put("sentAt", m.getSentAt());
+            ChatRoomUtils.extractShopId(m.getRoomId()).ifPresent(id -> map.put("shopId", id));
+            ChatRoomUtils.extractCustomerId(m.getRoomId()).ifPresent(id -> map.put("customerId", id));
+            ChatRoomUtils.extractGuestKey(m.getRoomId()).ifPresent(key -> map.put("guestKey", key));
             if (m.getCustomerName() != null) {
                 map.put("customerName", m.getCustomerName());
+            }
+            if (m.getVendorName() != null) {
+                map.put("vendorName", m.getVendorName());
             }
             out.add(map);
         }
