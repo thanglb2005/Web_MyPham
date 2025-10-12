@@ -238,7 +238,7 @@ CREATE TABLE dbo.orders (
     customer_phone NVARCHAR(20) NOT NULL,
     shipping_address NVARCHAR(500) NOT NULL,
     note NVARCHAR(1000),
-    status NVARCHAR(50) NOT NULL DEFAULT 'PENDING',
+    status NVARCHAR(50) NOT NULL DEFAULT 'PENDING' CHECK (status IN ('PENDING', 'CONFIRMED', 'SHIPPING', 'DELIVERED', 'CANCELLED', 'RETURNED')),
     payment_method NVARCHAR(50) NOT NULL DEFAULT 'COD',
     total_amount DECIMAL(18,2) NOT NULL CHECK (total_amount > 0),
     order_date DATETIME2 NOT NULL DEFAULT GETDATE(),
