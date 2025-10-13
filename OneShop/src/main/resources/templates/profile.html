@@ -3,87 +3,484 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Profile - OneShop</title>
+    <title>Hồ sơ của tôi - OneShop</title>
     <link rel="icon" href="/images/favicon.png" />
-    <link rel="stylesheet" href="/fonts/flaticon/flaticon.css" />
-    <link rel="stylesheet" href="/fonts/icofont/icofont.min.css" />
-    <link rel="stylesheet" href="/fonts/fontawesome/fontawesome.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="/vendor/bootstrap/bootstrap.min.css" />
     <link rel="stylesheet" href="/css/main.css" />
-    <link rel="stylesheet" href="/css/profile.css" />
     <style>
         :root {
-            --primary-color: #007bff;
-            --primary-dark: #0056b3;
-            --primary-light: #66b3ff;
+            --primary-color: #4f46e5;
+            --primary-hover: #4338ca;
+            --text-primary: #111827;
+            --text-secondary: #6b7280;
+            --bg-primary: #ffffff;
+            --bg-secondary: #f9fafb;
+            --border-color: #e5e7eb;
+        }
+
+        body {
+            background-color: var(--bg-secondary);
+            font-family: 'Inter', sans-serif;
+            color: var(--text-primary);
+        }
+
+        .profile-layout {
+            display: flex;
+            max-width: clamp(1200px, 95vw, 1600px);
+            margin: 2rem auto;
+            gap: 2rem;
+        }
+
+        /* Sidebar */
+        .profile-sidebar {
+            flex: 0 0 300px;
+            min-width: 280px;
+            background-color: var(--bg-primary);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            height: fit-content;
+            min-height: calc(100vh - 4rem);
+            border: 1px solid var(--border-color);
+        }
+        
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 1rem;
+        }
+
+        .sidebar-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .sidebar-user-info .name {
+            font-weight: 600;
+            font-size: 1.125rem;
+            margin: 0;
+        }
+
+        .sidebar-user-info .email {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            word-break: break-all;
+        }
+
+        .sidebar-nav ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .sidebar-nav a {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 1rem 1.25rem;
+            border-radius: 0.5rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .sidebar-nav a:hover, .sidebar-nav a.active {
+            background-color: var(--bg-secondary);
+            color: var(--primary-color);
+        }
+        
+        .sidebar-nav a.logout:hover {
+             background-color: #fee2e2;
+             color: #dc2626;
+        }
+
+        .sidebar-nav a i {
+            width: 20px;
+            text-align: center;
+        }
+
+        /* Main Content */
+        .profile-main {
+            flex: 1;
+        }
+
+        .profile-card {
+            background-color: var(--bg-primary);
+            border-radius: 0.75rem;
+            padding: 2rem;
+            border: 1px solid var(--border-color);
+            margin-bottom: 2rem;
+        }
+        
+        .profile-card-header {
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .profile-card-header h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        /* Avatar Upload styles */
+        .avatar-upload-container {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .avatar-preview {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: 2px solid var(--border-color);
+            padding: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .avatar-preview img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        
+        .avatar-drop-zone {
+            flex: 1;
+            border: 2px dashed var(--border-color);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .avatar-drop-zone.dragover {
+            border-color: var(--primary-color);
+            background-color: #f0f3ff;
+        }
+
+        .avatar-drop-zone i {
+            font-size: 2rem;
+            color: var(--primary-color);
+        }
+
+        .avatar-drop-zone p {
+            margin: 0.5rem 0;
+            color: var(--text-secondary);
+        }
+
+        .avatar-drop-zone .btn-upload {
+            background: none;
+            border: none;
+            color: var(--primary-color);
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        #avatarFile {
+            display: none;
+        }
+
+        .profile-card-header p {
+            color: var(--text-secondary);
+            margin-top: 0.25rem;
+            margin-bottom: 0;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 1.5rem;
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .stat-item .icon {
+            font-size: 1.5rem;
+            color: var(--primary-color);
+            background-color: #e0e7ff;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .stat-item .info .label {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        .stat-item .info .value {
+            font-size: 1.125rem;
+            font-weight: 600;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-row {
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.65rem 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            transition: all 0.2s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+        
+        .profile-card-footer {
+            text-align: right;
+            padding-top: 1.5rem;
+            margin-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .btn {
+            padding: 0.65rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            border: none;
+            cursor: pointer;
+            font-size: 0.95rem;
         }
         
         .btn-primary {
-            background: var(--primary-color);
-            border-color: var(--primary-color);
+            background-color: var(--primary-color);
+            color: white;
         }
         
         .btn-primary:hover {
-            background: var(--primary-dark);
-            border-color: var(--primary-dark);
+            background-color: var(--primary-hover);
         }
         
-        .text-primary {
-            color: var(--primary-color) !important;
+        .alert {
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-top: 1.5rem;
         }
+        
+        .alert-success {
+            background-color: #d1fae5;
+            color: #065f46;
+        }
+
+        .alert-danger {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+
+        @media (max-width: 992px) {
+            .profile-layout {
+                flex-direction: column;
+            }
+            .profile-sidebar {
+                flex: 0 0 auto;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .stats-grid, .form-row {
+                grid-template-columns: 1fr;
+                flex-direction: column;
+            }
+        }
+
     </style>
 </head>
 <body>
-    <div class="user-profile-part">
-        <div class="container">
-            <div class="row justify-content-center">
-                <div class="col-md-8 col-lg-6">
-                    <div class="user-profile-card">
-                        <div class="user-profile-header">
-                            <h3>Thông tin cá nhân</h3>
-                            <p>Cập nhật thông tin tài khoản của bạn</p>
+    <div class="profile-layout">
+        <!-- Sidebar -->
+        <aside class="profile-sidebar">
+            <div class="sidebar-header">
+                <img th:src="${user.avatar != null and user.avatar != ''} ? @{/loadImage(imageName=${user.avatar})} : @{/images/no-image.png}" 
+                     alt="Avatar" class="sidebar-avatar" />
+                <div class="sidebar-user-info">
+                    <p class="name" th:text="${user.name}">User Name</p>
+                    <p class="email" th:text="${user.email}">user@email.com</p>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <ul>
+                    <li><a href="/profile" class="active"><i class="fa-solid fa-user-pen"></i> Hồ sơ của tôi</a></li>
+                    <li><a href="/user/my-orders"><i class="fa-solid fa-box-archive"></i> Lịch sử đơn hàng</a></li>
+                    <li><a href="/user/vouchers"><i class="fa-solid fa-ticket"></i> Kho voucher</a></li>
+                    <li><a href="/change-password"><i class="fa-solid fa-key"></i> Đổi mật khẩu</a></li>
+                    <li><hr class="my-2"></li>
+                    <li><a href="/"><i class="fa-solid fa-house"></i> Về trang chủ</a></li>
+                    <li><a href="/logout" class="logout" onclick="return confirm('Bạn có chắc chắn muốn đăng xuất?')">
+                        <i class="fa-solid fa-right-from-bracket"></i> Đăng xuất
+                    </a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="profile-main">
+            <!-- Stats Card -->
+            <div class="profile-card">
+                <div class="profile-card-header">
+                    <h3>Tổng quan</h3>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="icon"><i class="fa-solid fa-receipt"></i></div>
+                        <div class="info">
+                            <div class="label">Tổng đơn hàng</div>
+                            <div class="value" th:text="${totalOrders != null ? totalOrders : 0}">0</div>
                         </div>
-                        <div class="user-profile-body">
-                            <form th:action="@{/update-profile}" method="post">
-                                <div class="form-group">
-                                    <label for="name">Họ và tên</label>
-                                    <input type="text" id="name" name="name" class="form-control" th:value="${user.name}" required />
+                    </div>
+                    <div class="stat-item">
+                        <div class="icon"><i class="fa-solid fa-wallet"></i></div>
+                        <div class="info">
+                            <div class="label">Tổng chi tiêu</div>
+                            <div class="value" th:text="${totalSpent != null ? #numbers.formatDecimal(totalSpent, 0, 'COMMA', 0, 'POINT') + 'đ' : '0đ'}">0đ</div>
+                        </div>
                                 </div>
-                                <div class="form-group">
-                                    <label for="email">Email</label>
-                                    <input type="email" id="email" name="email" class="form-control" th:value="${user.email}" required />
+                    <div class="stat-item">
+                        <div class="icon"><i class="fa-solid fa-tags"></i></div>
+                        <div class="info">
+                            <div class="label">Voucher sở hữu</div>
+                            <div class="value" th:text="${totalVouchers != null ? totalVouchers : 0}">0</div>
                                 </div>
-                                <div class="form-group">
-                                    <label for="avatar">Avatar URL</label>
-                                    <input type="text" id="avatar" name="avatar" class="form-control" th:value="${user.avatar}" />
                                 </div>
-                                <div class="form-group">
-                                    <button type="submit" class="btn btn-primary btn-block">Cập nhật thông tin</button>
                                 </div>
-                                <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
-                                <div th:if="${message}" class="alert alert-success" th:text="${message}"></div>
-                            </form>
-                            
-                            <hr class="my-4">
-                            
-        <div class="form-group">
-            <a href="/user/my-orders" class="btn btn-outline-success btn-block">
-                <i class="fas fa-shopping-bag me-2"></i>Lịch sử đơn hàng
-            </a>
         </div>
                             
-                            <div class="form-group">
-                                <a href="/change-password" class="btn btn-outline-primary btn-block">Đổi mật khẩu</a>
+            <!-- Edit Profile Card -->
+            <div class="profile-card">
+                <div class="profile-card-header">
+                            <h3>Thông tin cá nhân</h3>
+                        </div>
+                <form th:action="@{/update-profile}" method="post" enctype="multipart/form-data">
+                                <div class="form-group">
+                        <label>Ảnh đại diện</label>
+                        <div class="avatar-upload-container">
+                             <div class="avatar-preview">
+                                <img id="avatarPreview" th:src="${user.avatar != null and user.avatar != ''} ? @{/loadImage(imageName=${user.avatar})} : @{/images/no-image.png}" alt="Avatar Preview">
                             </div>
-                            
-                            <div class="form-group">
-                                <a href="/" class="btn btn-secondary btn-block">Về trang chủ</a>
+                            <div id="avatarDropZone" class="avatar-drop-zone">
+                                <input type="file" id="avatarFile" name="avatarFile" accept="image/*">
+                                <i class="fa-solid fa-cloud-arrow-up"></i>
+                                <p>Kéo và thả ảnh vào đây, hoặc <button type="button" class="btn-upload" onclick="document.getElementById('avatarFile').click()">chọn ảnh</button></p>
+                                <small class="text-secondary">PNG, JPG, GIF tối đa 5MB</small>
                             </div>
                         </div>
                     </div>
-                </div>
-            </div>
+
+                    <div class="form-row">
+                        <div class="form-group flex-grow-1">
+                                    <label for="name">Họ và tên</label>
+                                    <input type="text" id="name" name="name" class="form-control" th:value="${user.name}" required />
+                                </div>
+                        <div class="form-group flex-grow-1">
+                                    <label for="email">Email</label>
+                                    <input type="email" id="email" name="email" class="form-control" th:value="${user.email}" required />
+                                </div>
         </div>
-    </div>
+                            
+                            <div class="form-group">
+                        <label>Ngày tham gia</label>
+                        <input type="text" class="form-control" th:value="${formattedRegisterDate}" readonly disabled/>
+                            </div>
+                            
+                    <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+                    <div th:if="${message}" class="alert alert-success" th:text="${message}"></div>
+
+                    <div class="profile-card-footer">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fa-solid fa-save me-2"></i>
+                            Lưu thay đổi
+                        </button>
+                            </div>
+                </form>
+                        </div>
+        </main>
+                    </div>
+    <script>
+        const dropZone = document.getElementById('avatarDropZone');
+        const fileInput = document.getElementById('avatarFile');
+        const preview = document.getElementById('avatarPreview');
+
+        // Click to upload
+        dropZone.addEventListener('click', (e) => {
+             if (e.target.tagName !== 'BUTTON') {
+                fileInput.click();
+            }
+        });
+
+        // Drag and drop events
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('dragover');
+        });
+
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('dragover');
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                fileInput.files = files;
+                handleFileSelect(files[0]);
+            }
+        });
+
+        // File input change event
+        fileInput.addEventListener('change', () => {
+            if (fileInput.files.length > 0) {
+                handleFileSelect(fileInput.files[0]);
+            }
+        });
+
+        function handleFileSelect(file) {
+            if (file && file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    preview.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+    </script>
 </body>
 </html>

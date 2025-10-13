@@ -7,8 +7,13 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 import vn.entity.User;
 import vn.repository.UserRepository;
+import vn.service.ImageStorageService;
+
+import java.io.IOException;
+import java.text.SimpleDateFormat;
 
 @Controller
 public class AccountController {
@@ -16,19 +21,37 @@ public class AccountController {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private ImageStorageService imageStorageService;
+
     @GetMapping("/profile")
     public String profile(HttpSession session, Model model) {
         User user = (User) session.getAttribute("user");
         if (user == null) {
             return "redirect:/login";
         }
+        
+        // Format register date
+        String formattedDate = "";
+        if (user.getRegisterDate() != null) {
+            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+            formattedDate = sdf.format(user.getRegisterDate());
+        }
+        
+        // Add user statistics (mock data for now)
         model.addAttribute("user", user);
+        model.addAttribute("formattedRegisterDate", formattedDate);
+        model.addAttribute("totalOrders", 5); // Mock data
+        model.addAttribute("totalSpent", 2500000); // Mock data
+        model.addAttribute("totalVouchers", 3); // Mock data
+        
         return "profile";
     }
 
     @PostMapping("/update-profile")
     public String updateProfile(@RequestParam String name,
                                @RequestParam String email,
+                               @RequestParam("avatarFile") MultipartFile avatarFile,
                                HttpSession session,
                                Model model) {
         User user = (User) session.getAttribute("user");
@@ -38,11 +61,41 @@ public class AccountController {
         
         user.setName(name);
         user.setEmail(email);
+
+        // Handle file upload
+        if (avatarFile != null && !avatarFile.isEmpty()) {
+            try {
+                String fileName = imageStorageService.store(avatarFile, user.getName());
+                user.setAvatar(fileName);
+            } catch (IOException e) {
+                // Log the error and add a message for the user
+                model.addAttribute("error", "Lỗi khi tải lên ảnh đại diện. Vui lòng thử lại.");
+                // Re-populate model attributes for the view
+                populateProfileModel(model, user);
+                return "profile";
+            }
+        }
+
         userRepository.save(user);
         session.setAttribute("user", user);
         
-        model.addAttribute("success", "Cập nhật thông tin thành công!");
+        model.addAttribute("message", "Cập nhật thông tin thành công!");
+        populateProfileModel(model, user);
+        
         return "profile";
+    }
+    
+    private void populateProfileModel(Model model, User user) {
+        String formattedDate = "";
+        if (user.getRegisterDate() != null) {
+            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+            formattedDate = sdf.format(user.getRegisterDate());
+        }
+        model.addAttribute("user", user);
+        model.addAttribute("formattedRegisterDate", formattedDate);
+        model.addAttribute("totalOrders", 5); // Mock data
+        model.addAttribute("totalSpent", 2500000); // Mock data
+        model.addAttribute("totalVouchers", 3); // Mock data
     }
 
     @GetMapping("/change-password")
