@@ -15,10 +15,6 @@ import java.util.Optional;
 @Repository
 public interface OrderRepository extends JpaRepository<Order, Long> {
 
-    /**
-     * Find orders by user
-     */
-    List<Order> findByUserOrderByOrderDateDesc(User user);
 
     /**
      * Find orders by status
@@ -52,6 +48,27 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
            "FROM Order o WHERE o.status = 'DELIVERED' " +
            "GROUP BY o.user ORDER BY orderCount DESC")
     List<Object[]> getTopCustomersByCount();
+
+    /**
+     * Find orders by user
+     */
+    List<Order> findByUserOrderByOrderDateDesc(User user);
+
+    /**
+     * Find orders by user with pagination
+     */
+    @Query("SELECT o FROM Order o WHERE o.user = :user ORDER BY o.orderDate DESC")
+    Page<Order> findByUserOrderByOrderDateDescPageable(@Param("user") User user, Pageable pageable);
+
+    /**
+     * Find orders by user and status with pagination
+     */
+    Page<Order> findByUserAndStatusOrderByOrderDateDesc(User user, Order.OrderStatus status, Pageable pageable);
+
+    /**
+     * Count orders by user and status
+     */
+    long countByUserAndStatus(User user, Order.OrderStatus status);
 
     /**
      * Find orders by shipper

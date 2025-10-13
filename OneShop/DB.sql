@@ -6,7 +6,6 @@ GO
 /* ===============================
    TABLE: categories
    =============================== */
-IF OBJECT_ID('dbo.categories', 'U') IS NOT NULL DROP TABLE dbo.categories;
 CREATE TABLE dbo.categories (
     category_id     BIGINT IDENTITY(1,1) PRIMARY KEY,
     category_image  NVARCHAR(255),
@@ -28,7 +27,6 @@ GO
 /* ===============================
    TABLE: user
    =============================== */
-IF OBJECT_ID('dbo.[user]', 'U') IS NOT NULL DROP TABLE dbo.[user];
 CREATE TABLE dbo.[user] (
     user_id        BIGINT IDENTITY(1,1) PRIMARY KEY,
     avatar         NVARCHAR(255),
@@ -55,7 +53,6 @@ GO
 /* ===============================
    TABLE: role
    =============================== */
-IF OBJECT_ID('dbo.role', 'U') IS NOT NULL DROP TABLE dbo.role;
 CREATE TABLE dbo.role (
     id BIGINT IDENTITY(1,1) PRIMARY KEY,
     name NVARCHAR(255) UNIQUE NOT NULL
@@ -72,7 +69,6 @@ GO
 /* ===============================
    TABLE: users_roles
    =============================== */
-IF OBJECT_ID('dbo.users_roles', 'U') IS NOT NULL DROP TABLE dbo.users_roles;
 CREATE TABLE dbo.users_roles (
     user_id BIGINT NOT NULL,
     role_id BIGINT NOT NULL,
@@ -97,7 +93,6 @@ GO
 /* ===============================
    TABLE: brands
    =============================== */
-IF OBJECT_ID('dbo.brands', 'U') IS NOT NULL DROP TABLE dbo.brands;
 CREATE TABLE dbo.brands (
     brand_id BIGINT IDENTITY(1,1) PRIMARY KEY,
     brand_name NVARCHAR(255) NOT NULL,
@@ -111,7 +106,6 @@ GO
 /* ===============================
    TABLE: shops (MỚI - THÊM TRƯỚC PRODUCTS)
    =============================== */
-IF OBJECT_ID('dbo.shops', 'U') IS NOT NULL DROP TABLE dbo.shops;
 CREATE TABLE dbo.shops (
     shop_id BIGINT IDENTITY(1,1) PRIMARY KEY,
     
@@ -187,7 +181,6 @@ GO
 /* ===============================
    TABLE: products (ĐÃ THÊM shop_id)
    =============================== */
-IF OBJECT_ID('dbo.products', 'U') IS NOT NULL DROP TABLE dbo.products;
 CREATE TABLE dbo.products (
     product_id BIGINT IDENTITY(1,1) PRIMARY KEY,
     description NVARCHAR(1000),
@@ -213,7 +206,6 @@ GO
 /* ===============================
    TABLE: favorites
    =============================== */
-IF OBJECT_ID('dbo.favorites', 'U') IS NOT NULL DROP TABLE dbo.favorites;
 CREATE TABLE dbo.favorites (
     favorite_id BIGINT IDENTITY(1,1) PRIMARY KEY,
     user_id BIGINT NOT NULL,
@@ -229,7 +221,6 @@ GO
 /* ===============================
    TABLE: orders
    =============================== */
-IF OBJECT_ID('dbo.orders', 'U') IS NOT NULL DROP TABLE dbo.orders;
 CREATE TABLE dbo.orders (
     order_id BIGINT IDENTITY(1,1) PRIMARY KEY,
     user_id BIGINT NOT NULL,
@@ -237,6 +228,9 @@ CREATE TABLE dbo.orders (
     customer_email NVARCHAR(255) NOT NULL,
     customer_phone NVARCHAR(20) NOT NULL,
     shipping_address NVARCHAR(500) NOT NULL,
+    pickup_address NVARCHAR(500) NULL,  -- Địa chỉ lấy hàng (từ shop/vendor)
+    package_type NVARCHAR(100) NULL,   -- Loại hàng: Hàng nhỏ, Hàng dễ vỡ, Thực phẩm, etc.
+    weight FLOAT NULL,                  -- Khối lượng (kg)
     note NVARCHAR(1000),
     status NVARCHAR(50) NOT NULL DEFAULT 'PENDING' CHECK (status IN ('PENDING', 'CONFIRMED', 'SHIPPING', 'DELIVERED', 'CANCELLED', 'RETURNED')),
     payment_method NVARCHAR(50) NOT NULL DEFAULT 'COD',
@@ -272,7 +266,6 @@ GO
 /* ===============================
    TABLE: order_details
    =============================== */
-IF OBJECT_ID('dbo.order_details', 'U') IS NOT NULL DROP TABLE dbo.order_details;
 CREATE TABLE dbo.order_details (
     order_detail_id BIGINT IDENTITY(1,1) PRIMARY KEY,
     order_id BIGINT NOT NULL,
@@ -289,7 +282,6 @@ GO
 /* ===============================
    TABLE: comments
    =============================== */
-IF OBJECT_ID('dbo.comments', 'U') IS NOT NULL DROP TABLE dbo.comments;
 CREATE TABLE dbo.comments (
     id BIGINT IDENTITY(1,1) PRIMARY KEY,
     content NVARCHAR(255),
@@ -304,12 +296,9 @@ CREATE TABLE dbo.comments (
 );
 GO
 
-/* duplicate favorites table removed to keep the earlier definition with UNIQUE constraint */
-
 /* ===============================
    TABLE: chat_message
    =============================== */
-IF OBJECT_ID('dbo.chat_message', 'U') IS NOT NULL DROP TABLE dbo.chat_message;
 CREATE TABLE dbo.chat_message (
   id BIGINT IDENTITY(1,1) PRIMARY KEY,
   room_id NVARCHAR(100) NOT NULL,
@@ -327,7 +316,6 @@ GO
 /* ===============================
    TABLE: shipping_providers
    =============================== */
-IF OBJECT_ID('dbo.shipping_providers', 'U') IS NOT NULL DROP TABLE dbo.shipping_providers;
 CREATE TABLE dbo.shipping_providers (
     provider_id BIGINT IDENTITY(1,1) PRIMARY KEY,
     provider_name NVARCHAR(255) NOT NULL,
@@ -956,8 +944,6 @@ EXEC sp_addextendedproperty
 GO
 
 -- Keep cart_items.shop_id synced with products.shop_id
-IF OBJECT_ID('dbo.TR_cart_items_set_shop', 'TR') IS NOT NULL DROP TRIGGER dbo.TR_cart_items_set_shop;
-GO
 CREATE TRIGGER TR_cart_items_set_shop
 ON dbo.cart_items
 AFTER INSERT, UPDATE
@@ -989,15 +975,6 @@ GO
 -- ===============================
 -- TABLE: promotions
 -- ===============================
-USE WebMyPham;
-GO
-
--- Drop table if exists
-IF OBJECT_ID('dbo.promotions', 'U') IS NOT NULL 
-    DROP TABLE dbo.promotions;
-GO
-
--- Create promotions table
 CREATE TABLE dbo.promotions (
     promotion_id           BIGINT IDENTITY(1,1) PRIMARY KEY,
     promotion_name         NVARCHAR(200) NOT NULL,
@@ -1248,4 +1225,57 @@ BEGIN
     
     SET @is_valid = 1;
 END;
+GO
+
+-- =====================================================
+--  TẠO BẢNG SHOP_SHIPPERS (QUAN HỆ MANY-TO-MANY)
+-- =====================================================
+
+CREATE TABLE dbo.shop_shippers (
+    shop_id BIGINT NOT NULL,
+    shipper_id BIGINT NOT NULL,
+    assigned_date DATETIME DEFAULT GETDATE(),
+    status BIT DEFAULT 1,
+    notes NVARCHAR(500),
+    
+    CONSTRAINT PK_shop_shippers PRIMARY KEY (shop_id, shipper_id),
+    CONSTRAINT FK_shop_shippers_shop FOREIGN KEY (shop_id) REFERENCES dbo.shops(shop_id) ON DELETE CASCADE,
+    CONSTRAINT FK_shop_shippers_user FOREIGN KEY (shipper_id) REFERENCES dbo.[user](user_id) ON DELETE CASCADE
+);
+GO
+-- THÊM DỮ LIỆU MẪU CHO SHOP_SHIPPERS
+-- Lấy ID của shipper mẫu
+DECLARE @shipperId BIGINT;
+SELECT TOP 1 @shipperId = u.user_id 
+FROM [user] u
+INNER JOIN users_roles ur ON u.user_id = ur.user_id
+INNER JOIN role r ON ur.role_id = r.id
+WHERE r.name = 'ROLE_SHIPPER';
+
+-- Gán shipper cho 2 shop đầu tiên (nếu có)
+IF @shipperId IS NOT NULL
+BEGIN
+    INSERT INTO shop_shippers (shop_id, shipper_id, assigned_date, status, notes)
+    SELECT TOP 2 
+        s.shop_id, 
+        @shipperId, 
+        GETDATE(), 
+        1,
+        N'Shipper mặc định cho shop ' + s.shop_name
+    FROM shops s
+    WHERE s.status = 'ACTIVE'
+    AND NOT EXISTS (
+        SELECT 1 FROM shop_shippers ss 
+        WHERE ss.shop_id = s.shop_id AND ss.shipper_id = @shipperId
+    );
+END
+GO
+-- TẠO INDEX ĐỂ TỐI ƯU PERFORMANCE CHO SHOP_SHIPPERS
+-- Index để tìm shipper theo shop
+CREATE INDEX idx_shop_shippers_shop 
+ON shop_shippers(shop_id, status);
+
+-- Index để tìm shop theo shipper
+CREATE INDEX idx_shop_shippers_shipper 
+ON shop_shippers(shipper_id, status);
 GO
