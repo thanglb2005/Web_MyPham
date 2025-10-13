@@ -81,8 +81,7 @@ public class Order {
         CONFIRMED,              // Da xac nhan
         SHIPPING,               // Dang giao
         DELIVERED,              // Da giao
-        CANCELLED,              // Huy (2 chu L - British spelling)
-        CANCELED,               // Huy (1 chu L - American spelling)
+        CANCELLED,              // Huy (chuan - 2 chu L)
         RETURNED_REFUNDED       // Tra hang - hoan tien
     }
 

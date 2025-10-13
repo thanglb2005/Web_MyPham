@@ -41,16 +41,45 @@
         <!-- Status Tabs -->
         <ul class="nav nav-tabs mb-3" id="orderTabs" role="tablist">
             <li class="nav-item" role="presentation">
-                <a class="nav-link" th:classappend="${currentStatus == null ? 'active' : ''}" 
-                   th:href="@{/vendor/orders}">
+                <a class="nav-link" th:classappend="${currentStatus == null ? 'active' : ''}"
+                   th:href="@{/vendor/orders(q=${search})}">
                     Tất cả <span class="badge bg-secondary ms-1" th:text="${totalOrders}">0</span>
                 </a>
             </li>
-            <li class="nav-item" role="presentation" th:each="status : ${orderStatuses}">
-                <a class="nav-link" th:classappend="${currentStatus == status ? 'active' : ''}" 
-                   th:href="@{/vendor/orders(status=${status})}">
-                    <span th:text="${status}"></span>
-                    <span class="badge bg-secondary ms-1" th:text="${orderCounts.get(status) ?: 0}">0</span>
+            <li class="nav-item" role="presentation">
+                <a class="nav-link" th:classappend="${currentStatus == T(vn.entity.Order.OrderStatus).PENDING ? 'active' : ''}"
+                   th:href="@{/vendor/orders(status=${T(vn.entity.Order.OrderStatus).PENDING}, q=${search})}">
+                    PENDING <span class="badge bg-secondary ms-1" th:text="${statusCounts[T(vn.entity.Order.OrderStatus).PENDING] ?: 0}">0</span>
+                </a>
+            </li>
+            <li class="nav-item" role="presentation">
+                <a class="nav-link" th:classappend="${currentStatus == T(vn.entity.Order.OrderStatus).CONFIRMED ? 'active' : ''}"
+                   th:href="@{/vendor/orders(status=${T(vn.entity.Order.OrderStatus).CONFIRMED}, q=${search})}">
+                    CONFIRMED <span class="badge bg-secondary ms-1" th:text="${statusCounts[T(vn.entity.Order.OrderStatus).CONFIRMED] ?: 0}">0</span>
+                </a>
+            </li>
+            <li class="nav-item" role="presentation">
+                <a class="nav-link" th:classappend="${currentStatus == T(vn.entity.Order.OrderStatus).SHIPPING ? 'active' : ''}"
+                   th:href="@{/vendor/orders(status=${T(vn.entity.Order.OrderStatus).SHIPPING}, q=${search})}">
+                    SHIPPING <span class="badge bg-secondary ms-1" th:text="${statusCounts[T(vn.entity.Order.OrderStatus).SHIPPING] ?: 0}">0</span>
+                </a>
+            </li>
+            <li class="nav-item" role="presentation">
+                <a class="nav-link" th:classappend="${currentStatus == T(vn.entity.Order.OrderStatus).DELIVERED ? 'active' : ''}"
+                   th:href="@{/vendor/orders(status=${T(vn.entity.Order.OrderStatus).DELIVERED}, q=${search})}">
+                    DELIVERED <span class="badge bg-secondary ms-1" th:text="${statusCounts[T(vn.entity.Order.OrderStatus).DELIVERED] ?: 0}">0</span>
+                </a>
+            </li>
+            <li class="nav-item" role="presentation">
+                <a class="nav-link" th:classappend="${currentStatus == T(vn.entity.Order.OrderStatus).CANCELLED ? 'active' : ''}"
+                   th:href="@{/vendor/orders(status=${T(vn.entity.Order.OrderStatus).CANCELLED}, q=${search})}">
+                    CANCELLED <span class="badge bg-secondary ms-1" th:text="${statusCounts[T(vn.entity.Order.OrderStatus).CANCELLED] ?: 0}">0</span>
+                </a>
+            </li>
+            <li class="nav-item" role="presentation">
+                <a class="nav-link" th:classappend="${currentStatus == T(vn.entity.Order.OrderStatus).RETURNED_REFUNDED ? 'active' : ''}"
+                   th:href="@{/vendor/orders(status=${T(vn.entity.Order.OrderStatus).RETURNED_REFUNDED}, q=${search})}">
+                    RETURNED_REFUNDED <span class="badge bg-secondary ms-1" th:text="${statusCounts[T(vn.entity.Order.OrderStatus).RETURNED_REFUNDED] ?: 0}">0</span>
                 </a>
             </li>
         </ul>
@@ -109,12 +138,10 @@
                         </td>
                         <td>
                             <span th:classappend="${order.status == T(vn.entity.Order.OrderStatus).PENDING ? 'badge bg-secondary' :
-                                                  (order.status == T(vn.entity.Order.OrderStatus).NEW ? 'badge bg-info' :
                                                   (order.status == T(vn.entity.Order.OrderStatus).CONFIRMED ? 'badge bg-primary' :
                                                   (order.status == T(vn.entity.Order.OrderStatus).SHIPPING ? 'badge bg-warning' :
                                                   (order.status == T(vn.entity.Order.OrderStatus).DELIVERED ? 'badge bg-success' :
                                                   (order.status == T(vn.entity.Order.OrderStatus).CANCELLED ? 'badge bg-danger' :
-                                                  (order.status == T(vn.entity.Order.OrderStatus).CANCELED ? 'badge bg-danger' :
                                                   (order.status == T(vn.entity.Order.OrderStatus).RETURNED_REFUNDED ? 'badge bg-secondary' : 'badge bg-light'))))))}"
                                   th:text="${order.status}" class="status-badge"></span>
                         </td>
@@ -126,7 +153,7 @@
                                 </a>
                                 
                                 <!-- Quick Actions based on status -->
-                                <div th:if="${order.status == T(vn.entity.Order.OrderStatus).NEW}">
+                                <div th:if="${order.status == T(vn.entity.Order.OrderStatus).PENDING}">
                                     <form th:action="@{/vendor/orders/{id}/confirm(id=${order.orderId})}" method="post" style="display:inline;">
                                         <button type="submit" class="btn btn-sm btn-success">
                                             <i class="fas fa-check"></i> Xác nhận

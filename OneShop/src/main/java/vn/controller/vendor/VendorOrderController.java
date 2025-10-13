@@ -32,14 +32,12 @@ public class VendorOrderController {
     @Autowired
     private ShopService shopService;
 
-    private static final Order.OrderStatus[] DISPLAY_STATUSES = {
+    private static final Order.OrderStatus[] STATUS_TABS = {
             Order.OrderStatus.PENDING,
-            Order.OrderStatus.NEW,
             Order.OrderStatus.CONFIRMED,
             Order.OrderStatus.SHIPPING,
             Order.OrderStatus.DELIVERED,
             Order.OrderStatus.CANCELLED,
-            Order.OrderStatus.CANCELED,
             Order.OrderStatus.RETURNED_REFUNDED
     };
 
@@ -70,15 +68,16 @@ public class VendorOrderController {
         Pageable pageable = PageRequest.of(page, size);
         
         // Lấy danh sách đơn hàng
-        Page<Order> orders = getOrdersByShops(shopIds, status, search, pageable);
+        String normalizedSearch = (search != null && !search.trim().isEmpty()) ? search.trim() : null;
+        
+        Page<Order> orders = getOrdersByShops(shopIds, status, normalizedSearch, pageable);
         
         // Thống kê theo trạng thái
         Map<Order.OrderStatus, Long> statusCounts = getOrderCountsByStatus(shopIds);
         Long totalOrders = orderService.countByShopIdIn(shopIds);
         
         model.addAttribute("orders", orders);
-        model.addAttribute("orderCounts", statusCounts);
-        model.addAttribute("orderStatuses", DISPLAY_STATUSES);
+        model.addAttribute("statusCounts", statusCounts);
         model.addAttribute("currentStatus", status);
         model.addAttribute("totalOrders", totalOrders != null ? totalOrders : 0L);
         model.addAttribute("search", normalizedSearch != null ? normalizedSearch : "");
@@ -129,8 +128,8 @@ public class VendorOrderController {
                 return "redirect:/vendor/orders";
             }
             
-            if (order.getStatus() != Order.OrderStatus.NEW && order.getStatus() != Order.OrderStatus.PENDING) {
-                redirectAttributes.addFlashAttribute("error", "Chi co the xac nhan don hang khi trang thai la NEW hoac PENDING");
+            if (order.getStatus() != Order.OrderStatus.PENDING) {
+                redirectAttributes.addFlashAttribute("error", "Chỉ có thể xác nhận khi trạng thái là PENDING");
                 return "redirect:/vendor/orders/" + orderId;
             }
             
@@ -255,7 +254,16 @@ public class VendorOrderController {
         }
 
         String trimmedSearch = (search != null && !search.trim().isEmpty()) ? search.trim() : null;
-        return orderService.findByShopIdInAndStatusAndOrderIdContaining(shopIds, status, trimmedSearch, pageable);
+
+        if (status != null && trimmedSearch != null) {
+            return orderService.findByShopIdInAndStatusAndOrderIdContaining(shopIds, status, trimmedSearch, pageable);
+        } else if (status != null) {
+            return orderService.findByShopIdInAndStatus(shopIds, status, pageable);
+        } else if (trimmedSearch != null) {
+            return orderService.findByShopIdInAndOrderIdContaining(shopIds, trimmedSearch, pageable);
+        } else {
+            return orderService.findByShopIdIn(shopIds, pageable);
+        }
     }
 
     /**
@@ -270,23 +278,14 @@ public class VendorOrderController {
     }
 
     /**
-     * Thống kê số lượng đơn hàng theo trạng thái
+     * Thong ke so luong don hang theo tung trang thai (doc lap voi bo loc hien tai)
      */
     private Map<Order.OrderStatus, Long> getOrderCountsByStatus(List<Long> shopIds) {
         Map<Order.OrderStatus, Long> counts = new LinkedHashMap<>();
-        for (Order.OrderStatus status : DISPLAY_STATUSES) {
-            Long count = shopIds.isEmpty() ? 0L : orderService.countByShopIdInAndStatus(shopIds, status);
-            counts.put(status, count != null ? count : 0L);
+        for (Order.OrderStatus tabStatus : STATUS_TABS) {
+            Long count = shopIds.isEmpty() ? 0L : orderService.countByShopIdInAndStatus(shopIds, tabStatus);
+            counts.put(tabStatus, count != null ? count : 0L);
         }
         return counts;
     }
 }
-
-
-
-
-
-
-
-
-
