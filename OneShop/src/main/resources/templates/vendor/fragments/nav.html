@@ -32,6 +32,15 @@
         <li class="nav-item">
           <a
             class="nav-link"
+            th:classappend="${active=='orders'} ? ' active'"
+            th:href="@{/vendor/orders}"
+          >
+            <i class="fas fa-shopping-cart"></i> Đơn hàng của tôi
+          </a>
+        </li>
+        <li class="nav-item">
+          <a
+            class="nav-link"
             th:classappend="${active=='shop'} ? ' active'"
             th:href="@{/vendor/shop/settings}"
           >

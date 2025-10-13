@@ -205,6 +205,7 @@ public class VendorOrderController {
     @PostMapping("/{orderId}/approve-return")
     public String approveReturn(@PathVariable Long orderId,
                                @RequestParam Double refundAmount,
+                               @RequestParam String returnReason,
                                HttpSession session, RedirectAttributes redirectAttributes) {
         User vendor = ensureVendor(session);
         if (vendor == null) {
@@ -216,6 +217,16 @@ public class VendorOrderController {
             if (order == null) {
                 redirectAttributes.addFlashAttribute("error", "Không tìm thấy đơn hàng hoặc không có quyền truy cập");
                 return "redirect:/vendor/orders";
+            }
+            
+            if (order.getStatus() != Order.OrderStatus.DELIVERED) {
+                redirectAttributes.addFlashAttribute("error", "Chỉ có thể duyệt hoàn khi đơn hàng đã được giao");
+                return "redirect:/vendor/orders/" + orderId;
+            }
+            
+            if (refundAmount <= 0 || refundAmount > order.getTotalAmount()) {
+                redirectAttributes.addFlashAttribute("error", "Số tiền hoàn không hợp lệ");
+                return "redirect:/vendor/orders/" + orderId;
             }
             
             orderService.updateOrderStatus(orderId, Order.OrderStatus.RETURNED_REFUNDED);

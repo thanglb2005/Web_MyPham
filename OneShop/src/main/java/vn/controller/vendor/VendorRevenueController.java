@@ -600,8 +600,7 @@ public class VendorRevenueController {
                 if (order.getStatus() == Order.OrderStatus.DELIVERED && order.getTotalAmount() != null) {
                     totalRevenue += order.getTotalAmount();
                     completedOrders++;
-                } else if (order.getStatus() == Order.OrderStatus.CANCELLED || 
-                          order.getStatus() == Order.OrderStatus.CANCELED) {
+                } else if (order.getStatus() == Order.OrderStatus.CANCELLED) {
                     cancelledOrders++;
                 }
             }

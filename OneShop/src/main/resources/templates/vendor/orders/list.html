@@ -102,39 +102,7 @@
         ></button>
       </div>
 
-      <!-- Status Tabs -->
-      <ul class="nav nav-tabs mb-3" id="orderTabs" role="tablist">
-        <li class="nav-item" role="presentation">
-          <a
-            class="nav-link"
-            th:classappend="${currentStatus == null ? 'active' : ''}"
-            th:href="@{/vendor/orders}"
-          >
-            Tất cả
-            <span class="badge bg-secondary ms-1" th:text="${totalOrders}"
-              >0</span
-            >
-          </a>
-        </li>
-        <li
-          class="nav-item"
-          role="presentation"
-          th:each="status : ${orderStatuses}"
-        >
-          <a
-            class="nav-link"
-            th:classappend="${currentStatus == status ? 'active' : ''}"
-            th:href="@{/vendor/orders(status=${status})}"
-          >
-            <span th:text="${status}"></span>
-            <span
-              class="badge bg-secondary ms-1"
-              th:text="${orderCounts.get(status) ?: 0}"
-              >0</span
-            >
-          </a>
-        </li>
-      </ul>
+      
 
       <!-- Search Form -->
       <form th:action="@{/vendor/orders}" method="get" class="mb-3">
@@ -193,107 +161,12 @@
                         </td>
                         <td>
                             <span th:classappend="${order.status == T(vn.entity.Order.OrderStatus).PENDING ? 'badge bg-secondary' :
-      <!-- Orders Table -->
-      <div th:if="${orders.isEmpty()}" class="alert alert-warning">
-        <i class="fas fa-info-circle"></i>
-        Không có đơn hàng nào trong trạng thái này.
-      </div>
-
-      <div th:unless="${orders.isEmpty()}" class="table-responsive">
-        <table class="table table-hover">
-          <thead class="table-light">
-            <tr>
-              <th>Mã đơn</th>
-              <th>Thời gian</th>
-              <th>Tổng tiền</th>
-              <th>Thanh toán</th>
-              <th>Địa chỉ</th>
-              <th>Trạng thái</th>
-              <th>Hành động</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr th:each="order : ${orders.content}">
-              <td>
-                <strong th:text="${order.orderId}"></strong>
-              </td>
-              <td
-                th:text="${#temporals.format(order.orderDate, 'dd-MM-yyyy HH:mm')}"
-              ></td>
-              <td>
-                <span
-                  class="text-success fw-bold"
-                  th:text="${#numbers.formatDecimal(order.totalAmount, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'"
-                ></span>
-              </td>
-              <td>
-                <span
-                  class="badge"
-                  th:classappend="${order.paymentMethod == T(vn.entity.Order.PaymentMethod).COD ? 'bg-warning' : 'bg-info'}"
-                  th:text="${order.paymentMethod}"
-                ></span>
-              </td>
-              <td>
-                <small
-                  th:text="${order.shippingAddress}"
-                  class="text-muted"
-                ></small>
-              </td>
-              <td>
-                <span
-                  th:classappend="${order.status == T(vn.entity.Order.OrderStatus).PENDING ? 'badge bg-secondary' :
-                                                  (order.status == T(vn.entity.Order.OrderStatus).NEW ? 'badge bg-info' :
                                                   (order.status == T(vn.entity.Order.OrderStatus).CONFIRMED ? 'badge bg-primary' :
                                                   (order.status == T(vn.entity.Order.OrderStatus).SHIPPING ? 'badge bg-warning' :
                                                   (order.status == T(vn.entity.Order.OrderStatus).DELIVERED ? 'badge bg-success' :
                                                   (order.status == T(vn.entity.Order.OrderStatus).CANCELLED ? 'badge bg-danger' :
-                                                  (order.status == T(vn.entity.Order.OrderStatus).RETURNED_REFUNDED ? 'badge bg-secondary' : 'badge bg-light'))))))}"
-                                  th:text="${order.status}" class="status-badge"></span>
-                        </td>
-                        <td>
-                            <div class="btn-group" role="group">
-                                <a th:href="@{/vendor/orders/{id}(id=${order.orderId})}" 
-                                   class="btn btn-sm btn-outline-primary">
-                                    <i class="fas fa-eye"></i> Chi tiết
-                                </a>
-                                
-                                <!-- Quick Actions based on status -->
-                                <div th:if="${order.status == T(vn.entity.Order.OrderStatus).PENDING}">
-                                    <form th:action="@{/vendor/orders/{id}/confirm(id=${order.orderId})}" method="post" style="display:inline;">
-                                        <button type="submit" class="btn btn-sm btn-success">
-                                            <i class="fas fa-check"></i> Xác nhận
-                                        </button>
-                                    </form>
-                                    <button type="button" class="btn btn-sm btn-danger" 
-                                            data-bs-toggle="modal" th:data-bs-target="'#cancelModal' + ${order.orderId}">
-                                        <i class="fas fa-times"></i> Hủy
-                                    </button>
-                                </div>
-                                
-                                <div th:if="${order.status == T(vn.entity.Order.OrderStatus).CONFIRMED}">
-                                    <button type="button" class="btn btn-sm btn-info">
-                                        <i class="fas fa-truck"></i> Phân công
-                                    </button>
-                                    <button type="button" class="btn btn-sm btn-danger" 
-                                            data-bs-toggle="modal" th:data-bs-target="'#cancelModal' + ${order.orderId}">
-                                        <i class="fas fa-times"></i> Hủy
-                                    </button>
-                                </div>
-                                
-                                <div th:if="${order.status == T(vn.entity.Order.OrderStatus).DELIVERED}">
-                                    <button type="button" class="btn btn-sm btn-warning">
-                                        <i class="fas fa-undo"></i> Duyệt hoàn
-                                    </button>
-                                </div>
-                            </div>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-                  th:text="${order.status}"
-                  class="status-badge"
-                ></span>
+                                                  (order.status == T(vn.entity.Order.OrderStatus).RETURNED_REFUNDED ? 'badge bg-secondary' : 'badge bg-light')))))}"
+                  th:text="${order.status}" class="status-badge"></span>
               </td>
               <td>
                 <div class="btn-group" role="group">
@@ -306,7 +179,7 @@
 
                   <!-- Quick Actions based on status -->
                   <div
-                    th:if="${order.status == T(vn.entity.Order.OrderStatus).NEW}"
+                    th:if="${order.status == T(vn.entity.Order.OrderStatus).PENDING}"
                   >
                     <form
                       th:action="@{/vendor/orders/{id}/confirm(id=${order.orderId})}"
@@ -346,7 +219,9 @@
                   <div
                     th:if="${order.status == T(vn.entity.Order.OrderStatus).DELIVERED}"
                   >
-                    <button type="button" class="btn btn-sm btn-warning">
+                    <button type="button" class="btn btn-sm btn-warning" 
+                            data-bs-toggle="modal" 
+                            th:data-bs-target="'#approveReturnModal' + ${order.orderId}">
                       <i class="fas fa-undo"></i> Duyệt hoàn
                     </button>
                   </div>
@@ -453,5 +328,71 @@
         </div>
       </div>
     </div>
-  </body>
-</html>
+
+    <!-- Approve Return Modal -->
+    <div th:each="order : ${orders.content}" th:id="'approveReturnModal' + ${order.orderId}" class="modal fade" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">
+              <i class="fas fa-undo text-warning me-2"></i>
+              Duyệt hoàn tiền đơn hàng #<span th:text="${order.orderId}"></span>
+            </h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <form th:action="@{/vendor/orders/{id}/approve-return(id=${order.orderId})}" method="post">
+            <div class="modal-body">
+              <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i>
+                <strong>Thông tin đơn hàng:</strong><br>
+                Tổng tiền: <span class="text-success fw-bold" th:text="${#numbers.formatDecimal(order.totalAmount, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'"></span><br>
+                Phương thức thanh toán: <span th:text="${order.paymentMethod}"></span>
+              </div>
+              
+              <div class="mb-3">
+                <label for="refundAmount" class="form-label">
+                  <i class="fas fa-money-bill-wave me-1"></i>
+                  Số tiền hoàn lại (VNĐ)
+                </label>
+                <input 
+                  type="number" 
+                  class="form-control" 
+                  id="refundAmount" 
+                  name="refundAmount"
+                  th:value="${order.totalAmount}"
+                  min="0"
+                  step="1000"
+                  required
+                >
+                <div class="form-text">
+                  Nhập số tiền muốn hoàn lại cho khách hàng (tối đa: <span th:text="${#numbers.formatDecimal(order.totalAmount, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'"></span>)
+                </div>
+              </div>
+              
+              <div class="mb-3">
+                <label for="returnReason" class="form-label">
+                  <i class="fas fa-comment me-1"></i>
+                  Lý do hoàn tiền
+                </label>
+                <textarea 
+                  class="form-control" 
+                  id="returnReason" 
+                  name="returnReason"
+                  rows="3"
+                  placeholder="Nhập lý do hoàn tiền..."
+                  required
+                ></textarea>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                <i class="fas fa-times me-1"></i>Hủy
+              </button>
+              <button type="submit" class="btn btn-warning">
+                <i class="fas fa-check me-1"></i>Xác nhận duyệt hoàn
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>

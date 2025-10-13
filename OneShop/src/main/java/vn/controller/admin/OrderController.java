@@ -241,7 +241,7 @@ public class OrderController {
             
             String status = "";
             switch (order.getStatus()) {
-                case NEW: status = "Đơn hàng mới"; break;
+                case PENDING: status = "Chờ xác nhận"; break;
                 case CONFIRMED: status = "Đã xác nhận"; break;
                 case DELIVERED: status = "Đã giao hàng"; break;
                 case CANCELLED: status = "Đã hủy"; break;
@@ -263,7 +263,7 @@ public class OrderController {
         
         // Calculate statistics
         long totalOrders = allOrders.size();
-        long pendingOrders = allOrders.stream().filter(o -> o.getStatus() == Order.OrderStatus.NEW || o.getStatus() == Order.OrderStatus.PENDING).count();
+        long pendingOrders = allOrders.stream().filter(o -> o.getStatus() == Order.OrderStatus.PENDING).count();
         long confirmedOrders = allOrders.stream().filter(o -> o.getStatus() == Order.OrderStatus.CONFIRMED).count();
         long deliveredOrders = allOrders.stream().filter(o -> o.getStatus() == Order.OrderStatus.DELIVERED).count();
         long cancelledOrders = allOrders.stream().filter(o -> o.getStatus() == Order.OrderStatus.CANCELLED).count();

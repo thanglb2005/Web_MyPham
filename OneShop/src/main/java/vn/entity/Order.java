@@ -50,7 +50,7 @@ public class Order {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", length = 50, nullable = false)
-    private OrderStatus status = OrderStatus.NEW;
+    private OrderStatus status = OrderStatus.PENDING;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "payment_method", nullable = false)

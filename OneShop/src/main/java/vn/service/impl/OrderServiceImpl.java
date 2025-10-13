@@ -51,7 +51,7 @@ public class OrderServiceImpl implements OrderService {
         order.setShippingAddress(shippingAddress);
         order.setNote(note);
         order.setPaymentMethod(paymentMethod);
-        order.setStatus(Order.OrderStatus.NEW);
+        order.setStatus(Order.OrderStatus.PENDING);
         order.setOrderDate(LocalDateTime.now());
 
         double totalAmount = cartItems.values().stream()

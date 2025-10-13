@@ -79,8 +79,7 @@ public class VendorDashboardController {
 
         Long shopIdFinal = shop.getShopId();
         long productCount = productService.countByShopId(shopIdFinal);
-        long pendingOrders = defaultZero(orderDetailRepository.countDistinctOrdersByShopAndStatus(shopIdFinal, Order.OrderStatus.NEW))
-                + defaultZero(orderDetailRepository.countDistinctOrdersByShopAndStatus(shopIdFinal, Order.OrderStatus.PENDING));
+        long pendingOrders = defaultZero(orderDetailRepository.countDistinctOrdersByShopAndStatus(shopIdFinal, Order.OrderStatus.PENDING));
         Long confirmedOrders = orderDetailRepository.countDistinctOrdersByShopAndStatus(shopIdFinal, Order.OrderStatus.CONFIRMED);
         Long shippingOrders = orderDetailRepository.countDistinctOrdersByShopAndStatus(shopIdFinal, Order.OrderStatus.SHIPPING);
         Long deliveredOrders = orderDetailRepository.countDistinctOrdersByShopAndStatus(shopIdFinal, Order.OrderStatus.DELIVERED);
