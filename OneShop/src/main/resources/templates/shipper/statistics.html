@@ -151,7 +151,7 @@
                     box-shadow: 0 2px 8px rgba(0,0,0,0.15);
                   ">
               <i class="fas fa-shop me-1"></i>
-              <span th:text="${shop.shopName}">Shop</span>
+              <span th:text="${shop != null and shop.shopName != null ? shop.shopName : 'N/A'}">Shop</span>
             </span>
             <span th:if="${assignedShops.size() > 1}" 
                   style="

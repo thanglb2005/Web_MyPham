@@ -7,7 +7,9 @@ import org.springframework.web.bind.annotation.*;
 
 import vn.entity.User;
 import vn.entity.Order;
+import vn.entity.Shop;
 import vn.repository.OrderRepository;
+import vn.repository.ShopRepository;
 import vn.service.statistics.RevenueStatisticsService;
 
 import java.time.LocalDate;
@@ -26,12 +28,20 @@ public class RevenueController {
 
     private final RevenueStatisticsService revenueStatisticsService;
     private final OrderRepository orderRepository;
+    private final ShopRepository shopRepository;
     
     // API endpoint để lấy dữ liệu cho biểu đồ
     @GetMapping("/api/monthly-revenue-data")
     @ResponseBody
-    public Map<String, Object> getMonthlyRevenueData() {
-        List<Object[]> monthlyStats = orderRepository.getMonthlyOrderStatistics();
+    public Map<String, Object> getMonthlyRevenueData(@RequestParam(value = "shopId", required = false) Long shopId) {
+        // Lấy dữ liệu theo shop hoặc tất cả
+        List<Object[]> monthlyStats;
+        if (shopId != null) {
+            monthlyStats = orderRepository.getMonthlyOrderStatisticsByShop(shopId);
+        } else {
+            monthlyStats = orderRepository.getMonthlyOrderStatistics();
+        }
+        
         Map<String, Object> result = new HashMap<>();
         
         // Tạo mảng dữ liệu cho 12 tháng
@@ -326,9 +336,11 @@ public class RevenueController {
     }
     
     public RevenueController(RevenueStatisticsService revenueStatisticsService,
-                            OrderRepository orderRepository) {
+                            OrderRepository orderRepository,
+                            ShopRepository shopRepository) {
         this.revenueStatisticsService = revenueStatisticsService;
         this.orderRepository = orderRepository;
+        this.shopRepository = shopRepository;
     }
 
     /**
@@ -342,13 +354,18 @@ public class RevenueController {
                                    @RequestParam(value = "quarter", required = false) Integer quarter,
                                    @RequestParam(value = "startDate", required = false) String startDate,
                                    @RequestParam(value = "endDate", required = false) String endDate,
-                                   @RequestParam(value = "vendorId", required = false) Long vendorId) {
+                                   @RequestParam(value = "shopId", required = false) Long shopId) {
         
         // Authentication check
         User user = (User) session.getAttribute("user");
         if (user == null) {
             return "redirect:/login";
         }
+        
+        // Lấy danh sách tất cả shop để hiển thị trong dropdown
+        List<Shop> allShops = shopRepository.findAll();
+        model.addAttribute("allShops", allShops);
+        model.addAttribute("shopId", shopId);
         
         // Xử lý bộ lọc theo khoảng thời gian
         // Commented out unused date parsing until we implement date filtering
@@ -375,7 +392,6 @@ public class RevenueController {
         // Truyền giá trị của bộ lọc ra view
         model.addAttribute("startDate", startDate);
         model.addAttribute("endDate", endDate);
-        model.addAttribute("vendorId", vendorId);
         
         model.addAttribute("user", user);
         
@@ -390,14 +406,25 @@ public class RevenueController {
             List<Order> allOrders = orderRepository.findAll();
             System.out.println("Kiểm tra số lượng đơn hàng trong cơ sở dữ liệu: " + allOrders.size());
             
-            // Current month revenue statistics
-            Map<String, Object> currentMonthStats = revenueStatisticsService.getCurrentMonthStatistics();
+            // Current month revenue statistics (lọc theo shop nếu có)
+            Map<String, Object> currentMonthStats;
+            if (shopId != null) {
+                // Lấy thống kê theo shop
+                currentMonthStats = revenueStatisticsService.getCurrentMonthStatisticsByShop(shopId);
+            } else {
+                currentMonthStats = revenueStatisticsService.getCurrentMonthStatistics();
+            }
             model.addAttribute("currentMonthRevenue", currentMonthStats.get("formattedRevenue"));
             model.addAttribute("growthRate", currentMonthStats.get("growthRate"));
             model.addAttribute("isPositiveGrowth", currentMonthStats.get("isPositiveGrowth"));
             
-            // Today's statistics
-            Map<String, Object> todayStats = revenueStatisticsService.getTodayStatistics();
+            // Today's statistics (lọc theo shop nếu có)
+            Map<String, Object> todayStats;
+            if (shopId != null) {
+                todayStats = revenueStatisticsService.getTodayStatisticsByShop(shopId);
+            } else {
+                todayStats = revenueStatisticsService.getTodayStatistics();
+            }
             model.addAttribute("todayOrders", todayStats.get("formattedOrderCount"));
             model.addAttribute("todayRevenue", todayStats.get("formattedRevenue"));
             

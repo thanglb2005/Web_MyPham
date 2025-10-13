@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chi tiết Shipper</title>
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="/assets/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="/assets/css/atlantis.css" />
+    <link rel="stylesheet" href="/css/admin-fonts.css" />
+    
+    <style>
+        body { background-color: #f8f9fa; }
+        
+        .page-header-custom {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+        
+        .info-card {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .info-row {
+            display: flex;
+            padding: 12px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .info-row:last-child {
+            border-bottom: none;
+        }
+        
+        .info-label {
+            font-weight: 600;
+            color: #495057;
+            min-width: 180px;
+        }
+        
+        .info-value {
+            color: #6c757d;
+            flex: 1;
+        }
+        
+        .shop-badge {
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            display: inline-block;
+            margin: 5px;
+        }
+        
+        .status-badge {
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+        
+        .status-active {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .btn-back {
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-back:hover {
+            background: #667eea;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="wrapper">
+        <!-- Header -->
+        <th:block th:replace="~{admin/fragments/header :: header}"></th:block>
+        
+        <!-- Navbar -->
+        <th:block th:replace="~{admin/fragments/navbar :: navbar}"></th:block>
+        
+        <!-- Main Panel -->
+        <div class="main-panel">
+            <div class="content">
+                <div class="container-fluid mt-4">
+                    <!-- Page Header -->
+                    <div class="page-header-custom">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h2>
+                                    <i class="fas fa-user-circle me-2"></i>
+                                    <span th:text="${shipper != null and shipper.name != null ? shipper.name : 'Chi tiết Shipper'}">Chi tiết Shipper</span>
+                                </h2>
+                                <p class="mb-0" th:text="${shipper != null and shipper.email != null ? shipper.email : ''}"></p>
+                            </div>
+                            <div>
+                                <button class="btn btn-back" onclick="history.back()">
+                                    <i class="fas fa-arrow-left me-2"></i>Quay lại
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <!-- Thông tin cơ bản -->
+                        <div class="col-md-6">
+                            <div class="info-card">
+                                <h3 class="card-title mb-4">
+                                    <i class="fas fa-info-circle me-2"></i>Thông tin cơ bản
+                                </h3>
+                                
+                                <div class="info-row">
+                                    <div class="info-label">
+                                        <i class="fas fa-hashtag me-2"></i>Mã Shipper:
+                                    </div>
+                                    <div class="info-value" th:text="${shipper != null and shipper.userId != null ? shipper.userId : 'N/A'}">N/A</div>
+                                </div>
+                                
+                                <div class="info-row">
+                                    <div class="info-label">
+                                        <i class="fas fa-user me-2"></i>Họ và tên:
+                                    </div>
+                                    <div class="info-value" th:text="${shipper != null and shipper.name != null ? shipper.name : 'N/A'}">N/A</div>
+                                </div>
+                                
+                                <div class="info-row">
+                                    <div class="info-label">
+                                        <i class="fas fa-envelope me-2"></i>Email:
+                                    </div>
+                                    <div class="info-value" th:text="${shipper != null and shipper.email != null ? shipper.email : 'N/A'}">N/A</div>
+                                </div>
+                                
+                                <div class="info-row">
+                                    <div class="info-label">
+                                        <i class="fas fa-calendar me-2"></i>Ngày tham gia:
+                                    </div>
+                                    <div class="info-value" th:text="${shipper != null and shipper.registerDate != null ? #dates.format(shipper.registerDate, 'dd/MM/yyyy') : 'N/A'}">N/A</div>
+                                </div>
+                                
+                                <div class="info-row">
+                                    <div class="info-label">
+                                        <i class="fas fa-check-circle me-2"></i>Trạng thái:
+                                    </div>
+                                    <div class="info-value">
+                                        <span th:if="${shipper != null and shipper.status != null and shipper.status}" class="badge badge-success">
+                                            <i class="fas fa-check-circle me-1"></i>Đã duyệt
+                                        </span>
+                                        <span th:if="${shipper == null or shipper.status == null or !shipper.status}" class="badge badge-warning">
+                                            <i class="fas fa-clock me-1"></i>Chờ duyệt
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Shop được phân công -->
+                        <div class="col-md-6">
+                            <div class="info-card">
+                                <h3 class="card-title mb-4">
+                                    <i class="fas fa-store me-2"></i>Shop được phân công
+                                    <span class="badge badge-primary ms-2" th:text="${assignedShops != null ? assignedShops.size() : 0}">0</span>
+                                </h3>
+                                
+                                <div th:if="${assignedShops == null or assignedShops.isEmpty()}" 
+                                     class="text-center text-muted py-4">
+                                    <i class="fas fa-inbox fa-3x mb-3" style="opacity: 0.3;"></i>
+                                    <p>Chưa được phân công shop nào</p>
+                                </div>
+                                
+                                <div th:if="${assignedShops != null and !assignedShops.isEmpty()}">
+                                    <div th:each="shop : ${assignedShops}" th:if="${shop != null}">
+                                        <span class="shop-badge">
+                                            <i class="fas fa-store me-2"></i>
+                                            <span th:text="${shop.shopName != null ? shop.shopName : 'N/A'}">N/A</span>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Nút hành động -->
+                    <div class="row" th:if="${shipper != null and (shipper.status == null or !shipper.status)}">
+                        <div class="col-12">
+                            <div class="info-card">
+                                <h3 class="card-title mb-3">
+                                    <i class="fas fa-tasks me-2"></i>Hành động
+                                </h3>
+                                <button class="btn btn-success me-2" 
+                                        th:if="${shipper.userId != null}"
+                                        th:onclick="|approveShipper(${shipper.userId})|">
+                                    <i class="fas fa-check me-2"></i>Duyệt Shipper
+                                </button>
+                                <button class="btn btn-danger" 
+                                        th:if="${shipper.userId != null}"
+                                        th:onclick="|rejectShipper(${shipper.userId})|">
+                                    <i class="fas fa-times me-2"></i>Từ chối
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <th:block th:replace="~{admin/fragments/footer :: footer}"></th:block>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/assets/js/core/jquery.3.2.1.min.js"></script>
+    <script src="/assets/js/core/popper.min.js"></script>
+    <script src="/assets/js/core/bootstrap.min.js"></script>
+    <script src="/assets/js/atlantis.min.js"></script>
+    
+    <script>
+        function approveShipper(shipperId) {
+            if (!confirm('Bạn có chắc muốn duyệt shipper này?')) {
+                return;
+            }
+
+            $.ajax({
+                url: '/admin/approve-shipper',
+                method: 'POST',
+                data: { shipperId: shipperId },
+                success: function(response) {
+                    if (response === 'success') {
+                        alert('Đã duyệt shipper thành công!');
+                        location.reload();
+                    } else {
+                        alert('Có lỗi xảy ra!');
+                    }
+                },
+                error: function() {
+                    alert('Có lỗi kết nối đến server!');
+                }
+            });
+        }
+
+        function rejectShipper(shipperId) {
+            if (!confirm('Bạn có chắc muốn từ chối shipper này?')) {
+                return;
+            }
+
+            $.ajax({
+                url: '/admin/reject-shipper',
+                method: 'POST',
+                data: { shipperId: shipperId },
+                success: function(response) {
+                    if (response === 'success') {
+                        alert('Đã từ chối shipper!');
+                        window.location.href = '/admin/shippers-list';
+                    } else {
+                        alert('Có lỗi xảy ra!');
+                    }
+                },
+                error: function() {
+                    alert('Có lỗi kết nối đến server!');
+                }
+            });
+        }
+    </script>
+</body>
+</html>
+

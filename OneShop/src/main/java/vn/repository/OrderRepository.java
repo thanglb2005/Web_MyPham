@@ -32,6 +32,18 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
            "GROUP BY YEAR(o.orderDate), MONTH(o.orderDate) " +
            "ORDER BY year, month")
     List<Object[]> getMonthlyOrderStatistics();
+    
+    /**
+     * Get monthly order statistics for a specific shop
+     * Returns: [year, month, orderCount, totalRevenue]
+     */
+    @Query("SELECT YEAR(o.orderDate) as year, MONTH(o.orderDate) as month, " +
+           "COUNT(o) as orderCount, SUM(o.totalAmount) as totalRevenue " +
+           "FROM Order o " +
+           "WHERE o.status = 'DELIVERED' AND o.shop.shopId = :shopId " +
+           "GROUP BY YEAR(o.orderDate), MONTH(o.orderDate) " +
+           "ORDER BY year, month")
+    List<Object[]> getMonthlyOrderStatisticsByShop(@Param("shopId") Long shopId);
 
     /**
      * Get top customers by order value

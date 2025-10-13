@@ -3,7 +3,9 @@ package vn.entity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -18,6 +20,8 @@ import java.util.Set;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@EqualsAndHashCode(exclude = {"shippers", "vendor"})
+@ToString(exclude = {"shippers", "vendor"})
 public class Shop implements Serializable {
 
     @Id
