@@ -317,8 +317,23 @@ public class VendorRevenueController {
             int orderCount = 0;
             double revenue = 0.0;
             
+            // COD: ghi nhận theo delivered_date
+            // Online (MOMO/BANK/VIETQR): ghi nhận theo payment_date nếu đã thanh toán (payment_status = true)
             for (Order order : completedOrders) {
-                if (order.getOrderDate() != null && order.getOrderDate().toLocalDate().equals(today)) {
+                boolean isCod = order.getPaymentMethod() == Order.PaymentMethod.COD;
+                boolean isOnline = order.getPaymentMethod() != Order.PaymentMethod.COD;
+
+                boolean countToday = false;
+                if (isCod) {
+                    countToday = (order.getDeliveredDate() != null && order.getDeliveredDate().toLocalDate().equals(today));
+                } else if (isOnline) {
+                    // paymentPaid = true nghĩa là đã thanh toán
+                    countToday = Boolean.TRUE.equals(order.getPaymentPaid())
+                            && order.getPaymentDate() != null
+                            && order.getPaymentDate().toLocalDate().equals(today);
+                }
+
+                if (countToday) {
                     orderCount++;
                     if (order.getTotalAmount() != null) {
                         revenue += order.getTotalAmount();
@@ -369,17 +384,21 @@ public class VendorRevenueController {
             }
             
             for (Order order : completedOrders) {
-                if (order.getOrderDate() != null && order.getTotalAmount() != null) {
-                    LocalDate orderDate = order.getOrderDate().toLocalDate();
-                    int orderMonth = orderDate.getMonthValue();
-                    int orderYear = orderDate.getYear();
-                    
-                    if (orderYear == year && orderMonth == month) {
-                        currentMonthRevenue += order.getTotalAmount();
-                        currentMonthOrders++;
-                    } else if (orderYear == prevYear && orderMonth == prevMonth) {
-                        previousMonthRevenue += order.getTotalAmount();
-                    }
+                if (order.getTotalAmount() == null) continue;
+                boolean isCod = order.getPaymentMethod() == Order.PaymentMethod.COD;
+                boolean isOnline = order.getPaymentMethod() != Order.PaymentMethod.COD;
+                LocalDate d = null;
+                if (isCod && order.getDeliveredDate() != null) d = order.getDeliveredDate().toLocalDate();
+                if (isOnline && Boolean.TRUE.equals(order.getPaymentPaid()) && order.getPaymentDate() != null) d = order.getPaymentDate().toLocalDate();
+                if (d == null) continue;
+
+                int m = d.getMonthValue();
+                int y = d.getYear();
+                if (y == year && m == month) {
+                    currentMonthRevenue += order.getTotalAmount();
+                    currentMonthOrders++;
+                } else if (y == prevYear && m == prevMonth) {
+                    previousMonthRevenue += order.getTotalAmount();
                 }
             }
             
@@ -424,15 +443,19 @@ public class VendorRevenueController {
             int endMonth = quarter * 3;
             
             for (Order order : completedOrders) {
-                if (order.getOrderDate() != null && order.getTotalAmount() != null) {
-                    LocalDate orderDate = order.getOrderDate().toLocalDate();
-                    int orderMonth = orderDate.getMonthValue();
-                    int orderYear = orderDate.getYear();
-                    
-                    if (orderYear == year && orderMonth >= startMonth && orderMonth <= endMonth) {
-                        quarterRevenue += order.getTotalAmount();
-                        quarterOrders++;
-                    }
+                if (order.getTotalAmount() == null) continue;
+                boolean isCod = order.getPaymentMethod() == Order.PaymentMethod.COD;
+                boolean isOnline = order.getPaymentMethod() != Order.PaymentMethod.COD;
+                LocalDate d = null;
+                if (isCod && order.getDeliveredDate() != null) d = order.getDeliveredDate().toLocalDate();
+                if (isOnline && Boolean.TRUE.equals(order.getPaymentPaid()) && order.getPaymentDate() != null) d = order.getPaymentDate().toLocalDate();
+                if (d == null) continue;
+
+                int m = d.getMonthValue();
+                int y = d.getYear();
+                if (y == year && m >= startMonth && m <= endMonth) {
+                    quarterRevenue += order.getTotalAmount();
+                    quarterOrders++;
                 }
             }
             
@@ -462,14 +485,17 @@ public class VendorRevenueController {
             int yearOrders = 0;
             
             for (Order order : completedOrders) {
-                if (order.getOrderDate() != null && order.getTotalAmount() != null) {
-                    LocalDate orderDate = order.getOrderDate().toLocalDate();
-                    int orderYear = orderDate.getYear();
-                    
-                    if (orderYear == year) {
-                        yearRevenue += order.getTotalAmount();
-                        yearOrders++;
-                    }
+                if (order.getTotalAmount() == null) continue;
+                boolean isCod = order.getPaymentMethod() == Order.PaymentMethod.COD;
+                boolean isOnline = order.getPaymentMethod() != Order.PaymentMethod.COD;
+                LocalDate d = null;
+                if (isCod && order.getDeliveredDate() != null) d = order.getDeliveredDate().toLocalDate();
+                if (isOnline && Boolean.TRUE.equals(order.getPaymentPaid()) && order.getPaymentDate() != null) d = order.getPaymentDate().toLocalDate();
+                if (d == null) continue;
+
+                if (d.getYear() == year) {
+                    yearRevenue += order.getTotalAmount();
+                    yearOrders++;
                 }
             }
             
@@ -525,7 +551,7 @@ public class VendorRevenueController {
                         String startTxt = start != null ? start.toString() : "...";
                         String endTxt = end != null ? end.toString() : "...";
                         periodName = "Từ " + startTxt + " đến " + endTxt;
-                        var filtered = filterOrdersByDate(getCompletedOrdersByShops(shopIds), start, end);
+                        var filtered = filterOrdersBySettlementDate(getCompletedOrdersByShops(shopIds), start, end);
                         revenue = filtered.stream()
                                 .filter(o -> o.getTotalAmount() != null)
                                 .mapToDouble(Order::getTotalAmount)
@@ -562,7 +588,7 @@ public class VendorRevenueController {
             Page<Order> orderPage = orderService.findByShopIdInDirect(shopIds, pageable);
             List<Order> allOrders = orderPage.getContent();
             if (start != null || end != null) {
-                allOrders = filterOrdersByDate(allOrders, start, end);
+                allOrders = filterOrdersBySettlementDate(allOrders, start, end);
             }
             
             double totalRevenue = 0.0;
@@ -601,10 +627,14 @@ public class VendorRevenueController {
         return result;
     }
 
-    private List<Order> filterOrdersByDate(List<Order> orders, LocalDate start, LocalDate end) {
+    private List<Order> filterOrdersBySettlementDate(List<Order> orders, LocalDate start, LocalDate end) {
         return orders.stream().filter(o -> {
-            if (o.getOrderDate() == null) return false;
-            LocalDate d = o.getOrderDate().toLocalDate();
+            boolean isCod = o.getPaymentMethod() == Order.PaymentMethod.COD;
+            boolean isOnline = o.getPaymentMethod() != Order.PaymentMethod.COD;
+            LocalDate d = null;
+            if (isCod && o.getDeliveredDate() != null) d = o.getDeliveredDate().toLocalDate();
+            if (isOnline && Boolean.TRUE.equals(o.getPaymentPaid()) && o.getPaymentDate() != null) d = o.getPaymentDate().toLocalDate();
+            if (d == null) return false;
             boolean afterStart = (start == null) || !d.isBefore(start);
             boolean beforeEnd = (end == null) || !d.isAfter(end);
             return afterStart && beforeEnd;
@@ -646,15 +676,16 @@ public class VendorRevenueController {
                     int[] monthOrderData = new int[12];
                     
                     for (Order order : completedOrders) {
-                        if (order.getOrderDate() != null && order.getTotalAmount() != null) {
-                            LocalDate orderDate = order.getOrderDate().toLocalDate();
-                            int orderMonth = orderDate.getMonthValue();
-                            int orderYear = orderDate.getYear();
-                            
-                            if (orderYear == year) {
-                                monthRevenueData[orderMonth - 1] += order.getTotalAmount();
-                                monthOrderData[orderMonth - 1]++;
-                            }
+                        if (order.getTotalAmount() == null) continue;
+                        boolean isCod = order.getPaymentMethod() == Order.PaymentMethod.COD;
+                        boolean isOnline = order.getPaymentMethod() != Order.PaymentMethod.COD;
+                        LocalDate d = null;
+                        if (isCod && order.getDeliveredDate() != null) d = order.getDeliveredDate().toLocalDate();
+                        if (isOnline && Boolean.TRUE.equals(order.getPaymentPaid()) && order.getPaymentDate() != null) d = order.getPaymentDate().toLocalDate();
+                        if (d == null) continue;
+                        if (d.getYear() == year) {
+                            monthRevenueData[d.getMonthValue() - 1] += order.getTotalAmount();
+                            monthOrderData[d.getMonthValue() - 1]++;
                         }
                     }
                     
@@ -669,16 +700,17 @@ public class VendorRevenueController {
                     int[] quarterOrderData = new int[4];
                     
                     for (Order order : completedOrders) {
-                        if (order.getOrderDate() != null && order.getTotalAmount() != null) {
-                            LocalDate orderDate = order.getOrderDate().toLocalDate();
-                            int orderMonth = orderDate.getMonthValue();
-                            int orderYear = orderDate.getYear();
-                            
-                            if (orderYear == year) {
-                                int quarterIndex = (orderMonth - 1) / 3;
-                                quarterRevenueData[quarterIndex] += order.getTotalAmount();
-                                quarterOrderData[quarterIndex]++;
-                            }
+                        if (order.getTotalAmount() == null) continue;
+                        boolean isCod = order.getPaymentMethod() == Order.PaymentMethod.COD;
+                        boolean isOnline = order.getPaymentMethod() != Order.PaymentMethod.COD;
+                        LocalDate d = null;
+                        if (isCod && order.getDeliveredDate() != null) d = order.getDeliveredDate().toLocalDate();
+                        if (isOnline && Boolean.TRUE.equals(order.getPaymentPaid()) && order.getPaymentDate() != null) d = order.getPaymentDate().toLocalDate();
+                        if (d == null) continue;
+                        if (d.getYear() == year) {
+                            int quarterIndex = (d.getMonthValue() - 1) / 3;
+                            quarterRevenueData[quarterIndex] += order.getTotalAmount();
+                            quarterOrderData[quarterIndex]++;
                         }
                     }
                     
@@ -695,12 +727,15 @@ public class VendorRevenueController {
                     
                     // Tìm năm min/max từ dữ liệu thực tế
                     for (Order order : completedOrders) {
-                        if (order.getOrderDate() != null) {
-                            LocalDate orderDate = order.getOrderDate().toLocalDate();
-                            int orderYear = orderDate.getYear();
-                            if (orderYear < minYear) minYear = orderYear;
-                            if (orderYear > maxYear) maxYear = orderYear;
-                        }
+                        boolean isCod = order.getPaymentMethod() == Order.PaymentMethod.COD;
+                        boolean isOnline = order.getPaymentMethod() != Order.PaymentMethod.COD;
+                        LocalDate d = null;
+                        if (isCod && order.getDeliveredDate() != null) d = order.getDeliveredDate().toLocalDate();
+                        if (isOnline && Boolean.TRUE.equals(order.getPaymentPaid()) && order.getPaymentDate() != null) d = order.getPaymentDate().toLocalDate();
+                        if (d == null) continue;
+                        int y = d.getYear();
+                        if (y < minYear) minYear = y;
+                        if (y > maxYear) maxYear = y;
                     }
                     
                     int numYears = maxYear - minYear + 1;

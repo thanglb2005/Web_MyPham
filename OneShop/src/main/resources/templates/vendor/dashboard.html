@@ -149,6 +149,7 @@
                 id="shopSelector"
                 class="form-select form-select-sm"
                 name="shopId"
+                style="min-width: 250px"
               >
                 <option
                   th:each="ownedShop : ${shopList}"
@@ -171,6 +172,7 @@
               >
                 <i class="fas fa-plus me-2"></i>Thêm sản phẩm mới
               </a>
+
               <a
                 class="btn btn-success"
                 th:href="@{'/vendor/revenue'(shopId=${selectedShopId}, type='month', year=${#temporals.createNow().getYear()}, month=${#temporals.createNow().getMonthValue()})}"

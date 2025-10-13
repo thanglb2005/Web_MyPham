@@ -1,124 +1,231 @@
 ﻿<!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title th:text="${pageTitle}">Đăng ký shop</title>
-  <link rel="stylesheet" th:href="@{/vendor/bootstrap/bootstrap.min.css}" />
-  <link rel="stylesheet" th:href="@{/fonts/fontawesome/fontawesome.min.css}" />
-  <link rel="stylesheet" th:href="@{/css/main.css}" />
-  <link rel="stylesheet" th:href="@{/css/vendor.css}" />
-  <style>
-    body {
-      background-color: #f3f4f6;
-    }
-    .vendor-section {
-      background: #fff;
-      border-radius: 18px;
-      padding: 32px;
-      box-shadow: 0 16px 40px rgba(15, 23, 42, 0.1);
-      border: 1px solid rgba(15, 23, 42, 0.06);
-      max-width: 960px;
-      margin: 0 auto;
-    }
-    .form-label {
-      font-weight: 600;
-      color: #1f2937;
-    }
-    .form-control, .form-select {
-      border-radius: 14px;
-      padding: 0.65rem 0.9rem;
-    }
-    .form-check-input {
-      cursor: pointer;
-    }
-    .error-text {
-      color: #dc2626;
-      font-size: 0.85rem;
-      margin-top: 0.25rem;
-    }
-    .field-hint {
-      font-size: 0.85rem;
-      color: #6b7280;
-    }
-  </style>
-</head>
-<body class="bg-light">
-  <div th:replace="~{vendor/fragments/nav :: vendorNav('register')}"></div>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title th:text="${pageTitle}">Đăng ký shop</title>
+    <link rel="stylesheet" th:href="@{/vendor/bootstrap/bootstrap.min.css}" />
+    <link
+      rel="stylesheet"
+      th:href="@{/fonts/fontawesome/fontawesome.min.css}"
+    />
+    <link rel="stylesheet" th:href="@{/css/main.css}" />
+    <link rel="stylesheet" th:href="@{/css/vendor.css}" />
+    <style>
+      body {
+        background-color: #f3f4f6;
+      }
+      .vendor-section {
+        background: #fff;
+        border-radius: 18px;
+        padding: 32px;
+        box-shadow: 0 16px 40px rgba(15, 23, 42, 0.1);
+        border: 1px solid rgba(15, 23, 42, 0.06);
+        max-width: 960px;
+        margin: 0 auto;
+      }
+      .form-label {
+        font-weight: 600;
+        color: #1f2937;
+      }
+      .form-control,
+      .form-select {
+        border-radius: 14px;
+        padding: 0.65rem 0.9rem;
+      }
+      .form-check-input {
+        cursor: pointer;
+      }
+      .error-text {
+        color: #dc2626;
+        font-size: 0.85rem;
+        margin-top: 0.25rem;
+      }
+      .field-hint {
+        font-size: 0.85rem;
+        color: #6b7280;
+      }
+    </style>
+  </head>
+  <body class="bg-light">
+    <div th:replace="~{vendor/fragments/nav :: vendorNav('register')}"></div>
 
-  <main class="container py-4">
-    <section class="vendor-section">
-      <div class="mb-4">
-        <h1 class="h4 mb-1">Đăng ký shop mới</h1>
-        <p class="text-muted mb-0">Cung cấp thông tin để OneShop tạo cửa hàng dành cho bạn.</p>
-      </div>
+    <main class="container py-4">
+      <section class="vendor-section">
+        <div class="mb-4">
+          <h1 class="h4 mb-1">Đăng ký shop mới</h1>
+          <p class="text-muted mb-0">
+            Cung cấp thông tin để OneShop tạo cửa hàng dành cho bạn.
+          </p>
+        </div>
 
-      <form th:action="@{/vendor/shop/register}" th:object="${shopForm}" method="post" enctype="multipart/form-data" class="row g-4">
-        <div class="col-md-6">
-          <label class="form-label" for="shopName">Tên shop *</label>
-          <input id="shopName" type="text" class="form-control" th:field="*{shopName}" placeholder="Tên thương hiệu của bạn" />
-          <div class="error-text" th:if="${#fields.hasErrors('shopName')}" th:errors="*{shopName}"></div>
-        </div>
-        <div class="col-md-6">
-          <label class="form-label" for="phoneNumber">Số điện thoại</label>
-          <input id="phoneNumber" type="text" class="form-control" th:field="*{phoneNumber}" placeholder="Nhập số điện thoại liên hệ" />
-          <div class="error-text" th:if="${#fields.hasErrors('phoneNumber')}" th:errors="*{phoneNumber}"></div>
-        </div>
-        <div class="col-12">
-          <label class="form-label" for="shopDescription">Mô tả shop</label>
-          <textarea id="shopDescription" class="form-control" rows="4" th:field="*{shopDescription}" placeholder="Giới thiệu ngắn gọn về sản phẩm, thế mạnh của cửa hàng..."></textarea>
-          <div class="error-text" th:if="${#fields.hasErrors('shopDescription')}" th:errors="*{shopDescription}"></div>
-        </div>
-        <div class="col-12">
-          <label class="form-label" for="address">Địa chỉ</label>
-          <input id="address" type="text" class="form-control" th:field="*{address}" placeholder="Ví dụ: 123 Nguyễn Huệ, Quận 1" />
-          <div class="error-text" th:if="${#fields.hasErrors('address')}" th:errors="*{address}"></div>
-        </div>
-        <div class="col-md-4">
-          <label class="form-label" for="city">Tỉnh/Thành</label>
-          <input id="city" type="text" class="form-control" th:field="*{city}" placeholder="Ví dụ: TP. Hồ Chí Minh" />
-          <div class="error-text" th:if="${#fields.hasErrors('city')}" th:errors="*{city}"></div>
-        </div>
-        <div class="col-md-4">
-          <label class="form-label" for="district">Quận/Huyện</label>
-          <input id="district" type="text" class="form-control" th:field="*{district}" placeholder="Ví dụ: Quận 1" />
-          <div class="error-text" th:if="${#fields.hasErrors('district')}" th:errors="*{district}"></div>
-        </div>
-        <div class="col-md-4">
-          <label class="form-label" for="ward">Phường/Xã</label>
-          <input id="ward" type="text" class="form-control" th:field="*{ward}" placeholder="Ví dụ: Phường Bến Nghé" />
-          <div class="error-text" th:if="${#fields.hasErrors('ward')}" th:errors="*{ward}"></div>
-        </div>
-        <div class="col-md-6">
-          <label class="form-label" for="logo">Logo shop</label>
-          <input id="logo" type="file" class="form-control" name="logo" accept="image/*" />
-          <p class="field-hint mb-0">Logo sẽ xuất hiện trong trang chủ và danh sách sản phẩm.</p>
-        </div>
-        <div class="col-md-6">
-          <label class="form-label" for="banner">Banner shop</label>
-          <input id="banner" type="file" class="form-control" name="banner" accept="image/*" />
-          <p class="field-hint mb-0">Kích thước gợi ý: 1200x300px.</p>
-        </div>
-        <div class="col-md-6">
-          <label class="form-label" for="preparationDays">Thời gian chuẩn bị (ngày) *</label>
-          <input id="preparationDays" type="number" min="1" max="14" class="form-control" th:field="*{preparationDays}" />
-          <div class="error-text" th:if="${#fields.hasErrors('preparationDays')}" th:errors="*{preparationDays}"></div>
-        </div>
-        <div class="col-md-6 d-flex align-items-center">
-          <div class="form-check form-switch">
-            <input class="form-check-input" type="checkbox" role="switch" id="allowCod" th:field="*{allowCod}" />
-            <label class="form-check-label" for="allowCod">Cho phép thanh toán COD</label>
+        <form
+          th:action="@{/vendor/shop/register}"
+          th:object="${shopForm}"
+          method="post"
+          enctype="multipart/form-data"
+          class="row g-4"
+        >
+          <div class="col-md-6">
+            <label class="form-label" for="shopName">Tên shop *</label>
+            <input
+              id="shopName"
+              type="text"
+              class="form-control"
+              th:field="*{shopName}"
+              placeholder="Tên thương hiệu của bạn"
+            />
+            <div
+              class="error-text"
+              th:if="${#fields.hasErrors('shopName')}"
+              th:errors="*{shopName}"
+            ></div>
           </div>
-        </div>
-        <div class="col-12 d-flex justify-content-end gap-2">
-          <a class="btn btn-outline-secondary" th:href="@{/vendor/home}">Hủy</a>
-          <button type="submit" class="btn btn-primary">Đăng ký shop</button>
-        </div>
-      </form>
-    </section>
-  </main>
+          <div class="col-md-6">
+            <label class="form-label" for="phoneNumber">Số điện thoại</label>
+            <input
+              id="phoneNumber"
+              type="text"
+              class="form-control"
+              th:field="*{phoneNumber}"
+              placeholder="Nhập số điện thoại liên hệ"
+            />
+            <div
+              class="error-text"
+              th:if="${#fields.hasErrors('phoneNumber')}"
+              th:errors="*{phoneNumber}"
+            ></div>
+          </div>
+          <div class="col-12">
+            <label class="form-label" for="shopDescription">Mô tả shop</label>
+            <textarea
+              id="shopDescription"
+              class="form-control"
+              rows="4"
+              th:field="*{shopDescription}"
+              placeholder="Giới thiệu ngắn gọn về sản phẩm, thế mạnh của cửa hàng..."
+            ></textarea>
+            <div
+              class="error-text"
+              th:if="${#fields.hasErrors('shopDescription')}"
+              th:errors="*{shopDescription}"
+            ></div>
+          </div>
+          <div class="col-12">
+            <label class="form-label" for="address">Địa chỉ</label>
+            <input
+              id="address"
+              type="text"
+              class="form-control"
+              th:field="*{address}"
+              placeholder="Ví dụ: 123 Nguyễn Huệ, Quận 1"
+            />
+            <div
+              class="error-text"
+              th:if="${#fields.hasErrors('address')}"
+              th:errors="*{address}"
+            ></div>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label" for="city">Tỉnh/Thành</label>
+            <input
+              id="city"
+              type="text"
+              class="form-control"
+              th:field="*{city}"
+              placeholder="Ví dụ: TP. Hồ Chí Minh"
+            />
+            <div
+              class="error-text"
+              th:if="${#fields.hasErrors('city')}"
+              th:errors="*{city}"
+            ></div>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label" for="district">Quận/Huyện</label>
+            <input
+              id="district"
+              type="text"
+              class="form-control"
+              th:field="*{district}"
+              placeholder="Ví dụ: Quận 1"
+            />
+            <div
+              class="error-text"
+              th:if="${#fields.hasErrors('district')}"
+              th:errors="*{district}"
+            ></div>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label" for="ward">Phường/Xã</label>
+            <input
+              id="ward"
+              type="text"
+              class="form-control"
+              th:field="*{ward}"
+              placeholder="Ví dụ: Phường Bến Nghé"
+            />
+            <div
+              class="error-text"
+              th:if="${#fields.hasErrors('ward')}"
+              th:errors="*{ward}"
+            ></div>
+          </div>
 
-  <script th:src="@{/vendor/bootstrap/jquery-3.6.0.min.js}"></script>
-  <script th:src="@{/vendor/bootstrap/bootstrap.bundle.min.js}"></script>
-</body>
+          <div class="col-md-6">
+            <label class="form-label" for="banner">Banner shop</label>
+            <input
+              id="banner"
+              type="file"
+              class="form-control"
+              name="banner"
+              accept="image/*"
+            />
+            <p class="field-hint mb-0">Kích thước gợi ý: 1200x300px.</p>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label" for="preparationDays"
+              >Thời gian chuẩn bị (ngày) *</label
+            >
+            <input
+              id="preparationDays"
+              type="number"
+              min="1"
+              max="14"
+              class="form-control"
+              th:field="*{preparationDays}"
+            />
+            <div
+              class="error-text"
+              th:if="${#fields.hasErrors('preparationDays')}"
+              th:errors="*{preparationDays}"
+            ></div>
+          </div>
+          <div class="col-md-6 d-flex align-items-center">
+            <div class="form-check form-switch">
+              <input
+                class="form-check-input"
+                type="checkbox"
+                role="switch"
+                id="allowCod"
+                th:field="*{allowCod}"
+              />
+              <label class="form-check-label" for="allowCod"
+                >Cho phép thanh toán COD</label
+              >
+            </div>
+          </div>
+          <div class="col-12 d-flex justify-content-end gap-2">
+            <a class="btn btn-outline-secondary" th:href="@{/vendor/home}"
+              >Hủy</a
+            >
+            <button type="submit" class="btn btn-primary">Đăng ký shop</button>
+          </div>
+        </form>
+      </section>
+    </main>
+
+    <script th:src="@{/vendor/bootstrap/jquery-3.6.0.min.js}"></script>
+    <script th:src="@{/vendor/bootstrap/bootstrap.bundle.min.js}"></script>
+  </body>
 </html>

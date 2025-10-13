@@ -1,33 +1,56 @@
 <div th:fragment="vendorNav(active)">
   <div class="vendor-nav mb-4">
-    <div class="container">
+    <div class="container d-flex justify-content-between align-items-center">
       <ul class="nav nav-pills vendor-nav__list">
         <li class="nav-item">
-          <a class="nav-link" th:classappend="${active=='dashboard'} ? ' active'"
-             th:href="@{/vendor/dashboard}">
+          <a
+            class="nav-link"
+            th:classappend="${active=='dashboard'} ? ' active'"
+            th:href="@{/vendor/dashboard}"
+          >
             <i class="fas fa-chart-line"></i> Bảng điều khiển
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" th:classappend="${active=='products'} ? ' active'"
-             th:href="@{/vendor/products}">
+          <a
+            class="nav-link"
+            th:classappend="${active=='products'} ? ' active'"
+            th:href="@{/vendor/products}"
+          >
             <i class="fas fa-box"></i> Sản phẩm của tôi
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" th:classappend="${active=='shop'} ? ' active'"
-             th:href="@{/vendor/shop/settings}">
+          <a
+            class="nav-link"
+            th:classappend="${active=='myshops'} ? ' active'"
+            th:href="@{/vendor/my-shops}"
+          >
+            <i class="fas fa-store"></i> Shop của tôi
+          </a>
+        </li>
+        <li class="nav-item">
+          <a
+            class="nav-link"
+            th:classappend="${active=='shop'} ? ' active'"
+            th:href="@{/vendor/shop/settings}"
+          >
             <i class="fas fa-store"></i> Cài đặt shop
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" th:classappend="${active=='register'} ? ' active'"
-             th:href="@{/vendor/shop/register}">
+          <a
+            class="nav-link"
+            th:classappend="${active=='register'} ? ' active'"
+            th:href="@{/vendor/shop/register}"
+          >
             <i class="fas fa-sign-in-alt"></i> Đăng ký shop
           </a>
         </li>
       </ul>
+      <a class="btn btn-outline-danger btn-sm" th:href="@{/login}">
+        <i class="fas fa-sign-out-alt"></i> Đăng xuất
+      </a>
     </div>
   </div>
 </div>
-

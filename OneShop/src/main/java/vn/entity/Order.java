@@ -79,6 +79,14 @@ public class Order {
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<OrderDetail> orderDetails;
 
+    // Payment fields from DB schema
+    // Note: DB stores payment_status as BIT (0/1). We map it to Boolean for simplicity.
+    @Column(name = "payment_status")
+    private Boolean paymentPaid; // true = PAID, false/null = not paid
+
+    @Column(name = "payment_date")
+    private LocalDateTime paymentDate;
+
     public enum OrderStatus {
         PENDING,                // Cho xac nhan
         NEW,                    // Don hang moi
