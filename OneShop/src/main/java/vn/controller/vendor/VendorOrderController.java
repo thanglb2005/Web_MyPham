@@ -81,7 +81,7 @@ public class VendorOrderController {
         model.addAttribute("orderStatuses", DISPLAY_STATUSES);
         model.addAttribute("currentStatus", status);
         model.addAttribute("totalOrders", totalOrders != null ? totalOrders : 0L);
-        model.addAttribute("search", normalizedSearch != null ? normalizedSearch : "");
+        model.addAttribute("search", search != null ? search : "");
         model.addAttribute("vendor", vendor);
         model.addAttribute("pageTitle", "Quản lý đơn hàng");
         
