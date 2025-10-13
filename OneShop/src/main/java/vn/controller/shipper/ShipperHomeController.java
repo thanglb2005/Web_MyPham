@@ -55,8 +55,11 @@ public class ShipperHomeController {
         
         // Xác định tên hiển thị
         String displayName = "OneShop Shipper";
-        if (assignedShops.size() == 1) {
-            displayName = assignedShops.get(0).getShopName() + " - Shipper";
+        if (assignedShops != null && assignedShops.size() == 1 && assignedShops.get(0) != null) {
+            Shop shop = assignedShops.get(0);
+            if (shop.getShopName() != null) {
+                displayName = shop.getShopName() + " - Shipper";
+            }
         }
 
         // Lấy các đơn hàng được phân công cho shipper này

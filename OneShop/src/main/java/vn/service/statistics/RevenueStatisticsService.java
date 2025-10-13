@@ -118,6 +118,122 @@ public class RevenueStatisticsService {
     }
     
     /**
+     * Get current month statistics by shop
+     */
+    public Map<String, Object> getCurrentMonthStatisticsByShop(Long shopId) {
+        Calendar currentDate = Calendar.getInstance();
+        int currentMonth = currentDate.get(Calendar.MONTH) + 1;
+        int currentYear = currentDate.get(Calendar.YEAR);
+        
+        return getMonthStatisticsByShop(shopId, currentMonth, currentYear);
+    }
+    
+    /**
+     * Get month statistics for a specific shop
+     */
+    public Map<String, Object> getMonthStatisticsByShop(Long shopId, int month, int year) {
+        Map<String, Object> result = new HashMap<>();
+        
+        try {
+            List<Order> allOrders = orderRepository.findAll();
+            double currentMonthRevenue = 0.0;
+            double previousMonthRevenue = 0.0;
+            
+            for (Order order : allOrders) {
+                if (order.getOrderDate() != null && order.getTotalAmount() != null && order.getShop() != null && order.getShop().getShopId().equals(shopId)) {
+                    Calendar orderDate = Calendar.getInstance();
+                    orderDate.setTime(java.sql.Timestamp.valueOf(order.getOrderDate()));
+                    int orderMonth = orderDate.get(Calendar.MONTH) + 1;
+                    int orderYear = orderDate.get(Calendar.YEAR);
+                    
+                    if (orderMonth == month && orderYear == year) {
+                        currentMonthRevenue += order.getTotalAmount();
+                    }
+                    
+                    int localPrevMonth = month - 1;
+                    int localPrevYear = year;
+                    if (localPrevMonth == 0) {
+                        localPrevMonth = 12;
+                        localPrevYear = year - 1;
+                    }
+                    if (orderMonth == localPrevMonth && orderYear == localPrevYear) {
+                        previousMonthRevenue += order.getTotalAmount();
+                    }
+                }
+            }
+            
+            double growthRate = 0.0;
+            if (previousMonthRevenue > 0) {
+                growthRate = ((currentMonthRevenue - previousMonthRevenue) / previousMonthRevenue) * 100;
+            } else if (currentMonthRevenue > 0) {
+                growthRate = 100.0;
+            }
+            
+            result.put("revenue", currentMonthRevenue);
+            result.put("formattedRevenue", formatCurrency(currentMonthRevenue));
+            result.put("growthRate", formatNumber(growthRate));
+            result.put("isPositiveGrowth", growthRate >= 0);
+        } catch (Exception e) {
+            result.put("revenue", 0.0);
+            result.put("formattedRevenue", formatCurrency(0.0));
+            result.put("growthRate", "0.0");
+            result.put("isPositiveGrowth", false);
+        }
+        
+        return result;
+    }
+    
+    /**
+     * Get today statistics by shop
+     */
+    public Map<String, Object> getTodayStatisticsByShop(Long shopId) {
+        Map<String, Object> result = new HashMap<>();
+        
+        try {
+            List<Order> allOrders = orderRepository.findAll();
+            Calendar today = Calendar.getInstance();
+            today.set(Calendar.HOUR_OF_DAY, 0);
+            today.set(Calendar.MINUTE, 0);
+            today.set(Calendar.SECOND, 0);
+            today.set(Calendar.MILLISECOND, 0);
+            
+            int orderCount = 0;
+            double revenue = 0.0;
+            
+            for (Order order : allOrders) {
+                if (order.getOrderDate() != null && order.getShop() != null && order.getShop().getShopId().equals(shopId)) {
+                    Calendar orderDate = Calendar.getInstance();
+                    orderDate.setTime(java.sql.Timestamp.valueOf(order.getOrderDate()));
+                    orderDate.set(Calendar.HOUR_OF_DAY, 0);
+                    orderDate.set(Calendar.MINUTE, 0);
+                    orderDate.set(Calendar.SECOND, 0);
+                    orderDate.set(Calendar.MILLISECOND, 0);
+                    
+                    if (orderDate.get(Calendar.YEAR) == today.get(Calendar.YEAR) &&
+                        orderDate.get(Calendar.DAY_OF_YEAR) == today.get(Calendar.DAY_OF_YEAR)) {
+                        orderCount++;
+                        if (order.getTotalAmount() != null) {
+                            revenue += order.getTotalAmount();
+                        }
+                    }
+                }
+            }
+            
+            result.put("orderCount", orderCount);
+            result.put("formattedOrderCount", String.valueOf(orderCount));
+            result.put("revenue", revenue);
+            result.put("formattedRevenue", formatCurrency(revenue));
+        } catch (Exception e) {
+            result.put("orderCount", 0);
+            result.put("formattedOrderCount", "0");
+            result.put("revenue", 0.0);
+            result.put("formattedRevenue", formatCurrency(0.0));
+        }
+        
+        return result;
+    }
+    
+    /**
      * Get month statistics for a specific month and year
      * @param month Month (1-12)
      * @param year Year

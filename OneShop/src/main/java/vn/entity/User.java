@@ -3,7 +3,9 @@ package vn.entity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 import java.io.Serializable;
 import java.util.Collection;
@@ -20,6 +22,8 @@ import java.util.Set;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@EqualsAndHashCode(exclude = {"assignedShops", "roles"})
+@ToString(exclude = {"assignedShops", "roles"})
 public class User implements Serializable {
 
     @Id

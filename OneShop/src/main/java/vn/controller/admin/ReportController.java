@@ -15,8 +15,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import jakarta.servlet.http.HttpSession;
+import vn.entity.Shop;
 import vn.entity.User;
 import vn.repository.OrderDetailRepository;
+import vn.repository.ShopRepository;
 
 /**
  * Controller for statistics reports with date filtering support
@@ -27,6 +29,9 @@ public class ReportController {
 
     @Autowired
     private OrderDetailRepository orderDetailRepository;
+    
+    @Autowired
+    private ShopRepository shopRepository;
     
     /**
      * Parse date string to LocalDateTime
@@ -49,7 +54,8 @@ public class ReportController {
     @GetMapping("/report-products")
     public String reportProducts(HttpSession session, Model model,
                                  @RequestParam(value = "startDate", required = false) String startDateStr,
-                                 @RequestParam(value = "endDate", required = false) String endDateStr) {
+                                 @RequestParam(value = "endDate", required = false) String endDateStr,
+                                 @RequestParam(value = "shopId", required = false) Long shopId) {
         // Authentication check
         User user = (User) session.getAttribute("user");
         if (user == null) {
@@ -57,20 +63,28 @@ public class ReportController {
         }
         
         model.addAttribute("user", user);
+        // Load shops for filter dropdown
+        List<Shop> allShops = shopRepository.findAll();
+        model.addAttribute("allShops", allShops);
+        model.addAttribute("shopId", shopId);
         
         // Parse dates
         LocalDateTime startDate = parseDate(startDateStr, true);
         LocalDateTime endDate = parseDate(endDateStr, false);
         
-        // Get report data with or without date filter
+        // Get report data with shop/date filters
         List<Object[]> reportData;
-        if (startDate != null && endDate != null) {
+        if (shopId != null && startDate != null && endDate != null) {
+            reportData = orderDetailRepository.getProductSalesStatisticsByShopAndDateRange(shopId, startDate, endDate);
+        } else if (shopId != null) {
+            reportData = orderDetailRepository.getProductSalesStatisticsByShop(shopId);
+        } else if (startDate != null && endDate != null) {
             reportData = orderDetailRepository.getProductSalesStatisticsByDateRange(startDate, endDate);
-            model.addAttribute("startDate", startDateStr);
-            model.addAttribute("endDate", endDateStr);
         } else {
             reportData = orderDetailRepository.getProductSalesStatistics();
         }
+        model.addAttribute("startDate", startDateStr);
+        model.addAttribute("endDate", endDateStr);
         
         model.addAttribute("reportTitle", "Thống kê theo sản phẩm");
         model.addAttribute("reportData", reportData);
@@ -83,7 +97,8 @@ public class ReportController {
     @GetMapping("/report-categories")
     public String reportCategories(HttpSession session, Model model,
                                    @RequestParam(value = "startDate", required = false) String startDateStr,
-                                   @RequestParam(value = "endDate", required = false) String endDateStr) {
+                                   @RequestParam(value = "endDate", required = false) String endDateStr,
+                                   @RequestParam(value = "shopId", required = false) Long shopId) {
         // Authentication check
         User user = (User) session.getAttribute("user");
         if (user == null) {
@@ -91,20 +106,27 @@ public class ReportController {
         }
         
         model.addAttribute("user", user);
+        List<Shop> allShops = shopRepository.findAll();
+        model.addAttribute("allShops", allShops);
+        model.addAttribute("shopId", shopId);
         
         // Parse dates
         LocalDateTime startDate = parseDate(startDateStr, true);
         LocalDateTime endDate = parseDate(endDateStr, false);
         
-        // Get report data with or without date filter
+        // Get report data with shop/date filters
         List<Object[]> reportData;
-        if (startDate != null && endDate != null) {
+        if (shopId != null && startDate != null && endDate != null) {
+            reportData = orderDetailRepository.getCategorySalesStatisticsByShopAndDateRange(shopId, startDate, endDate);
+        } else if (shopId != null) {
+            reportData = orderDetailRepository.getCategorySalesStatisticsByShop(shopId);
+        } else if (startDate != null && endDate != null) {
             reportData = orderDetailRepository.getCategorySalesStatisticsByDateRange(startDate, endDate);
-            model.addAttribute("startDate", startDateStr);
-            model.addAttribute("endDate", endDateStr);
         } else {
             reportData = orderDetailRepository.getCategorySalesStatistics();
         }
+        model.addAttribute("startDate", startDateStr);
+        model.addAttribute("endDate", endDateStr);
         
         model.addAttribute("reportTitle", "Thống kê theo danh mục");
         model.addAttribute("reportData", reportData);
@@ -117,7 +139,8 @@ public class ReportController {
     @GetMapping("/report-years")
     public String reportYears(HttpSession session, Model model,
                              @RequestParam(value = "startDate", required = false) String startDateStr,
-                             @RequestParam(value = "endDate", required = false) String endDateStr) {
+                             @RequestParam(value = "endDate", required = false) String endDateStr,
+                             @RequestParam(value = "shopId", required = false) Long shopId) {
         // Authentication check
         User user = (User) session.getAttribute("user");
         if (user == null) {
@@ -125,20 +148,27 @@ public class ReportController {
         }
         
         model.addAttribute("user", user);
+        List<Shop> allShops = shopRepository.findAll();
+        model.addAttribute("allShops", allShops);
+        model.addAttribute("shopId", shopId);
         
         // Parse dates
         LocalDateTime startDate = parseDate(startDateStr, true);
         LocalDateTime endDate = parseDate(endDateStr, false);
         
-        // Get report data with or without date filter
+        // Get report data with shop/date filters
         List<Object[]> reportData;
-        if (startDate != null && endDate != null) {
+        if (shopId != null && startDate != null && endDate != null) {
+            reportData = orderDetailRepository.getYearlySalesStatisticsByShopAndDateRange(shopId, startDate, endDate);
+        } else if (shopId != null) {
+            reportData = orderDetailRepository.getYearlySalesStatisticsByShop(shopId);
+        } else if (startDate != null && endDate != null) {
             reportData = orderDetailRepository.getYearlySalesStatisticsByDateRange(startDate, endDate);
-            model.addAttribute("startDate", startDateStr);
-            model.addAttribute("endDate", endDateStr);
         } else {
             reportData = orderDetailRepository.getYearlySalesStatistics();
         }
+        model.addAttribute("startDate", startDateStr);
+        model.addAttribute("endDate", endDateStr);
         
         model.addAttribute("reportTitle", "Thống kê theo năm");
         model.addAttribute("reportData", reportData);
@@ -151,7 +181,8 @@ public class ReportController {
     @GetMapping("/report-months")
     public String reportMonths(HttpSession session, Model model,
                               @RequestParam(value = "startDate", required = false) String startDateStr,
-                              @RequestParam(value = "endDate", required = false) String endDateStr) {
+                              @RequestParam(value = "endDate", required = false) String endDateStr,
+                              @RequestParam(value = "shopId", required = false) Long shopId) {
         // Authentication check
         User user = (User) session.getAttribute("user");
         if (user == null) {
@@ -159,20 +190,27 @@ public class ReportController {
         }
         
         model.addAttribute("user", user);
+        List<Shop> allShops = shopRepository.findAll();
+        model.addAttribute("allShops", allShops);
+        model.addAttribute("shopId", shopId);
         
         // Parse dates
         LocalDateTime startDate = parseDate(startDateStr, true);
         LocalDateTime endDate = parseDate(endDateStr, false);
         
-        // Get report data with or without date filter
+        // Get report data with shop/date filters
         List<Object[]> reportData;
-        if (startDate != null && endDate != null) {
+        if (shopId != null && startDate != null && endDate != null) {
+            reportData = orderDetailRepository.getMonthlySalesStatisticsByShopAndDateRange(shopId, startDate, endDate);
+        } else if (shopId != null) {
+            reportData = orderDetailRepository.getMonthlySalesStatisticsByShop(shopId);
+        } else if (startDate != null && endDate != null) {
             reportData = orderDetailRepository.getMonthlySalesStatisticsByDateRange(startDate, endDate);
-            model.addAttribute("startDate", startDateStr);
-            model.addAttribute("endDate", endDateStr);
         } else {
             reportData = orderDetailRepository.getMonthlySalesStatistics();
         }
+        model.addAttribute("startDate", startDateStr);
+        model.addAttribute("endDate", endDateStr);
         
         model.addAttribute("reportTitle", "Thống kê theo tháng");
         model.addAttribute("reportData", reportData);
@@ -185,7 +223,8 @@ public class ReportController {
     @GetMapping("/report-quarters")
     public String reportQuarters(HttpSession session, Model model,
                                 @RequestParam(value = "startDate", required = false) String startDateStr,
-                                @RequestParam(value = "endDate", required = false) String endDateStr) {
+                                @RequestParam(value = "endDate", required = false) String endDateStr,
+                                @RequestParam(value = "shopId", required = false) Long shopId) {
         // Authentication check
         User user = (User) session.getAttribute("user");
         if (user == null) {
@@ -193,20 +232,27 @@ public class ReportController {
         }
         
         model.addAttribute("user", user);
+        List<Shop> allShops = shopRepository.findAll();
+        model.addAttribute("allShops", allShops);
+        model.addAttribute("shopId", shopId);
         
         // Parse dates
         LocalDateTime startDate = parseDate(startDateStr, true);
         LocalDateTime endDate = parseDate(endDateStr, false);
         
-        // Get report data with or without date filter
+        // Get report data with shop/date filters
         List<Object[]> reportData;
-        if (startDate != null && endDate != null) {
+        if (shopId != null && startDate != null && endDate != null) {
+            reportData = orderDetailRepository.getQuarterlySalesStatisticsByShopAndDateRange(shopId, startDate, endDate);
+        } else if (shopId != null) {
+            reportData = orderDetailRepository.getQuarterlySalesStatisticsByShop(shopId);
+        } else if (startDate != null && endDate != null) {
             reportData = orderDetailRepository.getQuarterlySalesStatisticsByDateRange(startDate, endDate);
-            model.addAttribute("startDate", startDateStr);
-            model.addAttribute("endDate", endDateStr);
         } else {
             reportData = orderDetailRepository.getQuarterlySalesStatistics();
         }
+        model.addAttribute("startDate", startDateStr);
+        model.addAttribute("endDate", endDateStr);
         
         model.addAttribute("reportTitle", "Thống kê theo quý");
         model.addAttribute("reportData", reportData);
@@ -219,7 +265,8 @@ public class ReportController {
     @GetMapping("/report-users")
     public String reportUsers(HttpSession session, Model model,
                              @RequestParam(value = "startDate", required = false) String startDateStr,
-                             @RequestParam(value = "endDate", required = false) String endDateStr) {
+                             @RequestParam(value = "endDate", required = false) String endDateStr,
+                             @RequestParam(value = "shopId", required = false) Long shopId) {
         // Authentication check
         User user = (User) session.getAttribute("user");
         if (user == null) {
@@ -227,20 +274,27 @@ public class ReportController {
         }
         
         model.addAttribute("user", user);
+        List<Shop> allShops = shopRepository.findAll();
+        model.addAttribute("allShops", allShops);
+        model.addAttribute("shopId", shopId);
         
         // Parse dates
         LocalDateTime startDate = parseDate(startDateStr, true);
         LocalDateTime endDate = parseDate(endDateStr, false);
         
-        // Get report data with or without date filter
+        // Get report data with shop/date filters
         List<Object[]> reportData;
-        if (startDate != null && endDate != null) {
+        if (shopId != null && startDate != null && endDate != null) {
+            reportData = orderDetailRepository.getUserStatisticsByShopAndDateRange(shopId, startDate, endDate);
+        } else if (shopId != null) {
+            reportData = orderDetailRepository.getUserStatisticsByShop(shopId);
+        } else if (startDate != null && endDate != null) {
             reportData = orderDetailRepository.getUserStatisticsByDateRange(startDate, endDate);
-            model.addAttribute("startDate", startDateStr);
-            model.addAttribute("endDate", endDateStr);
         } else {
             reportData = orderDetailRepository.getUserStatistics();
         }
+        model.addAttribute("startDate", startDateStr);
+        model.addAttribute("endDate", endDateStr);
         
         model.addAttribute("reportTitle", "Thống kê theo khách hàng");
         model.addAttribute("reportData", reportData);
@@ -253,7 +307,8 @@ public class ReportController {
     @GetMapping("/report-brands")
     public String reportBrands(HttpSession session, Model model,
                               @RequestParam(value = "startDate", required = false) String startDateStr,
-                              @RequestParam(value = "endDate", required = false) String endDateStr) {
+                              @RequestParam(value = "endDate", required = false) String endDateStr,
+                              @RequestParam(value = "shopId", required = false) Long shopId) {
         // Authentication check
         User user = (User) session.getAttribute("user");
         if (user == null) {
@@ -261,20 +316,27 @@ public class ReportController {
         }
         
         model.addAttribute("user", user);
+        List<Shop> allShops = shopRepository.findAll();
+        model.addAttribute("allShops", allShops);
+        model.addAttribute("shopId", shopId);
         
         // Parse dates
         LocalDateTime startDate = parseDate(startDateStr, true);
         LocalDateTime endDate = parseDate(endDateStr, false);
         
-        // Get report data with or without date filter
+        // Get report data with shop/date filters
         List<Object[]> reportData;
-        if (startDate != null && endDate != null) {
+        if (shopId != null && startDate != null && endDate != null) {
+            reportData = orderDetailRepository.getBrandSalesStatisticsByShopAndDateRange(shopId, startDate, endDate);
+        } else if (shopId != null) {
+            reportData = orderDetailRepository.getBrandSalesStatisticsByShop(shopId);
+        } else if (startDate != null && endDate != null) {
             reportData = orderDetailRepository.getBrandSalesStatisticsByDateRange(startDate, endDate);
-            model.addAttribute("startDate", startDateStr);
-            model.addAttribute("endDate", endDateStr);
         } else {
             reportData = orderDetailRepository.getBrandSalesStatistics();
         }
+        model.addAttribute("startDate", startDateStr);
+        model.addAttribute("endDate", endDateStr);
         
         model.addAttribute("reportTitle", "Thống kê theo thương hiệu");
         model.addAttribute("reportData", reportData);

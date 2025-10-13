@@ -149,7 +149,7 @@
                 id="shopSelector"
                 class="form-select form-select-sm"
                 name="shopId"
-                onchange="this.form.submit()"
+                style="min-width: 250px"
               >
                 <option
                   th:each="ownedShop : ${shopList}"
@@ -172,32 +172,17 @@
               >
                 <i class="fas fa-plus me-2"></i>Thêm sản phẩm mới
               </a>
+
+              <a
+                class="btn btn-success"
+                th:href="@{'/vendor/revenue'(shopId=${selectedShopId}, type='month', year=${#temporals.createNow().getYear()}, month=${#temporals.createNow().getMonthValue()})}"
+              >
+                <i class="fas fa-chart-line me-2"></i>Xem doanh thu
+              </a>
             </div>
           </div>
         </div>
       </section>
-
-      <!-- Shop Status Alert -->
-      <div
-        th:if="${shopStatus != null and !shopStatus.equals(T(vn.entity.Shop$ShopStatus).ACTIVE)}"
-        class="alert alert-warning status-hint border-warning-subtle"
-      >
-        <i class="fas fa-clock me-2"></i>
-        <span th:switch="${shopStatus}">
-          <span th:case="${T(vn.entity.Shop$ShopStatus).PENDING}"
-            >Shop của bạn đang chờ duyệt. Bạn vẫn có thể chuẩn bị sản phẩm trong
-            thời gian chờ.</span
-          >
-          <span th:case="${T(vn.entity.Shop$ShopStatus).SUSPENDED}"
-            >Shop của bạn đang tạm ngưng. Vui lòng kiểm tra email hoặc liên hệ
-            hỗ trợ OneShop.</span
-          >
-          <span th:case="*"
-            >Shop của bạn đã bị từ chối. Kiểm tra lý do và cập nhật lại thông
-            tin phù hợp.</span
-          >
-        </span>
-      </div>
 
       <!-- Statistics Cards -->
       <div class="row g-4 mb-4">
@@ -221,18 +206,6 @@
                   th:text="${shop.status}"
                   >TRẠNG THÁI</span
                 >
-              </div>
-              <div class="text-center">
-                <img
-                  th:if="${shop.shopLogo != null}"
-                  th:src="@{'/loadImage?imageName=' + ${shop.shopLogo}}"
-                  alt="Logo shop"
-                  class="vendor-logo-preview"
-                />
-                <div th:if="${shop.shopLogo == null}" class="text-muted">
-                  <i class="fas fa-store fa-3x"></i>
-                  <p class="mt-2 mb-0">Chưa có logo</p>
-                </div>
               </div>
             </div>
             <div class="mt-3 text-muted small">
@@ -494,5 +467,15 @@
 
     <script th:src="@{/vendor/bootstrap/jquery-3.6.0.min.js}"></script>
     <script th:src="@{/vendor/bootstrap/bootstrap.bundle.min.js}"></script>
+    <script>
+      (function () {
+        var sel = document.getElementById("shopSelector");
+        if (sel) {
+          sel.addEventListener("change", function () {
+            this.form.submit();
+          });
+        }
+      })();
+    </script>
   </body>
 </html>

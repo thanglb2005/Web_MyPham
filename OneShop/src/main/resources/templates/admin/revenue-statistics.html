@@ -389,10 +389,10 @@
                                     <h4 class="card-title"><i class="fas fa-filter"></i> Lọc theo loại báo cáo</h4>
                                 </div>
                                 <div class="card-body">
-                                    <!-- Thêm bộ lọc theo khoảng thời gian -->
+                                    <!-- Thêm bộ lọc theo khoảng thời gian và shop -->
                                     <form id="date-filter-form" class="mb-3" method="get" action="">
                                         <div class="row">
-                                            <div class="col-md-4">
+                                            <div class="col-md-3">
                                                 <div class="form-group">
                                                     <label><i class="fas fa-calendar"></i> Từ ngày:</label>
                                                     <div class="input-group">
@@ -403,7 +403,7 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div class="col-md-4">
+                                            <div class="col-md-3">
                                                 <div class="form-group">
                                                     <label><i class="fas fa-calendar-check"></i> Đến ngày:</label>
                                                     <div class="input-group">
@@ -414,7 +414,26 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div class="col-md-4 d-flex align-items-end">
+                                            <div class="col-md-3">
+                                                <div class="form-group">
+                                                    <label><i class="fas fa-store"></i> Chọn Shop:</label>
+                                                    <div class="input-group">
+                                                        <div class="input-group-prepend">
+                                                            <span class="input-group-text bg-primary text-white"><i class="fas fa-shop"></i></span>
+                                                        </div>
+                                                        <select class="form-control" name="shopId" id="shopId">
+                                                            <option value="">Tất cả shop</option>
+                                                            <option th:each="shop : ${allShops}" 
+                                                                    th:value="${shop.shopId}" 
+                                                                    th:text="${shop.shopName != null ? shop.shopName : 'Shop #' + shop.shopId}"
+                                                                    th:selected="${shopId != null and shopId == shop.shopId}">
+                                                                Shop Name
+                                                            </option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3 d-flex align-items-end">
                                                 <button type="submit" class="btn btn-info mr-2 btn-modern">
                                                     <i class="fas fa-filter"></i> Lọc báo cáo
                                                 </button>
@@ -424,6 +443,18 @@
                                             </div>
                                         </div>
                                     </form>
+                                    
+                                    <!-- Hiển thị shop đã chọn -->
+                                    <div th:if="${shopId != null}" class="alert alert-info mb-3">
+                                        <i class="fas fa-info-circle me-2"></i>
+                                        <strong>Đang lọc theo shop:</strong>
+                                        <span th:each="shop : ${allShops}" th:if="${shop.shopId == shopId}">
+                                            <span th:text="${shop.shopName != null ? shop.shopName : 'Shop #' + shop.shopId}"></span>
+                                        </span>
+                                        <button type="button" class="btn btn-sm btn-outline-info ms-3" onclick="window.location.href='/admin/revenue-statistics'">
+                                            <i class="fas fa-times me-1"></i>Bỏ lọc
+                                        </button>
+                                    </div>
                                     
                                     <script>
                                         // Keep form action synchronized with current page
@@ -1523,8 +1554,15 @@
     <script th:if="${reportData == null}">
         // Revenue chart for the dashboard
         document.addEventListener('DOMContentLoaded', function() {
+            // Lấy shopId từ Thymeleaf nếu có
+            var shopId = /*[[${shopId}]]*/ null;
+            var apiUrl = '/admin/api/monthly-revenue-data';
+            if (shopId) {
+                apiUrl += '?shopId=' + shopId;
+            }
+            
             // Fetch dữ liệu doanh thu theo tháng từ API
-            fetch('/admin/api/monthly-revenue-data')
+            fetch(apiUrl)
                 .then(response => response.json())
                 .then(data => {
                     console.log('Dữ liệu doanh thu:', data);
