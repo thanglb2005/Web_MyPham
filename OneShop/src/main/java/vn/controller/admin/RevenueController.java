@@ -235,6 +235,96 @@ public class RevenueController {
         return result;
     }
     
+    /**
+     * API endpoint để lấy danh sách vendor và doanh thu của họ
+     */
+    @GetMapping("/api/vendor-revenue")
+    @ResponseBody
+    public Map<String, Object> getVendorRevenueData(
+            @RequestParam(value = "type", defaultValue = "month") String type,
+            @RequestParam(value = "year", required = false) Integer year,
+            @RequestParam(value = "month", required = false) Integer month,
+            @RequestParam(value = "quarter", required = false) Integer quarter) {
+        
+        Map<String, Object> result = new HashMap<>();
+        
+        try {
+            // Lấy tất cả đơn hàng đã hoàn thành
+            List<Order> allOrders = orderRepository.findAll();
+            List<Order> completedOrders = allOrders.stream()
+                    .filter(order -> order.getStatus() == Order.OrderStatus.DELIVERED)
+                    .collect(java.util.stream.Collectors.toList());
+            
+            // Gom nhóm theo vendor
+            Map<Long, Map<String, Object>> vendorRevenueMap = new HashMap<>();
+            
+            for (Order order : completedOrders) {
+                if (order.getTotalAmount() != null && order.getOrderDate() != null) {
+                    // Lấy shop của order (cần implement method này trong OrderService)
+                    // Tạm thời sử dụng user của order làm vendor
+                    Long vendorId = order.getUser().getUserId();
+                    
+                    Map<String, Object> vendorStats = vendorRevenueMap.getOrDefault(vendorId, new HashMap<>());
+                    
+                    // Kiểm tra thời gian theo filter
+                    LocalDate orderDate = order.getOrderDate().toLocalDate();
+                    boolean includeOrder = false;
+                    
+                    if (year != null) {
+                        if (type.equals("month") && month != null) {
+                            includeOrder = orderDate.getYear() == year && orderDate.getMonthValue() == month;
+                        } else if (type.equals("quarter") && quarter != null) {
+                            int startMonth = (quarter - 1) * 3 + 1;
+                            int endMonth = quarter * 3;
+                            includeOrder = orderDate.getYear() == year && 
+                                         orderDate.getMonthValue() >= startMonth && 
+                                         orderDate.getMonthValue() <= endMonth;
+                        } else if (type.equals("year")) {
+                            includeOrder = orderDate.getYear() == year;
+                        }
+                    } else {
+                        // Nếu không có filter, lấy tất cả
+                        includeOrder = true;
+                    }
+                    
+                    if (includeOrder) {
+                        double currentRevenue = (Double) vendorStats.getOrDefault("revenue", 0.0);
+                        int currentOrders = (Integer) vendorStats.getOrDefault("orderCount", 0);
+                        
+                        vendorStats.put("vendorId", vendorId);
+                        vendorStats.put("vendorName", order.getUser().getName());
+                        vendorStats.put("revenue", currentRevenue + order.getTotalAmount());
+                        vendorStats.put("orderCount", currentOrders + 1);
+                        
+                        vendorRevenueMap.put(vendorId, vendorStats);
+                    }
+                }
+            }
+            
+            // Chuyển thành list và sắp xếp theo doanh thu
+            List<Map<String, Object>> vendorList = new java.util.ArrayList<>(vendorRevenueMap.values());
+            Collections.sort(vendorList, (v1, v2) -> Double.compare(
+                (Double) v2.get("revenue"), 
+                (Double) v1.get("revenue")
+            ));
+            
+            // Format revenue
+            for (Map<String, Object> vendor : vendorList) {
+                double revenue = (Double) vendor.get("revenue");
+                vendor.put("formattedRevenue", formatCurrency(revenue));
+            }
+            
+            result.put("vendors", vendorList);
+            result.put("totalVendors", vendorList.size());
+            
+        } catch (Exception e) {
+            result.put("error", "Có lỗi xảy ra: " + e.getMessage());
+            e.printStackTrace();
+        }
+        
+        return result;
+    }
+    
     public RevenueController(RevenueStatisticsService revenueStatisticsService,
                             OrderRepository orderRepository) {
         this.revenueStatisticsService = revenueStatisticsService;
@@ -242,7 +332,7 @@ public class RevenueController {
     }
 
     /**
-     * Revenue Statistics Page
+     * Revenue Statistics Page - Admin view with vendor breakdown
      */
     @GetMapping("/revenue-statistics")
     public String revenueStatistics(HttpSession session, Model model,
@@ -251,7 +341,8 @@ public class RevenueController {
                                    @RequestParam(value = "month", required = false) Integer month,
                                    @RequestParam(value = "quarter", required = false) Integer quarter,
                                    @RequestParam(value = "startDate", required = false) String startDate,
-                                   @RequestParam(value = "endDate", required = false) String endDate) {
+                                   @RequestParam(value = "endDate", required = false) String endDate,
+                                   @RequestParam(value = "vendorId", required = false) Long vendorId) {
         
         // Authentication check
         User user = (User) session.getAttribute("user");
@@ -284,6 +375,7 @@ public class RevenueController {
         // Truyền giá trị của bộ lọc ra view
         model.addAttribute("startDate", startDate);
         model.addAttribute("endDate", endDate);
+        model.addAttribute("vendorId", vendorId);
         
         model.addAttribute("user", user);
         
@@ -394,5 +486,16 @@ public class RevenueController {
             
             return "admin/revenue-statistics";
         }
+    }
+    
+    /**
+     * Format currency helper method
+     */
+    private String formatCurrency(double value) {
+        if (value == 0.0) {
+            return "0 đ";
+        }
+        java.text.DecimalFormat df = new java.text.DecimalFormat("#,###");
+        return df.format(value) + " đ";
     }
 }

@@ -46,6 +46,10 @@ public interface OrderService {
      */
     Page<Order> findByShopIdIn(List<Long> shopIds, Pageable pageable);
 
+    // ===== Direct queries using orders.shop_id mapping (không thay thế logic cũ) =====
+    Page<Order> findByShopIdInAndStatusDirect(List<Long> shopIds, Order.OrderStatus status, Pageable pageable);
+    Page<Order> findByShopIdInDirect(List<Long> shopIds, Pageable pageable);
+
     /**
      * Find order by ID and shop IDs (for vendor access control)
      */

@@ -15,6 +15,7 @@ import vn.entity.Product;
 import vn.entity.Shop;
 import vn.entity.User;
 import vn.repository.OrderDetailRepository;
+import vn.repository.OrderRepository;
 import vn.service.ProductService;
 import vn.service.ShopService;
 
@@ -33,6 +34,9 @@ public class VendorDashboardController {
 
     @Autowired
     private OrderDetailRepository orderDetailRepository;
+
+    @Autowired
+    private OrderRepository orderRepository;
 
     @GetMapping({"/dashboard", ""})
     public String dashboard(@RequestParam(value = "shopId", required = false) Long shopId,
@@ -81,7 +85,8 @@ public class VendorDashboardController {
         Long shippingOrders = orderDetailRepository.countDistinctOrdersByShopAndStatus(shopIdFinal, Order.OrderStatus.SHIPPING);
         Long deliveredOrders = orderDetailRepository.countDistinctOrdersByShopAndStatus(shopIdFinal, Order.OrderStatus.DELIVERED);
         Long cancelledOrders = orderDetailRepository.countDistinctOrdersByShopAndStatus(shopIdFinal, Order.OrderStatus.CANCELLED);
-        Double totalRevenue = orderDetailRepository.sumRevenueByShop(shopIdFinal);
+        // Doanh thu đã giao: cộng từ bảng orders theo trạng thái DELIVERED (khớp trang doanh thu)
+        Double totalRevenue = orderRepository.sumDeliveredRevenueByShopId(shopIdFinal);
 
         // Lấy danh sách sản phẩm để hiển thị trong dashboard
         List<Product> products = productService.findByShopId(shopIdFinal);

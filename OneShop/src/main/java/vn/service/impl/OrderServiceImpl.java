@@ -118,36 +118,53 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public Page<Order> findByShopIdInAndStatus(List<Long> shopIds, Order.OrderStatus status, Pageable pageable) {
+        // Tuân thủ logic cũ: lọc theo shop thông qua orderDetails -> product -> shop
         return orderRepository.findByShopIdInAndStatus(shopIds, status, pageable);
     }
 
     @Override
     public Page<Order> findByShopIdInAndOrderIdContaining(List<Long> shopIds, String search, Pageable pageable) {
+        // Tuân thủ logic cũ
         return orderRepository.findByShopIdInAndOrderIdContaining(shopIds, search, pageable);
     }
 
     @Override
     public Page<Order> findByShopIdInAndStatusAndOrderIdContaining(List<Long> shopIds, Order.OrderStatus status, String search, Pageable pageable) {
+        // Tuân thủ logic cũ
         return orderRepository.findByShopIdInAndStatusAndOrderIdContaining(shopIds, status, search, pageable);
     }
 
     @Override
     public Page<Order> findByShopIdIn(List<Long> shopIds, Pageable pageable) {
+        // Tuân thủ logic cũ
         return orderRepository.findByShopIdIn(shopIds, pageable);
     }
 
     @Override
+    public Page<Order> findByShopIdInAndStatusDirect(List<Long> shopIds, Order.OrderStatus status, Pageable pageable) {
+        return orderRepository.findByShopIdInAndStatusDirect(shopIds, status, pageable);
+    }
+
+    @Override
+    public Page<Order> findByShopIdInDirect(List<Long> shopIds, Pageable pageable) {
+        return orderRepository.findByShopIdInDirect(shopIds, pageable);
+    }
+
+    @Override
     public Optional<Order> findByIdAndShopIdIn(Long orderId, List<Long> shopIds) {
+        // Tuân thủ logic cũ
         return orderRepository.findByIdAndShopIdIn(orderId, shopIds);
     }
 
     @Override
     public Long countByShopIdInAndStatus(List<Long> shopIds, Order.OrderStatus status) {
+        // Tuân thủ logic cũ
         return orderRepository.countByShopIdInAndStatus(shopIds, status);
     }
 
     @Override
     public Long countByShopIdIn(List<Long> shopIds) {
+        // Tuân thủ logic cũ
         return orderRepository.countByShopIdIn(shopIds);
     }
 }
