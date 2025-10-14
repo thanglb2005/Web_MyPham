@@ -204,12 +204,12 @@
                         [[${item.productName}]]
                       </a>
                     </h6>
-                    <div class="product-rating">
-                      <i class="active icofont-star"></i>
-                      <i class="active icofont-star"></i>
-                      <i class="active icofont-star"></i>
-                      <i class="active icofont-star"></i>
-                      <i class="icofont-star"></i>
+                    <div class="product-rating" th:with="avg=${sidebarAvgMap != null ? sidebarAvgMap[item.productId] : 0}">
+                      <i class="icofont-star" th:classappend="${avg} >= 1 ? ' active' : ''"></i>
+                      <i class="icofont-star" th:classappend="${avg} >= 2 ? ' active' : ''"></i>
+                      <i class="icofont-star" th:classappend="${avg} >= 3 ? ' active' : ''"></i>
+                      <i class="icofont-star" th:classappend="${avg} >= 4 ? ' active' : ''"></i>
+                      <i class="icofont-star" th:classappend="${avg} >= 5 ? ' active' : ''"></i>
                     </div>
                     <h6 class="product-price">
                       <span>
@@ -396,13 +396,13 @@
                     </div>
                   </div>
                   <div class="product-content">
-                    <div class="product-rating">
-                      <i class="active icofont-star"></i>
-                      <i class="active icofont-star"></i>
-                      <i class="active icofont-star"></i>
-                      <i class="active icofont-star"></i>
-                      <i class="icofont-star"></i>
-                      <a href="javascript:void(0);">(4.0)</a>
+                    <div class="product-rating" th:with="avg=${avgMap != null ? avgMap[item.productId] : 0}">
+                      <i class="icofont-star" th:classappend="${avg} >= 1 ? ' active' : ''"></i>
+                      <i class="icofont-star" th:classappend="${avg} >= 2 ? ' active' : ''"></i>
+                      <i class="icofont-star" th:classappend="${avg} >= 3 ? ' active' : ''"></i>
+                      <i class="icofont-star" th:classappend="${avg} >= 4 ? ' active' : ''"></i>
+                      <i class="icofont-star" th:classappend="${avg} >= 5 ? ' active' : ''"></i>
+                      <a href="javascript:void(0);" th:text="'(' + ${#numbers.formatDecimal(avg, 1, 'DEFAULT', 1, 'DEFAULT')} + ')'"></a>
                     </div>
                     <h6 class="product-name">
                       <a th:href="@{/productDetail(id=${item.productId})}"

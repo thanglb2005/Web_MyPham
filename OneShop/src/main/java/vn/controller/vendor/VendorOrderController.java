@@ -38,7 +38,7 @@ public class VendorOrderController {
             Order.OrderStatus.SHIPPING,
             Order.OrderStatus.DELIVERED,
             Order.OrderStatus.CANCELLED,
-            Order.OrderStatus.RETURNED_REFUNDED
+            Order.OrderStatus.RETURNED
     };
 
     /**
@@ -200,7 +200,7 @@ public class VendorOrderController {
     }
 
     /**
-     * Duyệt yêu cầu trả/hoàn (DELIVERED → RETURNED_REFUNDED)
+     * Duyệt yêu cầu trả/hoàn (DELIVERED → RETURNED)
      */
     @PostMapping("/{orderId}/approve-return")
     public String approveReturn(@PathVariable Long orderId,
@@ -229,7 +229,7 @@ public class VendorOrderController {
                 return "redirect:/vendor/orders/" + orderId;
             }
             
-            orderService.updateOrderStatus(orderId, Order.OrderStatus.RETURNED_REFUNDED);
+            orderService.updateOrderStatus(orderId, Order.OrderStatus.RETURNED);
             redirectAttributes.addFlashAttribute("success", "Đã duyệt hoàn tiền cho đơn hàng #" + orderId);
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Lỗi duyệt hoàn tiền: " + e.getMessage());

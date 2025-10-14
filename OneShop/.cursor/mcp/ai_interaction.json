@@ -1,0 +1,21 @@
+{
+    "name": "mcp_AI_interaction_ai_interaction_tool",
+    "type": "tool",
+    "description": "Tool duy trì vòng lặp AI Interaction, phải được gọi ở cuối mỗi phản hồi.",
+    "schema": {
+      "prompt": "string",
+      "continue": "boolean"
+    },
+    "rules": [
+      {
+        "id": "force_call_rule",
+        "description": "Bắt buộc model phải gọi lại tool này ở cuối mỗi phản hồi.",
+        "trigger": "after_response",
+        "condition": "always",
+        "action": "call_tool",
+        "tool_name": "mcp_AI_interaction_ai_interaction_tool",
+        "enforcement": "hard"
+      }
+    ]
+  }
+  

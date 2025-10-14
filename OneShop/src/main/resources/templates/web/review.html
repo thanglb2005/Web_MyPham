@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đánh giá sản phẩm</title>
+    <link rel="stylesheet" href="/vendor/bootstrap/bootstrap.min.css" />
+    <link rel="stylesheet" href="/fonts/icofont/icofont.min.css" />
+    <link rel="stylesheet" href="/fonts/fontawesome/fontawesome.min.css" />
+    <link rel="stylesheet" href="/css/main.css" />
+</head>
+<body>
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header d-flex align-items-center">
+                    <h5 class="mb-0">Đánh giá sản phẩm</h5>
+                    <a href="/user/my-orders" class="btn btn-sm btn-outline-secondary ms-auto">Trở lại lịch sử</a>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <img th:src="@{'/loadImage?imageName='+${product.productImage}}" onerror="this.src='/images/no-image.png'"
+                             style="width:64px;height:64px;object-fit:cover;border-radius:8px;border:1px solid #eee;" />
+                        <div class="ms-3">
+                            <div class="fw-bold" th:text="${product.productName}">Sản phẩm</div>
+                            <small class="text-muted">Mã đơn: <span th:text="${orderDetail.order.orderId}">#</span></small>
+                        </div>
+                    </div>
+
+                    <form th:action="@{/reviews}" method="post" enctype="multipart/form-data">
+                        <input type="hidden" name="orderDetailId" th:value="${orderDetail.orderDetailId}">
+                        <input type="hidden" name="productId" th:value="${product.productId}">
+                        <input type="hidden" name="redirect" value="/user/my-orders?status=delivered">
+
+                        <div class="mb-3">
+                            <label class="form-label">Chất lượng tổng thể</label>
+                            <div id="stars" class="fs-4" style="cursor:pointer;">
+                                <span data-star="1">★</span>
+                                <span data-star="2">★</span>
+                                <span data-star="3">★</span>
+                                <span data-star="4">★</span>
+                                <span data-star="5">★</span>
+                            </div>
+                            <input type="hidden" id="rating" name="rating" value="5">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Nhận xét chi tiết</label>
+                            <textarea name="content" rows="4" class="form-control" placeholder="Chia sẻ trải nghiệm của bạn..."></textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Thêm ảnh (tối đa 5)</label>
+                            <input type="file" name="images" accept="image/*" multiple class="form-control">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Thêm video (tối đa 2)</label>
+                            <input type="file" name="videos" accept="video/*" multiple class="form-control">
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2">
+                            <a href="/user/my-orders?status=delivered" class="btn btn-outline-secondary">Hủy</a>
+                            <button type="submit" class="btn btn-primary">Gửi đánh giá</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    (function(){
+        const ratingInput = document.getElementById('rating');
+        const stars = document.querySelectorAll('#stars span');
+        function paint(n){ stars.forEach((s,i)=>{ s.style.color = i < n ? '#f5c518':'#ccc'; }); }
+        paint(parseInt(ratingInput.value));
+        stars.forEach(s => s.addEventListener('click', () => { ratingInput.value = s.dataset.star; paint(parseInt(ratingInput.value)); }));
+    })();
+</script>
+</body>
+</html>
+
+
