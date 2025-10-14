@@ -13,9 +13,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import vn.entity.Order;
 import vn.entity.OrderDetail;
 import vn.entity.User;
+import vn.entity.Comment;
 import vn.repository.OrderRepository;
 import vn.repository.OrderDetailRepository;
 import vn.repository.UserRepository;
+import vn.service.CommentService;
 
 import java.util.List;
 import java.util.Optional;
@@ -31,6 +33,9 @@ public class UserOrderController {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private CommentService commentService;
 
     /**
      * Hiển thị trang lịch sử đơn hàng của user với các tab theo trạng thái
@@ -67,8 +72,25 @@ public class UserOrderController {
         } else {
             ordersPage = orderRepository.findByUserOrderByOrderDateDescPageable(user, pageable);
         }
+        
+        // Debug: Log số lượng đơn hàng
+        System.out.println("Debug - Total orders found: " + ordersPage.getTotalElements());
+        System.out.println("Debug - Orders on current page: " + ordersPage.getContent().size());
+        System.out.println("Debug - User ID: " + user.getUserId());
+        System.out.println("Debug - User email: " + user.getEmail());
+        
+        // Debug: Log trạng thái của từng đơn hàng
+        for (Order order : ordersPage.getContent()) {
+            System.out.println("Debug - Order ID: " + order.getOrderId() + ", Status: " + order.getStatus());
+        }
+        
+        // Debug: Log pagination info
+        System.out.println("Debug - Current page: " + page + ", Page size: " + size);
+        System.out.println("Debug - Total pages: " + ordersPage.getTotalPages());
+        System.out.println("Debug - Status filter: " + status);
 
         // Load orderDetails for each order using repository
+        java.util.Map<Long, Comment> myCommentsMap = new java.util.HashMap<>();
         for (Order order : ordersPage.getContent()) {
             List<OrderDetail> orderDetails = orderDetailRepository.findByOrderId(order.getOrderId());
             // Force load product and shop information for each orderDetail
@@ -82,6 +104,16 @@ public class UserOrderController {
                         orderDetail.getProduct().getShop().getShopLogo();
                     }
                 }
+                
+                // Load comment for this orderDetail to check if user has reviewed
+                try {
+                    java.util.Optional<Comment> cmt = commentService.getUserCommentForOrderDetail(user.getUserId(), orderDetail.getOrderDetailId());
+                    if (cmt.isEmpty() && orderDetail.getProduct() != null) {
+                        // Fallback: nếu chưa có review theo order detail, lấy review gần nhất theo sản phẩm
+                        cmt = commentService.getLatestUserCommentForProduct(user.getUserId(), orderDetail.getProduct().getProductId());
+                    }
+                    cmt.ifPresent(comment -> myCommentsMap.put(orderDetail.getOrderDetailId(), comment));
+                } catch (Exception ignored) {}
             }
             order.setOrderDetails(orderDetails);
         }
@@ -92,11 +124,17 @@ public class UserOrderController {
         long shippingCount = orderRepository.countByUserAndStatus(user, Order.OrderStatus.SHIPPING);
         long deliveredCount = orderRepository.countByUserAndStatus(user, Order.OrderStatus.DELIVERED);
         long cancelledCount = orderRepository.countByUserAndStatus(user, Order.OrderStatus.CANCELLED);
-        long returnedCount = orderRepository.countByUserAndStatus(user, Order.OrderStatus.RETURNED_REFUNDED);
+        long returnedCount = orderRepository.countByUserAndStatus(user, Order.OrderStatus.RETURNED);
+        
+        // Debug: Log số lượng đơn hàng theo từng trạng thái
+        System.out.println("Debug - Pending: " + pendingCount + ", Confirmed: " + confirmedCount + 
+                          ", Shipping: " + shippingCount + ", Delivered: " + deliveredCount + 
+                          ", Cancelled: " + cancelledCount + ", Returned: " + returnedCount);
 
         model.addAttribute("user", user);
         model.addAttribute("orders", ordersPage);
         model.addAttribute("currentStatus", status);
+        model.addAttribute("myCommentsMap", myCommentsMap);
         model.addAttribute("pendingCount", pendingCount);
         model.addAttribute("confirmedCount", confirmedCount);
         model.addAttribute("shippingCount", shippingCount);
@@ -194,7 +232,7 @@ public class UserOrderController {
 
         // Chỉ cho phép yêu cầu trả hàng khi đơn hàng đã giao
         if (order.getStatus() == Order.OrderStatus.DELIVERED) {
-            order.setStatus(Order.OrderStatus.RETURNED_REFUNDED);
+            order.setStatus(Order.OrderStatus.RETURNED);
             orderRepository.save(order);
         }
 

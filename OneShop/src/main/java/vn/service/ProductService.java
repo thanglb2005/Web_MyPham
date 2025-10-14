@@ -58,5 +58,8 @@ public interface ProductService {
     Page<Product> findByShopAndName(Long shopId, String productName, Pageable pageable);
 
     List<ShopProductStatistics> getShopProductStatistics();
+
+    // Rating average map for product ids
+    java.util.Map<Long, Double> getAverageRatings(java.util.Collection<Long> productIds);
 }
 

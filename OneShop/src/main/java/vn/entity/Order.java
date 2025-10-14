@@ -101,7 +101,7 @@ public class Order {
         SHIPPING,               // Dang giao
         DELIVERED,              // Da giao
         CANCELLED,              // Huy (chuan - 2 chu L)
-        RETURNED_REFUNDED       // Tra hang - hoan tien
+        RETURNED                // Tra hang - hoan tien
     }
 
     public enum PaymentMethod {

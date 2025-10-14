@@ -124,6 +124,19 @@ public class HomeController {
             }
         }
 
+        // Tính rating trung bình cho danh sách hiển thị
+        try {
+            java.util.Set<Long> ids = new java.util.HashSet<>();
+            if (newestProducts != null) {
+                for (Product p : newestProducts) ids.add(p.getProductId());
+            }
+            if (bestSaleProducts != null) {
+                for (Product p : bestSaleProducts) ids.add(p.getProductId());
+            }
+            java.util.Map<Long, Double> avgMap = productService.getAverageRatings(ids);
+            model.addAttribute("avgMap", avgMap);
+        } catch (Exception ignored) {}
+
         // Newest products and best-sale products for homepage
         model.addAttribute("productList", newestProducts);
         model.addAttribute("bestSaleProduct20", bestSaleProducts);
