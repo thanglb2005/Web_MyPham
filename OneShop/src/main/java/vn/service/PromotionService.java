@@ -85,4 +85,49 @@ public interface PromotionService {
     List<Promotion> getPromotionsForExport();
     List<Promotion> getPromotionsByStatus(String status);
     Page<Promotion> getPromotionsByStatus(String status, Pageable pageable);
+    
+    // ===== SHOP-SPECIFIC PROMOTION METHODS =====
+    
+    // Shop promotion CRUD operations
+    List<Promotion> getPromotionsByShop(Long shopId);
+    Page<Promotion> getPromotionsByShop(Long shopId, Pageable pageable);
+    Optional<Promotion> getPromotionByShopAndId(Long shopId, Long promotionId);
+    Optional<Promotion> getPromotionByShopAndCode(Long shopId, String code);
+    Promotion createPromotionForShop(Long shopId, VendorPromotionForm form, User creator);
+    Promotion updatePromotionForShop(Long shopId, Long promotionId, VendorPromotionForm form, User updater);
+    void deletePromotionFromShop(Long shopId, Long promotionId);
+    
+    // Shop promotion search and filter
+    Page<Promotion> searchPromotionsByShop(Long shopId, String name, String code, 
+                                          Promotion.PromotionType type, Boolean active, Pageable pageable);
+    List<Promotion> getActivePromotionsByShop(Long shopId);
+    Page<Promotion> getActivePromotionsByShop(Long shopId, Pageable pageable);
+    List<Promotion> getPromotionsByShopAndType(Long shopId, Promotion.PromotionType type);
+    Page<Promotion> getPromotionsByShopAndType(Long shopId, Promotion.PromotionType type, Pageable pageable);
+    List<Promotion> getPromotionsByShopAndStatus(Long shopId, Boolean active);
+    Page<Promotion> getPromotionsByShopAndStatus(Long shopId, Boolean active, Pageable pageable);
+    
+    // Shop promotion statistics
+    long getPromotionCountByShop(Long shopId);
+    long getActivePromotionCountByShop(Long shopId);
+    long getPromotionCountByShopAndType(Long shopId, Promotion.PromotionType type);
+    
+    // Shop promotion date operations
+    List<Promotion> getExpiringPromotionsByShop(Long shopId, int days);
+    List<Promotion> getExpiredPromotionsByShop(Long shopId);
+    List<Promotion> getFullyUsedPromotionsByShop(Long shopId);
+    
+    // Shop promotion validation
+    boolean isPromotionValidForShop(Long shopId, String promotionCode);
+    boolean isPromotionAvailableForShop(Long shopId, String promotionCode);
+    double calculateDiscountForShop(Long shopId, String promotionCode, double orderAmount);
+    
+    // Shop promotion business operations
+    boolean applyPromotionForShop(Long shopId, String promotionCode, double orderAmount);
+    Promotion incrementUsageForShop(Long shopId, Long promotionId);
+    Promotion togglePromotionStatusForShop(Long shopId, Long promotionId);
+    
+    // Shop promotion bulk operations
+    List<Promotion> toggleMultiplePromotionsForShop(Long shopId, List<Long> promotionIds, boolean active);
+    void deleteMultiplePromotionsFromShop(Long shopId, List<Long> promotionIds);
 }

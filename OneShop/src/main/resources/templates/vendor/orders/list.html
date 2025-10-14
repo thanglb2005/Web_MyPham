@@ -143,21 +143,21 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr th:each="order : ${orders}">
+                    <tr th:each="order : ${orders.content}">
                         <td>
-                            <strong th:text="${order.orderId}"></strong>
+                            <strong th:text="${order.orderId ?: 'N/A'}"></strong>
                         </td>
-                        <td th:text="${#temporals.format(order.orderDate, 'dd-MM-yyyy HH:mm')}"></td>
+                        <td th:text="${order.orderDate != null ? #temporals.format(order.orderDate, 'dd-MM-yyyy HH:mm') : 'Chưa có ngày'}"></td>
                         <td>
                             <span class="text-success fw-bold" 
-                                  th:text="${#numbers.formatDecimal(order.totalAmount, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'"></span>
+                                  th:text="${order.totalAmount != null ? (#numbers.formatDecimal(order.totalAmount, 0, 'COMMA', 0, 'POINT') + ' VNĐ') : '0 VNĐ'}"></span>
                         </td>
                         <td>
                             <span class="badge" th:classappend="${order.paymentMethod == T(vn.entity.Order.PaymentMethod).COD ? 'bg-warning' : 'bg-info'}"
-                                  th:text="${order.paymentMethod}"></span>
+                                  th:text="${order.paymentMethod ?: 'COD'}"></span>
                         </td>
                         <td>
-                            <small th:text="${order.shippingAddress}" class="text-muted"></small>
+                            <small th:text="${order.shippingAddress ?: 'Chưa có địa chỉ'}" class="text-muted"></small>
                         </td>
                         <td>
                             <span th:classappend="${order.status == T(vn.entity.Order.OrderStatus).PENDING ? 'badge bg-secondary' :
@@ -166,7 +166,7 @@
                                                   (order.status == T(vn.entity.Order.OrderStatus).DELIVERED ? 'badge bg-success' :
                                                   (order.status == T(vn.entity.Order.OrderStatus).CANCELLED ? 'badge bg-danger' :
                                                   (order.status == T(vn.entity.Order.OrderStatus).RETURNED_REFUNDED ? 'badge bg-secondary' : 'badge bg-light')))))}"
-                  th:text="${order.status}" class="status-badge"></span>
+                  th:text="${order.status ?: 'PENDING'}" class="status-badge"></span>
               </td>
               <td>
                 <div class="btn-group" role="group">
@@ -228,12 +228,23 @@
                 </div>
               </td>
             </tr>
+            
+            <!-- Empty state -->
+            <tr th:if="${orders.content.isEmpty()}">
+              <td colspan="7" class="text-center py-4">
+                <div class="text-muted">
+                  <i class="fas fa-inbox fa-3x mb-3"></i>
+                  <h5>Chưa có đơn hàng nào</h5>
+                  <p>Khi có đơn hàng mới, chúng sẽ xuất hiện ở đây.</p>
+                </div>
+              </td>
+            </tr>
           </tbody>
         </table>
       </div>
 
       <!-- Pagination -->
-      <nav th:unless="${orders.isEmpty()}" aria-label="Page navigation">
+      <nav th:unless="${orders.content.isEmpty()}" aria-label="Page navigation">
         <ul class="pagination justify-content-center">
           <li
             class="page-item"

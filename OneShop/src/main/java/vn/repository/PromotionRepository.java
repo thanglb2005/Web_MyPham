@@ -116,4 +116,80 @@ public interface PromotionRepository extends JpaRepository<Promotion, Long> {
     // Find promotions by usage percentage with pagination
     @Query("SELECT p FROM Promotion p WHERE (p.usedCount * 100.0 / p.usageLimit) >= :percentage")
     Page<Promotion> findByUsagePercentage(@Param("percentage") double percentage, Pageable pageable);
+    
+    // ===== SHOP-SPECIFIC PROMOTION METHODS =====
+    
+    // Find promotions by shop
+    List<Promotion> findByShopShopId(Long shopId);
+    
+    // Find promotions by shop with pagination
+    Page<Promotion> findByShopShopId(Long shopId, Pageable pageable);
+    
+    // Find active promotions by shop
+    @Query("SELECT p FROM Promotion p WHERE p.shop.shopId = :shopId AND p.isActive = true AND p.startDate <= :now AND p.endDate >= :now")
+    List<Promotion> findActivePromotionsByShop(@Param("shopId") Long shopId, @Param("now") LocalDateTime now);
+    
+    // Find active promotions by shop with pagination
+    @Query("SELECT p FROM Promotion p WHERE p.shop.shopId = :shopId AND p.isActive = true AND p.startDate <= :now AND p.endDate >= :now")
+    Page<Promotion> findActivePromotionsByShop(@Param("shopId") Long shopId, @Param("now") LocalDateTime now, Pageable pageable);
+    
+    // Find promotions by shop and type
+    @Query("SELECT p FROM Promotion p WHERE p.shop.shopId = :shopId AND p.promotionType = :type")
+    List<Promotion> findByShopAndType(@Param("shopId") Long shopId, @Param("type") Promotion.PromotionType type);
+    
+    // Find promotions by shop and type with pagination
+    @Query("SELECT p FROM Promotion p WHERE p.shop.shopId = :shopId AND p.promotionType = :type")
+    Page<Promotion> findByShopAndType(@Param("shopId") Long shopId, @Param("type") Promotion.PromotionType type, Pageable pageable);
+    
+    // Find promotions by shop and status
+    @Query("SELECT p FROM Promotion p WHERE p.shop.shopId = :shopId AND p.isActive = :active")
+    List<Promotion> findByShopAndStatus(@Param("shopId") Long shopId, @Param("active") Boolean active);
+    
+    // Find promotions by shop and status with pagination
+    @Query("SELECT p FROM Promotion p WHERE p.shop.shopId = :shopId AND p.isActive = :active")
+    Page<Promotion> findByShopAndStatus(@Param("shopId") Long shopId, @Param("active") Boolean active, Pageable pageable);
+    
+    // Find promotions by shop and promotion code
+    @Query("SELECT p FROM Promotion p WHERE p.shop.shopId = :shopId AND p.promotionCode = :code")
+    Optional<Promotion> findByShopAndCode(@Param("shopId") Long shopId, @Param("code") String code);
+    
+    // Find promotions by shop and name search
+    @Query("SELECT p FROM Promotion p WHERE p.shop.shopId = :shopId AND LOWER(p.promotionName) LIKE LOWER(CONCAT('%', :name, '%'))")
+    List<Promotion> findByShopAndNameContaining(@Param("shopId") Long shopId, @Param("name") String name);
+    
+    // Find promotions by shop and name search with pagination
+    @Query("SELECT p FROM Promotion p WHERE p.shop.shopId = :shopId AND LOWER(p.promotionName) LIKE LOWER(CONCAT('%', :name, '%'))")
+    Page<Promotion> findByShopAndNameContaining(@Param("shopId") Long shopId, @Param("name") String name, Pageable pageable);
+    
+    // Count promotions by shop
+    long countByShopShopId(Long shopId);
+    
+    // Count active promotions by shop
+    @Query("SELECT COUNT(p) FROM Promotion p WHERE p.shop.shopId = :shopId AND p.isActive = true AND p.startDate <= :now AND p.endDate >= :now")
+    long countActivePromotionsByShop(@Param("shopId") Long shopId, @Param("now") LocalDateTime now);
+    
+    // Find expiring promotions by shop
+    @Query("SELECT p FROM Promotion p WHERE p.shop.shopId = :shopId AND p.isActive = true AND p.endDate BETWEEN :now AND :expiringDate")
+    List<Promotion> findExpiringPromotionsByShop(@Param("shopId") Long shopId, @Param("now") LocalDateTime now, @Param("expiringDate") LocalDateTime expiringDate);
+    
+    // Find fully used promotions by shop
+    @Query("SELECT p FROM Promotion p WHERE p.shop.shopId = :shopId AND p.usedCount >= p.usageLimit")
+    List<Promotion> findFullyUsedPromotionsByShop(@Param("shopId") Long shopId);
+    
+    // Find expired promotions by shop
+    @Query("SELECT p FROM Promotion p WHERE p.shop.shopId = :shopId AND p.endDate < :now")
+    List<Promotion> findExpiredPromotionsByShop(@Param("shopId") Long shopId, @Param("now") LocalDateTime now);
+    
+    // Search promotions by shop with multiple criteria
+    @Query("SELECT p FROM Promotion p WHERE p.shop.shopId = :shopId AND " +
+           "(:name IS NULL OR LOWER(p.promotionName) LIKE LOWER(CONCAT('%', :name, '%'))) AND " +
+           "(:code IS NULL OR LOWER(p.promotionCode) LIKE LOWER(CONCAT('%', :code, '%'))) AND " +
+           "(:type IS NULL OR p.promotionType = :type) AND " +
+           "(:active IS NULL OR p.isActive = :active)")
+    Page<Promotion> searchPromotionsByShop(@Param("shopId") Long shopId,
+                                          @Param("name") String name, 
+                                          @Param("code") String code, 
+                                          @Param("type") Promotion.PromotionType type, 
+                                          @Param("active") Boolean active, 
+                                          Pageable pageable);
 }

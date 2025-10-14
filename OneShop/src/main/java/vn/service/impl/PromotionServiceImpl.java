@@ -8,8 +8,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import vn.dto.VendorPromotionForm;
 import vn.entity.Promotion;
+import vn.entity.Shop;
 import vn.entity.User;
 import vn.repository.PromotionRepository;
+import vn.repository.ShopRepository;
 import vn.service.PromotionService;
 
 import java.math.BigDecimal;
@@ -23,6 +25,9 @@ public class PromotionServiceImpl implements PromotionService {
     
     @Autowired
     private PromotionRepository promotionRepository;
+    
+    @Autowired
+    private ShopRepository shopRepository;
     
     // Basic CRUD operations
     @Override
@@ -271,13 +276,16 @@ public class PromotionServiceImpl implements PromotionService {
         
         double discount = 0.0;
         switch (promotion.getPromotionType()) {
-            case PRODUCT_PERCENTAGE:
+            case PERCENTAGE:
                 discount = orderAmount * (promotion.getDiscountValue().doubleValue() / 100);
                 break;
             case FIXED_AMOUNT:
                 discount = promotion.getDiscountValue().doubleValue();
                 break;
-            case SHIPPING_DISCOUNT:
+            case FREE_SHIPPING:
+                discount = promotion.getDiscountValue().doubleValue();
+                break;
+            case BUY_X_GET_Y:
                 discount = promotion.getDiscountValue().doubleValue();
                 break;
         }
@@ -405,5 +413,252 @@ public class PromotionServiceImpl implements PromotionService {
             default:
                 return getPromotionsWithPagination(pageable);
         }
+    }
+    
+    // ===== SHOP-SPECIFIC PROMOTION METHODS =====
+    
+    @Override
+    public List<Promotion> getPromotionsByShop(Long shopId) {
+        return promotionRepository.findByShopShopId(shopId);
+    }
+    
+    @Override
+    public Page<Promotion> getPromotionsByShop(Long shopId, Pageable pageable) {
+        return promotionRepository.findByShopShopId(shopId, pageable);
+    }
+    
+    @Override
+    public Optional<Promotion> getPromotionByShopAndId(Long shopId, Long promotionId) {
+        return promotionRepository.findById(promotionId)
+                .filter(p -> p.getShop().getShopId().equals(shopId));
+    }
+    
+    @Override
+    public Optional<Promotion> getPromotionByShopAndCode(Long shopId, String code) {
+        return promotionRepository.findByShopAndCode(shopId, code);
+    }
+    
+    @Override
+    public Promotion createPromotionForShop(Long shopId, VendorPromotionForm form, User creator) {
+        Shop shop = shopRepository.findById(shopId)
+                .orElseThrow(() -> new RuntimeException("Shop not found with id: " + shopId));
+        
+        Promotion promotion = new Promotion();
+        promotion.setPromotionName(form.getPromotionName());
+        promotion.setDescription(form.getDescription());
+        promotion.setPromotionCode(form.getPromotionCode());
+        promotion.setPromotionType(form.getPromotionType());
+        promotion.setDiscountValue(form.getDiscountValue());
+        promotion.setMinimumOrderAmount(form.getMinimumOrderAmount());
+        promotion.setMaximumDiscountAmount(form.getMaximumDiscountAmount());
+        promotion.setUsageLimit(form.getUsageLimit());
+        promotion.setStartDate(form.getStartDate());
+        promotion.setEndDate(form.getEndDate());
+        promotion.setIsActive(form.getIsActive());
+        promotion.setShop(shop);
+        promotion.setCreatedBy(creator);
+        promotion.setUsedCount(0);
+        
+        return promotionRepository.save(promotion);
+    }
+    
+    @Override
+    public Promotion updatePromotionForShop(Long shopId, Long promotionId, VendorPromotionForm form, User updater) {
+        Promotion promotion = getPromotionByShopAndId(shopId, promotionId)
+                .orElseThrow(() -> new RuntimeException("Promotion not found for shop: " + shopId + " with id: " + promotionId));
+        
+        promotion.setPromotionName(form.getPromotionName());
+        promotion.setDescription(form.getDescription());
+        promotion.setPromotionCode(form.getPromotionCode());
+        promotion.setPromotionType(form.getPromotionType());
+        promotion.setDiscountValue(form.getDiscountValue());
+        promotion.setMinimumOrderAmount(form.getMinimumOrderAmount());
+        promotion.setMaximumDiscountAmount(form.getMaximumDiscountAmount());
+        promotion.setUsageLimit(form.getUsageLimit());
+        promotion.setStartDate(form.getStartDate());
+        promotion.setEndDate(form.getEndDate());
+        promotion.setIsActive(form.getIsActive());
+        
+        return promotionRepository.save(promotion);
+    }
+    
+    @Override
+    public void deletePromotionFromShop(Long shopId, Long promotionId) {
+        Promotion promotion = getPromotionByShopAndId(shopId, promotionId)
+                .orElseThrow(() -> new RuntimeException("Promotion not found for shop: " + shopId + " with id: " + promotionId));
+        promotionRepository.delete(promotion);
+    }
+    
+    @Override
+    public Page<Promotion> searchPromotionsByShop(Long shopId, String name, String code, 
+                                                Promotion.PromotionType type, Boolean active, Pageable pageable) {
+        return promotionRepository.searchPromotionsByShop(shopId, name, code, type, active, pageable);
+    }
+    
+    @Override
+    public List<Promotion> getActivePromotionsByShop(Long shopId) {
+        return promotionRepository.findActivePromotionsByShop(shopId, LocalDateTime.now());
+    }
+    
+    @Override
+    public Page<Promotion> getActivePromotionsByShop(Long shopId, Pageable pageable) {
+        return promotionRepository.findActivePromotionsByShop(shopId, LocalDateTime.now(), pageable);
+    }
+    
+    @Override
+    public List<Promotion> getPromotionsByShopAndType(Long shopId, Promotion.PromotionType type) {
+        return promotionRepository.findByShopAndType(shopId, type);
+    }
+    
+    @Override
+    public Page<Promotion> getPromotionsByShopAndType(Long shopId, Promotion.PromotionType type, Pageable pageable) {
+        return promotionRepository.findByShopAndType(shopId, type, pageable);
+    }
+    
+    @Override
+    public List<Promotion> getPromotionsByShopAndStatus(Long shopId, Boolean active) {
+        return promotionRepository.findByShopAndStatus(shopId, active);
+    }
+    
+    @Override
+    public Page<Promotion> getPromotionsByShopAndStatus(Long shopId, Boolean active, Pageable pageable) {
+        return promotionRepository.findByShopAndStatus(shopId, active, pageable);
+    }
+    
+    @Override
+    public long getPromotionCountByShop(Long shopId) {
+        return promotionRepository.countByShopShopId(shopId);
+    }
+    
+    @Override
+    public long getActivePromotionCountByShop(Long shopId) {
+        return promotionRepository.countActivePromotionsByShop(shopId, LocalDateTime.now());
+    }
+    
+    @Override
+    public long getPromotionCountByShopAndType(Long shopId, Promotion.PromotionType type) {
+        return promotionRepository.findByShopAndType(shopId, type).size();
+    }
+    
+    @Override
+    public List<Promotion> getExpiringPromotionsByShop(Long shopId, int days) {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime expiringDate = now.plusDays(days);
+        return promotionRepository.findExpiringPromotionsByShop(shopId, now, expiringDate);
+    }
+    
+    @Override
+    public List<Promotion> getExpiredPromotionsByShop(Long shopId) {
+        return promotionRepository.findExpiredPromotionsByShop(shopId, LocalDateTime.now());
+    }
+    
+    @Override
+    public List<Promotion> getFullyUsedPromotionsByShop(Long shopId) {
+        return promotionRepository.findFullyUsedPromotionsByShop(shopId);
+    }
+    
+    @Override
+    public boolean isPromotionValidForShop(Long shopId, String promotionCode) {
+        Optional<Promotion> promotion = promotionRepository.findByShopAndCode(shopId, promotionCode);
+        return promotion.isPresent() && promotion.get().isAvailable();
+    }
+    
+    @Override
+    public boolean isPromotionAvailableForShop(Long shopId, String promotionCode) {
+        return isPromotionValidForShop(shopId, promotionCode);
+    }
+    
+    @Override
+    public double calculateDiscountForShop(Long shopId, String promotionCode, double orderAmount) {
+        Optional<Promotion> promotionOpt = promotionRepository.findByShopAndCode(shopId, promotionCode);
+        if (promotionOpt.isEmpty() || !promotionOpt.get().isAvailable()) {
+            return 0.0;
+        }
+        
+        Promotion promotion = promotionOpt.get();
+        if (orderAmount < promotion.getMinimumOrderAmount().doubleValue()) {
+            return 0.0;
+        }
+        
+        double discount = 0.0;
+        switch (promotion.getPromotionType()) {
+            case PERCENTAGE:
+                discount = orderAmount * (promotion.getDiscountValue().doubleValue() / 100);
+                break;
+            case FIXED_AMOUNT:
+                discount = promotion.getDiscountValue().doubleValue();
+                break;
+            case FREE_SHIPPING:
+                discount = promotion.getDiscountValue().doubleValue();
+                break;
+            case BUY_X_GET_Y:
+                discount = promotion.getDiscountValue().doubleValue();
+                break;
+        }
+        
+        // Apply maximum discount limit
+        if (discount > promotion.getMaximumDiscountAmount().doubleValue()) {
+            discount = promotion.getMaximumDiscountAmount().doubleValue();
+        }
+        
+        return discount;
+    }
+    
+    @Override
+    public boolean applyPromotionForShop(Long shopId, String promotionCode, double orderAmount) {
+        Optional<Promotion> promotionOpt = promotionRepository.findByShopAndCode(shopId, promotionCode);
+        if (promotionOpt.isEmpty() || !promotionOpt.get().isAvailable()) {
+            return false;
+        }
+        
+        Promotion promotion = promotionOpt.get();
+        if (orderAmount < promotion.getMinimumOrderAmount().doubleValue()) {
+            return false;
+        }
+        
+        promotion.setUsedCount(promotion.getUsedCount() + 1);
+        promotionRepository.save(promotion);
+        return true;
+    }
+    
+    @Override
+    public Promotion incrementUsageForShop(Long shopId, Long promotionId) {
+        Promotion promotion = getPromotionByShopAndId(shopId, promotionId)
+                .orElseThrow(() -> new RuntimeException("Promotion not found for shop: " + shopId + " with id: " + promotionId));
+        
+        promotion.setUsedCount(promotion.getUsedCount() + 1);
+        return promotionRepository.save(promotion);
+    }
+    
+    @Override
+    public Promotion togglePromotionStatusForShop(Long shopId, Long promotionId) {
+        Promotion promotion = getPromotionByShopAndId(shopId, promotionId)
+                .orElseThrow(() -> new RuntimeException("Promotion not found for shop: " + shopId + " with id: " + promotionId));
+        
+        promotion.setIsActive(!promotion.getIsActive());
+        return promotionRepository.save(promotion);
+    }
+    
+    @Override
+    public List<Promotion> toggleMultiplePromotionsForShop(Long shopId, List<Long> promotionIds, boolean active) {
+        List<Promotion> promotions = promotionRepository.findAllById(promotionIds);
+        List<Promotion> shopPromotions = promotions.stream()
+                .filter(p -> p.getShop().getShopId().equals(shopId))
+                .toList();
+        
+        for (Promotion promotion : shopPromotions) {
+            promotion.setIsActive(active);
+        }
+        return promotionRepository.saveAll(shopPromotions);
+    }
+    
+    @Override
+    public void deleteMultiplePromotionsFromShop(Long shopId, List<Long> promotionIds) {
+        List<Promotion> promotions = promotionRepository.findAllById(promotionIds);
+        List<Promotion> shopPromotions = promotions.stream()
+                .filter(p -> p.getShop().getShopId().equals(shopId))
+                .toList();
+        
+        promotionRepository.deleteAll(shopPromotions);
     }
 }

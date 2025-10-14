@@ -41,6 +41,15 @@
         <li class="nav-item">
           <a
             class="nav-link"
+            th:classappend="${active=='promotions'} ? ' active'"
+            th:href="@{/vendor/promotions}"
+          >
+            <i class="fas fa-percentage"></i> Khuyến mãi
+          </a>
+        </li>
+        <li class="nav-item">
+          <a
+            class="nav-link"
             th:classappend="${active=='shop'} ? ' active'"
             th:href="@{/vendor/shop/settings}"
           >

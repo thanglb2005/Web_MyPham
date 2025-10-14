@@ -138,6 +138,61 @@
                                         <input type="text" name="note" class="form-control" placeholder="Nội dung đơn hàng" />
                                     </div>
 
+                                    <!-- Phần khuyến mãi -->
+                                    <div class="form-group" th:if="${!promotionsByShop.isEmpty()}">
+                                        <div class="account-title">
+                                            <h4>Mã khuyến mãi</h4>
+                                        </div>
+                                        <div class="promotion-section">
+                                            <div class="row">
+                                                <div class="col-md-8">
+                                                    <input type="text" name="promotionCode" id="promotionCode" class="form-control" placeholder="Nhập mã khuyến mãi" />
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <button type="button" class="btn btn-outline-primary w-100" onclick="applyPromotion()">
+                                                        Áp dụng
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <div id="promotionResult" class="mt-2" style="display: none;"></div>
+                                            
+                                            <!-- Danh sách khuyến mãi có sẵn -->
+                                            <div class="available-promotions mt-3">
+                                                <h6>Khuyến mãi có sẵn:</h6>
+                                                <div class="promotion-list">
+                                                    <div th:each="shopPromotions : ${promotionsByShop}" class="shop-promotions">
+                                                        <div th:each="promotion : ${shopPromotions}" class="promotion-item">
+                                                            <div class="promotion-card">
+                                                                <div class="promotion-header">
+                                                                    <strong th:text="${promotion.promotionName}">Tên khuyến mãi</strong>
+                                                                    <span class="badge badge-success" th:text="${promotion.promotionCode}">CODE</span>
+                                                                </div>
+                                                                <div class="promotion-body">
+                                                                    <p th:text="${promotion.description}">Mô tả</p>
+                                                                    <div class="promotion-details">
+                                                                        <small>
+                                                                            Giảm: <strong th:text="${#numbers.formatDecimal(promotion.discountValue, 0, 'COMMA', 0, 'POINT')} + ' ' + ${promotion.promotionType == T(vn.entity.Promotion.PromotionType).PERCENTAGE ? '%' : 'VNĐ'}">Giá trị</strong>
+                                                                        </small>
+                                                                        <small>
+                                                                            Đơn tối thiểu: <strong th:text="${#numbers.formatDecimal(promotion.minimumOrderAmount, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">0 VNĐ</strong>
+                                                                        </small>
+                                                                        <small>
+                                                                            Còn lại: <strong th:text="${promotion.usageLimit - promotion.usedCount}">0</strong> lượt
+                                                                        </small>
+                                                                    </div>
+                                                                    <button type="button" class="btn btn-sm btn-outline-primary" 
+                                                                            th:onclick="'selectPromotion(\'' + ${promotion.promotionCode} + '\', ' + ${promotion.shop.shopId} + ')'">
+                                                                        Chọn mã này
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
                                     <div class="form-group">
                                         <div class="account-title">
                                             <h4>Chọn phương thức thanh toán</h4>
@@ -178,6 +233,9 @@
                                     <div class="checkout-proced">
                                         <button type="submit" class="btn btn-inline">Đặt hàng</button>
                                     </div>
+                                    
+                                    <!-- Hidden fields for promotion -->
+                                    <input type="hidden" name="shopId" id="shopId" value="" />
                                 </form>
                             </div>
                         </div>
@@ -297,6 +355,119 @@
                     checkedRadio.closest('.payment-option').classList.add('selected');
                 }
             });
+            
+            // Promotion functionality
+            function selectPromotion(code, shopId) {
+                document.getElementById('promotionCode').value = code;
+                document.getElementById('shopId').value = shopId;
+                applyPromotion();
+            }
+            
+            function applyPromotion() {
+                const code = document.getElementById('promotionCode').value;
+                const shopId = document.getElementById('shopId').value;
+                const resultDiv = document.getElementById('promotionResult');
+                
+                if (!code.trim()) {
+                    resultDiv.style.display = 'none';
+                    return;
+                }
+                
+                // Simulate promotion validation (in real app, this would be an AJAX call)
+                resultDiv.style.display = 'block';
+                resultDiv.innerHTML = '<div class="alert alert-info">Đang kiểm tra mã khuyến mãi...</div>';
+                
+                // For demo purposes, show success message
+                setTimeout(() => {
+                    resultDiv.innerHTML = '<div class="alert alert-success">Mã khuyến mãi đã được áp dụng!</div>';
+                }, 1000);
+            }
         </script>
+        
+        <style>
+            .promotion-section {
+                background: #f8f9fa;
+                padding: 20px;
+                border-radius: 8px;
+                margin-bottom: 20px;
+            }
+            
+            .promotion-card {
+                background: white;
+                border: 1px solid #dee2e6;
+                border-radius: 8px;
+                padding: 15px;
+                margin-bottom: 10px;
+                transition: box-shadow 0.2s;
+            }
+            
+            .promotion-card:hover {
+                box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            }
+            
+            .promotion-header {
+                display: flex;
+                justify-content: between;
+                align-items: center;
+                margin-bottom: 10px;
+            }
+            
+            .promotion-header strong {
+                flex: 1;
+                color: #495057;
+            }
+            
+            .promotion-header .badge {
+                background: #28a745;
+                color: white;
+                padding: 4px 8px;
+                border-radius: 4px;
+                font-size: 0.8em;
+            }
+            
+            .promotion-body p {
+                margin-bottom: 10px;
+                color: #6c757d;
+                font-size: 0.9em;
+            }
+            
+            .promotion-details {
+                display: flex;
+                flex-direction: column;
+                gap: 5px;
+                margin-bottom: 10px;
+            }
+            
+            .promotion-details small {
+                color: #6c757d;
+            }
+            
+            .promotion-details strong {
+                color: #495057;
+            }
+            
+            .btn-sm {
+                padding: 4px 12px;
+                font-size: 0.8em;
+            }
+            
+            .alert {
+                padding: 10px 15px;
+                border-radius: 4px;
+                margin-bottom: 0;
+            }
+            
+            .alert-info {
+                background-color: #d1ecf1;
+                border-color: #bee5eb;
+                color: #0c5460;
+            }
+            
+            .alert-success {
+                background-color: #d4edda;
+                border-color: #c3e6cb;
+                color: #155724;
+            }
+        </style>
     </body>
 </html>

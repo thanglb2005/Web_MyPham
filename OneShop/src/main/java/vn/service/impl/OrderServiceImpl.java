@@ -78,6 +78,60 @@ public class OrderServiceImpl implements OrderService {
         savedOrder.setOrderDetails(orderDetails);
         return savedOrder;
     }
+    
+    @Override
+    @Transactional
+    public Order createOrder(User user, String customerName, String customerEmail, String customerPhone,
+                             String shippingAddress, String note, Order.PaymentMethod paymentMethod,
+                             Map<Long, CartItem> cartItems, String promotionCode, Double discountAmount) {
+
+        if (cartItems == null || cartItems.isEmpty()) {
+            throw new IllegalArgumentException("Cart cannot be empty to create an order.");
+        }
+
+        Order order = new Order();
+        order.setUser(user);
+        order.setCustomerName(customerName);
+        order.setCustomerEmail(customerEmail);
+        order.setCustomerPhone(customerPhone);
+        order.setShippingAddress(shippingAddress);
+        order.setNote(note);
+        order.setPaymentMethod(paymentMethod);
+        order.setStatus(Order.OrderStatus.PENDING);
+        order.setOrderDate(LocalDateTime.now());
+
+        double totalAmount = cartItems.values().stream()
+                .mapToDouble(item -> item.getQuantity() * item.getUnitPrice())
+                .sum();
+        
+        // Áp dụng khuyến mãi nếu có
+        if (promotionCode != null && discountAmount != null && discountAmount > 0) {
+            totalAmount = Math.max(0, totalAmount - discountAmount);
+            order.setNote(note + (note != null && !note.isEmpty() ? "\n" : "") + 
+                         "Mã khuyến mãi: " + promotionCode + " - Giảm: " + discountAmount + " VNĐ");
+        }
+        
+        order.setTotalAmount(totalAmount);
+
+        Order savedOrder = orderRepository.save(order);
+
+        List<OrderDetail> orderDetails = new ArrayList<>();
+        for (CartItem cartItem : cartItems.values()) {
+            OrderDetail orderDetail = new OrderDetail();
+            orderDetail.setOrder(savedOrder);
+            orderDetail.setProduct(productRepository.findById(cartItem.getId())
+                    .orElseThrow(() -> new RuntimeException("Product not found: " + cartItem.getId())));
+            orderDetail.setProductName(cartItem.getName());
+            orderDetail.setUnitPrice(cartItem.getUnitPrice());
+            orderDetail.setQuantity(cartItem.getQuantity());
+            orderDetail.setTotalPrice(cartItem.getTotalPrice());
+            orderDetails.add(orderDetail);
+        }
+        orderDetailRepository.saveAll(orderDetails);
+
+        savedOrder.setOrderDetails(orderDetails);
+        return savedOrder;
+    }
 
     @Override
     public Order getOrderById(Long orderId) {

@@ -15,6 +15,7 @@ import vn.entity.User;
 import vn.service.CartService;
 import vn.service.OrderService;
 import vn.service.ProductService;
+import vn.service.PromotionService;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -32,6 +33,9 @@ public class CartController {
     
     @Autowired
     private CartService cartService;
+    
+    @Autowired
+    private PromotionService promotionService;
 
     @GetMapping("/add-to-cart")
     public String addToCart(@RequestParam("productId") Long productId,
@@ -325,11 +329,26 @@ public class CartController {
                 .mapToDouble(item -> item.getQuantity() * item.getUnitPrice())
                 .sum();
 
+        // Lấy danh sách shop từ giỏ hàng
+        List<Long> shopIds = cartItemEntities.stream()
+                .map(item -> item.getProduct().getShop().getShopId())
+                .distinct()
+                .toList();
+
+        // Lấy khuyến mãi cho các shop
+        Map<Long, List<vn.entity.Promotion>> promotionsByShop = new HashMap<>();
+        for (Long shopId : shopIds) {
+            List<vn.entity.Promotion> activePromotions = promotionService.getActivePromotionsByShop(shopId);
+            promotionsByShop.put(shopId, activePromotions);
+        }
+
         model.addAttribute("cartItems", cartItems);
         model.addAttribute("totalItems", totalItems);
         model.addAttribute("totalCartItems", totalItems);
         model.addAttribute("totalPrice", totalPrice);
         model.addAttribute("user", user);
+        model.addAttribute("promotionsByShop", promotionsByShop);
+        model.addAttribute("shopIds", shopIds);
 
         return "web/checkout";
     }
@@ -342,6 +361,8 @@ public class CartController {
                                  @RequestParam(value = "note", required = false) String note,
                                  @RequestParam("paymentMethod") String paymentMethod,
                                  @RequestParam(value = "city", required = false) String city,
+                                 @RequestParam(value = "promotionCode", required = false) String promotionCode,
+                                 @RequestParam(value = "shopId", required = false) Long shopId,
                                  HttpServletRequest request, Model model) {
 
         User user = (User) request.getSession().getAttribute("user");
@@ -379,6 +400,27 @@ public class CartController {
             // Convert CartItemEntity to CartItem Map for OrderService
             Map<Long, CartItem> cartMap = convertToCartItemMap(cartItemEntities);
 
+            // Xử lý khuyến mãi nếu có
+            Double discountAmount = 0.0;
+            String appliedPromotionCode = null;
+            
+            if (promotionCode != null && !promotionCode.trim().isEmpty() && shopId != null) {
+                // Tính tổng tiền của shop được áp dụng khuyến mãi
+                Double shopTotal = cartItemEntities.stream()
+                        .filter(item -> item.getProduct().getShop().getShopId().equals(shopId))
+                        .mapToDouble(item -> item.getQuantity() * item.getUnitPrice())
+                        .sum();
+                
+                // Kiểm tra và tính khuyến mãi
+                if (promotionService.isPromotionValidForShop(shopId, promotionCode)) {
+                    discountAmount = promotionService.calculateDiscountForShop(shopId, promotionCode, shopTotal);
+                    appliedPromotionCode = promotionCode;
+                    
+                    // Áp dụng khuyến mãi (tăng số lần sử dụng)
+                    promotionService.applyPromotionForShop(shopId, promotionCode, shopTotal);
+                }
+            }
+
             Order order = orderService.createOrder(
                 user,
                 customerName,
@@ -387,7 +429,9 @@ public class CartController {
                 fullAddress,
                 note,
                 paymentMethodEnum,
-                cartMap
+                cartMap,
+                appliedPromotionCode,
+                discountAmount
             );
 
             // Clear cart after successful order

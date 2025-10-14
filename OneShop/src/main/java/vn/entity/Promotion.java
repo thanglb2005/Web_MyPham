@@ -55,6 +55,16 @@ public class Promotion {
     @Column(name = "is_active", nullable = false)
     private Boolean isActive = true;
     
+    // Liên kết với Shop
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "shop_id", nullable = false)
+    private Shop shop;
+    
+    // Liên kết với User (người tạo)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "created_by", nullable = false)
+    private User createdBy;
+    
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -69,7 +79,8 @@ public class Promotion {
     public Promotion(String promotionName, String description, String promotionCode, 
                     PromotionType promotionType, BigDecimal discountValue, 
                     BigDecimal minimumOrderAmount, BigDecimal maximumDiscountAmount, 
-                    Integer usageLimit, LocalDateTime startDate, LocalDateTime endDate) {
+                    Integer usageLimit, LocalDateTime startDate, LocalDateTime endDate,
+                    Shop shop, User createdBy) {
         this.promotionName = promotionName;
         this.description = description;
         this.promotionCode = promotionCode;
@@ -80,6 +91,8 @@ public class Promotion {
         this.usageLimit = usageLimit;
         this.startDate = startDate;
         this.endDate = endDate;
+        this.shop = shop;
+        this.createdBy = createdBy;
     }
     
     // Getters and Setters
@@ -187,6 +200,22 @@ public class Promotion {
         this.isActive = isActive;
     }
     
+    public Shop getShop() {
+        return shop;
+    }
+    
+    public void setShop(Shop shop) {
+        this.shop = shop;
+    }
+    
+    public User getCreatedBy() {
+        return createdBy;
+    }
+    
+    public void setCreatedBy(User createdBy) {
+        this.createdBy = createdBy;
+    }
+    
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
@@ -227,9 +256,10 @@ public class Promotion {
     
     // Enum for Promotion Type
     public enum PromotionType {
-        PRODUCT_PERCENTAGE("Giảm % sản phẩm"),
-        SHIPPING_DISCOUNT("Giảm phí ship"),
-        FIXED_AMOUNT("Giảm số tiền");
+        PERCENTAGE("Giảm %"),
+        FIXED_AMOUNT("Giảm số tiền cố định"),
+        FREE_SHIPPING("Miễn phí ship"),
+        BUY_X_GET_Y("Mua X tặng Y");
         
         private final String displayName;
         

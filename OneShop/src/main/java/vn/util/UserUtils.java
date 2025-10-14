@@ -21,7 +21,8 @@ public class UserUtils {
             return false;
         }
         return user.getRoles().stream()
-                .anyMatch(role -> "VENDOR".equals(role.getName()));
+                .map(role -> role.getName())
+                .anyMatch(name -> "ROLE_VENDOR".equals(name) || "VENDOR".equals(name));
     }
 
     /**
@@ -32,7 +33,8 @@ public class UserUtils {
             return false;
         }
         return user.getRoles().stream()
-                .anyMatch(role -> "SHIPPER".equals(role.getName()));
+                .map(role -> role.getName())
+                .anyMatch(name -> "ROLE_SHIPPER".equals(name) || "SHIPPER".equals(name));
     }
 
     /**
@@ -43,6 +45,7 @@ public class UserUtils {
             return false;
         }
         return user.getRoles().stream()
-                .anyMatch(role -> "ADMIN".equals(role.getName()));
+                .map(role -> role.getName())
+                .anyMatch(name -> "ROLE_ADMIN".equals(name) || "ADMIN".equals(name));
     }
 }

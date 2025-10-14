@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{vendor/layouts/dashboard-layout}">
+<head>
+    <title layout:title-pattern="$CONTENT_TITLE - $LAYOUT_TITLE">Chi tiết khuyến mãi</title>
+    <style>
+        .detail-card {
+            border-left: 4px solid #007bff;
+        }
+        .status-badge {
+            font-size: 0.9em;
+        }
+        .usage-bar {
+            height: 12px;
+            background-color: #e9ecef;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+        .usage-progress {
+            height: 100%;
+            background: linear-gradient(90deg, #28a745, #ffc107, #dc3545);
+            transition: width 0.3s ease;
+        }
+        .info-item {
+            border-bottom: 1px solid #f8f9fa;
+            padding: 12px 0;
+        }
+        .info-item:last-child {
+            border-bottom: none;
+        }
+        .timeline {
+            position: relative;
+            padding-left: 30px;
+        }
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 15px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #dee2e6;
+        }
+        .timeline-item {
+            position: relative;
+            margin-bottom: 20px;
+        }
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -22px;
+            top: 5px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #007bff;
+            border: 3px solid white;
+            box-shadow: 0 0 0 3px #dee2e6;
+        }
+    </style>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="container-fluid">
+            <!-- Header -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h2 class="mb-1">
+                                <i class="fas fa-percentage text-primary me-2"></i>
+                                Chi tiết khuyến mãi
+                            </h2>
+                            <p class="text-muted mb-0">Shop: <strong th:text="${shop.shopName}">Tên Shop</strong></p>
+                        </div>
+                        <div class="btn-group">
+                            <a th:href="@{/vendor/promotions}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Quay lại
+                            </a>
+                            <a th:href="@{/vendor/promotions/edit/{id}(id=${promotion.promotionId})}" class="btn btn-warning">
+                                <i class="fas fa-edit me-2"></i>Chỉnh sửa
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Thông tin chính -->
+                <div class="col-lg-8">
+                    <div class="card detail-card">
+                        <div class="card-header">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0" th:text="${promotion.promotionName}">Tên khuyến mãi</h5>
+                                <span class="badge status-badge" 
+                                      th:classappend="${promotion.isActive} ? 'bg-success' : 'bg-secondary'"
+                                      th:text="${promotion.isActive} ? 'Hoạt động' : 'Tạm dừng'">
+                                    Trạng thái
+                                </span>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="info-item">
+                                        <strong>Mã khuyến mãi:</strong>
+                                        <div class="mt-1">
+                                            <span class="badge bg-primary fs-6" th:text="${promotion.promotionCode}">CODE</span>
+                                        </div>
+                                    </div>
+                                    <div class="info-item">
+                                        <strong>Loại khuyến mãi:</strong>
+                                        <div class="mt-1" th:text="${promotion.promotionType.displayName}">Loại</div>
+                                    </div>
+                                    <div class="info-item">
+                                        <strong>Giá trị giảm giá:</strong>
+                                        <div class="mt-1">
+                                            <span class="h5 text-success" 
+                                                  th:text="${#numbers.formatDecimal(promotion.discountValue, 0, 'COMMA', 0, 'POINT')} + ' ' + ${promotion.promotionType == T(vn.entity.Promotion.PromotionType).PERCENTAGE ? '%' : 'VNĐ'}">
+                                                0
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="info-item">
+                                        <strong>Đơn hàng tối thiểu:</strong>
+                                        <div class="mt-1" th:text="${#numbers.formatDecimal(promotion.minimumOrderAmount, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">0 VNĐ</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="info-item">
+                                        <strong>Giảm giá tối đa:</strong>
+                                        <div class="mt-1" th:text="${#numbers.formatDecimal(promotion.maximumDiscountAmount, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">0 VNĐ</div>
+                                    </div>
+                                    <div class="info-item">
+                                        <strong>Giới hạn sử dụng:</strong>
+                                        <div class="mt-1" th:text="${promotion.usageLimit}">0</div>
+                                    </div>
+                                    <div class="info-item">
+                                        <strong>Đã sử dụng:</strong>
+                                        <div class="mt-1" th:text="${promotion.usedCount}">0</div>
+                                    </div>
+                                    <div class="info-item">
+                                        <strong>Tỷ lệ sử dụng:</strong>
+                                        <div class="mt-2">
+                                            <div class="usage-bar">
+                                                <div class="usage-progress" 
+                                                     th:style="'width: ' + ${promotion.usagePercentage} + '%'">
+                                                </div>
+                                            </div>
+                                            <small class="text-muted mt-1 d-block">
+                                                <span th:text="${promotion.usagePercentage}">0</span>%
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row mt-3">
+                                <div class="col-12">
+                                    <div class="info-item">
+                                        <strong>Mô tả:</strong>
+                                        <div class="mt-1" th:text="${promotion.description ?: 'Không có mô tả'}">Mô tả</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Thời gian -->
+                    <div class="card mt-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-calendar-alt me-2"></i>Thời gian áp dụng
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="info-item">
+                                        <strong>Ngày bắt đầu:</strong>
+                                        <div class="mt-1" th:text="${#temporals.format(promotion.startDate, 'dd/MM/yyyy HH:mm')}">Ngày</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="info-item">
+                                        <strong>Ngày kết thúc:</strong>
+                                        <div class="mt-1" th:text="${#temporals.format(promotion.endDate, 'dd/MM/yyyy HH:mm')}">Ngày</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="info-item">
+                                        <strong>Trạng thái thời gian:</strong>
+                                        <div class="mt-1">
+                                            <span th:if="${promotion.isExpired()}" class="badge bg-danger">Đã hết hạn</span>
+                                            <span th:if="${!promotion.isExpired() && !promotion.isStarted()}" class="badge bg-warning">Chưa bắt đầu</span>
+                                            <span th:if="${!promotion.isExpired() && promotion.isStarted()}" class="badge bg-success">Đang hoạt động</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sidebar -->
+                <div class="col-lg-4">
+                    <!-- Thông tin shop -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-store me-2"></i>Thông tin shop
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="info-item">
+                                <strong>Tên shop:</strong>
+                                <div class="mt-1" th:text="${shop.shopName}">Tên Shop</div>
+                            </div>
+                            <div class="info-item">
+                                <strong>Địa chỉ:</strong>
+                                <div class="mt-1" th:text="${shop.address}">Địa chỉ</div>
+                            </div>
+                            <div class="info-item">
+                                <strong>Số điện thoại:</strong>
+                                <div class="mt-1" th:text="${shop.phone}">Số điện thoại</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Hành động -->
+                    <div class="card mt-3">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-tools me-2"></i>Hành động
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-grid gap-2">
+                                <a th:href="@{/vendor/promotions/edit/{id}(id=${promotion.promotionId})}" 
+                                   class="btn btn-warning">
+                                    <i class="fas fa-edit me-2"></i>Chỉnh sửa
+                                </a>
+                                <form th:action="@{/vendor/promotions/toggle/{id}(id=${promotion.promotionId})}" 
+                                      method="post" class="d-grid">
+                                    <button type="submit" class="btn btn-outline-secondary">
+                                        <i th:class="${promotion.isActive} ? 'fas fa-pause me-2' : 'fas fa-play me-2'"></i>
+                                        <span th:text="${promotion.isActive} ? 'Tạm dừng' : 'Kích hoạt'">Toggle</span>
+                                    </button>
+                                </form>
+                                <form th:action="@{/vendor/promotions/delete/{id}(id=${promotion.promotionId})}" 
+                                      method="post" class="d-grid"
+                                      th:onclick="'return confirm(\'Bạn có chắc chắn muốn xóa khuyến mãi này?\')'">
+                                    <button type="submit" class="btn btn-outline-danger">
+                                        <i class="fas fa-trash me-2"></i>Xóa
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Thống kê -->
+                    <div class="card mt-3">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-chart-bar me-2"></i>Thống kê
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="info-item">
+                                <strong>Tổng lượt sử dụng:</strong>
+                                <div class="mt-1 h5 text-primary" th:text="${promotion.usedCount}">0</div>
+                            </div>
+                            <div class="info-item">
+                                <strong>Còn lại:</strong>
+                                <div class="mt-1 h5 text-success" th:text="${promotion.usageLimit - promotion.usedCount}">0</div>
+                            </div>
+                            <div class="info-item">
+                                <strong>Tỷ lệ sử dụng:</strong>
+                                <div class="mt-1 h5 text-warning" th:text="${promotion.usagePercentage} + '%'">0%</div>
+                            </div>
+                            <div class="info-item">
+                                <strong>Trạng thái:</strong>
+                                <div class="mt-1">
+                                    <span th:if="${promotion.isFullyUsed()}" class="badge bg-danger">Đã hết lượt</span>
+                                    <span th:if="${!promotion.isFullyUsed()}" class="badge bg-success">Còn lượt</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
