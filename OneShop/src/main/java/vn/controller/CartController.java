@@ -15,6 +15,7 @@ import vn.entity.User;
 import vn.service.CartService;
 import vn.service.OrderService;
 import vn.service.ProductService;
+import vn.service.VietQRService;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -32,6 +33,9 @@ public class CartController {
     
     @Autowired
     private CartService cartService;
+    
+    @Autowired
+    private VietQRService vietQRService;
     
 
     @GetMapping("/add-to-cart")
@@ -340,6 +344,9 @@ public class CartController {
                 case "bank_transfer":
                     paymentMethodEnum = Order.PaymentMethod.BANK_TRANSFER;
                     break;
+                case "vietqr":
+                    paymentMethodEnum = Order.PaymentMethod.VIETQR;
+                    break;
                 default:
                     paymentMethodEnum = Order.PaymentMethod.COD;
             }
@@ -375,7 +382,7 @@ public class CartController {
             System.out.println("Payment method: " + paymentMethodEnum);
 
             // Chỉ tạo order cho COD và BANK_TRANSFER
-            // MOMO sẽ tạo order sau khi thanh toán thành công
+            // MOMO và VIETQR sẽ tạo order sau khi thanh toán thành công
             if (paymentMethodEnum == Order.PaymentMethod.COD || paymentMethodEnum == Order.PaymentMethod.BANK_TRANSFER) {
                 Order order = orderService.createOrder(
                     user,
@@ -409,6 +416,19 @@ public class CartController {
                     cartMap
                 );
                 return "redirect:/payment/momo/create?orderId=" + order.getOrderId();
+            } else if (paymentMethodEnum == Order.PaymentMethod.VIETQR) {
+                // Tạo order tạm cho VietQR
+                Order order = orderService.createOrder(
+                    user,
+                    customerName,
+                    customerEmail,
+                    phone,
+                    fullAddress,
+                    note,
+                    paymentMethodEnum,
+                    cartMap
+                );
+                return "redirect:/vietqr-payment?orderId=" + order.getOrderId();
             }
             
             // Fallback - không nên xảy ra
@@ -458,6 +478,32 @@ public class CartController {
         return "web/order-success";
     }
 
+    @GetMapping("/vietqr-payment")
+    public String vietqrPayment(@RequestParam("orderId") Long orderId,
+                               HttpServletRequest request, Model model) {
+
+        User user = (User) request.getSession().getAttribute("user");
+        if (user == null) {
+            return "redirect:/login";
+        }
+
+        Order order = orderService.getOrderById(orderId);
+        if (order == null || !order.getUser().getUserId().equals(user.getUserId())) {
+            return "redirect:/products";
+        }
+
+        // Generate VietQR URL for the order
+        String vietqrUrl = vietQRService.generateVietQRUrl(order);
+        String qrCodeImage = vietQRService.generateQRCodeImage(order);
+
+        model.addAttribute("order", order);
+        model.addAttribute("orderId", orderId);
+        model.addAttribute("user", user);
+        model.addAttribute("vietqrUrl", vietqrUrl);
+        model.addAttribute("qrCodeImage", qrCodeImage);
+
+        return "web/vietqr-payment";
+    }
 
     @GetMapping("/checkout-debug")
     public String checkoutDebug(HttpServletRequest request, Model model) {
