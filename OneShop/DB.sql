@@ -34,7 +34,8 @@ CREATE TABLE dbo.[user] (
     name           NVARCHAR(255) NOT NULL,
     password       NVARCHAR(255) NOT NULL,
     register_date  DATE DEFAULT (GETDATE()),
-    status         BIT  DEFAULT 1
+    status         BIT  DEFAULT 1,
+    one_xu_balance DECIMAL(18,2) NOT NULL DEFAULT 0
 );
 -- 9 user (đã thêm shipper và CSKH)
 INSERT INTO dbo.[user](avatar, email, name, password, register_date, status)
@@ -1279,3 +1280,79 @@ ON shop_shippers(shop_id, status);
 CREATE INDEX idx_shop_shippers_shipper 
 ON shop_shippers(shipper_id, status);
 GO
+
+/* ===============================
+   ONE XU SYSTEM
+   =============================== */
+
+/* ===============================
+   TABLE: one_xu_checkin
+   =============================== */
+CREATE TABLE dbo.one_xu_checkin (
+    checkin_id BIGINT IDENTITY(1,1) PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    checkin_date DATE NOT NULL,
+    xu_earned DECIMAL(18,2) NOT NULL,
+    created_at DATETIME2 DEFAULT GETDATE(),
+    CONSTRAINT FK_checkin_user FOREIGN KEY(user_id) REFERENCES dbo.[user](user_id),
+    CONSTRAINT UK_checkin_user_date UNIQUE(user_id, checkin_date)
+);
+GO
+
+/* ===============================
+   TABLE: one_xu_transactions
+   =============================== */
+CREATE TABLE dbo.one_xu_transactions (
+    transaction_id BIGINT IDENTITY(1,1) PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    transaction_type NVARCHAR(50) NOT NULL CHECK (transaction_type IN ('CHECKIN', 'ORDER_REWARD', 'PURCHASE', 'REFUND')),
+    amount DECIMAL(18,2) NOT NULL,
+    balance_after DECIMAL(18,2) NOT NULL,
+    description NVARCHAR(500),
+    order_id BIGINT NULL,
+    created_at DATETIME2 DEFAULT GETDATE(),
+    CONSTRAINT FK_xu_trans_user FOREIGN KEY(user_id) REFERENCES dbo.[user](user_id),
+    CONSTRAINT FK_xu_trans_order FOREIGN KEY(order_id) REFERENCES dbo.orders(order_id)
+);
+GO
+
+/* ===============================
+   TABLE: one_xu_weekly_schedule
+   =============================== */
+CREATE TABLE dbo.one_xu_weekly_schedule (
+    day_of_week INT NOT NULL PRIMARY KEY CHECK (day_of_week BETWEEN 1 AND 7),
+    xu_reward DECIMAL(18,2) NOT NULL,
+    description NVARCHAR(100)
+);
+GO
+
+-- Thêm dữ liệu mẫu cho weekly schedule
+INSERT INTO dbo.one_xu_weekly_schedule (day_of_week, xu_reward, description) VALUES 
+(1, 100, N'Thứ 2 - 100 Xu'),
+(2, 100, N'Thứ 3 - 100 Xu'),
+(3, 200, N'Thứ 4 - 200 Xu'),
+(4, 200, N'Thứ 5 - 200 Xu'),
+(5, 300, N'Thứ 6 - 300 Xu'),
+(6, 300, N'Thứ 7 - 300 Xu'),
+(7, 1000, N'Chủ nhật - 1000 Xu');
+GO
+
+-- Tạo indexes cho One Xu system
+CREATE INDEX IX_one_xu_checkin_user_date ON dbo.one_xu_checkin(user_id, checkin_date);
+CREATE INDEX IX_one_xu_transactions_user ON dbo.one_xu_transactions(user_id);
+CREATE INDEX IX_one_xu_transactions_type ON dbo.one_xu_transactions(transaction_type);
+CREATE INDEX IX_one_xu_transactions_created ON dbo.one_xu_transactions(created_at);
+GO
+
+
+CREATE TABLE dbo.comment_media (
+    id           BIGINT IDENTITY(1,1) PRIMARY KEY,
+    comment_id   BIGINT       NOT NULL,
+    media_type   NVARCHAR(20) NOT NULL CHECK (media_type IN ('IMAGE','VIDEO')),
+    url          NVARCHAR(500) NOT NULL,
+    CONSTRAINT FK_comment_media_comment
+        FOREIGN KEY (comment_id) REFERENCES dbo.comments(id) ON DELETE CASCADE
+);
+
+-- Chỉ mục gợi ý để truy vấn nhanh theo comment
+CREATE INDEX IX_comment_media_comment ON dbo.comment_media(comment_id);
