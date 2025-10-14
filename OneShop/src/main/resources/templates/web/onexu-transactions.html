@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lịch sử giao dịch One Xu - OneShop</title>
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --secondary-color: #64748b;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --light-bg: #f8fafc;
+            --white: #ffffff;
+            --border-color: #e2e8f0;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            --radius-md: 0.5rem;
+            --radius-lg: 0.75rem;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--light-bg);
+            color: var(--text-primary);
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+
+        /* Header */
+        .page-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .page-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .page-subtitle {
+            font-size: 1rem;
+            color: var(--text-secondary);
+        }
+
+        /* Cards */
+        .card {
+            background: var(--white);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+            transition: all 0.2s ease;
+        }
+
+        .card:hover {
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+        }
+
+        .card-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            background: var(--white);
+        }
+
+        .card-body {
+            padding: 1.5rem;
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Summary Stats */
+        .summary-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            text-align: center;
+            padding: 1.5rem;
+        }
+
+        .stat-icon {
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 0.75rem;
+            font-size: 1rem;
+        }
+
+        .stat-icon.total {
+            background: rgba(37, 99, 235, 0.1);
+            color: var(--primary-color);
+        }
+
+        .stat-icon.earned {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success-color);
+        }
+
+        .stat-icon.spent {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger-color);
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        /* Transaction List */
+        .transaction-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .transaction-item {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+            transition: background-color 0.2s ease;
+        }
+
+        .transaction-item:last-child {
+            border-bottom: none;
+        }
+
+        .transaction-item:hover {
+            background: var(--light-bg);
+        }
+
+        .transaction-icon {
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+            font-size: 0.875rem;
+            flex-shrink: 0;
+        }
+
+        .transaction-icon.checkin {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success-color);
+        }
+
+        .transaction-icon.order {
+            background: rgba(37, 99, 235, 0.1);
+            color: var(--primary-color);
+        }
+
+        .transaction-icon.purchase {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger-color);
+        }
+
+        .transaction-icon.refund {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning-color);
+        }
+
+        .transaction-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .transaction-type {
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 0.875rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .transaction-desc {
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .transaction-meta {
+            text-align: right;
+            flex-shrink: 0;
+        }
+
+        .transaction-amount {
+            font-weight: 700;
+            font-size: 0.875rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .transaction-amount.positive {
+            color: var(--success-color);
+        }
+
+        .transaction-amount.negative {
+            color: var(--danger-color);
+        }
+
+        .transaction-date {
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: var(--text-secondary);
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        /* Pagination */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 2rem;
+        }
+
+        .pagination .page-link {
+            padding: 0.5rem 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            color: var(--text-primary);
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .pagination .page-link:hover {
+            background: var(--primary-color);
+            color: var(--white);
+            border-color: var(--primary-color);
+        }
+
+        .pagination .page-link.active {
+            background: var(--primary-color);
+            color: var(--white);
+            border-color: var(--primary-color);
+        }
+
+        .pagination .page-link.disabled {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        /* Back Button */
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            background: var(--white);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            color: var(--text-primary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .back-btn:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+            transform: translateY(-1px);
+            text-decoration: none;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .page-title {
+                font-size: 1.75rem;
+            }
+
+            .summary-stats {
+                grid-template-columns: 1fr;
+                gap: 0.75rem;
+            }
+
+            .transaction-item {
+                padding: 0.75rem;
+            }
+
+            .transaction-desc {
+                white-space: normal;
+                overflow: visible;
+                text-overflow: initial;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Page Header -->
+        <div class="page-header">
+            <h1 class="page-title">
+                <i class="fas fa-history"></i>
+                Lịch sử giao dịch One Xu
+            </h1>
+            <p class="page-subtitle">Theo dõi tất cả các giao dịch One Xu của bạn</p>
+        </div>
+
+        <!-- Summary Stats -->
+        <div class="summary-stats">
+            <div class="card">
+                <div class="stat-card">
+                    <div class="stat-icon total">
+                        <i class="fas fa-list"></i>
+                    </div>
+                    <div class="stat-value" th:text="${transactions.totalElements}">0</div>
+                    <div class="stat-label">Tổng giao dịch</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="stat-card">
+                    <div class="stat-icon earned">
+                        <i class="fas fa-plus"></i>
+                    </div>
+                    <div class="stat-value" th:text="'+' + ${#numbers.formatDecimal(stats.totalEarned, 0, 'COMMA', 0, 'POINT')}">+2,550</div>
+                    <div class="stat-label">Xu đã nhận</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="stat-card">
+                    <div class="stat-icon spent">
+                        <i class="fas fa-minus"></i>
+                    </div>
+                    <div class="stat-value" th:text="'-' + ${#numbers.formatDecimal(stats.totalSpent, 0, 'COMMA', 0, 'POINT')}">-0</div>
+                    <div class="stat-label">Xu đã dùng</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Transactions -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-exchange-alt"></i>
+                    Danh sách giao dịch
+                </h3>
+            </div>
+            <div class="card-body">
+                <div th:if="${transactions.isEmpty()}" class="empty-state">
+                    <i class="fas fa-inbox"></i>
+                    <h4>Chưa có giao dịch nào</h4>
+                    <p>Bắt đầu check-in hàng ngày để tích lũy One Xu!</p>
+                </div>
+
+                <ul th:unless="${transactions.isEmpty()}" class="transaction-list">
+                    <li th:each="transaction : ${transactions}" class="transaction-item">
+                        <div class="transaction-icon" 
+                             th:classappend="${transaction.transactionType.name() == 'CHECKIN' ? 'checkin' : 
+                                             (transaction.transactionType.name() == 'ORDER_REWARD' ? 'order' : 
+                                             (transaction.transactionType.name() == 'PURCHASE' ? 'purchase' : 'refund'))}">
+                            <i th:class="${transaction.transactionType.name() == 'CHECKIN' ? 'fas fa-calendar-check' : 
+                                         (transaction.transactionType.name() == 'ORDER_REWARD' ? 'fas fa-gift' : 
+                                         (transaction.transactionType.name() == 'PURCHASE' ? 'fas fa-shopping-cart' : 'fas fa-undo'))}"></i>
+                        </div>
+                        
+                        <div class="transaction-info">
+                            <div class="transaction-type" 
+                                 th:text="${transaction.transactionType.name() == 'CHECKIN' ? 'Check-in hàng ngày' : 
+                                           (transaction.transactionType.name() == 'ORDER_REWARD' ? 'Thưởng đơn hàng' : 
+                                           (transaction.transactionType.name() == 'PURCHASE' ? 'Mua hàng' : 'Hoàn tiền'))}">
+                                Check-in hàng ngày
+                            </div>
+                            <div class="transaction-desc" th:text="${transaction.description}">
+                                Check-in Thứ 2 - 100 Xu
+                            </div>
+                        </div>
+                        
+                        <div class="transaction-meta">
+                            <div class="transaction-amount" 
+                                 th:classappend="${transaction.amount > 0 ? 'positive' : 'negative'}"
+                                 th:text="${(transaction.amount > 0 ? '+' : '') + #numbers.formatDecimal(transaction.amount, 0, 'COMMA', 0, 'POINT')} + ' Xu'">
+                                +100 Xu
+                            </div>
+                            <div class="transaction-date" th:text="${#temporals.format(transaction.createdAt, 'dd/MM/yyyy HH:mm')}">
+                                14/10/2024 10:30
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        <nav th:if="${transactions.totalPages > 1}" class="pagination">
+            <a th:if="${currentPage > 0}" 
+               th:href="@{/onexu/transactions(page=${currentPage - 1}, size=${transactions.size})}" 
+               class="page-link">
+                <i class="fas fa-chevron-left"></i>
+            </a>
+            
+            <span th:each="i : ${#numbers.sequence(0, transactions.totalPages - 1)}">
+                <a th:if="${i == currentPage}" 
+                   class="page-link active" 
+                   th:text="${i + 1}">1</a>
+                <a th:unless="${i == currentPage}" 
+                   th:href="@{/onexu/transactions(page=${i}, size=${transactions.size})}" 
+                   class="page-link" 
+                   th:text="${i + 1}">1</a>
+            </span>
+            
+            <a th:if="${currentPage < transactions.totalPages - 1}" 
+               th:href="@{/onexu/transactions(page=${currentPage + 1}, size=${transactions.size})}" 
+               class="page-link">
+                <i class="fas fa-chevron-right"></i>
+            </a>
+        </nav>
+
+        <!-- Back Button -->
+        <div class="text-center mt-4">
+            <a href="/onexu/dashboard" class="back-btn">
+                <i class="fas fa-arrow-left"></i>
+                Quay lại Dashboard
+            </a>
+        </div>
+    </div>
+
+    <script src="/js/vendor/jquery-1.12.4.min.js"></script>
+    <script src="/js/bootstrap.min.js"></script>
+</body>
+</html>

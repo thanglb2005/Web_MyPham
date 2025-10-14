@@ -13,6 +13,7 @@ import vn.repository.OrderDetailRepository;
 import vn.repository.OrderRepository;
 import vn.repository.ProductRepository;
 import vn.service.OrderService;
+import vn.service.OneXuService;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -32,6 +33,9 @@ public class OrderServiceImpl implements OrderService {
 
     @Autowired
     private ProductRepository productRepository;
+    
+    @Autowired
+    private OneXuService oneXuService;
 
     @Override
     @Transactional
@@ -169,11 +173,23 @@ public class OrderServiceImpl implements OrderService {
     public void updateOrderStatus(Long orderId, Order.OrderStatus newStatus) {
         Optional<Order> orderOptional = orderRepository.findById(orderId);
         orderOptional.ifPresent(order -> {
+            Order.OrderStatus oldStatus = order.getStatus();
             order.setStatus(newStatus);
+            
             if (newStatus == Order.OrderStatus.SHIPPING && order.getShippedDate() == null) {
                 order.setShippedDate(LocalDateTime.now());
             } else if (newStatus == Order.OrderStatus.DELIVERED && order.getDeliveredDate() == null) {
                 order.setDeliveredDate(LocalDateTime.now());
+                
+                // Thưởng One Xu khi đơn hàng được giao thành công (1% giá trị đơn hàng)
+                if (oldStatus != Order.OrderStatus.DELIVERED) {
+                    try {
+                        oneXuService.rewardFromOrder(order.getUser().getUserId(), orderId, order.getTotalAmount());
+                    } catch (Exception e) {
+                        // Log error but don't fail the order status update
+                        System.err.println("Error rewarding One Xu for order " + orderId + ": " + e.getMessage());
+                    }
+                }
             }
             orderRepository.save(order);
         });

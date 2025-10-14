@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lịch sử Check-in One Xu - OneShop</title>
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --secondary-color: #64748b;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --light-bg: #f8fafc;
+            --white: #ffffff;
+            --border-color: #e2e8f0;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            --radius-md: 0.5rem;
+            --radius-lg: 0.75rem;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--light-bg);
+            color: var(--text-primary);
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+
+        /* Header */
+        .page-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .page-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .page-subtitle {
+            font-size: 1rem;
+            color: var(--text-secondary);
+        }
+
+        /* Cards */
+        .card {
+            background: var(--white);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+            transition: all 0.2s ease;
+        }
+
+        .card:hover {
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+        }
+
+        .card-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            background: var(--white);
+        }
+
+        .card-body {
+            padding: 1.5rem;
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Summary Stats */
+        .summary-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            text-align: center;
+            padding: 1.5rem;
+        }
+
+        .stat-icon {
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 0.75rem;
+            font-size: 1rem;
+        }
+
+        .stat-icon.total {
+            background: rgba(37, 99, 235, 0.1);
+            color: var(--primary-color);
+        }
+
+        .stat-icon.streak {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning-color);
+        }
+
+        .stat-icon.earned {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success-color);
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        /* Calendar Grid */
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding: 0 0.5rem;
+        }
+
+        .calendar-month {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .calendar-nav {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .calendar-nav button {
+            width: 2rem;
+            height: 2rem;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            background: var(--white);
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .calendar-nav button:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 0.25rem;
+            margin-bottom: 1rem;
+        }
+
+        .calendar-day-header {
+            text-align: center;
+            padding: 0.5rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+        }
+
+        .calendar-day {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: var(--radius-md);
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .calendar-day.other-month {
+            color: var(--text-secondary);
+            opacity: 0.3;
+        }
+
+        .calendar-day.today {
+            background: var(--primary-color);
+            color: var(--white);
+        }
+
+        .calendar-day.checked-in {
+            background: linear-gradient(135deg, #f59e0b, #f97316);
+            color: var(--white);
+            font-weight: 700;
+            box-shadow: 0 2px 4px rgba(245, 158, 11, 0.3);
+            transform: scale(1.05);
+        }
+
+        .calendar-day.checked-in::after {
+            content: '✓';
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+        }
+
+        .calendar-day:hover:not(.other-month) {
+            background: var(--light-bg);
+        }
+
+        .calendar-day.checked-in:hover {
+            background: linear-gradient(135deg, #d97706, #ea580c);
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(245, 158, 11, 0.4);
+        }
+
+        /* Check-in List */
+        .checkin-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .checkin-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+            transition: background-color 0.2s ease;
+        }
+
+        .checkin-item:last-child {
+            border-bottom: none;
+        }
+
+        .checkin-item:hover {
+            background: var(--light-bg);
+        }
+
+        .checkin-info {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .checkin-icon {
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: 50%;
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.875rem;
+        }
+
+        .checkin-details {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .checkin-date {
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 0.875rem;
+            margin-bottom: 0.125rem;
+        }
+
+        .checkin-day {
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+        }
+
+        .checkin-reward {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+        }
+
+        .checkin-amount {
+            font-weight: 700;
+            color: var(--success-color);
+            font-size: 0.875rem;
+            margin-bottom: 0.125rem;
+        }
+
+        .checkin-time {
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: var(--text-secondary);
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        /* Back Button */
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            background: var(--white);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            color: var(--text-primary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .back-btn:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+            transform: translateY(-1px);
+            text-decoration: none;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .page-title {
+                font-size: 1.75rem;
+            }
+
+            .summary-stats {
+                grid-template-columns: 1fr;
+                gap: 0.75rem;
+            }
+
+            .calendar-day {
+                font-size: 0.75rem;
+            }
+
+            .checkin-item {
+                padding: 0.75rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Page Header -->
+        <div class="page-header">
+            <h1 class="page-title">
+                <i class="fas fa-calendar-check"></i>
+                Lịch sử Check-in One Xu
+            </h1>
+            <p class="page-subtitle">Theo dõi chuỗi check-in và phần thưởng hàng ngày</p>
+        </div>
+
+        <!-- Summary Stats -->
+        <div class="summary-stats">
+            <div class="card">
+                <div class="stat-card">
+                    <div class="stat-icon total">
+                        <i class="fas fa-calendar-day"></i>
+                    </div>
+                    <div class="stat-value" th:text="${checkins.size()}">0</div>
+                    <div class="stat-label">Tổng check-in</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="stat-card">
+                    <div class="stat-icon streak">
+                        <i class="fas fa-fire"></i>
+                    </div>
+                    <div class="stat-value" th:text="${stats.consecutiveCheckins}">0</div>
+                    <div class="stat-label">Chuỗi liên tiếp</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="stat-card">
+                    <div class="stat-icon earned">
+                        <i class="fas fa-coins"></i>
+                    </div>
+                    <div class="stat-value" th:text="${#numbers.formatDecimal(totalXuFromCheckin, 0, 'COMMA', 0, 'POINT')}">0</div>
+                    <div class="stat-label">Xu từ check-in</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Calendar View -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-calendar-alt"></i>
+                    Lịch check-in tháng này
+                </h3>
+            </div>
+            <div class="card-body">
+                <div class="calendar-header">
+                    <div class="calendar-month" id="calendarMonth">Tháng 10, 2025</div>
+                    <div class="calendar-nav">
+                        <button type="button">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <button type="button">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="calendar-grid" id="calendarGrid">
+                    <!-- Day headers -->
+                    <div class="calendar-day-header">T2</div>
+                    <div class="calendar-day-header">T3</div>
+                    <div class="calendar-day-header">T4</div>
+                    <div class="calendar-day-header">T5</div>
+                    <div class="calendar-day-header">T6</div>
+                    <div class="calendar-day-header">T7</div>
+                    <div class="calendar-day-header">CN</div>
+                    <!-- Days will be generated by JavaScript -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Check-in History -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-list"></i>
+                    Lịch sử chi tiết
+                </h3>
+            </div>
+            <div class="card-body">
+                <div th:if="${checkins.isEmpty()}" class="empty-state">
+                    <i class="fas fa-calendar-times"></i>
+                    <h4>Chưa có lịch sử check-in</h4>
+                    <p>Bắt đầu check-in hàng ngày để nhận thưởng One Xu!</p>
+                </div>
+
+                <ul th:unless="${checkins.isEmpty()}" class="checkin-list">
+                    <li th:each="checkin : ${checkins}" class="checkin-item">
+                        <div class="checkin-info">
+                            <div class="checkin-icon">
+                                <i class="fas fa-check"></i>
+                            </div>
+                            <div class="checkin-details">
+                                <div class="checkin-date" th:text="${#temporals.format(checkin.createdAt, 'dd/MM/yyyy')}">
+                                    14/10/2024
+                                </div>
+                                <div class="checkin-day" th:text="${#temporals.format(checkin.createdAt, 'EEEE', #locale)}">
+                                    Thứ Hai
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="checkin-reward">
+                            <div class="checkin-amount" th:text="'+' + ${#numbers.formatDecimal(checkin.amount, 0, 'COMMA', 0, 'POINT')} + ' Xu'">
+                                +100 Xu
+                            </div>
+                            <div class="checkin-time" th:text="${#temporals.format(checkin.createdAt, 'HH:mm')}">
+                                09:30
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Back Button -->
+        <div class="text-center mt-4">
+            <a href="/onexu/dashboard" class="back-btn">
+                <i class="fas fa-arrow-left"></i>
+                Quay lại Dashboard
+            </a>
+        </div>
+    </div>
+
+    <script src="/js/vendor/jquery-1.12.4.min.js"></script>
+    <script src="/js/bootstrap.min.js"></script>
+    <script>
+        // Calendar with real check-in data
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM loaded, generating calendar with check-in data...');
+            
+            // Get check-in dates from Thymeleaf
+            const checkinDates = /*[[${checkins}]]*/ [];
+            console.log('Raw check-in data from server:', checkinDates);
+            console.log('Type of checkinDates:', typeof checkinDates);
+            console.log('Is array?', Array.isArray(checkinDates));
+            
+            // Convert to array of date strings - lấy từ createdAt của transaction
+            let checkedInDates = [];
+            if (Array.isArray(checkinDates)) {
+                console.log('Processing check-in array with length:', checkinDates.length);
+                checkedInDates = checkinDates.map((checkin, index) => {
+                    console.log(`Checkin ${index}:`, checkin);
+                    if (checkin && checkin.createdAt) {
+                        // Lấy ngày từ createdAt của transaction
+                        let dateStr;
+                        if (checkin.createdAt.year && checkin.createdAt.month && checkin.createdAt.day) {
+                            // LocalDateTime object: {year: 2025, month: 10, day: 15}
+                            const year = checkin.createdAt.year;
+                            const month = String(checkin.createdAt.month).padStart(2, '0');
+                            const day = String(checkin.createdAt.day).padStart(2, '0');
+                            dateStr = `${year}-${month}-${day}`;
+                        } else if (typeof checkin.createdAt === 'string') {
+                            // String format - parse if needed
+                            const date = new Date(checkin.createdAt);
+                            const year = date.getFullYear();
+                            const month = String(date.getMonth() + 1).padStart(2, '0');
+                            const day = String(date.getDate()).padStart(2, '0');
+                            dateStr = `${year}-${month}-${day}`;
+                        } else {
+                            // Try to convert to string
+                            dateStr = checkin.createdAt.toString();
+                        }
+                        console.log(`Converted date ${index}:`, dateStr);
+                        return dateStr;
+                    }
+                    return null;
+                }).filter(date => date !== null);
+            } else {
+                console.log('checkinDates is not an array, type:', typeof checkinDates);
+            }
+            
+            // Debug: Log all processed dates
+            console.log('=== FINAL CHECK-IN DATES ===');
+            checkedInDates.forEach((date, index) => {
+                console.log(`Date ${index + 1}: ${date}`);
+            });
+            console.log('============================');
+            
+            console.log('Final processed check-in dates:', checkedInDates);
+            generateCalendar(checkedInDates);
+        });
+        
+        function generateCalendar(checkedInDates) {
+            const calendarGrid = document.getElementById('calendarGrid');
+            const monthDisplay = document.getElementById('calendarMonth');
+            
+            if (!calendarGrid) {
+                console.error('Calendar grid not found!');
+                return;
+            }
+            
+            // Tìm tháng có nhiều check-in nhất hoặc tháng hiện tại
+            let displayMonth, displayYear;
+            if (checkedInDates.length > 0) {
+                // Tìm tháng có nhiều check-in nhất
+                const monthCounts = {};
+                checkedInDates.forEach(dateStr => {
+                    const dateParts = dateStr.split('-');
+                    if (dateParts.length === 3) {
+                        const yearMonth = `${dateParts[0]}-${dateParts[1]}`;
+                        monthCounts[yearMonth] = (monthCounts[yearMonth] || 0) + 1;
+                    }
+                });
+                
+                // Tìm tháng có nhiều check-in nhất
+                let maxCount = 0;
+                let bestMonth = null;
+                Object.keys(monthCounts).forEach(yearMonth => {
+                    if (monthCounts[yearMonth] > maxCount) {
+                        maxCount = monthCounts[yearMonth];
+                        bestMonth = yearMonth;
+                    }
+                });
+                
+                if (bestMonth) {
+                    const parts = bestMonth.split('-');
+                    displayYear = parseInt(parts[0]);
+                    displayMonth = parseInt(parts[1]) - 1; // JavaScript month is 0-based
+                    console.log('Using month with most check-ins:', displayMonth + 1, displayYear, '(', maxCount, 'check-ins)');
+                } else {
+                    // Fallback to current month
+                    const today = new Date();
+                    displayMonth = today.getMonth();
+                    displayYear = today.getFullYear();
+                    console.log('No valid dates found, using current month:', displayMonth + 1, displayYear);
+                }
+            } else {
+                // Fallback to current month
+                const today = new Date();
+                displayMonth = today.getMonth();
+                displayYear = today.getFullYear();
+                console.log('No check-in data, using current month:', displayMonth + 1, displayYear);
+            }
+            
+            // Update month display
+            if (monthDisplay) {
+                const monthNames = ['Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6',
+                                  'Tháng 7', 'Tháng 8', 'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12'];
+                monthDisplay.textContent = `${monthNames[displayMonth]}, ${displayYear}`;
+            }
+            
+            console.log('Display month:', displayMonth + 1, 'Year:', displayYear);
+            console.log('Checked in dates:', checkedInDates);
+            
+            // Remove existing day elements (keep headers)
+            const existingDays = calendarGrid.querySelectorAll('.calendar-day');
+            existingDays.forEach(day => day.remove());
+            
+            // Get first day of month and number of days
+            const firstDay = new Date(displayYear, displayMonth, 1);
+            const lastDay = new Date(displayYear, displayMonth + 1, 0);
+            const daysInMonth = lastDay.getDate();
+            const startDay = (firstDay.getDay() + 6) % 7; // Convert Sunday=0 to Monday=0
+            
+            // Add empty cells for days before month starts
+            for (let i = 0; i < startDay; i++) {
+                const emptyDay = document.createElement('div');
+                emptyDay.className = 'calendar-day other-month';
+                emptyDay.textContent = '';
+                calendarGrid.appendChild(emptyDay);
+            }
+            
+            // Add days of the month
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dayElement = document.createElement('div');
+                dayElement.className = 'calendar-day';
+                dayElement.textContent = day;
+                
+                // Check if today (only if displaying current month)
+                const today = new Date();
+                if (day === today.getDate() && displayMonth === today.getMonth() && displayYear === today.getFullYear()) {
+                    dayElement.classList.add('today');
+                }
+                
+                // Check if checked in
+                const dateString = `${displayYear}-${String(displayMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                console.log(`Checking date ${day}: ${dateString}`);
+                console.log('Available check-in dates:', checkedInDates);
+                
+                if (checkedInDates.includes(dateString)) {
+                    dayElement.classList.add('checked-in');
+                    console.log(`✓ Marking day ${day} as checked-in: ${dateString}`);
+                } else {
+                    console.log(`✗ Day ${day} not checked-in: ${dateString}`);
+                }
+                
+                calendarGrid.appendChild(dayElement);
+            }
+            
+            console.log('Calendar generation completed. Total days added:', daysInMonth);
+        }
+        
+        function addCalendarNavigation(checkedInDates) {
+            const prevBtn = document.getElementById('prevMonth');
+            const nextBtn = document.getElementById('nextMonth');
+            
+            if (prevBtn) {
+                prevBtn.addEventListener('click', function() {
+                    console.log('Previous month clicked');
+                    // For now, just regenerate with same data
+                    generateCalendar(checkedInDates);
+                });
+            }
+            
+            if (nextBtn) {
+                nextBtn.addEventListener('click', function() {
+                    console.log('Next month clicked');
+                    // For now, just regenerate with same data
+                    generateCalendar(checkedInDates);
+                });
+            }
+        }
+    </script>
+</body>
+</html>

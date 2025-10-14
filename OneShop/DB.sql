@@ -250,6 +250,8 @@ CREATE TABLE dbo.orders (
     estimated_delivery_date DATETIME2,
     shipper_id BIGINT NULL,
     shop_id BIGINT NULL,
+    momo_transaction_id NVARCHAR(255) NULL,
+    momo_request_id NVARCHAR(255) NULL,
     CONSTRAINT FK_orders_user FOREIGN KEY(user_id) REFERENCES dbo.[user](user_id),
     CONSTRAINT FK_orders_shipper FOREIGN KEY(shipper_id) REFERENCES dbo.[user](user_id),
     CONSTRAINT FK_orders_shop FOREIGN KEY(shop_id) REFERENCES dbo.shops(shop_id)
@@ -1034,8 +1036,8 @@ INSERT INTO dbo.promotions (
     200000.00,
     1000,
     0,
-    '2024-01-01 00:00:00',
-    '2024-12-31 23:59:59',
+    '2025-01-01 00:00:00',
+    '2025-12-31 23:59:59',
     1
 ),
 -- Shipping discount
@@ -1049,8 +1051,8 @@ INSERT INTO dbo.promotions (
     50000.00,
     500,
     0,
-    '2024-01-01 00:00:00',
-    '2024-12-31 23:59:59',
+    '2025-01-01 00:00:00',
+    '2025-12-31 23:59:59',
     1
 ),
 -- Fixed amount discount
@@ -1064,23 +1066,23 @@ INSERT INTO dbo.promotions (
     100000.00,
     200,
     0,
-    '2024-01-01 00:00:00',
-    '2024-12-31 23:59:59',
+    '2025-01-01 00:00:00',
+    '2025-12-31 23:59:59',
     1
 ),
 -- Expired promotion
 (
-    N'Khuyến mãi Tết 2024',
-    N'Giảm giá đặc biệt nhân dịp Tết Nguyên Đán 2024',
-    'TET2024',
+    N'Khuyến mãi Tết 2025',
+    N'Giảm giá đặc biệt nhân dịp Tết Nguyên Đán 2025',
+    'TET2025',
     'PRODUCT_PERCENTAGE',
     15.00,
     200000.00,
     150000.00,
     100,
     95,
-    '2024-01-01 00:00:00',
-    '2024-02-15 23:59:59',
+    '2025-01-01 00:00:00',
+    '2025-02-15 23:59:59',
     0
 ),
 -- Expiring soon promotion
@@ -1094,8 +1096,8 @@ INSERT INTO dbo.promotions (
     500000.00,
     50,
     5,
-    '2024-11-01 00:00:00',
-    '2024-12-31 23:59:59',
+    '2025-11-01 00:00:00',
+    '2025-12-31 23:59:59',
     1
 );
 GO
@@ -1285,19 +1287,6 @@ GO
    ONE XU SYSTEM
    =============================== */
 
-/* ===============================
-   TABLE: one_xu_checkin
-   =============================== */
-CREATE TABLE dbo.one_xu_checkin (
-    checkin_id BIGINT IDENTITY(1,1) PRIMARY KEY,
-    user_id BIGINT NOT NULL,
-    checkin_date DATE NOT NULL,
-    xu_earned DECIMAL(18,2) NOT NULL,
-    created_at DATETIME2 DEFAULT GETDATE(),
-    CONSTRAINT FK_checkin_user FOREIGN KEY(user_id) REFERENCES dbo.[user](user_id),
-    CONSTRAINT UK_checkin_user_date UNIQUE(user_id, checkin_date)
-);
-GO
 
 /* ===============================
    TABLE: one_xu_transactions
@@ -1338,10 +1327,32 @@ INSERT INTO dbo.one_xu_weekly_schedule (day_of_week, xu_reward, description) VAL
 GO
 
 -- Tạo indexes cho One Xu system
-CREATE INDEX IX_one_xu_checkin_user_date ON dbo.one_xu_checkin(user_id, checkin_date);
 CREATE INDEX IX_one_xu_transactions_user ON dbo.one_xu_transactions(user_id);
 CREATE INDEX IX_one_xu_transactions_type ON dbo.one_xu_transactions(transaction_type);
 CREATE INDEX IX_one_xu_transactions_created ON dbo.one_xu_transactions(created_at);
+GO
+
+-- Thêm dữ liệu mẫu cho One Xu system
+-- Cập nhật số dư One Xu cho các user hiện có
+UPDATE [user] SET one_xu_balance = 1000 WHERE user_id = 1; -- Chi
+UPDATE [user] SET one_xu_balance = 500 WHERE user_id = 2;  -- Đồng
+UPDATE [user] SET one_xu_balance = 2000 WHERE user_id = 3; -- User Demo
+
+-- Thêm một số transaction mẫu (bao gồm check-in)
+INSERT INTO one_xu_transactions (user_id, transaction_type, amount, balance_after, description, order_id, created_at) VALUES
+(1, 'CHECKIN', 100, 100, 'Check-in Thứ 2 - 100 Xu', NULL, '2025-10-10 09:00:00'),
+(1, 'CHECKIN', 100, 200, 'Check-in Thứ 3 - 100 Xu', NULL, '2025-10-11 08:30:00'),
+(1, 'CHECKIN', 200, 400, 'Check-in Thứ 4 - 200 Xu', NULL, '2025-10-12 10:15:00'),
+(1, 'ORDER_REWARD', 150, 550, 'Thưởng từ đơn hàng #1 (1% giá trị đơn hàng)', 1, '2025-10-12 14:30:00'),
+(2, 'CHECKIN', 100, 100, 'Check-in Thứ 2 - 100 Xu', NULL, '2025-10-10 14:20:00'),
+(3, 'CHECKIN', 100, 100, 'Check-in Thứ 2 - 100 Xu', NULL, '2025-10-10 16:45:00'),
+(3, 'CHECKIN', 100, 200, 'Check-in Thứ 3 - 100 Xu', NULL, '2025-10-11 11:30:00'),
+(3, 'CHECKIN', 200, 400, 'Check-in Thứ 4 - 200 Xu', NULL, '2025-10-12 13:15:00'),
+(3, 'CHECKIN', 200, 600, 'Check-in Thứ 5 - 200 Xu', NULL, '2025-10-13 09:45:00'),
+(3, 'CHECKIN', 300, 900, 'Check-in Thứ 6 - 300 Xu', NULL, '2025-10-14 12:00:00'),
+(3, 'CHECKIN', 300, 1200, 'Check-in Thứ 7 - 300 Xu', NULL, '2025-10-15 15:30:00'),
+(3, 'CHECKIN', 1000, 2200, 'Check-in Chủ nhật - 1000 Xu', NULL, '2025-10-16 10:00:00'),
+(3, 'ORDER_REWARD', 250, 2450, 'Thưởng từ đơn hàng #3 (1% giá trị đơn hàng)', 3, '2025-10-16 16:20:00');
 GO
 
 

@@ -334,11 +334,16 @@
                 <div class="sidebar-user-info">
                     <p class="name" th:text="${user.name}">User Name</p>
                     <p class="email" th:text="${user.email}">user@email.com</p>
+                    <div class="onexu-balance" style="margin-top: 8px; padding: 6px 12px; background: linear-gradient(135deg, #ff6b6b, #ee5a24); color: white; border-radius: 20px; font-size: 0.8rem; font-weight: 600; text-align: center;">
+                        <i class="fa-solid fa-coins"></i> 
+                        <span th:text="${#numbers.formatDecimal(user.oneXuBalance, 0, 'COMMA', 0, 'POINT')}">0</span> Xu
+                    </div>
                 </div>
             </div>
             <nav class="sidebar-nav">
                 <ul>
                     <li><a href="/profile" class="active"><i class="fa-solid fa-user-pen"></i> Hồ sơ của tôi</a></li>
+                    <li><a href="/onexu/dashboard"><i class="fa-solid fa-coins"></i> One Xu</a></li>
                     <li><a href="/user/my-orders"><i class="fa-solid fa-box-archive"></i> Lịch sử đơn hàng</a></li>
                     <li><a href="/user/vouchers"><i class="fa-solid fa-ticket"></i> Kho voucher</a></li>
                     <li><a href="/change-password"><i class="fa-solid fa-key"></i> Đổi mật khẩu</a></li>
