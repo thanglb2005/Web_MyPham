@@ -24,6 +24,10 @@ public interface OrderService {
 
     void assignShipper(Long orderId, User shipper);
 
+    void updateOrder(Order order);
+
+    void deleteOrder(Long orderId);
+
     // ===== VENDOR ORDER MANAGEMENT METHODS =====
 
     /**

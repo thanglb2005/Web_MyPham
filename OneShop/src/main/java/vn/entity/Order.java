@@ -81,11 +81,18 @@ public class Order {
 
     // Payment fields from DB schema
     // Note: DB stores payment_status as BIT (0/1). We map it to Boolean for simplicity.
-    @Column(name = "payment_status")
-    private Boolean paymentPaid; // true = PAID, false/null = not paid
+    @Column(name = "payment_status", nullable = false)
+    private Boolean paymentPaid = false; // true = PAID, false = not paid
 
     @Column(name = "payment_date")
     private LocalDateTime paymentDate;
+
+    // MoMo payment specific fields
+    @Column(name = "momo_transaction_id")
+    private String momoTransactionId;
+
+    @Column(name = "momo_request_id")
+    private String momoRequestId;
 
     public enum OrderStatus {
         PENDING,                // Cho xac nhan
@@ -100,8 +107,7 @@ public class Order {
     public enum PaymentMethod {
         COD,
         MOMO,
-        BANK_TRANSFER,
-        VIETQR
+        BANK_TRANSFER
     }
 
     public enum PaymentStatus {

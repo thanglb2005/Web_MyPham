@@ -213,7 +213,7 @@
                             <p class="mb-2"><strong>Phương thức thanh toán:</strong></p>
                             <p class="text-muted" th:text="${order.paymentMethod.name() == 'COD'} ? 'Thanh toán khi nhận hàng' :
                                                      ${order.paymentMethod.name() == 'MOMO'} ? 'Ví MoMo' :
-                                                     ${order.paymentMethod.name() == 'BANK_TRANSFER'} ? 'Chuyển khoản ngân hàng' : 'VietQR'">
+                                                     ${order.paymentMethod.name() == 'BANK_TRANSFER'} ? 'Chuyển khoản ngân hàng' : 'Khác'">
                                 Thanh toán khi nhận hàng
                             </p>
                             <div th:if="${order.note != null and order.note != ''}">

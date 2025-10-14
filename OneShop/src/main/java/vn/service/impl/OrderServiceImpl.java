@@ -53,25 +53,46 @@ public class OrderServiceImpl implements OrderService {
         order.setPaymentMethod(paymentMethod);
         order.setStatus(Order.OrderStatus.PENDING);
         order.setOrderDate(LocalDateTime.now());
+        order.setPaymentPaid(false); // Set payment status to false initially
 
-        double totalAmount = cartItems.values().stream()
-                .mapToDouble(item -> item.getQuantity() * item.getUnitPrice())
-                .sum();
+        // Debug logging for order calculation
+        System.out.println("=== Order Calculation Debug ===");
+        double totalAmount = 0;
+        for (CartItem item : cartItems.values()) {
+            double itemTotal = item.getQuantity() * item.getUnitPrice();
+            totalAmount += itemTotal;
+            System.out.println("Order Item: " + item.getName() + 
+                " | Qty: " + item.getQuantity() + 
+                " | Unit Price: " + item.getUnitPrice() + 
+                " | Total: " + itemTotal);
+        }
+        System.out.println("Final Order Total Amount: " + totalAmount);
+        System.out.println("=============================");
+        
         order.setTotalAmount(totalAmount);
 
         Order savedOrder = orderRepository.save(order);
 
         List<OrderDetail> orderDetails = new ArrayList<>();
         for (CartItem cartItem : cartItems.values()) {
-            OrderDetail orderDetail = new OrderDetail();
-            orderDetail.setOrder(savedOrder);
-            orderDetail.setProduct(productRepository.findById(cartItem.getId())
-                    .orElseThrow(() -> new RuntimeException("Product not found: " + cartItem.getId())));
-            orderDetail.setProductName(cartItem.getName());
-            orderDetail.setUnitPrice(cartItem.getUnitPrice());
-            orderDetail.setQuantity(cartItem.getQuantity());
-            orderDetail.setTotalPrice(cartItem.getTotalPrice());
-            orderDetails.add(orderDetail);
+            try {
+                OrderDetail orderDetail = new OrderDetail();
+                orderDetail.setOrder(savedOrder);
+                
+                // Debug logging
+                System.out.println("Processing cart item: ID=" + cartItem.getId() + ", Name=" + cartItem.getName());
+                
+                orderDetail.setProduct(productRepository.findById(cartItem.getId())
+                        .orElseThrow(() -> new RuntimeException("Product not found: " + cartItem.getId())));
+                orderDetail.setProductName(cartItem.getName());
+                orderDetail.setUnitPrice(cartItem.getUnitPrice());
+                orderDetail.setQuantity(cartItem.getQuantity());
+                orderDetail.setTotalPrice(cartItem.getTotalPrice());
+                orderDetails.add(orderDetail);
+            } catch (Exception e) {
+                System.err.println("Error processing cart item " + cartItem.getId() + ": " + e.getMessage());
+                throw e;
+            }
         }
         orderDetailRepository.saveAll(orderDetails);
 
@@ -166,5 +187,15 @@ public class OrderServiceImpl implements OrderService {
     public Long countByShopIdIn(List<Long> shopIds) {
         // Tuân thủ logic cũ
         return orderRepository.countByShopIdIn(shopIds);
+    }
+
+    @Override
+    public void updateOrder(Order order) {
+        orderRepository.save(order);
+    }
+
+    @Override
+    public void deleteOrder(Long orderId) {
+        orderRepository.deleteById(orderId);
     }
 }
