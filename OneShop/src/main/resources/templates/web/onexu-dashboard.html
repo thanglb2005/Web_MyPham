@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>One Xu Dashboard - OneShop</title>
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/font-awesome.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --primary-light: #3b82f6;
+            --primary-dark: #1d4ed8;
+            --secondary-color: #64748b;
+            --success-color: #10b981;
+            --success-light: #34d399;
+            --warning-color: #f59e0b;
+            --warning-light: #fbbf24;
+            --danger-color: #ef4444;
+            --light-bg: #f8fafc;
+            --white: #ffffff;
+            --border-color: #e2e8f0;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -1px rgb(0 0 0 / 0.06);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -2px rgb(0 0 0 / 0.05);
+            --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 10px 10px -5px rgb(0 0 0 / 0.04);
+            --radius-sm: 0.375rem;
+            --radius-md: 0.5rem;
+            --radius-lg: 0.75rem;
+            --radius-xl: 1rem;
+            --gradient-primary: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+            --gradient-success: linear-gradient(135deg, var(--success-color) 0%, #059669 100%);
+            --gradient-card: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--light-bg);
+            color: var(--text-primary);
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+
+        /* Header */
+        .page-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .page-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .page-subtitle {
+            font-size: 1.125rem;
+            color: var(--text-secondary);
+            font-weight: 400;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--white);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+            transition: all 0.2s ease;
+        }
+
+        .card:hover {
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+        }
+
+        .card-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            background: var(--white);
+        }
+
+        .card-body {
+            padding: 1.5rem;
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Balance Card */
+        .balance-card {
+            background: linear-gradient(135deg, var(--primary-color) 0%, #1d4ed8 100%);
+            color: var(--white);
+            border: none;
+        }
+
+        .balance-card .card-header {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            background: transparent;
+            position: relative;
+            z-index: 2;
+        }
+
+        .balance-card .card-title {
+            color: var(--white);
+        }
+
+        .balance-amount {
+            font-size: 3rem;
+            font-weight: 700;
+            margin: 1rem 0;
+            text-align: center;
+        }
+
+        .balance-label {
+            text-align: center;
+            opacity: 0.9;
+            font-size: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        /* Check-in Button */
+        .checkin-btn {
+            width: 100%;
+            background: var(--success-color);
+            border: none;
+            color: var(--white);
+            padding: 0.875rem 1.5rem;
+            border-radius: var(--radius-md);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .checkin-btn:hover:not(:disabled) {
+            background: #059669;
+            transform: translateY(-1px);
+        }
+
+        .checkin-btn:disabled {
+            background: var(--secondary-color);
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 1.5rem;
+        }
+
+        .stat-icon {
+            width: 3rem;
+            height: 3rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            font-size: 1.25rem;
+        }
+
+        .stat-icon.earned {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success-color);
+        }
+
+        .stat-icon.spent {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger-color);
+        }
+
+        .stat-icon.checkins {
+            background: rgba(37, 99, 235, 0.1);
+            color: var(--primary-color);
+        }
+
+        .stat-icon.consecutive {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning-color);
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        /* Weekly Schedule */
+        .schedule-card {
+            margin-bottom: 2rem;
+        }
+
+        .schedule-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 0.75rem;
+        }
+
+        .schedule-day {
+            text-align: center;
+            padding: 1rem 0.5rem;
+            border-radius: var(--radius-md);
+            background: var(--light-bg);
+            border: 1px solid var(--border-color);
+            transition: all 0.2s ease;
+        }
+
+        .schedule-day:hover {
+            background: var(--primary-color);
+            color: var(--white);
+            transform: translateY(-2px);
+        }
+
+        .schedule-day.today {
+            background: var(--primary-color);
+            color: var(--white);
+            border-color: var(--primary-color);
+        }
+
+        .schedule-day.checked-in {
+            background: linear-gradient(135deg, #f59e0b, #f97316);
+            color: var(--white);
+            border-color: #f59e0b;
+            font-weight: 700;
+            box-shadow: 0 2px 4px rgba(245, 158, 11, 0.3);
+            transform: scale(1.05);
+        }
+
+        .schedule-day.checked-in:hover {
+            background: linear-gradient(135deg, #d97706, #ea580c);
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(245, 158, 11, 0.4);
+        }
+
+        .day-name {
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .day-reward {
+            font-size: 1rem;
+            font-weight: 700;
+        }
+
+        /* Recent Check-ins */
+        .checkin-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .checkin-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+            transition: background-color 0.2s ease;
+        }
+
+        .checkin-item:last-child {
+            border-bottom: none;
+        }
+
+        .checkin-item:hover {
+            background: var(--light-bg);
+        }
+
+        .checkin-date {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .checkin-reward {
+            font-weight: 700;
+            color: var(--success-color);
+        }
+
+        /* Action Buttons */
+        .action-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .action-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 1.5rem;
+            background: var(--white);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            text-decoration: none;
+            color: var(--text-primary);
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .action-btn:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+            text-decoration: none;
+        }
+
+        .action-btn i {
+            font-size: 2rem;
+            margin-bottom: 0.75rem;
+            color: var(--primary-color);
+        }
+
+        .action-btn:hover i {
+            color: var(--primary-color);
+        }
+
+        .action-btn-text {
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        /* Alert */
+        .alert {
+            padding: 1rem 1.5rem;
+            border-radius: var(--radius-md);
+            margin-bottom: 1rem;
+            border: 1px solid transparent;
+        }
+
+        .alert-success {
+            background: rgba(16, 185, 129, 0.1);
+            border-color: var(--success-color);
+            color: #065f46;
+        }
+
+        .alert-danger {
+            background: rgba(239, 68, 68, 0.1);
+            border-color: var(--danger-color);
+            color: #991b1b;
+        }
+
+        .alert-info {
+            background: rgba(37, 99, 235, 0.1);
+            border-color: var(--primary-color);
+            color: #1e40af;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .page-title {
+                font-size: 2rem;
+            }
+
+            .balance-amount {
+                font-size: 2.5rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                gap: 1rem;
+            }
+
+            .schedule-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+
+            .action-buttons {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .schedule-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        /* Loading states */
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        .spinner {
+            animation: spin 1s linear infinite;
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateX(-50%) translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0px) rotate(0deg);
+            }
+            50% {
+                transform: translateY(-10px) rotate(180deg);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.02);
+            }
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes scaleIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        
+
+        <!-- Balance Card -->
+        <div class="card balance-card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-wallet"></i>
+                    Số dư One Xu
+                </h3>
+            </div>
+            <div class="card-body">
+                <div class="balance-amount" th:text="${#numbers.formatDecimal(stats.currentBalance, 0, 'COMMA', 0, 'POINT')}">0</div>
+                <div class="balance-label">Xu có thể sử dụng</div>
+                
+                <button class="checkin-btn" th:disabled="${hasCheckedInToday}" 
+                        onclick="performCheckin()" th:text="${hasCheckedInToday ? 'Đã check-in hôm nay' : 'Check-in ngay'}">
+                    <i class="fas fa-calendar-check"></i>
+                    Check-in ngay
+                </button>
+            </div>
+        </div>
+
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+            <div class="card">
+                <div class="stat-item">
+                    <div class="stat-icon earned">
+                        <i class="fas fa-arrow-up"></i>
+                    </div>
+                    <div class="stat-value" th:text="${#numbers.formatDecimal(stats.totalEarned, 0, 'COMMA', 0, 'POINT')}">0</div>
+                    <div class="stat-label">Tổng Xu đã nhận</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="stat-item">
+                    <div class="stat-icon spent">
+                        <i class="fas fa-arrow-down"></i>
+                    </div>
+                    <div class="stat-value" th:text="${#numbers.formatDecimal(stats.totalSpent, 0, 'COMMA', 0, 'POINT')}">0</div>
+                    <div class="stat-label">Tổng Xu đã dùng</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="stat-item">
+                    <div class="stat-icon checkins">
+                        <i class="fas fa-calendar-check"></i>
+                    </div>
+                    <div class="stat-value" th:text="${stats.totalCheckins}">0</div>
+                    <div class="stat-label">Tổng số check-in</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="stat-item">
+                    <div class="stat-icon consecutive">
+                        <i class="fas fa-fire"></i>
+                    </div>
+                    <div class="stat-value" th:text="${stats.consecutiveCheckins}">0</div>
+                    <div class="stat-label">Check-in liên tiếp</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Weekly Schedule -->
+        <div class="card schedule-card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-calendar-week"></i>
+                    Lịch trình tuần
+                </h3>
+            </div>
+            <div class="card-body">
+                <div class="schedule-grid">
+                    <div th:each="schedule : ${weeklySchedule}" 
+                         class="schedule-day" 
+                         th:classappend="${schedule.dayOfWeek == T(java.time.LocalDate).now().getDayOfWeek().getValue() ? 'today' : ''}"
+                         th:data-day="${schedule.dayOfWeek}">
+                        <div class="day-name" th:text="${schedule.dayName}">Thứ 2</div>
+                        <div class="day-reward" th:text="${#numbers.formatDecimal(schedule.xuReward, 0, 'COMMA', 0, 'POINT')} + ' Xu'">100 Xu</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Check-ins -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-history"></i>
+                    Check-in gần đây
+                </h3>
+            </div>
+            <div class="card-body">
+                <div th:if="${recentCheckins.isEmpty()}" class="text-center text-muted">
+                    <i class="fas fa-calendar-times fa-2x mb-3"></i>
+                    <p>Chưa có lịch sử check-in nào</p>
+                </div>
+                
+                <ul th:unless="${recentCheckins.isEmpty()}" class="checkin-list">
+                    <li th:each="checkin : ${recentCheckins}" class="checkin-item">
+                        <div class="checkin-date" th:text="${#temporals.format(checkin.createdAt, 'dd/MM/yyyy')}">01/01/2024</div>
+                        <div class="checkin-reward" th:text="'+' + ${#numbers.formatDecimal(checkin.amount, 0, 'COMMA', 0, 'POINT')} + ' Xu'">+100 Xu</div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+            <a href="/onexu/transactions" class="action-btn">
+                <i class="fas fa-list"></i>
+                <span class="action-btn-text">Lịch sử giao dịch</span>
+            </a>
+            
+            <a href="/onexu/checkins" class="action-btn">
+                <i class="fas fa-calendar-check"></i>
+                <span class="action-btn-text">Lịch sử check-in</span>
+            </a>
+            
+            <a href="/profile" class="action-btn">
+                <i class="fas fa-user"></i>
+                <span class="action-btn-text">Về trang cá nhân</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Alert Container -->
+    <div id="alertContainer" style="position: fixed; top: 20px; right: 20px; z-index: 9999;"></div>
+
+    <script src="js/vendor/jquery-1.12.4.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script>
+        function showAlert(message, type) {
+            const alertContainer = document.getElementById('alertContainer');
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type}`;
+            alertDiv.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'danger' ? 'exclamation-circle' : 'info-circle'}"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+            
+            alertContainer.appendChild(alertDiv);
+            
+            setTimeout(() => {
+                alertDiv.style.opacity = '0';
+                alertDiv.style.transform = 'translateX(100%)';
+                setTimeout(() => {
+                    alertDiv.remove();
+                }, 300);
+            }, 5000);
+        }
+        
+        function performCheckin() {
+            console.log('performCheckin called');
+            
+            const btn = document.querySelector('.checkin-btn');
+            if (!btn) {
+                console.error('Check-in button not found');
+                showAlert('Không tìm thấy nút check-in!', 'danger');
+                return;
+            }
+            
+            if (btn.disabled) {
+                console.log('Button is disabled');
+                showAlert('Bạn đã check-in hôm nay rồi!', 'info');
+                return;
+            }
+            
+            const originalText = btn.innerHTML;
+            console.log('Starting check-in process...');
+            
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner spinner"></i> Đang xử lý...';
+            
+            fetch('/onexu/checkin', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => {
+                console.log('Response status:', response.status);
+                return response.json();
+            })
+            .then(data => {
+                console.log('Response data:', data);
+                if (data.success) {
+                    showAlert(data.message, 'success');
+                    setTimeout(() => {
+                        location.reload();
+                    }, 2000);
+                } else {
+                    showAlert(data.message, 'danger');
+                    btn.disabled = false;
+                    btn.innerHTML = originalText;
+                }
+            })
+            .catch(error => {
+                console.error('Check-in error:', error);
+                showAlert('Có lỗi xảy ra, vui lòng thử lại!', 'danger');
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            });
+        }
+        
+        // Auto refresh balance every 30 seconds
+        setInterval(() => {
+            fetch('/onexu/balance')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.querySelector('.balance-amount').textContent =
+                        new Intl.NumberFormat('vi-VN').format(data.balance);
+                }
+            })
+            .catch(error => console.log('Error refreshing balance:', error));
+        }, 30000);
+        
+        // Mark checked-in days in weekly schedule
+        function markCheckedInDays() {
+            console.log('=== MARKING CHECKED-IN DAYS ===');
+            
+            // Get check-in data from Thymeleaf
+            const allCheckins = /*[[${allCheckins}]]*/ [];
+            console.log('All check-ins from server:', allCheckins);
+            console.log('Number of check-ins:', allCheckins.length);
+            
+            // Get current week's days
+            const today = new Date();
+            console.log('Today:', today);
+            const currentDay = today.getDay(); // 0 = Sunday, 1 = Monday, etc.
+            console.log('Current day of week:', currentDay);
+            
+            const monday = new Date(today);
+            monday.setDate(today.getDate() - currentDay + 1); // Get Monday of current week
+            console.log('Monday of this week:', monday);
+            
+            // Create array of this week's dates
+            const weekDates = [];
+            for (let i = 0; i < 7; i++) {
+                const date = new Date(monday);
+                date.setDate(monday.getDate() + i);
+                weekDates.push(date);
+            }
+            
+            console.log('Week dates (Monday to Sunday):', weekDates.map(d => d.toDateString()));
+            
+            // Check each day in the schedule
+            const scheduleDays = document.querySelectorAll('.schedule-day');
+            console.log('Found schedule days:', scheduleDays.length);
+            
+            scheduleDays.forEach((dayElement, index) => {
+                const dayOfWeek = parseInt(dayElement.getAttribute('data-day'));
+                console.log(`\n--- Processing day ${index + 1}: Day of week ${dayOfWeek} ---`);
+                
+                // Convert dayOfWeek to JavaScript day (1=Monday -> 1, 7=Sunday -> 0)
+                const jsDay = dayOfWeek === 7 ? 0 : dayOfWeek;
+                const weekDate = weekDates[jsDay];
+                
+                if (weekDate) {
+                    const dateStr = formatDateForComparison(weekDate);
+                    console.log('Checking date:', dateStr);
+                    
+                    // Check if this date has a check-in
+                    const hasCheckin = allCheckins.some((checkin, checkinIndex) => {
+                        if (checkin && checkin.createdAt) {
+                            let checkinDateStr;
+                            if (checkin.createdAt.year && checkin.createdAt.month && checkin.createdAt.day) {
+                                // LocalDateTime object
+                                const year = checkin.createdAt.year;
+                                const month = String(checkin.createdAt.month).padStart(2, '0');
+                                const day = String(checkin.createdAt.day).padStart(2, '0');
+                                checkinDateStr = `${year}-${month}-${day}`;
+                                console.log(`Checkin ${checkinIndex}: LocalDateTime -> ${checkinDateStr}`);
+                            } else if (typeof checkin.createdAt === 'string') {
+                                // String format
+                                const date = new Date(checkin.createdAt);
+                                const year = date.getFullYear();
+                                const month = String(date.getMonth() + 1).padStart(2, '0');
+                                const day = String(date.getDate()).padStart(2, '0');
+                                checkinDateStr = `${year}-${month}-${day}`;
+                                console.log(`Checkin ${checkinIndex}: String -> ${checkinDateStr}`);
+                            }
+                            const matches = checkinDateStr === dateStr;
+                            console.log(`  Comparing ${checkinDateStr} === ${dateStr} = ${matches}`);
+                            return matches;
+                        }
+                        return false;
+                    });
+                    
+                    if (hasCheckin) {
+                        dayElement.classList.add('checked-in');
+                        console.log('✅ MARKED day', dayOfWeek, 'as checked-in');
+                    } else {
+                        console.log('❌ Day', dayOfWeek, 'not checked-in');
+                    }
+                } else {
+                    console.log('❌ No week date found for day', dayOfWeek);
+                }
+            });
+            
+            console.log('=== END MARKING CHECKED-IN DAYS ===');
+        }
+        
+        function formatDateForComparison(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('One Xu Dashboard loaded');
+            
+            // Mark checked-in days in weekly schedule
+            markCheckedInDays();
+            
+            // Check check-in button
+            const checkinBtn = document.querySelector('.checkin-btn');
+            if (checkinBtn) {
+                console.log('Check-in button found:', checkinBtn);
+                console.log('Button disabled:', checkinBtn.disabled);
+                
+                checkinBtn.addEventListener('click', function(e) {
+                    console.log('Check-in button clicked!');
+                });
+            }
+            
+            // Add hover effects to action buttons
+            const actionBtns = document.querySelectorAll('.action-btn');
+            actionBtns.forEach(btn => {
+                btn.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-2px)';
+                });
+                
+                btn.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0)';
+                });
+            });
+        });
+    </script>
+</body>
+</html>

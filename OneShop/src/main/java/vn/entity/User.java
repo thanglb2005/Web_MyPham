@@ -44,6 +44,9 @@ public class User implements Serializable {
     private Date registerDate;
     
     private Boolean status;
+    
+    @Column(name = "one_xu_balance")
+    private Double oneXuBalance = 0.0;
 
     @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinTable(name = "users_roles",

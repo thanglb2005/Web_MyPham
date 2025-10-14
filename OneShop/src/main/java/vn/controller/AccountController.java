@@ -11,6 +11,7 @@ import org.springframework.web.multipart.MultipartFile;
 import vn.entity.User;
 import vn.repository.UserRepository;
 import vn.service.ImageStorageService;
+import vn.service.OneXuService;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -23,6 +24,9 @@ public class AccountController {
 
     @Autowired
     private ImageStorageService imageStorageService;
+    
+    @Autowired
+    private OneXuService oneXuService;
 
     @GetMapping("/profile")
     public String profile(HttpSession session, Model model) {
@@ -31,15 +35,22 @@ public class AccountController {
             return "redirect:/login";
         }
         
+        // Đồng bộ hóa số dư One Xu trước khi hiển thị profile
+        oneXuService.syncUserBalance(user.getUserId());
+        
+        // Load fresh user data from database
+        User freshUser = userRepository.findById(user.getUserId()).orElse(user);
+        session.setAttribute("user", freshUser);
+        
         // Format register date
         String formattedDate = "";
-        if (user.getRegisterDate() != null) {
+        if (freshUser.getRegisterDate() != null) {
             SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
-            formattedDate = sdf.format(user.getRegisterDate());
+            formattedDate = sdf.format(freshUser.getRegisterDate());
         }
         
         // Add user statistics (mock data for now)
-        model.addAttribute("user", user);
+        model.addAttribute("user", freshUser);
         model.addAttribute("formattedRegisterDate", formattedDate);
         model.addAttribute("totalOrders", 5); // Mock data
         model.addAttribute("totalSpent", 2500000); // Mock data

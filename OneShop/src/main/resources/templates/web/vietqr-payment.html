@@ -177,12 +177,12 @@
     </style>
 </head>
 <body>
-    <div class="vietqr-container">
+            <div class="vietqr-container">
         <div class="text-center mb-4">
             <h2><i class="fas fa-qrcode"></i> Thanh toán VietQR</h2>
             <p class="text-muted">Quét mã QR để thanh toán qua ngân hàng MB Bank</p>
-        </div>
-        
+                    </div>
+                    
         <!-- QR Code Section -->
         <div class="qr-section">
             <h4>Mã QR thanh toán</h4>
@@ -190,8 +190,8 @@
                 <img th:src="${qrCodeImage}" alt="VietQR Code" />
             </div>
             <p class="text-muted">Sử dụng ứng dụng ngân hàng MB Bank để quét mã QR</p>
-        </div>
-        
+                    </div>
+                    
         <!-- Order Information -->
         <div class="order-info" th:if="${order}">
             <h5><i class="fas fa-receipt"></i> Thông tin đơn hàng</h5>
@@ -206,32 +206,32 @@
             <div class="info-row">
                 <span class="info-label">Ngày đặt:</span>
                 <span class="info-value"><span th:text="${#temporals.format(order.orderDate, 'dd/MM/yyyy HH:mm')}"></span></span>
-            </div>
-        </div>
-        
-        <!-- Bank Information -->
-        <div class="bank-info">
+                    </div>
+                    </div>
+                    
+                    <!-- Bank Information -->
+                    <div class="bank-info">
             <h6><i class="fas fa-university"></i> Thông tin chuyển khoản</h6>
             <div class="bank-details">
                 <div class="bank-detail">
                     <strong>Ngân hàng</strong>
                     <span>MB Bank (Military Bank)</span>
-                </div>
+                    </div>
                 <div class="bank-detail">
                     <strong>Số tài khoản</strong>
                     <span>0373611257</span>
-                </div>
+                        </div>
                 <div class="bank-detail">
                     <strong>Tên tài khoản</strong>
                     <span>LE VAN CHIEN THANG</span>
-                </div>
+                        </div>
                 <div class="bank-detail">
                     <strong>Nội dung</strong>
                     <span>Thanh toan don hang #<span th:text="${order.orderId}"></span></span>
-                </div>
-            </div>
-        </div>
-        
+                        </div>
+                        </div>
+                    </div>
+                    
         <!-- Instructions -->
         <div class="instructions">
             <h5><i class="fas fa-info-circle"></i> Hướng dẫn thanh toán</h5>
@@ -242,18 +242,18 @@
                 <li>Kiểm tra thông tin và xác nhận thanh toán</li>
                 <li>Đơn hàng sẽ được xử lý tự động sau khi thanh toán thành công</li>
             </ol>
-        </div>
-        
-        <!-- Action Buttons -->
-        <div class="action-buttons">
+                    </div>
+                    
+                    <!-- Action Buttons -->
+                    <div class="action-buttons">
             <a href="/products" class="btn btn-secondary">
                 <i class="fas fa-arrow-left"></i> Tiếp tục mua sắm
             </a>
             <a href="/user/my-orders" class="btn btn-primary">
                 <i class="fas fa-list"></i> Xem đơn hàng
-            </a>
-        </div>
-    </div>
+                        </a>
+                    </div>
+                </div>
     
     <script src="/vendor/jquery/jquery.min.js"></script>
     <script src="/vendor/bootstrap/bootstrap.bundle.min.js"></script>

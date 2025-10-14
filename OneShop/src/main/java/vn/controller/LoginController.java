@@ -95,7 +95,7 @@ public class LoginController {
                 return "redirect:/";
             }
         } else {
-            model.addAttribute("error", "Email hoáº·c máº­t kháº©u khÃ´ng Ä‘Ãºng!");
+            model.addAttribute("error", "Email hoặc mật khẩu không đúng!");
             return "login";
         }
     }
