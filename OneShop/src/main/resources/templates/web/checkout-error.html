@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lỗi thanh toán - OneShop</title>
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/font-awesome.min.css">
+    <link rel="stylesheet" href="css/themify-icons.css">
+    <link rel="stylesheet" href="css/pe-icon-7-stroke.css">
+    <link rel="stylesheet" href="css/owl.carousel.min.css">
+    <link rel="stylesheet" href="css/owl.theme.default.min.css">
+    <link rel="stylesheet" href="css/venobox.css">
+    <link rel="stylesheet" href="css/animate.css">
+    <link rel="stylesheet" href="css/slick.css">
+    <link rel="stylesheet" href="css/meanmenu.min.css">
+    <link rel="stylesheet" href="css/bundle.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/responsive.css">
+    <link rel="stylesheet" href="css/checkout.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="payment-error-page">
+        <!-- Background -->
+        <div class="error-bg"></div>
+        
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-6 col-md-8">
+                    <div class="error-card">
+                        <!-- Error Icon with Animation -->
+                        <div class="error-icon-container">
+                            <div class="error-icon">
+                                <i class="fas fa-times"></i>
+                            </div>
+                            <div class="error-ripple"></div>
+                        </div>
+                        
+                        <!-- Error Message -->
+                        <div class="error-content">
+                            <h1 class="error-title">Thanh toán thất bại!</h1>
+                            <p class="error-subtitle" th:text="${error}">Có lỗi xảy ra trong quá trình thanh toán. Vui lòng thử lại.</p>
+                            
+                            <!-- Order Information -->
+                            <div class="order-summary" th:if="${order}">
+                                <div class="order-header">
+                                    <h3><i class="fas fa-receipt"></i> Thông tin đơn hàng</h3>
+                                </div>
+                                <div class="order-details">
+                                    <div class="detail-row">
+                                        <span class="label">Mã đơn hàng</span>
+                                        <span class="value order-id">#<span th:text="${order.orderId}"></span></span>
+                                    </div>
+                                    <div class="detail-row">
+                                        <span class="label">Tổng tiền</span>
+                                        <span class="value amount"><span th:text="${#numbers.formatDecimal(order.totalAmount, 0, 'COMMA', 0, 'POINT')}"></span> VNĐ</span>
+                                    </div>
+                                    <div class="detail-row">
+                                        <span class="label">Phương thức</span>
+                                        <span class="value payment-method">
+                                            <i class="fab fa-cc-momo"></i>
+                                            <span th:text="${order.paymentMethod}"></span>
+                                        </span>
+                                    </div>
+                                    <div class="detail-row">
+                                        <span class="label">Ngày đặt</span>
+                                        <span class="value date"><span th:text="${#temporals.format(order.orderDate, 'dd/MM/yyyy HH:mm')}"></span></span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Error Details -->
+                            <div class="error-details">
+                                <h4><i class="fas fa-shopping-cart"></i> Thông báo:</h4>
+                                <p>Giỏ hàng của bạn vẫn được giữ nguyên. Bạn có thể thử lại thanh toán hoặc chọn phương thức thanh toán khác.</p>
+                                <ul>
+                                    <li>Kết nối mạng không ổn định</li>
+                                    <li>Thông tin thanh toán không chính xác</li>
+                                    <li>Tài khoản MoMo không đủ số dư</li>
+                                    <li>Giao dịch đã hết hạn</li>
+                                </ul>
+                            </div>
+                            
+                            <!-- Action Buttons -->
+                            <div class="error-actions">
+                                <a href="/checkout" class="btn btn-retry">
+                                    <i class="fas fa-redo"></i>
+                                    Thử lại thanh toán
+                                </a>
+                                <a href="/cart" class="btn btn-continue">
+                                    <i class="fas fa-shopping-cart"></i>
+                                    Xem giỏ hàng
+                                </a>
+                                <a href="/products" class="btn btn-support">
+                                    <i class="fas fa-shopping-bag"></i>
+                                    Tiếp tục mua sắm
+                                </a>
+                            </div>
+                            
+                            <!-- Additional Info -->
+                            <div class="error-footer">
+                                <p><i class="fas fa-info-circle"></i> Nếu vấn đề vẫn tiếp tục, vui lòng liên hệ bộ phận hỗ trợ</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f8fafc;
+            overflow-x: hidden;
+        }
+
+        .payment-error-page {
+            min-height: 100vh;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .error-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+            z-index: -1;
+        }
+
+
+        .error-card {
+            background: white;
+            border-radius: 20px;
+            padding: 0;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            position: relative;
+            animation: slideUp 0.8s ease-out;
+            width: 100%;
+            max-width: 500px;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .error-icon-container {
+            position: relative;
+            text-align: center;
+            padding: 40px 0 20px;
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+        }
+
+        .error-icon {
+            width: 80px;
+            height: 80px;
+            background: white;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            color: #ef4444;
+            position: relative;
+            z-index: 2;
+            animation: shake 0.8s ease-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        .error-ripple {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 120px;
+            height: 120px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            animation: ripple 2s infinite;
+        }
+
+        @keyframes ripple {
+            0% {
+                transform: translate(-50%, -50%) scale(0.8);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(1.4);
+                opacity: 0;
+            }
+        }
+
+        .error-content {
+            padding: 30px 40px 40px;
+        }
+
+        .error-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: #1f2937;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .error-subtitle {
+            color: #6b7280;
+            text-align: center;
+            font-size: 16px;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .order-summary {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 30px 0;
+            border: 1px solid #e5e7eb;
+        }
+
+        .order-header {
+            margin-bottom: 20px;
+        }
+
+        .order-header h3 {
+            color: #374151;
+            font-size: 18px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .order-details {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+
+        .label {
+            color: #6b7280;
+            font-weight: 500;
+        }
+
+        .value {
+            color: #1f2937;
+            font-weight: 600;
+        }
+
+        .order-id {
+            color: #3b82f6;
+            font-family: 'Courier New', monospace;
+        }
+
+        .amount {
+            color: #ef4444;
+            font-size: 18px;
+        }
+
+        .payment-method {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .payment-method i {
+            color: #d63384;
+            font-size: 20px;
+        }
+
+        .error-details {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .error-details h4 {
+            color: #dc2626;
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .error-details ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .error-details li {
+            color: #7f1d1d;
+            font-size: 14px;
+            margin-bottom: 8px;
+            padding-left: 20px;
+            position: relative;
+        }
+
+        .error-details li:before {
+            content: "•";
+            color: #dc2626;
+            position: absolute;
+            left: 0;
+        }
+
+        .error-actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-retry {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+            flex: 1;
+            justify-content: center;
+        }
+
+        .btn-retry:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(239, 68, 68, 0.3);
+            color: white;
+            text-decoration: none;
+        }
+
+        .btn-continue {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: white;
+            flex: 1;
+            justify-content: center;
+        }
+
+        .btn-continue:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
+            color: white;
+            text-decoration: none;
+        }
+
+        .btn-support {
+            background: white;
+            color: #6b7280;
+            border: 2px solid #e5e7eb;
+            flex: 1;
+            justify-content: center;
+        }
+
+        .btn-support:hover {
+            background: #f8fafc;
+            border-color: #d1d5db;
+            color: #374151;
+            text-decoration: none;
+        }
+
+        .error-footer {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .error-footer p {
+            color: #6b7280;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .error-footer i {
+            color: #3b82f6;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .payment-error-page {
+                padding: 10px;
+            }
+            
+            .error-content {
+                padding: 20px;
+            }
+            
+            .error-title {
+                font-size: 24px;
+            }
+            
+            .error-actions {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+
+    <script src="js/vendor/modernizr-3.5.0.min.js"></script>
+    <script src="js/vendor/jquery-1.12.4.min.js"></script>
+    <script src="js/popper.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/owl.carousel.min.js"></script>
+    <script src="js/isotope.pkgd.min.js"></script>
+    <script src="js/imagesloaded.pkgd.min.js"></script>
+    <script src="js/jquery.counterup.min.js"></script>
+    <script src="js/waypoints.min.js"></script>
+    <script src="js/venobox.min.js"></script>
+    <script src="js/ajax-mail.js"></script>
+    <script src="js/owl.carousel.min.js"></script>
+    <script src="js/venobox.min.js"></script>
+    <script src="js/isotope.pkgd.min.js"></script>
+    <script src="js/imagesloaded.pkgd.min.js"></script>
+    <script src="js/venobox.js"></script>
+    <script src="js/slick.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>

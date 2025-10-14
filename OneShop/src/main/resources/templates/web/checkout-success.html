@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thanh toán thành công - OneShop</title>
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/font-awesome.min.css">
+    <link rel="stylesheet" href="css/themify-icons.css">
+    <link rel="stylesheet" href="css/pe-icon-7-stroke.css">
+    <link rel="stylesheet" href="css/owl.carousel.min.css">
+    <link rel="stylesheet" href="css/owl.theme.default.min.css">
+    <link rel="stylesheet" href="css/venobox.css">
+    <link rel="stylesheet" href="css/animate.css">
+    <link rel="stylesheet" href="css/slick.css">
+    <link rel="stylesheet" href="css/meanmenu.min.css">
+    <link rel="stylesheet" href="css/bundle.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/responsive.css">
+    <link rel="stylesheet" href="css/checkout.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="payment-success-page">
+        <!-- Background -->
+        <div class="success-bg"></div>
+        
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-6 col-md-8">
+                    <div class="success-card">
+                        <!-- Success Icon with Animation -->
+                        <div class="success-icon-container">
+                            <div class="success-icon">
+                                <i class="fas fa-check"></i>
+                            </div>
+                            <div class="success-ripple"></div>
+                        </div>
+                        
+                        <!-- Success Message -->
+                        <div class="success-content">
+                            <h1 class="success-title">Thanh toán thành công!</h1>
+                            <p class="success-subtitle" th:text="${message}">Cảm ơn bạn đã tin tưởng và mua sắm tại OneShop</p>
+                            
+                            <!-- Order Information -->
+                            <div class="order-summary" th:if="${order}">
+                                <div class="order-header">
+                                    <h3><i class="fas fa-receipt"></i> Thông tin đơn hàng</h3>
+                                </div>
+                                <div class="order-details">
+                                    <div class="detail-row">
+                                        <span class="label">Mã đơn hàng</span>
+                                        <span class="value order-id">#<span th:text="${order.orderId}"></span></span>
+                                    </div>
+                                    <div class="detail-row">
+                                        <span class="label">Tổng tiền</span>
+                                        <span class="value amount"><span th:text="${#numbers.formatDecimal(order.totalAmount, 0, 'COMMA', 0, 'POINT')}"></span> VNĐ</span>
+                                    </div>
+                                    <div class="detail-row">
+                                        <span class="label">Phương thức</span>
+                                        <span class="value payment-method">
+                                            <i class="fab fa-cc-momo"></i>
+                                            <span th:text="${order.paymentMethod}"></span>
+                                        </span>
+                                    </div>
+                                    <div class="detail-row">
+                                        <span class="label">Ngày đặt</span>
+                                        <span class="value date"><span th:text="${#temporals.format(order.orderDate, 'dd/MM/yyyy HH:mm')}"></span></span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Action Buttons -->
+                            <div class="success-actions">
+                                <a href="/products" class="btn btn-continue">
+                                    <i class="fas fa-shopping-bag"></i>
+                                    Tiếp tục mua sắm
+                                </a>
+                                <a href="/profile" class="btn btn-profile">
+                                    <i class="fas fa-user"></i>
+                                    Xem đơn hàng
+                                </a>
+                            </div>
+                            
+                            <!-- Additional Info -->
+                            <div class="success-footer">
+                                <p><i class="fas fa-info-circle"></i> Chúng tôi sẽ gửi email xác nhận đến bạn trong vài phút tới</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f8fafc;
+            overflow-x: hidden;
+        }
+
+        .payment-success-page {
+            min-height: 100vh;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .success-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            z-index: -1;
+        }
+
+
+        .success-card {
+            background: white;
+            border-radius: 20px;
+            padding: 0;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            position: relative;
+            animation: slideUp 0.8s ease-out;
+            width: 100%;
+            max-width: 500px;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .success-icon-container {
+            position: relative;
+            text-align: center;
+            padding: 40px 0 20px;
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+
+        .success-icon {
+            width: 80px;
+            height: 80px;
+            background: white;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            color: #10b981;
+            position: relative;
+            z-index: 2;
+            animation: bounceIn 0.8s ease-out;
+        }
+
+        @keyframes bounceIn {
+            0% {
+                transform: scale(0);
+                opacity: 0;
+            }
+            50% {
+                transform: scale(1.2);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .success-ripple {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 120px;
+            height: 120px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            animation: ripple 2s infinite;
+        }
+
+        @keyframes ripple {
+            0% {
+                transform: translate(-50%, -50%) scale(0.8);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(1.4);
+                opacity: 0;
+            }
+        }
+
+        .success-content {
+            padding: 30px 40px 40px;
+        }
+
+        .success-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: #1f2937;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .success-subtitle {
+            color: #6b7280;
+            text-align: center;
+            font-size: 16px;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .order-summary {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 30px 0;
+            border: 1px solid #e5e7eb;
+        }
+
+        .order-header {
+            margin-bottom: 20px;
+        }
+
+        .order-header h3 {
+            color: #374151;
+            font-size: 18px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .order-details {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+
+        .label {
+            color: #6b7280;
+            font-weight: 500;
+        }
+
+        .value {
+            color: #1f2937;
+            font-weight: 600;
+        }
+
+        .order-id {
+            color: #3b82f6;
+            font-family: 'Courier New', monospace;
+        }
+
+        .amount {
+            color: #10b981;
+            font-size: 18px;
+        }
+
+        .payment-method {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .payment-method i {
+            color: #d63384;
+            font-size: 20px;
+        }
+
+        .success-actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-continue {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: white;
+            flex: 1;
+            justify-content: center;
+        }
+
+        .btn-continue:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
+            color: white;
+            text-decoration: none;
+        }
+
+        .btn-profile {
+            background: white;
+            color: #6b7280;
+            border: 2px solid #e5e7eb;
+            flex: 1;
+            justify-content: center;
+        }
+
+        .btn-profile:hover {
+            background: #f8fafc;
+            border-color: #d1d5db;
+            color: #374151;
+            text-decoration: none;
+        }
+
+        .success-footer {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .success-footer p {
+            color: #6b7280;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .success-footer i {
+            color: #3b82f6;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .payment-success-page {
+                padding: 10px;
+            }
+            
+            .success-content {
+                padding: 20px;
+            }
+            
+            .success-title {
+                font-size: 24px;
+            }
+            
+            .success-actions {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+
+    <script src="js/vendor/modernizr-3.5.0.min.js"></script>
+    <script src="js/vendor/jquery-1.12.4.min.js"></script>
+    <script src="js/popper.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/owl.carousel.min.js"></script>
+    <script src="js/isotope.pkgd.min.js"></script>
+    <script src="js/imagesloaded.pkgd.min.js"></script>
+    <script src="js/jquery.counterup.min.js"></script>
+    <script src="js/waypoints.min.js"></script>
+    <script src="js/venobox.min.js"></script>
+    <script src="js/ajax-mail.js"></script>
+    <script src="js/owl.carousel.min.js"></script>
+    <script src="js/venobox.min.js"></script>
+    <script src="js/isotope.pkgd.min.js"></script>
+    <script src="js/imagesloaded.pkgd.min.js"></script>
+    <script src="js/venobox.js"></script>
+    <script src="js/slick.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>

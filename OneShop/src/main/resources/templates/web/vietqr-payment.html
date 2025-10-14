@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thanh toán VietQR - OneShop</title>
+    <link rel="icon" href="/images/favicon.png" />
+    <link rel="stylesheet" href="/fonts/flaticon/flaticon.css" />
+    <link rel="stylesheet" href="/fonts/icofont/icofont.min.css" />
+    <link rel="stylesheet" href="/fonts/fontawesome/fontawesome.min.css" />
+    <link rel="stylesheet" href="/vendor/bootstrap/bootstrap.min.css" />
+    <link rel="stylesheet" href="/css/main.css" />
+    <style>
+        .vietqr-container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .qr-section {
+            text-align: center;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        .qr-code {
+            width: 300px;
+            height: 300px;
+            margin: 20px auto;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f8f9fa;
+        }
+        
+        .qr-code img {
+            max-width: 100%;
+            max-height: 100%;
+            border-radius: 8px;
+        }
+        
+        .order-info {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding: 8px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .info-row:last-child {
+            border-bottom: none;
+        }
+        
+        .info-label {
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        .info-value {
+            color: #6c757d;
+        }
+        
+        .amount {
+            font-size: 24px;
+            font-weight: 700;
+            color: #dc3545;
+        }
+        
+        .instructions {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 0 8px 8px 0;
+        }
+        
+        .instructions h5 {
+            color: #1976d2;
+            margin-bottom: 10px;
+        }
+        
+        .instructions ol {
+            margin: 0;
+            padding-left: 20px;
+        }
+        
+        .instructions li {
+            margin-bottom: 5px;
+            color: #424242;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary {
+            background: #007bff;
+            color: white;
+            border: none;
+        }
+        
+        .btn-primary:hover {
+            background: #0056b3;
+            color: white;
+            text-decoration: none;
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+            border: none;
+        }
+        
+        .btn-secondary:hover {
+            background: #545b62;
+            color: white;
+            text-decoration: none;
+        }
+        
+        .bank-info {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        
+        .bank-info h6 {
+            color: #856404;
+            margin-bottom: 10px;
+        }
+        
+        .bank-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        
+        .bank-detail {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .bank-detail strong {
+            color: #856404;
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+        
+        .bank-detail span {
+            color: #495057;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="vietqr-container">
+        <div class="text-center mb-4">
+            <h2><i class="fas fa-qrcode"></i> Thanh toán VietQR</h2>
+            <p class="text-muted">Quét mã QR để thanh toán qua ngân hàng MB Bank</p>
+        </div>
+        
+        <!-- QR Code Section -->
+        <div class="qr-section">
+            <h4>Mã QR thanh toán</h4>
+            <div class="qr-code">
+                <img th:src="${qrCodeImage}" alt="VietQR Code" />
+            </div>
+            <p class="text-muted">Sử dụng ứng dụng ngân hàng MB Bank để quét mã QR</p>
+        </div>
+        
+        <!-- Order Information -->
+        <div class="order-info" th:if="${order}">
+            <h5><i class="fas fa-receipt"></i> Thông tin đơn hàng</h5>
+            <div class="info-row">
+                <span class="info-label">Mã đơn hàng:</span>
+                <span class="info-value">#<span th:text="${order.orderId}"></span></span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Tổng tiền:</span>
+                <span class="info-value amount"><span th:text="${#numbers.formatDecimal(order.totalAmount, 0, 'COMMA', 0, 'POINT')}"></span> VNĐ</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Ngày đặt:</span>
+                <span class="info-value"><span th:text="${#temporals.format(order.orderDate, 'dd/MM/yyyy HH:mm')}"></span></span>
+            </div>
+        </div>
+        
+        <!-- Bank Information -->
+        <div class="bank-info">
+            <h6><i class="fas fa-university"></i> Thông tin chuyển khoản</h6>
+            <div class="bank-details">
+                <div class="bank-detail">
+                    <strong>Ngân hàng</strong>
+                    <span>MB Bank (Military Bank)</span>
+                </div>
+                <div class="bank-detail">
+                    <strong>Số tài khoản</strong>
+                    <span>0373611257</span>
+                </div>
+                <div class="bank-detail">
+                    <strong>Tên tài khoản</strong>
+                    <span>LE VAN CHIEN THANG</span>
+                </div>
+                <div class="bank-detail">
+                    <strong>Nội dung</strong>
+                    <span>Thanh toan don hang #<span th:text="${order.orderId}"></span></span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Instructions -->
+        <div class="instructions">
+            <h5><i class="fas fa-info-circle"></i> Hướng dẫn thanh toán</h5>
+            <ol>
+                <li>Mở ứng dụng MB Bank trên điện thoại</li>
+                <li>Chọn "Quét mã QR" hoặc "Chuyển khoản"</li>
+                <li>Quét mã QR ở trên hoặc nhập thông tin chuyển khoản</li>
+                <li>Kiểm tra thông tin và xác nhận thanh toán</li>
+                <li>Đơn hàng sẽ được xử lý tự động sau khi thanh toán thành công</li>
+            </ol>
+        </div>
+        
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+            <a href="/products" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Tiếp tục mua sắm
+            </a>
+            <a href="/user/my-orders" class="btn btn-primary">
+                <i class="fas fa-list"></i> Xem đơn hàng
+            </a>
+        </div>
+    </div>
+    
+    <script src="/vendor/jquery/jquery.min.js"></script>
+    <script src="/vendor/bootstrap/bootstrap.bundle.min.js"></script>
+</body>
+</html>

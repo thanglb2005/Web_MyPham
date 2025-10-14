@@ -91,6 +91,9 @@ public class ShopController {
                 : new PageImpl<>(Collections.emptyList(), pageable, 0);
 
         int totalPages = productPage.getTotalPages();
+        if (currentPage > totalPages && totalPages > 0) {
+            return "redirect:/shop/" + slug + "?page=" + totalPages + "&size=" + pageSize + (categoryId.isPresent() ? ("&categoryId=" + categoryId.get()) : "");
+        }
         if (totalPages > 0) {
             List<Integer> pageNumbers = IntStream.rangeClosed(1, totalPages).boxed().collect(Collectors.toList());
             model.addAttribute("pageNumbers", pageNumbers);
@@ -100,6 +103,13 @@ public class ShopController {
 
         addCartCountToModel(session, model);
         model.addAttribute("products", productPage);
+        try {
+            java.util.Set<Long> ids = productPage.getContent().stream()
+                    .map(Product::getProductId)
+                    .collect(java.util.stream.Collectors.toSet());
+            java.util.Map<Long, Double> avgMap = productService.getAverageRatings(ids);
+            model.addAttribute("avgMap", avgMap);
+        } catch (Exception ignored) {}
         populateSidebar(model, isActive ? activeProducts : Collections.emptyList());
         model.addAttribute("pageTitle", shop.getShopName());
         model.addAttribute("shop", shop);
@@ -143,6 +153,13 @@ public class ShopController {
         }
 
         model.addAttribute("products", productPage);
+        try {
+            java.util.Set<Long> ids = productPage.getContent().stream()
+                    .map(Product::getProductId)
+                    .collect(java.util.stream.Collectors.toSet());
+            java.util.Map<Long, Double> avgMap = productService.getAverageRatings(ids);
+            model.addAttribute("avgMap", avgMap);
+        } catch (Exception ignored) {}
         populateSidebar(model, null);
         model.addAttribute("shop", null);
         model.addAttribute("selectedCategoryId", null);
@@ -161,17 +178,28 @@ public class ShopController {
     private Page<Product> findPaginated(List<Product> source, Pageable pageable) {
         int pageSize = pageable.getPageSize();
         int currentPage = pageable.getPageNumber();
+        int totalElements = source.size();
+        int totalPages = (int) Math.ceil((double) totalElements / pageSize);
+        
+        // Ensure currentPage is within valid range
+        if (currentPage >= totalPages && totalPages > 0) {
+            currentPage = totalPages - 1; // Convert to 0-based index
+        }
+        if (currentPage < 0) {
+            currentPage = 0;
+        }
+        
         int startItem = currentPage * pageSize;
         List<Product> list;
 
-        if (source.size() < startItem) {
+        if (startItem >= totalElements) {
             list = Collections.emptyList();
         } else {
-            int toIndex = Math.min(startItem + pageSize, source.size());
+            int toIndex = Math.min(startItem + pageSize, totalElements);
             list = source.subList(startItem, toIndex);
         }
 
-        return new PageImpl<>(list, PageRequest.of(currentPage, pageSize), source.size());
+        return new PageImpl<>(list, PageRequest.of(currentPage, pageSize), totalElements);
     }
 
     @GetMapping(value = "/searchProduct")
@@ -182,6 +210,13 @@ public class ShopController {
         String kw = (productName != null) ? productName : (keyword != null ? keyword : (q != null ? q : ""));
         List<Product> results = kw.isEmpty() ? productService.findAll() : productService.searchProduct(kw);
         model.addAttribute("products", new PageImpl<>(results));
+        try {
+            java.util.Set<Long> ids = results.stream()
+                    .map(Product::getProductId)
+                    .collect(java.util.stream.Collectors.toSet());
+            java.util.Map<Long, Double> avgMap = productService.getAverageRatings(ids);
+            model.addAttribute("avgMap", avgMap);
+        } catch (Exception ignored) {}
         model.addAttribute("pageNumbers", List.of(1));
         model.addAttribute("keyword", kw);
         model.addAttribute("selectedCategoryId", null);
@@ -203,6 +238,13 @@ public class ShopController {
                 .collect(Collectors.toList());
 
         model.addAttribute("products", new PageImpl<>(discounted));
+        try {
+            java.util.Set<Long> ids = discounted.stream()
+                    .map(Product::getProductId)
+                    .collect(java.util.stream.Collectors.toSet());
+            java.util.Map<Long, Double> avgMap = productService.getAverageRatings(ids);
+            model.addAttribute("avgMap", avgMap);
+        } catch (Exception ignored) {}
         model.addAttribute("pageNumbers", List.of(1));
         model.addAttribute("selectedCategoryId", null);
         
@@ -228,8 +270,18 @@ public class ShopController {
 
         Page<Product> productPage = findPaginated(productsByCate, pageable);
         model.addAttribute("products", productPage);
+        try {
+            java.util.Set<Long> ids = productPage.getContent().stream()
+                    .map(Product::getProductId)
+                    .collect(java.util.stream.Collectors.toSet());
+            java.util.Map<Long, Double> avgMap = productService.getAverageRatings(ids);
+            model.addAttribute("avgMap", avgMap);
+        } catch (Exception ignored) {}
 
         int totalPages = productPage.getTotalPages();
+        if (currentPage > totalPages && totalPages > 0) {
+            return "redirect:/productByCategory?id=" + categoryId + "&page=" + totalPages + "&size=" + pageSize;
+        }
         if (totalPages > 0) {
             List<Integer> pageNumbers = IntStream.rangeClosed(1, totalPages)
                     .boxed()
@@ -269,10 +321,20 @@ public class ShopController {
                 row[2] = ((Long) row[2]) + 1;
             }
             model.addAttribute("coutnProductByCategory", stats.values().stream().collect(Collectors.toList()));
-            model.addAttribute("bestSaleProduct20", scopedProducts.stream()
+            List<Product> bestSaleProducts = scopedProducts.stream()
                     .sorted(Comparator.comparingInt((Product p) -> p.getQuantity() != null ? p.getQuantity() : 0).reversed())
                     .limit(8)
-                    .collect(Collectors.toList()));
+                    .collect(Collectors.toList());
+            model.addAttribute("bestSaleProduct20", bestSaleProducts);
+            
+            // Add avgMap for sidebar products
+            try {
+                java.util.Set<Long> sidebarIds = bestSaleProducts.stream()
+                        .map(Product::getProductId)
+                        .collect(java.util.stream.Collectors.toSet());
+                java.util.Map<Long, Double> sidebarAvgMap = productService.getAverageRatings(sidebarIds);
+                model.addAttribute("sidebarAvgMap", sidebarAvgMap);
+            } catch (Exception ignored) {}
         } else {
             model.addAttribute("coutnProductByCategory", productService.listCategoryByProductName());
 
@@ -284,6 +346,15 @@ public class ShopController {
                 if (!ids.isEmpty()) {
                     List<Product> bestProducts = productService.findByInventoryIds(ids);
                     model.addAttribute("bestSaleProduct20", bestProducts);
+                    
+                    // Add avgMap for sidebar products
+                    try {
+                        java.util.Set<Long> sidebarIds = bestProducts.stream()
+                                .map(Product::getProductId)
+                                .collect(java.util.stream.Collectors.toSet());
+                        java.util.Map<Long, Double> sidebarAvgMap = productService.getAverageRatings(sidebarIds);
+                        model.addAttribute("sidebarAvgMap", sidebarAvgMap);
+                    } catch (Exception ignored) {}
                 }
             }
         }

@@ -318,7 +318,7 @@ public class VendorRevenueController {
             double revenue = 0.0;
             
             // COD: ghi nhận theo delivered_date
-            // Online (MOMO/BANK/VIETQR): ghi nhận theo payment_date nếu đã thanh toán (payment_status = true)
+            // Online (MOMO/BANK): ghi nhận theo payment_date nếu đã thanh toán (payment_status = true)
             for (Order order : completedOrders) {
                 boolean isCod = order.getPaymentMethod() == Order.PaymentMethod.COD;
                 boolean isOnline = order.getPaymentMethod() != Order.PaymentMethod.COD;

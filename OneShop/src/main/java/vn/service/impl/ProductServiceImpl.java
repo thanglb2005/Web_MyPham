@@ -6,6 +6,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import vn.entity.Product;
 import vn.repository.ProductRepository;
+import vn.repository.CommentRepository;
 import vn.dto.ShopProductStatistics;
 import vn.entity.Shop;
 import vn.service.ProductService;
@@ -18,6 +19,8 @@ public class ProductServiceImpl implements ProductService {
     
     @Autowired
     private ProductRepository productRepository;
+    @Autowired
+    private CommentRepository commentRepository;
     
     @Override
     public List<Product> findAll() {
@@ -150,6 +153,22 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public long countByShopId(Long shopId) {
         return productRepository.countByShopShopId(shopId);
+    }
+
+    @Override
+    public java.util.Map<Long, Double> getAverageRatings(java.util.Collection<Long> productIds) {
+        java.util.Map<Long, Double> result = new java.util.HashMap<>();
+        if (productIds == null || productIds.isEmpty()) return result;
+        for (Long pid : productIds) {
+            java.util.List<vn.entity.Comment> cmts = commentRepository.findByProduct(pid);
+            double avg = 0.0;
+            if (cmts != null && !cmts.isEmpty()) {
+                avg = cmts.stream().filter(c -> c.getRating() != null)
+                        .mapToDouble(vn.entity.Comment::getRating).average().orElse(0.0);
+            }
+            result.put(pid, avg);
+        }
+        return result;
     }
 }
 

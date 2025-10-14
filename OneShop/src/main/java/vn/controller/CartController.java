@@ -16,6 +16,7 @@ import vn.service.CartService;
 import vn.service.OrderService;
 import vn.service.ProductService;
 import vn.service.PromotionService;
+import vn.service.VietQRService;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -36,6 +37,8 @@ public class CartController {
     
     @Autowired
     private PromotionService promotionService;
+    private VietQRService vietQRService;
+    
 
     @GetMapping("/add-to-cart")
     public String addToCart(@RequestParam("productId") Long productId,
@@ -248,35 +251,6 @@ public class CartController {
         return response;
     }
 
-    @GetMapping("/checkout-debug")
-    public String checkoutDebug(HttpServletRequest request, Model model) {
-        User user = (User) request.getSession().getAttribute("user");
-        if (user == null) {
-            return "redirect:/login";
-        }
-
-        List<CartItemEntity> cartItemEntities = cartService.getSelectedCartItems(user);
-        if (cartItemEntities.isEmpty()) {
-            return "redirect:/cart?error=no-selected-items";
-        }
-
-        // Convert CartItemEntity to CartItem for compatibility
-        Map<Long, CartItem> cartMap = convertToCartItemMap(cartItemEntities);
-        
-        Collection<CartItem> cartItems = cartMap.values();
-        Integer totalItems = cartMap.size();
-        Double totalPrice = cartMap.values().stream()
-                .mapToDouble(item -> item.getQuantity() * item.getUnitPrice())
-                .sum();
-
-        model.addAttribute("cartItems", cartItems);
-        model.addAttribute("totalItems", totalItems);
-        model.addAttribute("totalCartItems", totalItems);
-        model.addAttribute("totalPrice", totalPrice);
-        model.addAttribute("user", user);
-
-        return "web/checkout-test";
-    }
 
     @GetMapping("/checkout-test")
     public String checkoutTest(HttpServletRequest request, Model model) {
@@ -371,7 +345,9 @@ public class CartController {
         }
 
         List<CartItemEntity> cartItemEntities = cartService.getSelectedCartItems(user);
+        System.out.println("Selected cart items count: " + cartItemEntities.size());
         if (cartItemEntities.isEmpty()) {
+            System.out.println("No selected items found, redirecting to cart");
             return "redirect:/cart?error=no-selected-items";
         }
 
@@ -387,6 +363,9 @@ public class CartController {
                 case "bank_transfer":
                     paymentMethodEnum = Order.PaymentMethod.BANK_TRANSFER;
                     break;
+                case "vietqr":
+                    paymentMethodEnum = Order.PaymentMethod.VIETQR;
+                    break;
                 default:
                     paymentMethodEnum = Order.PaymentMethod.COD;
             }
@@ -399,6 +378,27 @@ public class CartController {
 
             // Convert CartItemEntity to CartItem Map for OrderService
             Map<Long, CartItem> cartMap = convertToCartItemMap(cartItemEntities);
+            System.out.println("Cart map size: " + cartMap.size());
+            
+            // Debug cart items and prices
+            System.out.println("=== Cart Items Debug ===");
+            double totalCartPrice = 0;
+            for (CartItem item : cartMap.values()) {
+                double itemTotal = item.getQuantity() * item.getUnitPrice();
+                totalCartPrice += itemTotal;
+                System.out.println("Item: " + item.getName() + 
+                    " | Qty: " + item.getQuantity() + 
+                    " | Unit Price: " + item.getUnitPrice() + 
+                    " | Total: " + itemTotal);
+            }
+            System.out.println("Total Cart Price: " + totalCartPrice);
+            System.out.println("======================");
+            
+            System.out.println("Customer name: " + customerName);
+            System.out.println("Customer email: " + customerEmail);
+            System.out.println("Phone: " + phone);
+            System.out.println("Address: " + fullAddress);
+            System.out.println("Payment method: " + paymentMethodEnum);
 
             // Xử lý khuyến mãi nếu có
             Double discountAmount = 0.0;
@@ -433,17 +433,78 @@ public class CartController {
                 appliedPromotionCode,
                 discountAmount
             );
+            // Chỉ tạo order cho COD và BANK_TRANSFER
+            // MOMO và VIETQR sẽ tạo order sau khi thanh toán thành công
+            if (paymentMethodEnum == Order.PaymentMethod.COD || paymentMethodEnum == Order.PaymentMethod.BANK_TRANSFER) {
+                Order order = orderService.createOrder(
+                    user,
+                    customerName,
+                    customerEmail,
+                    phone,
+                    fullAddress,
+                    note,
+                    paymentMethodEnum,
+                    cartMap
+                );
+                System.out.println("Order created successfully with ID: " + order.getOrderId());
 
-            // Clear cart after successful order
-            cartService.clearCart(user);
+                // Clear cart after successful order
+                cartService.clearCart(user);
 
-            model.addAttribute("message", "Đặt hàng thành công! Mã đơn hàng: #" + order.getOrderId());
-            model.addAttribute("orderId", order.getOrderId());
+                model.addAttribute("message", "Đặt hàng thành công! Mã đơn hàng: #" + order.getOrderId());
+                model.addAttribute("orderId", order.getOrderId());
 
-            return "redirect:/order-success?orderId=" + order.getOrderId();
+                return "redirect:/order-success?orderId=" + order.getOrderId();
+            } else if (paymentMethodEnum == Order.PaymentMethod.MOMO) {
+                // Tạo order tạm cho MoMo
+                Order order = orderService.createOrder(
+                    user,
+                    customerName,
+                    customerEmail,
+                    phone,
+                    fullAddress,
+                    note,
+                    paymentMethodEnum,
+                    cartMap
+                );
+                return "redirect:/payment/momo/create?orderId=" + order.getOrderId();
+            } else if (paymentMethodEnum == Order.PaymentMethod.VIETQR) {
+                // Tạo order tạm cho VietQR
+                Order order = orderService.createOrder(
+                    user,
+                    customerName,
+                    customerEmail,
+                    phone,
+                    fullAddress,
+                    note,
+                    paymentMethodEnum,
+                    cartMap
+                );
+                return "redirect:/vietqr-payment?orderId=" + order.getOrderId();
+            }
+            
+            // Fallback - không nên xảy ra
+            return "redirect:/checkout?error=Invalid payment method";
 
         } catch (Exception e) {
-            model.addAttribute("error", "Có lỗi xảy ra khi đặt hàng. Vui lòng thử lại!");
+            // Log the error for debugging
+            e.printStackTrace();
+            
+            // Reload cart data for checkout page
+            List<CartItemEntity> cartItemEntitiesReload = cartService.getSelectedCartItems(user);
+            Map<Long, CartItem> cartMap = convertToCartItemMap(cartItemEntitiesReload);
+            Collection<CartItem> cartItems = cartMap.values();
+            Integer totalItems = cartMap.size();
+            Double totalPrice = cartMap.values().stream()
+                    .mapToDouble(item -> item.getQuantity() * item.getUnitPrice())
+                    .sum();
+
+            model.addAttribute("cartItems", cartItems);
+            model.addAttribute("totalItems", totalItems);
+            model.addAttribute("totalCartItems", totalItems);
+            model.addAttribute("totalPrice", totalPrice);
+            model.addAttribute("user", user);
+            model.addAttribute("error", "Có lỗi xảy ra khi đặt hàng. Vui lòng thử lại! Lỗi: " + e.getMessage());
             return "web/checkout";
         }
     }
@@ -467,6 +528,61 @@ public class CartController {
         model.addAttribute("user", user);
 
         return "web/order-success";
+    }
+
+    @GetMapping("/vietqr-payment")
+    public String vietqrPayment(@RequestParam("orderId") Long orderId,
+                               HttpServletRequest request, Model model) {
+
+        User user = (User) request.getSession().getAttribute("user");
+        if (user == null) {
+            return "redirect:/login";
+        }
+
+        Order order = orderService.getOrderById(orderId);
+        if (order == null || !order.getUser().getUserId().equals(user.getUserId())) {
+            return "redirect:/products";
+        }
+
+        // Generate VietQR URL for the order
+        String vietqrUrl = vietQRService.generateVietQRUrl(order);
+        String qrCodeImage = vietQRService.generateQRCodeImage(order);
+
+        model.addAttribute("order", order);
+        model.addAttribute("orderId", orderId);
+        model.addAttribute("user", user);
+        model.addAttribute("vietqrUrl", vietqrUrl);
+        model.addAttribute("qrCodeImage", qrCodeImage);
+
+        return "web/vietqr-payment";
+    }
+
+    @GetMapping("/checkout-debug")
+    public String checkoutDebug(HttpServletRequest request, Model model) {
+        User user = (User) request.getSession().getAttribute("user");
+        if (user == null) {
+            return "redirect:/login";
+        }
+
+        List<CartItemEntity> cartItemEntities = cartService.getSelectedCartItems(user);
+        System.out.println("DEBUG - Selected cart items count: " + cartItemEntities.size());
+        
+        // Convert CartItemEntity to CartItem for compatibility
+        Map<Long, CartItem> cartMap = convertToCartItemMap(cartItemEntities);
+        
+        Collection<CartItem> cartItems = cartMap.values();
+        Integer totalItems = cartMap.size();
+        Double totalPrice = cartMap.values().stream()
+                .mapToDouble(item -> item.getQuantity() * item.getUnitPrice())
+                .sum();
+
+        model.addAttribute("cartItems", cartItems);
+        model.addAttribute("totalItems", totalItems);
+        model.addAttribute("totalCartItems", totalItems);
+        model.addAttribute("totalPrice", totalPrice);
+        model.addAttribute("user", user);
+
+        return "web/checkout-debug";
     }
     
     /**
