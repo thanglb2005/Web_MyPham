@@ -283,4 +283,23 @@ public class Promotion {
                 ", isActive=" + isActive +
                 '}';
     }
+    
+    // Lifecycle hooks để đảm bảo createdAt và updatedAt luôn được set
+    @PrePersist
+    protected void onCreate() {
+        if (createdAt == null) {
+            createdAt = LocalDateTime.now();
+        }
+        if (updatedAt == null) {
+            updatedAt = createdAt;
+        }
+        if (usedCount == null) {
+            usedCount = 0;
+        }
+    }
+    
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = LocalDateTime.now();
+    }
 }

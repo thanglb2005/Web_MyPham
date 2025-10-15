@@ -72,6 +72,7 @@ public interface PromotionService {
     
     // Validation operations
     boolean validatePromotionCode(String code);
+    boolean validatePromotionCodeForShop(Long shopId, String code);
     boolean validatePromotionDates(LocalDateTime startDate, LocalDateTime endDate);
     boolean validatePromotionAmounts(double discountValue, double minimumOrder, double maximumDiscount);
     

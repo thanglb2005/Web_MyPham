@@ -16,8 +16,8 @@ public class VendorPromotionForm {
     private String description;
     
     @NotBlank(message = "Mã khuyến mãi không được để trống")
-    @Size(max = 50, message = "Mã khuyến mãi không được quá 50 ký tự")
-    @Pattern(regexp = "^[A-Z0-9_-]+$", message = "Mã khuyến mãi chỉ được chứa chữ hoa, số, gạch ngang và gạch dưới")
+    @Size(min = 6, max = 20, message = "Mã khuyến mãi phải có độ dài từ 6-20 ký tự")
+    @Pattern(regexp = "^[A-Z0-9_-]{6,20}$", message = "Mã khuyến mãi chỉ gồm A-Z, 0-9, '-' hoặc '_' và dài 6-20 ký tự")
     private String promotionCode;
     
     @NotNull(message = "Loại khuyến mãi không được để trống")

@@ -14,7 +14,6 @@ import vn.repository.PromotionRepository;
 import vn.repository.ShopRepository;
 import vn.service.PromotionService;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -340,6 +339,11 @@ public class PromotionServiceImpl implements PromotionService {
     @Override
     public boolean validatePromotionCode(String code) {
         return !promotionRepository.findByPromotionCode(code).isPresent();
+    }
+    
+    @Override
+    public boolean validatePromotionCodeForShop(Long shopId, String code) {
+        return !promotionRepository.findByShopAndCode(shopId, code).isPresent();
     }
     
     @Override

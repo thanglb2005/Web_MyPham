@@ -159,6 +159,11 @@ public class VendorPromotionController {
         Long shopId = shopIds.get(0);
         Shop shop = shopService.findById(shopId).orElse(null);
         
+        // Trim và validate promotion code
+        if (form.getPromotionCode() != null) {
+            form.setPromotionCode(form.getPromotionCode().trim().toUpperCase());
+        }
+        
         // Validation
         if (result.hasErrors()) {
             model.addAttribute("shop", shop);
@@ -167,8 +172,8 @@ public class VendorPromotionController {
         }
         
         // Kiểm tra mã khuyến mãi trùng lặp
-        if (!promotionService.validatePromotionCode(form.getPromotionCode())) {
-            result.rejectValue("promotionCode", "error.promotionCode", "Mã khuyến mãi đã tồn tại");
+        if (!promotionService.validatePromotionCodeForShop(shopId, form.getPromotionCode())) {
+            result.rejectValue("promotionCode", "error.promotionCode", "Mã khuyến mãi đã tồn tại trong shop này");
             model.addAttribute("shop", shop);
             model.addAttribute("promotionTypes", Promotion.PromotionType.values());
             return "vendor/promotions/form";
@@ -191,7 +196,7 @@ public class VendorPromotionController {
         }
         
         try {
-            Promotion promotion = promotionService.createPromotionForShop(shopId, form, vendor);
+            promotionService.createPromotionForShop(shopId, form, vendor);
             redirectAttributes.addFlashAttribute("success", "Tạo khuyến mãi thành công!");
             return "redirect:/vendor/promotions";
         } catch (Exception e) {
@@ -278,6 +283,11 @@ public class VendorPromotionController {
         Promotion promotion = promotionOpt.get();
         Shop shop = promotion.getShop();
         
+        // Trim và validate promotion code
+        if (form.getPromotionCode() != null) {
+            form.setPromotionCode(form.getPromotionCode().trim().toUpperCase());
+        }
+        
         // Validation
         if (result.hasErrors()) {
             model.addAttribute("promotion", promotion);
@@ -289,8 +299,8 @@ public class VendorPromotionController {
         
         // Kiểm tra mã khuyến mãi trùng lặp (trừ mã hiện tại)
         if (!promotion.getPromotionCode().equals(form.getPromotionCode()) && 
-            !promotionService.validatePromotionCode(form.getPromotionCode())) {
-            result.rejectValue("promotionCode", "error.promotionCode", "Mã khuyến mãi đã tồn tại");
+            !promotionService.validatePromotionCodeForShop(shopId, form.getPromotionCode())) {
+            result.rejectValue("promotionCode", "error.promotionCode", "Mã khuyến mãi đã tồn tại trong shop này");
             model.addAttribute("promotion", promotion);
             model.addAttribute("shop", shop);
             model.addAttribute("promotionTypes", Promotion.PromotionType.values());
