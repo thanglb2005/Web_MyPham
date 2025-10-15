@@ -43,7 +43,14 @@
         ></button>
       </div>
 
-        <!-- Status Tabs -->
+        <!-- Debug info -->
+        <div class="alert alert-info">
+            <strong>Debug Info:</strong><br>
+            Total Orders: <span th:text="${totalOrders}">0</span><br>
+            Current Status: <span th:text="${currentStatus}">null</span><br>
+            Orders Content Size: <span th:text="${orders.content.size()}">0</span><br>
+            Status Counts: <span th:text="${statusCounts}">null</span>
+        </div>
         <ul class="nav nav-tabs mb-3" id="orderTabs" role="tablist">
             <li class="nav-item" role="presentation">
                 <a class="nav-link" th:classappend="${currentStatus == null ? 'active' : ''}"
@@ -52,39 +59,39 @@
                 </a>
             </li>
             <li class="nav-item" role="presentation">
-                <a class="nav-link" th:classappend="${currentStatus == T(vn.entity.Order.OrderStatus).PENDING ? 'active' : ''}"
+                <a class="nav-link" th:classappend="${currentStatus == 'PENDING' ? 'active' : ''}"
                    th:href="@{/vendor/orders(status=${T(vn.entity.Order.OrderStatus).PENDING}, q=${search})}">
                     PENDING <span class="badge bg-secondary ms-1" th:text="${statusCounts[T(vn.entity.Order.OrderStatus).PENDING] ?: 0}">0</span>
                 </a>
             </li>
             <li class="nav-item" role="presentation">
-                <a class="nav-link" th:classappend="${currentStatus == T(vn.entity.Order.OrderStatus).CONFIRMED ? 'active' : ''}"
+                <a class="nav-link" th:classappend="${currentStatus == 'CONFIRMED' ? 'active' : ''}"
                    th:href="@{/vendor/orders(status=${T(vn.entity.Order.OrderStatus).CONFIRMED}, q=${search})}">
                     CONFIRMED <span class="badge bg-secondary ms-1" th:text="${statusCounts[T(vn.entity.Order.OrderStatus).CONFIRMED] ?: 0}">0</span>
                 </a>
             </li>
             <li class="nav-item" role="presentation">
-                <a class="nav-link" th:classappend="${currentStatus == T(vn.entity.Order.OrderStatus).SHIPPING ? 'active' : ''}"
+                <a class="nav-link" th:classappend="${currentStatus == 'SHIPPING' ? 'active' : ''}"
                    th:href="@{/vendor/orders(status=${T(vn.entity.Order.OrderStatus).SHIPPING}, q=${search})}">
                     SHIPPING <span class="badge bg-secondary ms-1" th:text="${statusCounts[T(vn.entity.Order.OrderStatus).SHIPPING] ?: 0}">0</span>
                 </a>
             </li>
             <li class="nav-item" role="presentation">
-                <a class="nav-link" th:classappend="${currentStatus == T(vn.entity.Order.OrderStatus).DELIVERED ? 'active' : ''}"
+                <a class="nav-link" th:classappend="${currentStatus == 'DELIVERED' ? 'active' : ''}"
                    th:href="@{/vendor/orders(status=${T(vn.entity.Order.OrderStatus).DELIVERED}, q=${search})}">
                     DELIVERED <span class="badge bg-secondary ms-1" th:text="${statusCounts[T(vn.entity.Order.OrderStatus).DELIVERED] ?: 0}">0</span>
                 </a>
             </li>
             <li class="nav-item" role="presentation">
-                <a class="nav-link" th:classappend="${currentStatus == T(vn.entity.Order.OrderStatus).CANCELLED ? 'active' : ''}"
+                <a class="nav-link" th:classappend="${currentStatus == 'CANCELLED' ? 'active' : ''}"
                    th:href="@{/vendor/orders(status=${T(vn.entity.Order.OrderStatus).CANCELLED}, q=${search})}">
                     CANCELLED <span class="badge bg-secondary ms-1" th:text="${statusCounts[T(vn.entity.Order.OrderStatus).CANCELLED] ?: 0}">0</span>
                 </a>
             </li>
             <li class="nav-item" role="presentation">
-                <a class="nav-link" th:classappend="${currentStatus == T(vn.entity.Order.OrderStatus).RETURNED_REFUNDED ? 'active' : ''}"
-                   th:href="@{/vendor/orders(status=${T(vn.entity.Order.OrderStatus).RETURNED_REFUNDED}, q=${search})}">
-                    RETURNED_REFUNDED <span class="badge bg-secondary ms-1" th:text="${statusCounts[T(vn.entity.Order.OrderStatus).RETURNED_REFUNDED] ?: 0}">0</span>
+                <a class="nav-link" th:classappend="${currentStatus == 'RETURNED' ? 'active' : ''}"
+                   th:href="@{/vendor/orders(status=${T(vn.entity.Order.OrderStatus).RETURNED}, q=${search})}">
+                    RETURNED <span class="badge bg-secondary ms-1" th:text="${statusCounts[T(vn.entity.Order.OrderStatus).RETURNED] ?: 0}">0</span>
                 </a>
             </li>
         </ul>
@@ -112,7 +119,7 @@
               <input
                 type="hidden"
                 name="status"
-                th:value="${currentStatus != null ? currentStatus.name() : ''}"
+                th:value="${currentStatus != null ? currentStatus : ''}"
               />
               <input
                 type="text"
@@ -129,7 +136,7 @@
         </div>
       </form>
 
-        <div th:unless="${orders.isEmpty()}" class="table-responsive">
+        <div th:unless="${orders.content.isEmpty()}" class="table-responsive">
             <table class="table table-hover">
                 <thead class="table-light">
                     <tr>
@@ -165,7 +172,7 @@
                                                   (order.status == T(vn.entity.Order.OrderStatus).SHIPPING ? 'badge bg-warning' :
                                                   (order.status == T(vn.entity.Order.OrderStatus).DELIVERED ? 'badge bg-success' :
                                                   (order.status == T(vn.entity.Order.OrderStatus).CANCELLED ? 'badge bg-danger' :
-                                                  (order.status == T(vn.entity.Order.OrderStatus).RETURNED_REFUNDED ? 'badge bg-secondary' : 'badge bg-light')))))}"
+                                                  (order.status == T(vn.entity.Order.OrderStatus).RETURNED ? 'badge bg-secondary' : 'badge bg-light')))))}"
                   th:text="${order.status ?: 'PENDING'}" class="status-badge"></span>
               </td>
               <td>
@@ -228,20 +235,18 @@
                 </div>
               </td>
             </tr>
-            
-            <!-- Empty state -->
-            <tr th:if="${orders.content.isEmpty()}">
-              <td colspan="7" class="text-center py-4">
-                <div class="text-muted">
-                  <i class="fas fa-inbox fa-3x mb-3"></i>
-                  <h5>Chưa có đơn hàng nào</h5>
-                  <p>Khi có đơn hàng mới, chúng sẽ xuất hiện ở đây.</p>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Empty State -->
+        <div th:if="${orders.content.isEmpty()}" class="text-center py-5">
+            <div class="empty-state">
+                <i class="fas fa-shopping-cart fa-3x text-muted mb-3"></i>
+                <h5 class="text-muted">Chưa có đơn hàng nào</h5>
+                <p class="text-muted">Khi có đơn hàng mới, chúng sẽ xuất hiện ở đây.</p>
+            </div>
+        </div>
 
       <!-- Pagination -->
       <nav th:unless="${orders.content.isEmpty()}" aria-label="Page navigation">

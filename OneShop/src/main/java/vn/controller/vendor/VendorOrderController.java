@@ -59,6 +59,7 @@ public class VendorOrderController {
 
         // Lấy shop của vendor
         List<Long> shopIds = getShopIdsByVendor(vendor);
+        System.out.println("DEBUG: Vendor shop IDs: " + shopIds);
         if (shopIds.isEmpty()) {
             model.addAttribute("error", "Bạn chưa có shop nào.");
             return "vendor/orders/list";
@@ -71,14 +72,18 @@ public class VendorOrderController {
         String normalizedSearch = (search != null && !search.trim().isEmpty()) ? search.trim() : null;
         
         Page<Order> orders = getOrdersByShops(shopIds, status, normalizedSearch, pageable);
+        System.out.println("DEBUG: Orders found: " + orders.getTotalElements() + " orders");
+        System.out.println("DEBUG: Orders content size: " + orders.getContent().size());
         
         // Thống kê theo trạng thái
         Map<Order.OrderStatus, Long> statusCounts = getOrderCountsByStatus(shopIds);
+        System.out.println("DEBUG: Status counts: " + statusCounts);
         Long totalOrders = orderService.countByShopIdIn(shopIds);
+        System.out.println("DEBUG: Total orders: " + totalOrders);
         
         model.addAttribute("orders", orders);
         model.addAttribute("statusCounts", statusCounts);
-        model.addAttribute("currentStatus", status);
+        model.addAttribute("currentStatus", status != null ? status.name() : null);
         model.addAttribute("totalOrders", totalOrders != null ? totalOrders : 0L);
         model.addAttribute("search", search != null ? search : "");
         model.addAttribute("vendor", vendor);
@@ -267,13 +272,13 @@ public class VendorOrderController {
         String trimmedSearch = (search != null && !search.trim().isEmpty()) ? search.trim() : null;
 
         if (status != null && trimmedSearch != null) {
-            return orderService.findByShopIdInAndStatusAndOrderIdContaining(shopIds, status, trimmedSearch, pageable);
+            return orderService.findByShopIdInAndStatusAndOrderIdContainingDirect(shopIds, status, trimmedSearch, pageable);
         } else if (status != null) {
-            return orderService.findByShopIdInAndStatus(shopIds, status, pageable);
+            return orderService.findByShopIdInAndStatusDirect(shopIds, status, pageable);
         } else if (trimmedSearch != null) {
-            return orderService.findByShopIdInAndOrderIdContaining(shopIds, trimmedSearch, pageable);
+            return orderService.findByShopIdInAndOrderIdContainingDirect(shopIds, trimmedSearch, pageable);
         } else {
-            return orderService.findByShopIdIn(shopIds, pageable);
+            return orderService.findByShopIdInDirect(shopIds, pageable);
         }
     }
 
@@ -294,7 +299,7 @@ public class VendorOrderController {
     private Map<Order.OrderStatus, Long> getOrderCountsByStatus(List<Long> shopIds) {
         Map<Order.OrderStatus, Long> counts = new LinkedHashMap<>();
         for (Order.OrderStatus tabStatus : STATUS_TABS) {
-            Long count = shopIds.isEmpty() ? 0L : orderService.countByShopIdInAndStatus(shopIds, tabStatus);
+            Long count = shopIds.isEmpty() ? 0L : orderService.countByShopIdInAndStatusDirect(shopIds, tabStatus);
             counts.put(tabStatus, count != null ? count : 0L);
         }
         return counts;

@@ -421,18 +421,6 @@ public class CartController {
                 }
             }
 
-            Order order = orderService.createOrder(
-                user,
-                customerName,
-                customerEmail,
-                phone,
-                fullAddress,
-                note,
-                paymentMethodEnum,
-                cartMap,
-                appliedPromotionCode,
-                discountAmount
-            );
             // Chỉ tạo order cho COD và BANK_TRANSFER
             // MOMO và VIETQR sẽ tạo order sau khi thanh toán thành công
             if (paymentMethodEnum == Order.PaymentMethod.COD || paymentMethodEnum == Order.PaymentMethod.BANK_TRANSFER) {
@@ -444,7 +432,9 @@ public class CartController {
                     fullAddress,
                     note,
                     paymentMethodEnum,
-                    cartMap
+                    cartMap,
+                    appliedPromotionCode,
+                    discountAmount
                 );
                 System.out.println("Order created successfully with ID: " + order.getOrderId());
 
@@ -457,7 +447,7 @@ public class CartController {
                 return "redirect:/order-success?orderId=" + order.getOrderId();
             } else if (paymentMethodEnum == Order.PaymentMethod.MOMO) {
                 // Tạo order tạm cho MoMo
-                Order order = orderService.createOrder(
+                Order momoOrder = orderService.createOrder(
                     user,
                     customerName,
                     customerEmail,
@@ -465,12 +455,14 @@ public class CartController {
                     fullAddress,
                     note,
                     paymentMethodEnum,
-                    cartMap
+                    cartMap,
+                    appliedPromotionCode,
+                    discountAmount
                 );
-                return "redirect:/payment/momo/create?orderId=" + order.getOrderId();
+                return "redirect:/payment/momo/create?orderId=" + momoOrder.getOrderId();
             } else if (paymentMethodEnum == Order.PaymentMethod.VIETQR) {
                 // Tạo order tạm cho VietQR
-                Order order = orderService.createOrder(
+                Order vietqrOrder = orderService.createOrder(
                     user,
                     customerName,
                     customerEmail,
@@ -478,9 +470,11 @@ public class CartController {
                     fullAddress,
                     note,
                     paymentMethodEnum,
-                    cartMap
+                    cartMap,
+                    appliedPromotionCode,
+                    discountAmount
                 );
-                return "redirect:/vietqr-payment?orderId=" + order.getOrderId();
+                return "redirect:/vietqr-payment?orderId=" + vietqrOrder.getOrderId();
             }
             
             // Fallback - không nên xảy ra

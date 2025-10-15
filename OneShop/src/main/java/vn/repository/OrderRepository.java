@@ -150,7 +150,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     /**
      * Find orders by shop IDs with status filter
      */
-    @Query("SELECT DISTINCT o FROM Order o JOIN o.orderDetails od JOIN od.product p WHERE p.shop.shopId IN :shopIds " +
+    @Query("SELECT o FROM Order o WHERE o.shop.shopId IN :shopIds " +
            "AND (:status IS NULL OR o.status = :status) " +
            "ORDER BY o.orderDate DESC")
     Page<Order> findByShopIdInAndStatus(@Param("shopIds") List<Long> shopIds, 
@@ -160,8 +160,8 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     /**
      * Find orders by shop IDs with search term
      */
-    @Query("SELECT DISTINCT o FROM Order o JOIN o.orderDetails od JOIN od.product p WHERE p.shop.shopId IN :shopIds " +
-           "AND (:search IS NULL OR CAST(o.orderId AS string) LIKE %:search%) " +
+    @Query("SELECT o FROM Order o WHERE o.shop.shopId IN :shopIds " +
+           "AND (:search IS NULL OR STR(o.orderId) LIKE %:search%) " +
            "ORDER BY o.orderDate DESC")
     Page<Order> findByShopIdInAndOrderIdContaining(@Param("shopIds") List<Long> shopIds, 
                                                   @Param("search") String search, 
@@ -170,9 +170,9 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     /**
      * Find orders by shop IDs with status and search term
      */
-    @Query("SELECT DISTINCT o FROM Order o JOIN o.orderDetails od JOIN od.product p WHERE p.shop.shopId IN :shopIds " +
+    @Query("SELECT o FROM Order o WHERE o.shop.shopId IN :shopIds " +
            "AND (:status IS NULL OR o.status = :status) " +
-           "AND (:search IS NULL OR CAST(o.orderId AS string) LIKE %:search%) " +
+           "AND (:search IS NULL OR STR(o.orderId) LIKE %:search%) " +
            "ORDER BY o.orderDate DESC")
     Page<Order> findByShopIdInAndStatusAndOrderIdContaining(@Param("shopIds") List<Long> shopIds, 
                                                           @Param("status") Order.OrderStatus status, 
@@ -182,7 +182,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     /**
      * Find orders by shop IDs only
      */
-    @Query("SELECT DISTINCT o FROM Order o JOIN o.orderDetails od JOIN od.product p WHERE p.shop.shopId IN :shopIds " +
+    @Query("SELECT o FROM Order o WHERE o.shop.shopId IN :shopIds " +
            "ORDER BY o.orderDate DESC")
     Page<Order> findByShopIdIn(@Param("shopIds") List<Long> shopIds, Pageable pageable);
 
@@ -198,19 +198,10 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     /**
      * Find order by ID and shop IDs (for vendor access control)
      */
-    @Query("SELECT DISTINCT o FROM Order o JOIN o.orderDetails od JOIN od.product p WHERE o.orderId = :orderId AND p.shop.shopId IN :shopIds")
+    @Query("SELECT o FROM Order o WHERE o.orderId = :orderId AND o.shop.shopId IN :shopIds")
     Optional<Order> findByIdAndShopIdIn(@Param("orderId") Long orderId, @Param("shopIds") List<Long> shopIds);
 
     // ===== Direct versions using Order.shop mapping =====
-    @Query("SELECT o FROM Order o WHERE o.shop.shopId IN :shopIds " +
-           "AND (:status IS NULL OR o.status = :status) " +
-           "AND (:search IS NULL OR STR(o.orderId) LIKE %:search%) " +
-           "ORDER BY o.orderDate DESC")
-    Page<Order> findByShopIdInAndStatusAndOrderIdContainingDirect(@Param("shopIds") List<Long> shopIds,
-                                                                  @Param("status") Order.OrderStatus status,
-                                                                  @Param("search") String search,
-                                                                  Pageable pageable);
-
     @Query("SELECT COUNT(o) FROM Order o WHERE o.shop.shopId IN :shopIds")
     Long countByShopIdInDirect(@Param("shopIds") List<Long> shopIds);
 
@@ -221,6 +212,22 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     @Query("SELECT o FROM Order o WHERE o.orderId = :orderId AND o.shop.shopId IN :shopIds")
     Optional<Order> findByIdAndShopIdInDirect(@Param("orderId") Long orderId, @Param("shopIds") List<Long> shopIds);
 
+    @Query("SELECT o FROM Order o WHERE o.shop.shopId IN :shopIds " +
+           "AND (:search IS NULL OR STR(o.orderId) LIKE %:search%) " +
+           "ORDER BY o.orderDate DESC")
+    Page<Order> findByShopIdInAndOrderIdContainingDirect(@Param("shopIds") List<Long> shopIds,
+                                                         @Param("search") String search,
+                                                         Pageable pageable);
+
+    @Query("SELECT o FROM Order o WHERE o.shop.shopId IN :shopIds " +
+           "AND (:status IS NULL OR o.status = :status) " +
+           "AND (:search IS NULL OR STR(o.orderId) LIKE %:search%) " +
+           "ORDER BY o.orderDate DESC")
+    Page<Order> findByShopIdInAndStatusAndOrderIdContainingDirect(@Param("shopIds") List<Long> shopIds,
+                                                                  @Param("status") Order.OrderStatus status,
+                                                                  @Param("search") String search,
+                                                                  Pageable pageable);
+
     // ===== Revenue by shop (DELIVERED) =====
     @Query("SELECT COALESCE(SUM(o.totalAmount), 0) FROM Order o WHERE o.status = 'DELIVERED' AND o.shop.shopId = :shopId")
     Double sumDeliveredRevenueByShopId(@Param("shopId") Long shopId);
@@ -228,14 +235,14 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     /**
      * Count orders by shop IDs and status
      */
-    @Query("SELECT COUNT(DISTINCT o) FROM Order o JOIN o.orderDetails od JOIN od.product p WHERE p.shop.shopId IN :shopIds " +
+    @Query("SELECT COUNT(o) FROM Order o WHERE o.shop.shopId IN :shopIds " +
            "AND (:status IS NULL OR o.status = :status)")
     Long countByShopIdInAndStatus(@Param("shopIds") List<Long> shopIds, @Param("status") Order.OrderStatus status);
 
     /**
      * Count orders by shop IDs
      */
-    @Query("SELECT COUNT(DISTINCT o) FROM Order o JOIN o.orderDetails od JOIN od.product p WHERE p.shop.shopId IN :shopIds")
+    @Query("SELECT COUNT(o) FROM Order o WHERE o.shop.shopId IN :shopIds")
     Long countByShopIdIn(@Param("shopIds") List<Long> shopIds);
 
 

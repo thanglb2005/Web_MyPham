@@ -72,8 +72,11 @@ public class ShipperHomeController {
             Order.OrderStatus.CONFIRMED
         );
 
-        // Thống kê các đơn hàng của shipper
+        // Thống kê các đơn hàng của shipper - chỉ status liên quan đến giao hàng
         long totalOrders = assignedOrders.size();
+        long confirmedOrders = assignedOrders.stream()
+            .filter(order -> order.getStatus() == Order.OrderStatus.CONFIRMED)
+            .count();
         long shippingOrders = assignedOrders.stream()
             .filter(order -> order.getStatus() == Order.OrderStatus.SHIPPING)
             .count();
@@ -87,6 +90,7 @@ public class ShipperHomeController {
         model.addAttribute("assignedOrders", assignedOrders);
         model.addAttribute("availableOrders", availableOrders);
         model.addAttribute("totalOrders", totalOrders);
+        model.addAttribute("confirmedOrders", confirmedOrders);
         model.addAttribute("shippingOrders", shippingOrders);
         model.addAttribute("deliveredOrders", deliveredOrders);
         model.addAttribute("pageTitle", "Trang chủ Shipper");
@@ -132,7 +136,7 @@ public class ShipperHomeController {
      */
     @PostMapping("/update-status")
     public String updateOrderStatus(@RequestParam Long orderId, 
-                                    @RequestParam String status,
+                                    @RequestParam Order.OrderStatus status,
                                     HttpSession session, 
                                     Model model) {
         User shipper = ensureShipper(session);
@@ -147,8 +151,7 @@ public class ShipperHomeController {
             if (order != null && order.getShipper() != null && 
                 order.getShipper().getUserId().equals(shipper.getUserId())) {
                 
-                Order.OrderStatus newStatus = Order.OrderStatus.valueOf(status);
-                orderService.updateOrderStatus(orderId, newStatus);
+                orderService.updateOrderStatus(orderId, status);
                 
                 model.addAttribute("success", "Đã cập nhật trạng thái đơn hàng thành công!");
             } else {
@@ -192,8 +195,11 @@ public class ShipperHomeController {
 
         List<Order> myOrders = orderRepository.findByShipperOrderByOrderDateDesc(shipper);
 
-        // Tính toán thống kê
+        // Tính toán thống kê - chỉ status liên quan đến giao hàng
         long totalOrders = myOrders.size();
+        long confirmedOrders = myOrders.stream()
+            .filter(order -> order.getStatus() == Order.OrderStatus.CONFIRMED)
+            .count();
         long shippingOrders = myOrders.stream()
             .filter(order -> order.getStatus() == Order.OrderStatus.SHIPPING)
             .count();
@@ -202,6 +208,9 @@ public class ShipperHomeController {
             .count();
 
         // Tạo danh sách đã lọc theo trạng thái
+        List<Order> confirmedOrdersList = myOrders.stream()
+            .filter(order -> order.getStatus() == Order.OrderStatus.CONFIRMED)
+            .collect(Collectors.toList());
         List<Order> shippingOrdersList = myOrders.stream()
             .filter(order -> order.getStatus() == Order.OrderStatus.SHIPPING)
             .collect(Collectors.toList());
@@ -214,8 +223,13 @@ public class ShipperHomeController {
         model.addAttribute("assignedShops", assignedShops);
         model.addAttribute("shopDescription", shopDescription);
         model.addAttribute("orders", myOrders);
-        model.addAttribute("shippingOrders", shippingOrdersList);
-        model.addAttribute("deliveredOrders", deliveredOrdersList);
+        model.addAttribute("totalOrders", totalOrders);
+        model.addAttribute("confirmedOrders", confirmedOrders);
+        model.addAttribute("shippingOrders", shippingOrders);
+        model.addAttribute("deliveredOrders", deliveredOrders);
+        model.addAttribute("confirmedOrdersList", confirmedOrdersList);
+        model.addAttribute("shippingOrdersList", shippingOrdersList);
+        model.addAttribute("deliveredOrdersList", deliveredOrdersList);
         model.addAttribute("totalOrdersCount", totalOrders);
         model.addAttribute("shippingOrdersCount", shippingOrders);
         model.addAttribute("deliveredOrdersCount", deliveredOrders);

@@ -55,14 +55,14 @@ public class OrderController {
     // List all orders with pagination support
     @GetMapping(value = "/orders")
     public String orders(Model model, Principal principal,
-                        @RequestParam(value = "status", required = false) Integer status,
+                        @RequestParam(value = "status", required = false) Order.OrderStatus status,
                         @RequestParam(value = "search", required = false) String search,
                         @RequestParam(value = "page", defaultValue = "0") int page,
                         @RequestParam(value = "size", defaultValue = "10") int size) {
         List<Order> orderDetails;
         
         if (status != null) {
-            orderDetails = orderRepository.findByStatusOrderByOrderDateDesc(Order.OrderStatus.values()[status]);
+            orderDetails = orderRepository.findByStatusOrderByOrderDateDesc(status);
         } else {
             orderDetails = orderRepository.findAll();
         }
@@ -261,7 +261,7 @@ public class OrderController {
     public String orderStats(Model model, Principal principal) {
         List<Order> allOrders = orderRepository.findAll();
         
-        // Calculate statistics
+        // Calculate statistics - Admin chỉ cần thống kê tổng quan
         long totalOrders = allOrders.size();
         long pendingOrders = allOrders.stream().filter(o -> o.getStatus() == Order.OrderStatus.PENDING).count();
         long confirmedOrders = allOrders.stream().filter(o -> o.getStatus() == Order.OrderStatus.CONFIRMED).count();

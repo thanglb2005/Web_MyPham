@@ -242,6 +242,21 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    public Page<Order> findByShopIdInAndOrderIdContainingDirect(List<Long> shopIds, String search, Pageable pageable) {
+        return orderRepository.findByShopIdInAndOrderIdContainingDirect(shopIds, search, pageable);
+    }
+
+    @Override
+    public Page<Order> findByShopIdInAndStatusAndOrderIdContainingDirect(List<Long> shopIds, Order.OrderStatus status, String search, Pageable pageable) {
+        return orderRepository.findByShopIdInAndStatusAndOrderIdContainingDirect(shopIds, status, search, pageable);
+    }
+
+    @Override
+    public Long countByShopIdInAndStatusDirect(List<Long> shopIds, Order.OrderStatus status) {
+        return orderRepository.countByShopIdInAndStatusDirect(shopIds, status);
+    }
+
+    @Override
     public Optional<Order> findByIdAndShopIdIn(Long orderId, List<Long> shopIds) {
         // Tuân thủ logic cũ
         return orderRepository.findByIdAndShopIdIn(orderId, shopIds);

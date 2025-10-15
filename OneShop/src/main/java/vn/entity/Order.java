@@ -45,7 +45,7 @@ public class Order {
     @Column(name = "weight")
     private Double weight;  // Khối lượng (kg)
 
-    @Column(columnDefinition = "TEXT")
+    @Column(name = "note", length = 1000)
     private String note;
 
     @Enumerated(EnumType.STRING)
@@ -67,6 +67,15 @@ public class Order {
 
     @Column(name = "delivered_date")
     private LocalDateTime deliveredDate;
+
+    @Column(name = "refund_amount")
+    private Double refundAmount;
+
+    @Column(name = "refund_reason", length = 1000)
+    private String refundReason;
+
+    @Column(name = "refund_date")
+    private LocalDateTime refundDate;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "shipper_id")
