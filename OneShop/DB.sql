@@ -983,7 +983,7 @@ CREATE TABLE dbo.promotions (
     promotion_name         NVARCHAR(200) NOT NULL,
     description            NVARCHAR(1000),
     promotion_code         NVARCHAR(50) NOT NULL UNIQUE,
-    promotion_type         NVARCHAR(20) NOT NULL CHECK (promotion_type IN ('PRODUCT_PERCENTAGE', 'SHIPPING_DISCOUNT', 'FIXED_AMOUNT')),
+    promotion_type         NVARCHAR(20) NOT NULL CHECK (promotion_type IN ('PERCENTAGE', 'FIXED_AMOUNT', 'FREE_SHIPPING', 'BUY_X_GET_Y')),
     discount_value         DECIMAL(10,2) NOT NULL CHECK (discount_value >= 0),
     minimum_order_amount   DECIMAL(10,2) NOT NULL CHECK (minimum_order_amount >= 0),
     maximum_discount_amount DECIMAL(10,2) NOT NULL CHECK (maximum_discount_amount >= 0),
@@ -992,8 +992,14 @@ CREATE TABLE dbo.promotions (
     start_date             DATETIME2 NOT NULL,
     end_date               DATETIME2 NOT NULL,
     is_active              BIT NOT NULL DEFAULT 1,
+    shop_id                BIGINT NOT NULL,
+    created_by             BIGINT NOT NULL,
     created_at             DATETIME2 NOT NULL DEFAULT (GETDATE()),
     updated_at             DATETIME2 NOT NULL DEFAULT (GETDATE()),
+    
+    -- Foreign Key Constraints
+    CONSTRAINT FK_promotions_shop FOREIGN KEY (shop_id) REFERENCES dbo.shops(shop_id),
+    CONSTRAINT FK_promotions_created_by FOREIGN KEY (created_by) REFERENCES dbo.[user](user_id),
     
     -- Constraints
     CONSTRAINT CHK_promotions_dates CHECK (end_date > start_date),
@@ -1008,6 +1014,7 @@ CREATE INDEX IX_promotions_type ON dbo.promotions(promotion_type);
 CREATE INDEX IX_promotions_active ON dbo.promotions(is_active);
 CREATE INDEX IX_promotions_dates ON dbo.promotions(start_date, end_date);
 CREATE INDEX IX_promotions_usage ON dbo.promotions(used_count, usage_limit);
+CREATE INDEX IX_promotions_shop_id ON dbo.promotions(shop_id);
 GO
 
 -- Insert sample promotion data
@@ -1023,14 +1030,16 @@ INSERT INTO dbo.promotions (
     used_count, 
     start_date, 
     end_date, 
-    is_active
+    is_active,
+    shop_id,
+    created_by
 ) VALUES 
 -- Product percentage discount
 (
     N'Giảm giá 20% cho đơn hàng từ 500k',
     N'Áp dụng cho tất cả sản phẩm, giảm 20% cho đơn hàng từ 500,000đ trở lên',
     'SAVE20',
-    'PRODUCT_PERCENTAGE',
+    'PERCENTAGE',
     20.00,
     500000.00,
     200000.00,
@@ -1038,14 +1047,16 @@ INSERT INTO dbo.promotions (
     0,
     '2025-01-01 00:00:00',
     '2025-12-31 23:59:59',
-    1
+    1,
+    1,  -- shop_id = 1 (Mỹ Phẩm An Nguyễn)
+    4   -- created_by = 4 (Admin)
 ),
 -- Shipping discount
 (
     N'Miễn phí ship cho đơn hàng từ 300k',
     N'Miễn phí vận chuyển cho đơn hàng từ 300,000đ trở lên',
     'FREESHIP',
-    'SHIPPING_DISCOUNT',
+    'FREE_SHIPPING',
     50000.00,
     300000.00,
     50000.00,
@@ -1053,7 +1064,9 @@ INSERT INTO dbo.promotions (
     0,
     '2025-01-01 00:00:00',
     '2025-12-31 23:59:59',
-    1
+    1,
+    1,  -- shop_id = 1 (Mỹ Phẩm An Nguyễn)
+    4   -- created_by = 4 (Admin)
 ),
 -- Fixed amount discount
 (
@@ -1068,14 +1081,16 @@ INSERT INTO dbo.promotions (
     0,
     '2025-01-01 00:00:00',
     '2025-12-31 23:59:59',
-    1
+    1,
+    2,  -- shop_id = 2 (Cosmetic House Bình)
+    4   -- created_by = 4 (Admin)
 ),
 -- Expired promotion
 (
     N'Khuyến mãi Tết 2025',
     N'Giảm giá đặc biệt nhân dịp Tết Nguyên Đán 2025',
     'TET2025',
-    'PRODUCT_PERCENTAGE',
+    'PERCENTAGE',
     15.00,
     200000.00,
     150000.00,
@@ -1083,14 +1098,16 @@ INSERT INTO dbo.promotions (
     95,
     '2025-01-01 00:00:00',
     '2025-02-15 23:59:59',
-    0
+    0,
+    1,  -- shop_id = 1 (Mỹ Phẩm An Nguyễn)
+    4   -- created_by = 4 (Admin)
 ),
 -- Expiring soon promotion
 (
     N'Khuyến mãi Black Friday',
     N'Giảm giá lớn nhân dịp Black Friday',
     'BLACKFRIDAY',
-    'PRODUCT_PERCENTAGE',
+    'PERCENTAGE',
     30.00,
     1000000.00,
     500000.00,
@@ -1098,7 +1115,9 @@ INSERT INTO dbo.promotions (
     5,
     '2025-11-01 00:00:00',
     '2025-12-31 23:59:59',
-    1
+    1,
+    2,  -- shop_id = 2 (Cosmetic House Bình)
+    4   -- created_by = 4 (Admin)
 );
 GO
 
