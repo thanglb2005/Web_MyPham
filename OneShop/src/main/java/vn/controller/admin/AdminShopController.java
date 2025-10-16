@@ -15,6 +15,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import vn.entity.Shop;
 import vn.entity.User;
 import vn.service.ShopService;
+import vn.repository.OrderRepository;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -28,6 +29,9 @@ public class AdminShopController {
 
     @Autowired
     private ShopService shopService;
+
+    @Autowired
+    private OrderRepository orderRepository;
 
     @GetMapping
     public String listShops(@RequestParam(value = "status", required = false) Shop.ShopStatus status,
@@ -43,6 +47,14 @@ public class AdminShopController {
             shops = shopService.findByStatus(status);
         } else {
             shops = shopService.findAll();
+        }
+
+        // Sync revenue: use delivered orders only for consistency across views
+        for (Shop shop : shops) {
+            try {
+                Double delivered = orderRepository.sumDeliveredRevenueByShopId(shop.getShopId());
+                shop.setTotalRevenue(delivered != null ? delivered : 0.0);
+            } catch (Exception ignored) {}
         }
 
         // Calculate statistics

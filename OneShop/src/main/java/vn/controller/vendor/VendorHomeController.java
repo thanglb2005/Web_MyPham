@@ -10,6 +10,7 @@ import vn.entity.Shop;
 import vn.entity.User;
 import vn.service.ShopService;
 import vn.service.ProductService;
+import vn.repository.OrderRepository;
 import org.springframework.web.bind.annotation.PathVariable;
 
 import java.util.List;
@@ -26,6 +27,9 @@ public class VendorHomeController {
     @Autowired
     private ProductService productService;
 
+    @Autowired
+    private OrderRepository orderRepository;
+
     @GetMapping("/home")
     public String vendorHome(HttpSession session, Model model) {
         User vendor = ensureVendor(session);
@@ -34,6 +38,13 @@ public class VendorHomeController {
         }
 
         List<Shop> shops = shopService.findAllByVendor(vendor);
+        // Cập nhật lại tổng doanh thu theo đơn DELIVERED cho từng shop
+        for (Shop shop : shops) {
+            try {
+                Double delivered = orderRepository.sumDeliveredRevenueByShopId(shop.getShopId());
+                shop.setTotalRevenue(delivered != null ? delivered : 0.0);
+            } catch (Exception ignored) {}
+        }
 
         int totalProductCount = shops.stream()
                 .mapToInt(shop -> shop.getTotalProducts() != null ? shop.getTotalProducts() : 0)
@@ -65,6 +76,17 @@ public class VendorHomeController {
         }
 
         List<Shop> shops = shopService.findAllByVendor(vendor);
+        // Sync revenue to delivered orders for each shop
+        for (Shop shop : shops) {
+            try {
+                Double delivered = orderRepository.sumDeliveredRevenueByShopId(shop.getShopId());
+                shop.setTotalRevenue(delivered != null ? delivered : 0.0);
+            } catch (Exception ignored) {}
+        }
+        // Aggregate total revenue across all shops
+        double totalRevenueAmount = shops.stream()
+                .mapToDouble(s -> s.getTotalRevenue() != null ? s.getTotalRevenue() : 0.0)
+                .sum();
         
         if (shops.isEmpty()) {
             model.addAttribute("error", "Bạn chưa có shop nào. Hãy đăng ký shop mới!");
@@ -74,6 +96,7 @@ public class VendorHomeController {
         model.addAttribute("vendor", vendor);
         model.addAttribute("shops", shops);
         model.addAttribute("totalShops", shops.size());
+        model.addAttribute("totalRevenueAmount", totalRevenueAmount);
         model.addAttribute("pageTitle", "Danh sách shop của tôi");
         
         return "vendor/my-shops";
