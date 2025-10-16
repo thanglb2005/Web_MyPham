@@ -91,37 +91,37 @@
             <li class="nav-item" role="presentation">
                 <a class="nav-link" th:classappend="${currentStatus == 'PENDING' ? 'active' : ''}"
                        th:href="@{/vendor/orders(shopId=${shopId}, status=PENDING, q=${search})}">
-                        Chờ xác nhận <span class="badge bg-secondary ms-1" th:text="${statusCounts[T(vn.entity.Order.OrderStatus).PENDING] ?: 0}">0</span>
+                        Chờ xác nhận <span class="badge bg-secondary ms-1" th:text="${pendingCount}">0</span>
                 </a>
             </li>
             <li class="nav-item" role="presentation">
                 <a class="nav-link" th:classappend="${currentStatus == 'CONFIRMED' ? 'active' : ''}"
                        th:href="@{/vendor/orders(shopId=${shopId}, status=CONFIRMED, q=${search})}">
-                        Đã xác nhận <span class="badge bg-secondary ms-1" th:text="${statusCounts[T(vn.entity.Order.OrderStatus).CONFIRMED] ?: 0}">0</span>
+                        Đã xác nhận <span class="badge bg-secondary ms-1" th:text="${confirmedCount}">0</span>
                 </a>
             </li>
             <li class="nav-item" role="presentation">
                 <a class="nav-link" th:classappend="${currentStatus == 'SHIPPING' ? 'active' : ''}"
                        th:href="@{/vendor/orders(shopId=${shopId}, status=SHIPPING, q=${search})}">
-                        Đang giao hàng <span class="badge bg-secondary ms-1" th:text="${statusCounts[T(vn.entity.Order.OrderStatus).SHIPPING] ?: 0}">0</span>
+                        Đang giao hàng <span class="badge bg-secondary ms-1" th:text="${shippingCount}">0</span>
                 </a>
             </li>
             <li class="nav-item" role="presentation">
                 <a class="nav-link" th:classappend="${currentStatus == 'DELIVERED' ? 'active' : ''}"
                        th:href="@{/vendor/orders(shopId=${shopId}, status=DELIVERED, q=${search})}">
-                        Đã giao <span class="badge bg-success ms-1" th:text="${statusCounts[T(vn.entity.Order.OrderStatus).DELIVERED] ?: 0}">0</span>
+                        Đã giao <span class="badge bg-success ms-1" th:text="${deliveredCount}">0</span>
                 </a>
             </li>
             <li class="nav-item" role="presentation">
                 <a class="nav-link" th:classappend="${currentStatus == 'CANCELLED' ? 'active' : ''}"
                        th:href="@{/vendor/orders(shopId=${shopId}, status=CANCELLED, q=${search})}">
-                        Đã hủy <span class="badge bg-danger ms-1" th:text="${statusCounts[T(vn.entity.Order.OrderStatus).CANCELLED] ?: 0}">0</span>
+                        Đã hủy <span class="badge bg-danger ms-1" th:text="${cancelledCount}">0</span>
                 </a>
             </li>
             <li class="nav-item" role="presentation">
                 <a class="nav-link" th:classappend="${currentStatus == 'RETURNED' ? 'active' : ''}"
                        th:href="@{/vendor/orders(shopId=${shopId}, status=RETURNED, q=${search})}">
-                        Đã hoàn trả <span class="badge bg-secondary ms-1" th:text="${statusCounts[T(vn.entity.Order.OrderStatus).RETURNED] ?: 0}">0</span>
+                        Đã hoàn trả <span class="badge bg-secondary ms-1" th:text="${returnedCount}">0</span>
                 </a>
             </li>
         </ul>
