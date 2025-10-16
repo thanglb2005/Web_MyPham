@@ -18,93 +18,14 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
     />
 
-    <!-- CSS -->
-    <link rel="stylesheet" href="/assets/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="/assets/css/atlantis.css" />
+    <!-- CSS (deduplicated) -->
     <link rel="stylesheet" href="/assets/css/demo.css" />
     <link rel="stylesheet" href="/assets/css/fonts.min.css" />
-    <link rel="stylesheet" href="/assets/css/atlantis.min.css" />
     <link rel="stylesheet" href="/css/admin-fonts.css" />
 
     <style>
-      /* Fixed Sidebar */
-      .sidebar {
-        position: fixed !important;
-        top: 60px;
-        left: 0;
-        bottom: 0;
-        z-index: 1028;
-        width: 250px;
-        background: white !important;
-        border-right: 1px solid #e9ecef;
-        margin: 0;
-        padding: 0;
-      }
-
-      /* Main Content Adjustment */
-      .main-panel {
-        margin-top: 60px !important;
-        margin-left: 250px !important;
-        padding: 0;
-        margin-right: 0;
-      }
-
-      .content {
-        padding: 0;
-        margin: 0;
-        position: relative;
-        top: 0;
-      }
-
-      .page-inner {
-        padding: 20px;
-        margin: 0;
-      }
-
-      .page-header {
-        padding: 15px 20px;
-        margin: 0;
-        background: white;
-        border-bottom: 1px solid #e9ecef;
-        position: relative;
-        top: 0;
-      }
-
-      .page-title {
-        color: #333;
-        font-size: 1.8rem;
-        margin: 0;
-        font-weight: 600;
-      }
-
-      /* Force remove all gaps */
-      .main-panel {
-        margin-top: 60px !important;
-        margin-left: 250px !important;
-        padding: 0 !important;
-        margin-right: 0 !important;
-      }
-
-      .content {
-        padding: 0 !important;
-        margin: 0 !important;
-        position: relative !important;
-        top: 0 !important;
-      }
-
-      .page-header {
-        margin-top: 0 !important;
-        margin-bottom: 0 !important;
-        padding-top: 15px !important;
-        padding-bottom: 15px !important;
-        padding-left: 20px !important;
-        padding-right: 20px !important;
-      }
-
-      .page-inner {
-        padding: 20px !important;
-        margin: 0 !important;
-      }
+      /* NOTE: Dùng layout & CSS gốc của theme Atlantis để tránh overlay che sidebar/navbar. */
+      .page-title { color: #333; font-size: 1.8rem; margin: 0; font-weight: 600; }
 
       /* Action Bar */
       .action-bar {
@@ -746,15 +667,13 @@
                   </form>
                 </div>
 
-                <button
-                  type="button"
+                <a
+                  href="/admin/promotions/add"
                   class="btn btn-primary"
-                  data-toggle="modal"
-                  data-target="#addPromotionModal"
                 >
                   <i class="fas fa-plus"></i>
                   Thêm khuyến mãi mới
-                </button>
+                </a>
               </div>
 
               <!-- Promotions Table -->
@@ -809,12 +728,14 @@
                               ></span>
                             </td>
                             <td>
-                              <span th:if="${promotion.promotionType.name() == 'PRODUCT_PERCENTAGE'}">
-                                <span class="discount-display" th:text="${promotion.discountValue} + '%'"></span>
-                              </span>
-                              <span th:if="${promotion.promotionType.name() != 'PRODUCT_PERCENTAGE'}">
-                                <span class="price-display" th:text="${#numbers.formatDecimal(promotion.discountValue, 0, 'COMMA', 0, 'POINT')} + ' đ'"></span>
-                              </span>
+                              <th:block th:switch="${promotion.promotionType}">
+                                <span th:case="${T(vn.entity.Promotion.PromotionType).PERCENTAGE}">
+                                  <span class="discount-display" th:text="${#numbers.formatDecimal(promotion.discountValue, 0, 'COMMA', 0, 'POINT')} + '%'">%</span>
+                                </span>
+                                <span th:case="*">
+                                  <span class="price-display" th:text="${#numbers.formatDecimal(promotion.discountValue, 0, 'COMMA', 0, 'POINT')} + ' đ'">đ</span>
+                                </span>
+                              </th:block>
                             </td>
                             <td>
                               <span
@@ -1213,27 +1134,22 @@
       $(document).ready(function() {
         console.log('Promotions page loaded');
         
-        // Khởi tạo collapse cho menu - giống admin chính
+        // Khởi tạo collapse cho menu (giống index.html)
         $('[data-toggle="collapse"]').on('click', function(e) {
           e.preventDefault();
           var target = $(this).attr('href');
-          console.log('Menu clicked:', target);
           $(target).collapse('toggle');
         });
 
-        // Thêm class active cho menu item được click - giống admin chính
+        // Thêm class active cho menu item được click (giống index.html)
         $('.nav-item a[data-toggle="collapse"]').on('click', function() {
           $('.nav-item').removeClass('active');
           $(this).closest('.nav-item').addClass('active');
         });
 
-        // Đảm bảo menu mở đúng khi trang load - giống admin chính
+        // Đảm bảo menu mở đúng khi trang load (giống index.html)
         $('.collapse').on('show.bs.collapse', function () {
           $(this).siblings('.nav-item').addClass('active');
-        });
-        
-        $('.collapse').on('hide.bs.collapse', function () {
-          $(this).siblings('.nav-item').removeClass('active');
         });
 
         // Auto-highlight menu khi ở trang promotions
@@ -1243,6 +1159,31 @@
           $('.nav-item a[href="/admin/promotions"]').addClass('active');
           console.log('Menu auto-highlighted');
         }, 100);
+
+        // Convert sidebar statistic links to absolute routes with query param on this page
+        (function fixSidebarStatisticLinks() {
+          const mapTab = (hash) => {
+            if (!hash) return '';
+            const key = hash.replace('#','');
+            switch (key) {
+              case 'overview': return 'overview';
+              case 'products': return 'products';
+              case 'brands': return 'brands';
+              case 'best-sellers': return 'best-sellers';
+              case 'favorites': return 'favorites';
+              default: return key;
+            }
+          };
+          $('#charts .nav-collapse a[href^="/admin/statistics#"]').each(function(){
+            const href = $(this).attr('href');
+            const hashIdx = href.indexOf('#');
+            if (hashIdx > -1) {
+              const hash = href.substring(hashIdx);
+              const tab = mapTab(hash);
+              $(this).attr('href', `/admin/statistics?tab=${encodeURIComponent(tab)}`);
+            }
+          });
+        })();
       });
 
       // Auto-submit search form on Enter
@@ -1264,35 +1205,8 @@
       });
       
       function handleHashView() {
-        const hash = window.location.hash;
-        const contentSection = document.querySelector('.content-section');
-        if (!contentSection) return;
-        
-        // Hide all view sections first
-        const actionBar = contentSection.querySelector('.action-bar');
-        const tableContainer = contentSection.querySelector('.table-container');
-        const dashboardView = contentSection.querySelector('#dashboard-view');
-        const chartsView = contentSection.querySelector('#charts-view');
-        
-        // Hide all views
-        if (actionBar) actionBar.style.display = 'none';
-        if (tableContainer) tableContainer.style.display = 'none';
-        if (dashboardView) dashboardView.style.display = 'none';
-        if (chartsView) chartsView.style.display = 'none';
-        
-        switch(hash) {
-          case '#dashboard':
-            showDashboardView();
-            break;
-          case '#charts':
-            showChartsView();
-            break;
-          case '#tables':
-            showTablesView();
-            break;
-          default:
-            showDefaultView();
-        }
+        // Always show default table view on promotions page
+        showTablesView();
       }
       
       function showDashboardView() {

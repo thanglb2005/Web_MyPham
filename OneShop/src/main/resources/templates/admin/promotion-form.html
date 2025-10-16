@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title th:text="${promotion.promotionId != null ? 'Chỉnh sửa khuyến mãi' : 'Thêm khuyến mãi mới'} - OneShop Admin</title>
+    <title th:text="${(promotion.promotionId != null ? 'Chỉnh sửa khuyến mãi' : 'Thêm khuyến mãi mới') + ' - OneShop Admin'}"></title>
 
     <!-- CSS Libraries -->
     <link rel="stylesheet" href="/assets/css/bootstrap.min.css" />
@@ -70,12 +70,8 @@
         top: 0;
       }
 
-      .page-title {
-        color: #333;
-        font-size: 1.8rem;
-        margin: 0;
-        font-weight: 600;
-      }
+      /* Use theme defaults; avoid overlaying sidebar/navbar */
+      .page-title { color: #333; font-size: 1.8rem; margin: 0; font-weight: 600; }
 
       /* Form Styling */
       .form-container {
@@ -675,12 +671,13 @@
       $(document).ready(function() {
         console.log('Promotion form page loaded');
         
-        // Khởi tạo collapse cho menu - giống admin chính
-        $('[data-toggle="collapse"]').on('click', function(e) {
-          e.preventDefault();
-          var target = $(this).attr('href');
-          console.log('Menu clicked:', target);
-          $(target).collapse('toggle');
+        // Delegate collapse only for sidebar and only when href is an id
+        $('.sidebar').on('click','[data-toggle="collapse"]', function(e){
+          const href = $(this).attr('href');
+          if (href && href.startsWith('#')) {
+            e.preventDefault();
+            $(href).collapse('toggle');
+          }
         });
 
         // Thêm class active cho menu item được click - giống admin chính
