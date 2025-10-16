@@ -68,14 +68,26 @@ public class Order {
     @Column(name = "delivered_date")
     private LocalDateTime deliveredDate;
 
-    @Column(name = "refund_amount")
-    private Double refundAmount;
+    @Column(name = "cancelled_date")
+    private LocalDateTime cancelledDate;
 
-    @Column(name = "refund_reason", length = 1000)
-    private String refundReason;
+    @Column(name = "cancellation_reason", length = 1000)
+    private String cancellationReason;
 
-    @Column(name = "refund_date")
-    private LocalDateTime refundDate;
+    @Column(name = "tracking_number", length = 100)
+    private String trackingNumber;
+
+    @Column(name = "shipping_fee")
+    private Double shippingFee = 0.0;
+
+    @Column(name = "discount_amount")
+    private Double discountAmount = 0.0;
+
+    @Column(name = "final_amount")
+    private Double finalAmount = 0.0;
+
+    @Column(name = "estimated_delivery_date")
+    private LocalDateTime estimatedDeliveryDate;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "shipper_id")

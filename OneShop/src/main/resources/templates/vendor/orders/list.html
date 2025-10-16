@@ -167,13 +167,8 @@
                             <small th:text="${order.shippingAddress ?: 'Chưa có địa chỉ'}" class="text-muted"></small>
                         </td>
                         <td>
-                            <span th:classappend="${order.status == T(vn.entity.Order.OrderStatus).PENDING ? 'badge bg-secondary' :
-                                                  (order.status == T(vn.entity.Order.OrderStatus).CONFIRMED ? 'badge bg-primary' :
-                                                  (order.status == T(vn.entity.Order.OrderStatus).SHIPPING ? 'badge bg-warning' :
-                                                  (order.status == T(vn.entity.Order.OrderStatus).DELIVERED ? 'badge bg-success' :
-                                                  (order.status == T(vn.entity.Order.OrderStatus).CANCELLED ? 'badge bg-danger' :
-                                                  (order.status == T(vn.entity.Order.OrderStatus).RETURNED ? 'badge bg-secondary' : 'badge bg-light')))))}"
-                  th:text="${order.status ?: 'PENDING'}" class="status-badge"></span>
+                            <span th:classappend="${order.status == T(vn.entity.Order.OrderStatus).PENDING ? 'badge bg-secondary' : (order.status == T(vn.entity.Order.OrderStatus).CONFIRMED ? 'badge bg-primary' : (order.status == T(vn.entity.Order.OrderStatus).SHIPPING ? 'badge bg-warning' : (order.status == T(vn.entity.Order.OrderStatus).DELIVERED ? 'badge bg-success' : (order.status == T(vn.entity.Order.OrderStatus).CANCELLED ? 'badge bg-danger' : (order.status == T(vn.entity.Order.OrderStatus).RETURNED ? 'badge bg-secondary' : 'badge bg-light')))))}"
+                                  th:text="${order.status ?: 'PENDING'}" class="status-badge"></span>
               </td>
               <td>
                 <div class="btn-group" role="group">
