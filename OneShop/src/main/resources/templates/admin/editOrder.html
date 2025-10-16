@@ -324,7 +324,8 @@
               <div class="order-info">
                 <h5><i class="fas fa-info-circle"></i> Thông tin đơn hàng</h5>
                 <p><strong>Mã đơn hàng:</strong> #<span th:text="${orderId}"></span></p>
-                <p><strong>Tổng tiền:</strong> <span class="total-amount" th:text="${#numbers.formatDecimal(amount, 1, 'DEFAULT', 0, 'DEFAULT')}+' đ'"></span></p>
+                <p><strong>Tổng tiền:</strong> <span class="total-amount" th:text="${amount != null ? #numbers.formatDecimal(amount, 1, 'DEFAULT', 0, 'DEFAULT') + ' đ' : '--'}"></span></p>
+                <p><strong>Số sản phẩm:</strong> <span th:text="${orderDetail != null ? orderDetail.size() : 0}"></span> sản phẩm</p>
               </div>
 
               <!-- Order Details Table -->
@@ -359,7 +360,7 @@
                             </td>
                             <td>
                               <img
-                                th:if="${detail.product.productImage != null and detail.product.productImage != ''}"
+                                th:if="${detail.product != null and detail.product.productImage != null and detail.product.productImage != ''}"
                                 th:src="@{'/loadImage?imageName='+${detail.product.productImage}}"
                                 class="product-image"
                                 alt="Product Image"
@@ -367,13 +368,13 @@
                               />
                               <div
                                 class="no-image"
-                                th:style="${detail.product.productImage == null or detail.product.productImage == ''} ? 'display: flex;' : 'display: none;'"
+                                th:style="${detail.product == null or detail.product.productImage == null or detail.product.productImage == ''} ? 'display: flex;' : 'display: none;'"
                               >
                                 <i class="fas fa-image"></i>
                               </div>
                             </td>
                             <td>
-                              <strong th:text="${detail.product.productName}"></strong>
+                              <strong th:text="${detail.productName != null ? detail.productName : (detail.product != null ? detail.product.productName : 'N/A')}"></strong>
                             </td>
                             <td>
                               <span th:text="${detail.quantity}"></span>
@@ -381,13 +382,13 @@
                             <td>
                               <span
                                 class="price-display"
-                                th:text="${#numbers.formatDecimal(detail.price, 1, 'DEFAULT', 0, 'DEFAULT')}+' đ'"
+                                th:text="${detail.unitPrice != null ? #numbers.formatDecimal(detail.unitPrice, 1, 'DEFAULT', 0, 'DEFAULT') + ' đ' : '--'}"
                               ></span>
                             </td>
                             <td>
                               <span
                                 class="price-display"
-                                th:text="${#numbers.formatDecimal(detail.price * detail.quantity, 1, 'DEFAULT', 0, 'DEFAULT')}+' đ'"
+                                th:text="${detail.totalPrice != null ? #numbers.formatDecimal(detail.totalPrice, 1, 'DEFAULT', 0, 'DEFAULT') + ' đ' : '--'}"
                               ></span>
                             </td>
                           </tr>
@@ -407,11 +408,15 @@
                 </div>
               </div>
 
-              <!-- Back Button -->
+              <!-- Back Buttons -->
               <div class="text-center">
-                <a href="/admin/orders" class="btn btn-secondary">
+                <a href="/admin/orders" class="btn btn-secondary me-2">
                   <i class="fas fa-arrow-left"></i>
                   Quay lại danh sách đơn hàng
+                </a>
+                <a href="/admin" class="btn btn-primary">
+                  <i class="fas fa-home"></i>
+                  Trang Admin
                 </a>
               </div>
             </div>

@@ -470,11 +470,30 @@ public class ShipperHomeController {
             order.setWeight(totalWeight);
         }
         
+        // Lấy thông tin shop của đơn hàng
+        Shop orderShop = null;
+        if (order.getShop() != null) {
+            orderShop = order.getShop();
+        } else if (order.getOrderDetails() != null && !order.getOrderDetails().isEmpty()) {
+            // Nếu order không có shop, lấy shop từ order details
+            orderShop = order.getOrderDetails().get(0).getProduct().getShop();
+        }
+        
+        // Cập nhật pickup address nếu chưa có
+        if (order.getPickupAddress() == null && orderShop != null) {
+            order.setPickupAddress(orderShop.getAddress());
+        }
+        
+        // Debug: Log order status
+        System.out.println("Order ID: " + orderId + ", Status: " + order.getStatus());
+        System.out.println("Order Payment Method: " + order.getPaymentMethod());
+        
         model.addAttribute("shipper", shipper);
         model.addAttribute("displayName", displayName);
         model.addAttribute("assignedShops", assignedShops);
         model.addAttribute("shopDescription", shopDescription);
         model.addAttribute("order", order);
+        model.addAttribute("orderShop", orderShop);
         model.addAttribute("pageTitle", "Chi tiết đơn hàng #" + orderId);
 
         return "shipper/order-detail";

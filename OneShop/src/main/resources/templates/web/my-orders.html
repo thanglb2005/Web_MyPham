@@ -636,12 +636,18 @@
                             <div class="order-top-row">
                                 <div class="shop-info">
                                     <div class="shop-name-section">
-                                        <div class="shop-name" th:if="${order.orderDetails != null and !order.orderDetails.isEmpty()}">
-                                            <span th:each="orderDetail, iterStat : ${order.orderDetails}" 
-                                                  th:if="${iterStat.first and orderDetail.product != null and orderDetail.product.shop != null}" 
+                                        <!-- Fallback 1: use order.shop if available (works even when no orderDetails loaded) -->
+                                        <div class="shop-name" th:if="${order.shop != null}" th:text="${order.shop.shopName}">Tên Shop</div>
+                                        
+                                        <!-- Fallback 2: use first orderDetail's product.shop when present -->
+                                        <div class="shop-name" th:if="${order.shop == null and order.orderDetails != null and !order.orderDetails.isEmpty()}">
+                                            <span th:each="orderDetail, iterStat : ${order.orderDetails}"
+                                                  th:if="${iterStat.first and orderDetail.product != null and orderDetail.product.shop != null}"
                                                   th:text="${orderDetail.product.shop.shopName}">Tên Shop</span>
                                         </div>
-                                        <div class="shop-name" th:if="${order.orderDetails == null or order.orderDetails.isEmpty()}">Đơn hàng</div>
+                                        
+                                        <!-- Fallback 3: default label -->
+                                        <div class="shop-name" th:if="${order.shop == null and (order.orderDetails == null or order.orderDetails.isEmpty())}">Đơn hàng</div>
                                     </div>
                                     
                                     <!-- Action Buttons hidden per request -->

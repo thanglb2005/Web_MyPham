@@ -92,7 +92,29 @@ public class UserOrderController {
         // Load orderDetails for each order using repository
         java.util.Map<Long, Comment> myCommentsMap = new java.util.HashMap<>();
         for (Order order : ordersPage.getContent()) {
-            List<OrderDetail> orderDetails = orderDetailRepository.findByOrderId(order.getOrderId());
+            // Eagerly load product and shop to avoid lazy issues in view
+            List<OrderDetail> orderDetails = orderDetailRepository.findByOrderIdWithProductAndShop(order.getOrderId());
+            
+            // If this is a cancelled order and has no details (e.g., user cancelled very early),
+            // create a lightweight display row so the UI remains consistent.
+            if ((orderDetails == null || orderDetails.isEmpty()) && order.getStatus() == Order.OrderStatus.CANCELLED) {
+                OrderDetail placeholder = new OrderDetail();
+                placeholder.setOrder(order);
+                placeholder.setProductName("Sản phẩm đã hủy");
+                placeholder.setUnitPrice(order.getTotalAmount());
+                placeholder.setQuantity(1);
+                placeholder.setTotalPrice(order.getTotalAmount());
+                orderDetails = new java.util.ArrayList<>();
+                orderDetails.add(placeholder);
+            }
+
+            // Set order.shop from first order detail if available so header can display shop name
+            if (order.getShop() == null && orderDetails != null && !orderDetails.isEmpty()) {
+                OrderDetail first = orderDetails.get(0);
+                if (first.getProduct() != null && first.getProduct().getShop() != null) {
+                    order.setShop(first.getProduct().getShop());
+                }
+            }
             // Force load product and shop information for each orderDetail
             for (OrderDetail orderDetail : orderDetails) {
                 if (orderDetail.getProduct() != null) {

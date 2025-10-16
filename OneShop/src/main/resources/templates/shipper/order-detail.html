@@ -63,10 +63,12 @@
       font-weight: 600; 
       text-transform: uppercase;
     }
+    .status-badge.pending { background: rgba(255, 193, 7, 0.1); color: #ffc107; }
+    .status-badge.confirmed { background: rgba(168, 85, 247, 0.1); color: #a855f7; }
     .status-badge.shipping { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
     .status-badge.delivered { background: rgba(16, 185, 129, 0.1); color: #10b981; }
-    .status-badge.confirmed { background: rgba(168, 85, 247, 0.1); color: #a855f7; }
     .status-badge.cancelled { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+    .status-badge.returned { background: rgba(108, 117, 125, 0.1); color: #6c757d; }
     .product-table { margin-top: 16px; }
     .product-table table { margin-bottom: 0; }
     .product-table th { 
@@ -267,7 +269,13 @@
             <div class="info-label">Địa chỉ lấy hàng:</div>
             <div class="info-value">
               <i class="fas fa-store text-primary me-2"></i>
-              <span th:text="${order.pickupAddress != null ? order.pickupAddress : 'Chưa cập nhật'}">123 Nguyễn Huệ, Q1, TP.HCM</span>
+              <span th:if="${orderShop != null and orderShop.shopName != null}">
+                <strong th:text="${orderShop.shopName}">Tên Shop</strong><br>
+                <small class="text-muted" th:text="${order.pickupAddress != null ? order.pickupAddress : orderShop.address}">Địa chỉ shop</small>
+              </span>
+              <span th:if="${orderShop == null or orderShop.shopName == null}" class="text-muted">
+                Chưa cập nhật
+              </span>
             </div>
           </div>
           <div class="info-row">
@@ -354,14 +362,23 @@
               <strong>#<span th:text="${order.orderId}">123</span></strong>
             </div>
           </div>
+          <div class="info-row" th:if="${orderShop != null and orderShop.shopName != null}">
+            <div class="info-label">Shop:</div>
+            <div class="info-value">
+              <i class="fas fa-store text-primary me-2"></i>
+              <strong th:text="${orderShop.shopName}">Tên Shop</strong>
+            </div>
+          </div>
           <div class="info-row">
             <div class="info-label">Trạng thái:</div>
             <div class="info-value">
-              <span th:class="'status-badge ' + ${#strings.toLowerCase(order.status)}"
-                    th:text="${order.status == T(vn.entity.Order$OrderStatus).SHIPPING ? 'Đang giao' :
-                             order.status == T(vn.entity.Order$OrderStatus).DELIVERED ? 'Đã giao' :
-                             order.status == T(vn.entity.Order$OrderStatus).CONFIRMED ? 'Đã xác nhận' :
-                             order.status == T(vn.entity.Order$OrderStatus).CANCELLED ? 'Đã hủy' : 'Chờ xử lý'}">
+              <span th:class="'status-badge ' + ${order.status.name().toLowerCase()}"
+                    th:text="${order.status.name() == 'PENDING' ? 'Chờ xác nhận' :
+                             order.status.name() == 'CONFIRMED' ? 'Đã xác nhận' :
+                             order.status.name() == 'SHIPPING' ? 'Đang giao' :
+                             order.status.name() == 'DELIVERED' ? 'Đã giao' :
+                             order.status.name() == 'CANCELLED' ? 'Đã hủy' :
+                             order.status.name() == 'RETURNED' ? 'Trả hàng' : 'Không xác định'}">
                 Đang giao
               </span>
             </div>
@@ -390,10 +407,14 @@
           <div class="info-row">
             <div class="info-label">Thanh toán:</div>
             <div class="info-value">
-              <span th:text="${order.paymentMethod == T(vn.entity.Order$PaymentMethod).COD ? 'Thu tiền mặt (COD)' :
-                             order.paymentMethod == T(vn.entity.Order$PaymentMethod).MOMO ? 'Ví MoMo' :
-                             order.paymentMethod == T(vn.entity.Order$PaymentMethod).BANK_TRANSFER ? 'Chuyển khoản' : 
-                             'Khác'}">
+              <i class="fas fa-credit-card text-info me-2"></i>
+              <span th:text="${order.paymentMethod != null ? 
+                             (order.paymentMethod.name() == 'COD' ? 'Thu tiền mặt (COD)' :
+                              order.paymentMethod.name() == 'MOMO' ? 'Ví MoMo' :
+                              order.paymentMethod.name() == 'BANK_TRANSFER' ? 'Chuyển khoản' :
+                              order.paymentMethod.name() == 'CREDIT_CARD' ? 'Thẻ tín dụng' :
+                              order.paymentMethod.name() == 'DEBIT_CARD' ? 'Thẻ ghi nợ' :
+                              'Phương thức khác') : 'Chưa xác định'}">
                 Thu tiền mặt (COD)
               </span>
             </div>
