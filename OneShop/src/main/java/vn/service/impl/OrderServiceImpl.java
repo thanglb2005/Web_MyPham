@@ -269,6 +269,34 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    @Transactional
+    public void cancelOrder(Long orderId, User vendor) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy đơn hàng #" + orderId));
+
+        // Security Check: Ensure the vendor owns this order
+        if (order.getShop() == null || !order.getShop().getVendor().equals(vendor)) {
+            throw new IllegalStateException("Bạn không có quyền hủy đơn hàng này.");
+        }
+
+        // Business Logic Check: Only PENDING orders can be cancelled by vendor
+        if (order.getStatus() != Order.OrderStatus.PENDING) {
+            throw new IllegalStateException("Chỉ có thể hủy đơn hàng khi ở trạng thái 'Chờ xác nhận'.");
+        }
+
+        order.setStatus(Order.OrderStatus.CANCELLED);
+        // Optionally, you can set a reason for cancellation
+        // order.setCancellationReason("Hủy bởi người bán");
+        order.setCancelledDate(LocalDateTime.now());
+        orderRepository.save(order);
+    }
+
+    @Override
+    public List<Object[]> countOrdersByStatus(List<Long> shopIds) {
+        return orderRepository.countOrdersByStatus(shopIds);
+    }
+
+    @Override
     public Page<Order> findByShopIdInAndStatusDirect(List<Long> shopIds, Order.OrderStatus status, Pageable pageable) {
         return orderRepository.findByShopIdInAndStatusDirect(shopIds, status, pageable);
     }

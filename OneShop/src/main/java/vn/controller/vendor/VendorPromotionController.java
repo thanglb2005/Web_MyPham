@@ -36,7 +36,8 @@ public class VendorPromotionController {
     
     // Danh sách khuyến mãi của shop
     @GetMapping
-    public String listPromotions(@RequestParam(defaultValue = "0") int page,
+    public String listPromotions(@RequestParam(value = "shopId", required = false) Long shopId,
+                                @RequestParam(defaultValue = "0") int page,
                                 @RequestParam(defaultValue = "10") int size,
                                 @RequestParam(required = false) String name,
                                 @RequestParam(required = false) String code,
@@ -50,15 +51,27 @@ public class VendorPromotionController {
             return "redirect:/login";
         }
         
-        List<Long> shopIds = shopService.findShopIdsByVendor(vendor);
-        if (shopIds.isEmpty()) {
-            model.addAttribute("error", "Bạn chưa có shop nào");
+        List<Shop> vendorShops = shopService.findAllByVendor(vendor);
+        if (vendorShops.isEmpty()) {
+            model.addAttribute("error", "Bạn chưa có shop nào để quản lý khuyến mãi.");
             return "vendor/promotions/list";
         }
         
-        // Lấy shop đầu tiên (có thể mở rộng để chọn shop)
-        Long shopId = shopIds.get(0);
-        Shop shop = shopService.findById(shopId).orElse(null);
+        final Long currentShopId = shopId;
+        Shop selectedShop = null;
+        if (currentShopId != null) {
+            selectedShop = vendorShops.stream()
+                                    .filter(s -> s.getShopId().equals(currentShopId))
+                                    .findFirst()
+                                    .orElse(null);
+        }
+        
+        // Nếu không có shopId hoặc shopId không hợp lệ, chọn shop đầu tiên
+        if (selectedShop == null) {
+            selectedShop = vendorShops.get(0);
+        }
+        
+        Long finalShopId = selectedShop.getShopId();
         
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
         
@@ -81,17 +94,19 @@ public class VendorPromotionController {
         }
         
         Page<Promotion> promotions = promotionService.searchPromotionsByShop(
-                shopId, name, code, promotionType, activeStatus, pageable);
+                finalShopId, name, code, promotionType, activeStatus, pageable);
         
         // Thống kê
-        long totalPromotions = promotionService.getPromotionCountByShop(shopId);
-        long activePromotions = promotionService.getActivePromotionCountByShop(shopId);
-        List<Promotion> expiringPromotions = promotionService.getExpiringPromotionsByShop(shopId, 7);
-        List<Promotion> expiredPromotions = promotionService.getExpiredPromotionsByShop(shopId);
-        List<Promotion> fullyUsedPromotions = promotionService.getFullyUsedPromotionsByShop(shopId);
+        long totalPromotions = promotionService.getPromotionCountByShop(finalShopId);
+        long activePromotions = promotionService.getActivePromotionCountByShop(finalShopId);
+        List<Promotion> expiringPromotions = promotionService.getExpiringPromotionsByShop(finalShopId, 7);
+        List<Promotion> expiredPromotions = promotionService.getExpiredPromotionsByShop(finalShopId);
+        List<Promotion> fullyUsedPromotions = promotionService.getFullyUsedPromotionsByShop(finalShopId);
         
         model.addAttribute("promotions", promotions);
-        model.addAttribute("shop", shop);
+        model.addAttribute("vendorShops", vendorShops);
+        model.addAttribute("selectedShop", selectedShop);
+        model.addAttribute("selectedShopId", finalShopId);
         model.addAttribute("totalPromotions", totalPromotions);
         model.addAttribute("activePromotions", activePromotions);
         model.addAttribute("expiringPromotions", expiringPromotions);

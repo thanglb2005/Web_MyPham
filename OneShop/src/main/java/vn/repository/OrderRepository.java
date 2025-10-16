@@ -245,6 +245,9 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     @Query("SELECT COUNT(o) FROM Order o WHERE o.shop.shopId IN :shopIds")
     Long countByShopIdIn(@Param("shopIds") List<Long> shopIds);
 
+    @Query("SELECT o.status, COUNT(o) FROM Order o WHERE o.shop.shopId IN :shopIds GROUP BY o.status")
+    List<Object[]> countOrdersByStatus(@Param("shopIds") List<Long> shopIds);
+
     Page<Order> findByShopShopIdInOrderByOrderDateDesc(List<Long> shopIds, Pageable pageable);
 
     /**

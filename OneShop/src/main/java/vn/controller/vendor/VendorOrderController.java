@@ -158,6 +158,33 @@ public class VendorOrderController {
         return "redirect:" + redirectUrl;
     }
 
+    @PostMapping("/cancel")
+    public String cancelOrder(@RequestParam("orderId") Long orderId,
+                              @RequestParam(value = "shopId", required = false) Long shopId,
+                              RedirectAttributes redirectAttributes,
+                              HttpSession session) {
+
+        User vendor = ensureVendor(session);
+        if (vendor == null) {
+            return "redirect:/login";
+        }
+
+        try {
+            orderService.cancelOrder(orderId, vendor);
+            redirectAttributes.addFlashAttribute("success", "Đã hủy đơn hàng #" + orderId + " thành công.");
+        } catch (IllegalStateException | IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Lỗi khi hủy đơn hàng: " + e.getMessage());
+        }
+
+        String redirectUrl = "/vendor/orders";
+        if (shopId != null) {
+            redirectUrl += "?shopId=" + shopId;
+        }
+        return "redirect:" + redirectUrl;
+    }
+
     /**
      * Chi tiết đơn hàng
      */
@@ -360,14 +387,22 @@ public class VendorOrderController {
     }
 
     /**
-     * Thong ke so luong don hang theo tung trang thai (doc lap voi bo loc hien tai)
+     * Helper: Lấy số lượng đơn hàng theo từng trạng thái
      */
     private Map<Order.OrderStatus, Long> getOrderCountsByStatus(List<Long> shopIds) {
-        Map<Order.OrderStatus, Long> counts = new LinkedHashMap<>();
-        for (Order.OrderStatus tabStatus : STATUS_TABS) {
-            Long count = shopIds.isEmpty() ? 0L : orderService.countByShopIdInAndStatusDirect(shopIds, tabStatus);
-            counts.put(tabStatus, count != null ? count : 0L);
+        Map<Order.OrderStatus, Long> statusCounts = new LinkedHashMap<>();
+        // Khởi tạo tất cả các trạng thái với giá trị 0
+        for (Order.OrderStatus status : Order.OrderStatus.values()) {
+            statusCounts.put(status, 0L);
         }
-        return counts;
+        
+        // Lấy số lượng từ repository và cập nhật map
+        List<Object[]> results = orderService.countOrdersByStatus(shopIds);
+        for (Object[] result : results) {
+            Order.OrderStatus status = (Order.OrderStatus) result[0];
+            Long count = (Long) result[1];
+            statusCounts.put(status, count);
+        }
+        return statusCounts;
     }
 }

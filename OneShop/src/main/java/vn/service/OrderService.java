@@ -79,4 +79,8 @@ public interface OrderService {
     Optional<Order> findById(Long orderId);
 
     void confirmOrder(Long orderId);
+
+    void cancelOrder(Long orderId, User vendor);
+
+    List<Object[]> countOrdersByStatus(List<Long> shopIds);
 }
