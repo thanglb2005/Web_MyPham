@@ -113,6 +113,11 @@ public class PromotionServiceImpl implements PromotionService {
     }
     
     @Override
+    public List<Promotion> getAllActivePromotions() {
+        return promotionRepository.findActivePromotions(LocalDateTime.now());
+    }
+    
+    @Override
     public Page<Promotion> getActivePromotions(Pageable pageable) {
         return promotionRepository.findActivePromotions(LocalDateTime.now(), pageable);
     }
