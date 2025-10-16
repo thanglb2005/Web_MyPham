@@ -28,6 +28,7 @@ public interface PromotionService {
     List<Promotion> getPromotionsByType(Promotion.PromotionType type);
     Page<Promotion> getPromotionsByType(Promotion.PromotionType type, Pageable pageable);
     List<Promotion> getActivePromotions();
+    List<Promotion> getAllActivePromotions();
     Page<Promotion> getActivePromotions(Pageable pageable);
     List<Promotion> getInactivePromotions();
     Page<Promotion> getInactivePromotions(Pageable pageable);

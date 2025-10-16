@@ -11,8 +11,10 @@ import vn.entity.CartItem;
 import vn.entity.CartItemEntity;
 import vn.entity.Order;
 import vn.entity.Product;
+import vn.entity.Promotion;
 import vn.entity.User;
 import vn.service.CartService;
+import vn.service.OneXuService;
 import vn.service.OrderService;
 import vn.service.ProductService;
 import vn.service.VietQRService;
@@ -21,6 +23,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.ArrayList;
+import java.util.Optional;
 
 @Controller
 public class CartController {
@@ -33,6 +37,12 @@ public class CartController {
     
     @Autowired
     private CartService cartService;
+    
+    @Autowired
+    private PromotionService promotionService;
+    
+    @Autowired
+    private OneXuService oneXuService;
     
     @Autowired
     private VietQRService vietQRService;
@@ -565,6 +575,420 @@ public class CartController {
             cartMap.put(entity.getProduct().getProductId(), cartItem);
         }
         return cartMap;
+    }
+    
+    // Test endpoint để kiểm tra voucher (không cần đăng nhập)
+    @GetMapping("/cart/test-vouchers")
+    @ResponseBody
+    public Map<String, Object> testVouchers(HttpServletRequest request) {
+        Map<String, Object> response = new HashMap<>();
+        
+        User user = (User) request.getSession().getAttribute("user");
+        response.put("userLoggedIn", user != null);
+        response.put("userId", user != null ? user.getUserId() : null);
+        
+        try {
+            // Test lấy tất cả promotions
+            List<Promotion> allPromotions = promotionService.getAllPromotions();
+            response.put("totalPromotions", allPromotions.size());
+            
+            // Test lấy promotions theo shop
+            if (!allPromotions.isEmpty()) {
+                // Tìm promotion có shop_id
+                Promotion validPromotion = null;
+                for (Promotion p : allPromotions) {
+                    if (p.getShop() != null) {
+                        validPromotion = p;
+                        break;
+                    }
+                }
+                
+                if (validPromotion != null) {
+                    Long firstShopId = validPromotion.getShop().getShopId();
+                    List<Promotion> shopPromotions = promotionService.getPromotionsByShop(firstShopId);
+                    response.put("shopPromotions", shopPromotions.size());
+                    response.put("testShopId", firstShopId);
+                    
+                    // Test lấy active promotions
+                    List<Promotion> activePromotions = promotionService.getActivePromotionsByShop(firstShopId);
+                    response.put("activePromotions", activePromotions.size());
+                    
+                    // Test lấy tất cả active promotions
+                    List<Promotion> allActivePromotions = promotionService.getAllActivePromotions();
+                    response.put("allActivePromotions", allActivePromotions.size());
+                    
+                    // Debug: Kiểm tra chi tiết các promotions
+                    List<Map<String, Object>> promotionDetails = new ArrayList<>();
+                    for (Promotion p : allPromotions) {
+                        Map<String, Object> detail = new HashMap<>();
+                        detail.put("id", p.getPromotionId());
+                        detail.put("code", p.getPromotionCode());
+                        detail.put("name", p.getPromotionName());
+                        detail.put("isActive", p.getIsActive());
+                        detail.put("startDate", p.getStartDate());
+                        detail.put("endDate", p.getEndDate());
+                        detail.put("shopId", p.getShop() != null ? p.getShop().getShopId() : null);
+                        detail.put("shopName", p.getShop() != null ? p.getShop().getShopName() : null);
+                        promotionDetails.add(detail);
+                    }
+                    response.put("promotionDetails", promotionDetails);
+                    
+                    // Test voucher data format
+                    List<Map<String, Object>> testVouchers = new ArrayList<>();
+                    for (Promotion promotion : allActivePromotions) {
+                        Map<String, Object> voucher = new HashMap<>();
+                        voucher.put("code", promotion.getPromotionCode());
+                        voucher.put("name", promotion.getPromotionName());
+                        voucher.put("description", promotion.getDescription());
+                        voucher.put("type", promotion.getPromotionType().name());
+                        voucher.put("value", promotion.getDiscountValue().doubleValue());
+                        voucher.put("minOrder", promotion.getMinimumOrderAmount().doubleValue());
+                        voucher.put("maxDiscount", promotion.getMaximumDiscountAmount().doubleValue());
+                        voucher.put("shopId", promotion.getShop().getShopId());
+                        voucher.put("shopName", promotion.getShop().getShopName());
+                        testVouchers.add(voucher);
+                    }
+                    response.put("testVouchers", testVouchers);
+                } else {
+                    response.put("shopPromotions", 0);
+                    response.put("testShopId", null);
+                    response.put("message", "Không có promotion nào có shop_id");
+                }
+            }
+            
+            response.put("success", true);
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("error", e.getMessage());
+        }
+        
+        return response;
+    }
+    
+    // One Voucher endpoint - hiển thị tất cả promotions của các shop
+    @GetMapping("/cart/one-vouchers")
+    @ResponseBody
+    public Map<String, Object> getOneVouchers(HttpServletRequest request) {
+        Map<String, Object> response = new HashMap<>();
+        
+        User user = (User) request.getSession().getAttribute("user");
+        if (user == null) {
+            response.put("success", false);
+            response.put("message", "Vui lòng đăng nhập");
+            return response;
+        }
+        
+        try {
+            // Lấy tất cả promotions đang hoạt động từ tất cả các shop
+            List<Promotion> allActivePromotions = promotionService.getAllActivePromotions();
+            List<Map<String, Object>> oneVouchers = new ArrayList<>();
+            
+            for (Promotion promotion : allActivePromotions) {
+                if (promotion.getShop() != null) {
+                    Map<String, Object> voucher = new HashMap<>();
+                    voucher.put("code", promotion.getPromotionCode());
+                    voucher.put("name", promotion.getPromotionName());
+                    voucher.put("description", promotion.getDescription());
+                    voucher.put("type", promotion.getPromotionType().name());
+                    voucher.put("value", promotion.getDiscountValue().doubleValue());
+                    voucher.put("minOrder", promotion.getMinimumOrderAmount().doubleValue());
+                    voucher.put("maxDiscount", promotion.getMaximumDiscountAmount().doubleValue());
+                    voucher.put("shopId", promotion.getShop().getShopId());
+                    voucher.put("shopName", promotion.getShop().getShopName());
+                    voucher.put("usageLimit", promotion.getUsageLimit());
+                    voucher.put("usedCount", promotion.getUsedCount());
+                    voucher.put("startDate", promotion.getStartDate());
+                    voucher.put("endDate", promotion.getEndDate());
+                    
+                    oneVouchers.add(voucher);
+                }
+            }
+            
+            response.put("success", true);
+            response.put("vouchers", oneVouchers);
+            response.put("totalCount", oneVouchers.size());
+            
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "Có lỗi xảy ra khi tải One Voucher");
+            response.put("error", e.getMessage());
+        }
+        
+        return response;
+    }
+    
+    // Voucher endpoints
+    @GetMapping("/cart/available-vouchers")
+    @ResponseBody
+    public Map<String, Object> getAvailableVouchers(HttpServletRequest request) {
+        Map<String, Object> response = new HashMap<>();
+        
+        User user = (User) request.getSession().getAttribute("user");
+        if (user == null) {
+            response.put("success", false);
+            response.put("message", "Vui lòng đăng nhập");
+            return response;
+        }
+        
+        try {
+            // Get selected cart items to determine which shops have items
+            List<CartByShopDTO> cartItemsByShop = cartService.getCartItemsByShop(user);
+            List<Map<String, Object>> availableVouchers = new ArrayList<>();
+            
+            for (CartByShopDTO shopGroup : cartItemsByShop) {
+                if (shopGroup.getShop() != null && shopGroup.getShopSelected()) {
+                    // Get active promotions for this shop
+                    List<Promotion> promotions = promotionService.getActivePromotionsByShop(shopGroup.getShop().getShopId());
+                    
+                    for (Promotion promotion : promotions) {
+                        Map<String, Object> voucher = new HashMap<>();
+                        voucher.put("code", promotion.getPromotionCode());
+                        voucher.put("name", promotion.getPromotionName());
+                        voucher.put("description", promotion.getDescription());
+                        voucher.put("type", promotion.getPromotionType().name());
+                        voucher.put("value", promotion.getDiscountValue().doubleValue());
+                        voucher.put("minOrder", promotion.getMinimumOrderAmount().doubleValue());
+                        voucher.put("maxDiscount", promotion.getMaximumDiscountAmount().doubleValue());
+                        voucher.put("shopId", shopGroup.getShop().getShopId());
+                        voucher.put("shopName", shopGroup.getShop().getShopName());
+                        
+                        availableVouchers.add(voucher);
+                    }
+                }
+            }
+            
+            response.put("success", true);
+            response.put("vouchers", availableVouchers);
+            
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "Có lỗi xảy ra khi tải voucher");
+        }
+        
+        return response;
+    }
+    
+    @PostMapping("/cart/apply-voucher")
+    @ResponseBody
+    public Map<String, Object> applyVoucher(@RequestParam("code") String code, HttpServletRequest request) {
+        Map<String, Object> response = new HashMap<>();
+        
+        User user = (User) request.getSession().getAttribute("user");
+        if (user == null) {
+            response.put("success", false);
+            response.put("message", "Vui lòng đăng nhập");
+            return response;
+        }
+        
+        try {
+            // Get selected cart total
+            Double selectedTotal = cartService.getSelectedCartTotalPrice(user);
+            
+            if (selectedTotal == null || selectedTotal <= 0) {
+                response.put("success", false);
+                response.put("message", "Vui lòng chọn sản phẩm để áp dụng voucher");
+                return response;
+            }
+            
+            // Find promotion by code
+            Optional<Promotion> promotionOpt = promotionService.getPromotionByCode(code.toUpperCase());
+            if (promotionOpt.isEmpty()) {
+                response.put("success", false);
+                response.put("message", "Mã voucher không tồn tại");
+                return response;
+            }
+            
+            Promotion promotion = promotionOpt.get();
+            
+            // Check if promotion is available
+            if (!promotion.isAvailable()) {
+                response.put("success", false);
+                response.put("message", "Voucher đã hết hạn hoặc không còn hiệu lực");
+                return response;
+            }
+            
+            // Check minimum order amount
+            if (selectedTotal < promotion.getMinimumOrderAmount().doubleValue()) {
+                response.put("success", false);
+                response.put("message", "Đơn hàng chưa đạt giá trị tối thiểu để áp dụng voucher");
+                return response;
+            }
+            
+            // Calculate discount
+            Double discount = promotionService.calculateDiscountForShop(
+                promotion.getShop().getShopId(), 
+                code.toUpperCase(), 
+                selectedTotal
+            );
+            
+            if (discount > 0) {
+                // Store applied voucher in session
+                request.getSession().setAttribute("appliedVoucher", promotion);
+                request.getSession().setAttribute("voucherDiscount", discount);
+                
+                response.put("success", true);
+                response.put("message", "Áp dụng voucher thành công");
+                response.put("discount", discount);
+                response.put("selectedTotal", selectedTotal);
+                response.put("selectedCount", cartService.getSelectedCartItemCount(user));
+            } else {
+                response.put("success", false);
+                response.put("message", "Không thể áp dụng voucher cho đơn hàng này");
+            }
+            
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "Có lỗi xảy ra khi áp dụng voucher");
+        }
+        
+        return response;
+    }
+    
+    @GetMapping("/cart/shop-vouchers/{shopId}")
+    @ResponseBody
+    public Map<String, Object> getShopVouchers(@PathVariable Long shopId, HttpServletRequest request) {
+        Map<String, Object> response = new HashMap<>();
+        
+        User user = (User) request.getSession().getAttribute("user");
+        if (user == null) {
+            response.put("success", false);
+            response.put("message", "Vui lòng đăng nhập");
+            return response;
+        }
+        
+        try {
+            // Get all promotions for the shop (not just active ones)
+            List<Promotion> promotions = promotionService.getPromotionsByShop(shopId);
+            List<Map<String, Object>> vouchers = new ArrayList<>();
+            
+            for (Promotion promotion : promotions) {
+                Map<String, Object> voucher = new HashMap<>();
+                voucher.put("code", promotion.getPromotionCode());
+                voucher.put("name", promotion.getPromotionName());
+                voucher.put("description", promotion.getDescription());
+                voucher.put("type", promotion.getPromotionType().name());
+                voucher.put("value", promotion.getDiscountValue().doubleValue());
+                voucher.put("minOrder", promotion.getMinimumOrderAmount().doubleValue());
+                voucher.put("maxDiscount", promotion.getMaximumDiscountAmount().doubleValue());
+                voucher.put("usageLimit", promotion.getUsageLimit());
+                voucher.put("usedCount", promotion.getUsedCount());
+                voucher.put("isActive", promotion.getIsActive());
+                voucher.put("startDate", promotion.getStartDate());
+                voucher.put("endDate", promotion.getEndDate());
+                voucher.put("shopId", shopId);
+                
+                vouchers.add(voucher);
+            }
+            
+            response.put("success", true);
+            response.put("vouchers", vouchers);
+            
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "Có lỗi xảy ra khi tải voucher của shop");
+        }
+        
+        return response;
+    }
+    
+    @GetMapping("/cart/onexu-info")
+    @ResponseBody
+    public Map<String, Object> getOneXuInfo(HttpServletRequest request) {
+        Map<String, Object> response = new HashMap<>();
+        
+        User user = (User) request.getSession().getAttribute("user");
+        if (user == null) {
+            response.put("success", false);
+            response.put("message", "Vui lòng đăng nhập");
+            return response;
+        }
+        
+        try {
+            // Get user's One Xu balance
+            Double balance = oneXuService.getUserBalance(user.getUserId());
+            
+            // Get selected cart total
+            Double selectedTotal = cartService.getSelectedCartTotalPrice(user);
+            
+            // Calculate how much One Xu can be used (max 50% of order value)
+            Double maxUsableXu = 0.0;
+            if (selectedTotal != null && selectedTotal > 0) {
+                maxUsableXu = Math.min(balance, selectedTotal * 0.5);
+            }
+            
+            response.put("success", true);
+            response.put("balance", balance);
+            response.put("maxUsable", maxUsableXu);
+            response.put("selectedTotal", selectedTotal);
+            response.put("canUse", maxUsableXu > 0);
+            
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "Có lỗi xảy ra khi lấy thông tin One Xu");
+        }
+        
+        return response;
+    }
+    
+    @PostMapping("/cart/apply-onexu")
+    @ResponseBody
+    public Map<String, Object> applyOneXu(@RequestParam("amount") Double amount, HttpServletRequest request) {
+        Map<String, Object> response = new HashMap<>();
+        
+        User user = (User) request.getSession().getAttribute("user");
+        if (user == null) {
+            response.put("success", false);
+            response.put("message", "Vui lòng đăng nhập");
+            return response;
+        }
+        
+        try {
+            // Get selected cart total
+            Double selectedTotal = cartService.getSelectedCartTotalPrice(user);
+            
+            if (selectedTotal == null || selectedTotal <= 0) {
+                response.put("success", false);
+                response.put("message", "Vui lòng chọn sản phẩm để sử dụng One Xu");
+                return response;
+            }
+            
+            // Validate amount
+            Double balance = oneXuService.getUserBalance(user.getUserId());
+            Double maxUsableXu = Math.min(balance, selectedTotal * 0.5);
+            
+            if (amount <= 0) {
+                response.put("success", false);
+                response.put("message", "Số lượng One Xu phải lớn hơn 0");
+                return response;
+            }
+            
+            if (amount > balance) {
+                response.put("success", false);
+                response.put("message", "Số dư One Xu không đủ");
+                return response;
+            }
+            
+            if (amount > maxUsableXu) {
+                response.put("success", false);
+                response.put("message", "Chỉ có thể sử dụng tối đa " + String.format("%.0f", maxUsableXu) + " One Xu cho đơn hàng này");
+                return response;
+            }
+            
+            // Store applied One Xu in session
+            request.getSession().setAttribute("appliedOneXu", amount);
+            
+            response.put("success", true);
+            response.put("message", "Áp dụng One Xu thành công");
+            response.put("amount", amount);
+            response.put("selectedTotal", selectedTotal);
+            response.put("selectedCount", cartService.getSelectedCartItemCount(user));
+            
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "Có lỗi xảy ra khi áp dụng One Xu");
+        }
+        
+        return response;
     }
     
 }

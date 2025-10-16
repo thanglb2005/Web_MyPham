@@ -210,7 +210,19 @@
                                             </div>
                                             <div class="mb-2">
                                                 <small class="text-muted">Giá trị:</small>
-                                                <strong th:text="${#numbers.formatDecimal(promotion.discountValue, 0, 'COMMA', 0, 'POINT')} + ' ' + ${promotion.promotionType == T(vn.entity.Promotion.PromotionType).PERCENTAGE ? '%' : 'VNĐ'}">Giá trị</strong>
+                                                <strong>
+                                                    <th:block th:switch="${promotion.promotionType}">
+                                                        <span th:case="${T(vn.entity.Promotion.PromotionType).PERCENTAGE}" 
+                                                              th:text="${#numbers.formatDecimal(promotion.discountValue, 0, 'COMMA', 0, 'POINT')} + '%'">Giá trị %</span>
+                                                        <span th:case="${T(vn.entity.Promotion.PromotionType).FIXED_AMOUNT}" 
+                                                              th:text="${#numbers.formatDecimal(promotion.discountValue, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">Giá trị VNĐ</span>
+                                                        <span th:case="${T(vn.entity.Promotion.PromotionType).FREE_SHIPPING}" 
+                                                              th:text="${#numbers.formatDecimal(promotion.discountValue, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">Giá trị VNĐ</span>
+                                                        <span th:case="${T(vn.entity.Promotion.PromotionType).BUY_X_GET_Y}" 
+                                                              th:text="${#numbers.formatDecimal(promotion.discountValue, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">Giá trị VNĐ</span>
+                                                        <span th:case="*">—</span>
+                                                    </th:block>
+                                                </strong>
                                             </div>
                                             <div class="mb-2">
                                                 <small class="text-muted">Đơn tối thiểu:</small>
