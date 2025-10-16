@@ -59,6 +59,15 @@ public class OrderServiceImpl implements OrderService {
         order.setOrderDate(LocalDateTime.now());
         order.setPaymentPaid(false); // Set payment status to false initially
 
+        // Set shop_id from first product in cart items
+        if (!cartItems.isEmpty()) {
+            CartItem firstItem = cartItems.values().iterator().next();
+            if (firstItem.getProduct() != null && firstItem.getProduct().getShop() != null) {
+                order.setShop(firstItem.getProduct().getShop());
+                System.out.println("Order shop set to: " + firstItem.getProduct().getShop().getShopName());
+            }
+        }
+
         // Debug logging for order calculation
         System.out.println("=== Order Calculation Debug ===");
         double totalAmount = 0;
@@ -124,6 +133,15 @@ public class OrderServiceImpl implements OrderService {
         order.setPaymentMethod(paymentMethod);
         order.setStatus(Order.OrderStatus.PENDING);
         order.setOrderDate(LocalDateTime.now());
+
+        // Set shop_id from first product in cart items
+        if (!cartItems.isEmpty()) {
+            CartItem firstItem = cartItems.values().iterator().next();
+            if (firstItem.getProduct() != null && firstItem.getProduct().getShop() != null) {
+                order.setShop(firstItem.getProduct().getShop());
+                System.out.println("Order shop set to: " + firstItem.getProduct().getShop().getShopName());
+            }
+        }
 
         double totalAmount = cartItems.values().stream()
                 .mapToDouble(item -> item.getQuantity() * item.getUnitPrice())
