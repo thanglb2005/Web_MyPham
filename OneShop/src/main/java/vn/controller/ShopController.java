@@ -134,6 +134,10 @@ public class ShopController {
                     .filter(p -> Boolean.TRUE.equals(p.getStatus()))
                     .collect(Collectors.toList());
             model.addAttribute("selectedShopId", shopId);
+            // Load shop info to show header card like /shop/{slug}
+            try {
+                shopService.findById(shopId).ifPresent(s -> model.addAttribute("shop", s));
+            } catch (Exception ignored) {}
         } else {
             // Show all products
             allProducts = productService.findAll().stream()
@@ -161,7 +165,9 @@ public class ShopController {
             model.addAttribute("avgMap", avgMap);
         } catch (Exception ignored) {}
         populateSidebar(model, null);
-        model.addAttribute("shop", null);
+        if (shopId == null) {
+            model.addAttribute("shop", null);
+        }
         model.addAttribute("selectedCategoryId", null);
         
         // Add cart count for header

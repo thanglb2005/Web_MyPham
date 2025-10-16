@@ -50,7 +50,9 @@
   <body class="bg-light">
     <main class="container py-4">
       <section class="vendor-section">
-        <div class="d-flex flex-column flex-lg-row justify-content-between gap-3 align-items-start align-items-lg-center mb-4">
+        <div
+          class="d-flex flex-column flex-lg-row justify-content-between gap-3 align-items-start align-items-lg-center mb-4"
+        >
           <div>
             <h1 class="h4 mb-1">Đăng ký shop mới</h1>
             <p class="text-muted mb-0">
@@ -180,6 +182,19 @@
             ></div>
           </div>
 
+          <div class="col-md-6">
+            <label class="form-label" for="logo">Logo shop</label>
+            <input
+              id="logo"
+              type="file"
+              class="form-control"
+              name="logo"
+              accept="image/*"
+            />
+            <p class="field-hint mb-0">
+              Kích thước gợi ý: hình vuông 300x300px.
+            </p>
+          </div>
           <div class="col-md-6">
             <label class="form-label" for="banner">Banner shop</label>
             <input
