@@ -709,8 +709,17 @@
                                          class="item-image">
                                     <div class="item-info">
                                         <div class="item-name">
-                                            <span th:if="${orderDetail.productName != null and !orderDetail.productName.isEmpty()}" 
-                                                  th:text="${orderDetail.productName}">Tên sản phẩm</span>
+                                            <span th:if="${orderDetail.productName != null and !orderDetail.productName.isEmpty()}">
+                                                <a th:if="${orderDetail.product != null}" 
+                                                   th:href="@{/productDetail(id=${orderDetail.product.productId})}" 
+                                                   target="_blank"
+                                                   style="color: #333; text-decoration: none; cursor: pointer;"
+                                                   onmouseover="this.style.color='#33a3cc'" 
+                                                   onmouseout="this.style.color='#333'"
+                                                   th:text="${orderDetail.productName}">Tên sản phẩm</a>
+                                                <span th:unless="${orderDetail.product != null}" 
+                                                      th:text="${orderDetail.productName}">Tên sản phẩm</span>
+                                            </span>
                                             <span th:if="${orderDetail.productName == null or orderDetail.productName.isEmpty()}" 
                                                   class="text-muted">Sản phẩm không xác định</span>
                                         </div>
