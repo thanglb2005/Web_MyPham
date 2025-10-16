@@ -6,7 +6,8 @@
           <a
             class="nav-link"
             th:classappend="${active=='dashboard'} ? ' active'"
-            th:href="@{/vendor/dashboard}"
+            href="#"
+            th:onclick="'navigateToDashboard(event)'"
           >
             <i class="fas fa-chart-line"></i> Bảng điều khiển
           </a>
@@ -15,17 +16,18 @@
           <a
             class="nav-link"
             th:classappend="${active=='products'} ? ' active'"
-            th:href="@{/vendor/products}"
+            href="#"
+            th:onclick="'navigateToProducts(event)'"
           >
             <i class="fas fa-box"></i> Sản phẩm của tôi
           </a>
         </li>
-       
         <li class="nav-item">
           <a
             class="nav-link"
             th:classappend="${active=='orders'} ? ' active'"
             th:href="@{/vendor/orders}"
+            th:onclick="addShopIdToLink(this, event)"
           >
             <i class="fas fa-shopping-cart"></i> Đơn hàng của tôi
           </a>
@@ -33,34 +35,108 @@
         <li class="nav-item">
           <a
             class="nav-link"
+            th:classappend="${active=='revenue'} ? ' active'"
+            th:href="@{/vendor/revenue}"
+            th:onclick="addShopIdToLink(this, event)"
+          >
+            <i class="fas fa-chart-line"></i> Doanh thu shop
+          </a>
+        </li>
+        <li class="nav-item">
+          <a
+            class="nav-link"
             th:classappend="${active=='promotions'} ? ' active'"
             th:href="@{/vendor/promotions}"
+            th:onclick="addShopIdToLink(this, event)"
           >
             <i class="fas fa-percentage"></i> Khuyến mãi
           </a>
         </li>
-        <li class="nav-item">
-          <a
-            class="nav-link"
-            th:classappend="${active=='shop'} ? ' active'"
-            th:href="@{/vendor/shop/settings}"
-          >
-            <i class="fas fa-store"></i> Cài đặt shop
-          </a>
-        </li>
-        <li class="nav-item">
-          <a
-            class="nav-link"
-            th:classappend="${active=='register'} ? ' active'"
-            th:href="@{/vendor/shop/register}"
-          >
-            <i class="fas fa-sign-in-alt"></i> Đăng ký shop
-          </a>
-        </li>
       </ul>
-      <a class="btn btn-outline-danger btn-sm" th:href="@{/login}">
-        <i class="fas fa-sign-out-alt"></i> Đăng xuất
-      </a>
+      <div class="d-flex gap-2">
+        <a class="btn btn-outline-secondary btn-sm" th:href="@{/vendor/my-shops}">
+          <i class="fas fa-arrow-left me-1"></i>Quay lại
+        </a>
+        <a class="btn btn-outline-danger btn-sm" th:href="@{/logout}">
+          <i class="fas fa-sign-out-alt"></i> Đăng xuất
+        </a>
+      </div>
     </div>
   </div>
+  
+  <script>
+    function navigateToDashboard(event) {
+      event.preventDefault();
+      
+      // Lấy shopId từ URL hiện tại
+      const urlParams = new URLSearchParams(window.location.search);
+      const shopId = urlParams.get('shopId');
+      
+      console.log('Current shopId:', shopId);
+      
+      if (shopId) {
+        // Chuyển hướng đến dashboard với shopId
+        window.location.href = '/vendor/dashboard?shopId=' + shopId;
+      } else {
+        // Nếu không có shopId, chuyển về my-shops
+        window.location.href = '/vendor/my-shops';
+      }
+    }
+    
+    function navigateToProducts(event) {
+      console.log('navigateToProducts called');
+      event.preventDefault();
+      
+      // Lấy shopId từ URL hiện tại
+      const urlParams = new URLSearchParams(window.location.search);
+      const shopId = urlParams.get('shopId');
+      
+      console.log('Current URL:', window.location.href);
+      console.log('Current shopId for products:', shopId);
+      
+      if (shopId) {
+        // Chuyển trong cùng tab với products của shop hiện tại
+        const newUrl = '/vendor/products?shopId=' + shopId;
+        console.log('Navigating to URL:', newUrl);
+        window.location.href = newUrl;
+      } else {
+        // Nếu không có shopId, chuyển về my-shops
+        console.log('No shopId found, redirecting to my-shops');
+        window.location.href = '/vendor/my-shops';
+      }
+    }
+    
+    function addShopIdToLink(linkElement, event) {
+      console.log('addShopIdToLink called');
+      
+      // Lấy shopId từ URL hiện tại
+      const urlParams = new URLSearchParams(window.location.search);
+      const shopId = urlParams.get('shopId');
+      
+      console.log('Current shopId:', shopId);
+      
+      if (shopId) {
+        // Ngăn chặn hành động mặc định
+        event.preventDefault();
+        
+        // Lấy base URL
+        const originalHref = linkElement.href;
+        console.log('Original href:', originalHref);
+        
+        // Tạo URL object để xử lý parameters
+        const url = new URL(originalHref);
+        
+        // Thêm hoặc cập nhật shopId parameter
+        url.searchParams.set('shopId', shopId);
+        
+        const newHref = url.toString();
+        console.log('New href:', newHref);
+        
+        // Chuyển hướng đến URL mới
+        window.location.href = newHref;
+      } else {
+        console.log('No shopId found, using original link');
+      }
+    }
+  </script>
 </div>

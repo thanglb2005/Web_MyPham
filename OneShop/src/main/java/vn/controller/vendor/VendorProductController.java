@@ -8,7 +8,6 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -228,8 +227,8 @@ public class VendorProductController {
         return "redirect:/vendor/products?shopId=" + shop.getShopId();
     }
 
-    @GetMapping("/{id}/edit")
-    public String editForm(@PathVariable("id") Long productId,
+    @GetMapping("/edit")
+    public String editForm(@RequestParam("id") Long productId,
                            HttpSession session,
                            Model model,
                            RedirectAttributes redirectAttributes) {
@@ -268,8 +267,9 @@ public class VendorProductController {
         return "vendor/product-form";
     }
 
-    @PostMapping("/{id}/update")
-    public String updateProduct(@PathVariable("id") Long productId,
+    @PostMapping("/update")
+    public String updateProduct(@RequestParam("id") Long productId,
+                                @RequestParam(value = "shopId", required = false) Long shopId,
                                 @Valid @ModelAttribute("productForm") VendorProductForm form,
                                 BindingResult bindingResult,
                                 @RequestParam(value = "image", required = false) MultipartFile imageFile,
@@ -284,13 +284,16 @@ public class VendorProductController {
         Optional<Product> productOpt = findVendorProduct(vendor, productId);
         if (productOpt.isEmpty()) {
             redirectAttributes.addFlashAttribute("error", "Không tìm thấy sản phẩm.");
-            return "redirect:/vendor/products";
+            return "redirect:/vendor/products" + (shopId != null ? "?shopId=" + shopId : "");
         }
 
         Product product = productOpt.get();
         Shop shop = product.getShop();
-        form.setShopId(shop.getShopId());
-
+        
+        if (shop != null) {
+            form.setShopId(shop.getShopId());
+        }
+        
         List<Shop> shopList = shopService.findAllByVendor(vendor);
 
         Category category = categoryService.getCategoryById(form.getCategoryId()).orElse(null);
@@ -334,13 +337,18 @@ public class VendorProductController {
         }
 
         productService.save(product);
-        shopService.refreshStatistics(shop);
+
+        if (shop != null) {
+            shopService.refreshStatistics(shop);
+        }
+        
         redirectAttributes.addFlashAttribute("success", "Cập nhật sản phẩm thành công.");
-        return "redirect:/vendor/products?shopId=" + shop.getShopId();
+        return "redirect:/vendor/products?shopId=" + (shop != null ? shop.getShopId() : shopId);
     }
 
-    @PostMapping("/{id}/delete")
-    public String deleteProduct(@PathVariable("id") Long productId,
+    @PostMapping("/delete")
+    public String deleteProduct(@RequestParam("id") Long productId,
+                                @RequestParam(value = "shopId", required = false) Long shopId,
                                 HttpSession session,
                                 RedirectAttributes redirectAttributes) {
         User vendor = ensureVendor(session);
@@ -351,11 +359,16 @@ public class VendorProductController {
         Optional<Product> productOpt = findVendorProduct(vendor, productId);
         if (productOpt.isEmpty()) {
             redirectAttributes.addFlashAttribute("error", "Không tìm thấy sản phẩm.");
-            return "redirect:/vendor/products";
+            return "redirect:/vendor/products" + (shopId != null ? "?shopId=" + shopId : "");
         }
 
         Product product = productOpt.get();
         Shop shop = product.getShop();
+
+        if (shop == null) {
+            redirectAttributes.addFlashAttribute("error", "Không thể xóa sản phẩm không thuộc về shop nào.");
+            return "redirect:/vendor/products" + (shopId != null ? "?shopId=" + shopId : "");
+        }
 
         productService.deleteById(productId);
         shopService.refreshStatistics(shop);

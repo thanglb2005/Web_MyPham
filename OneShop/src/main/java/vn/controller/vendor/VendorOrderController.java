@@ -46,50 +46,116 @@ public class VendorOrderController {
      */
     @GetMapping
     public String orderList(
+            @RequestParam(value = "shopId", required = false) Long shopId,
             @RequestParam(value = "status", required = false) Order.OrderStatus status,
             @RequestParam(value = "q", required = false) String search,
             @RequestParam(value = "page", defaultValue = "0") int page,
             @RequestParam(value = "size", defaultValue = "10") int size,
             HttpSession session, Model model) {
         
+        try {
+            User vendor = ensureVendor(session);
+            if (vendor == null) {
+                return "redirect:/login";
+            }
+
+            // Lấy shop của vendor
+            List<Long> shopIds = getShopIdsByVendor(vendor);
+            System.out.println("DEBUG: Vendor shop IDs: " + shopIds);
+            if (shopIds.isEmpty()) {
+                model.addAttribute("error", "Bạn chưa có shop nào.");
+                model.addAttribute("orders", Page.empty());
+                model.addAttribute("statusCounts", new LinkedHashMap<>());
+                return "vendor/orders/list";
+            }
+
+            // Nếu có shopId cụ thể, filter theo shop đó
+            List<Long> targetShopIds;
+            if (shopId != null && shopIds.contains(shopId)) {
+                targetShopIds = List.of(shopId);
+                System.out.println("DEBUG: Filtering by specific shopId: " + shopId);
+            } else {
+                targetShopIds = shopIds;
+                System.out.println("DEBUG: Using all vendor shops: " + shopIds);
+            }
+
+            // Phân trang
+            Pageable pageable = PageRequest.of(page, size);
+            
+            // Lấy danh sách đơn hàng
+            String normalizedSearch = (search != null && !search.trim().isEmpty()) ? search.trim() : null;
+            
+            Page<Order> orders;
+            try {
+                orders = getOrdersByShops(targetShopIds, status, normalizedSearch, pageable);
+                System.out.println("DEBUG: Orders found: " + orders.getTotalElements() + " orders");
+                System.out.println("DEBUG: Orders content size: " + orders.getContent().size());
+            } catch (Exception e) {
+                System.err.println("ERROR: Failed to get orders: " + e.getMessage());
+                e.printStackTrace();
+                model.addAttribute("error", "Có lỗi xảy ra khi tải danh sách đơn hàng.");
+                return "vendor/orders/list";
+            }
+            
+            // Thống kê theo trạng thái
+            Map<Order.OrderStatus, Long> statusCounts = getOrderCountsByStatus(targetShopIds);
+            System.out.println("DEBUG: Status counts: " + statusCounts);
+            Long totalOrders = orderService.countByShopIdIn(targetShopIds);
+            System.out.println("DEBUG: Total orders: " + totalOrders);
+            
+            model.addAttribute("orders", orders);
+            model.addAttribute("statusCounts", statusCounts);
+            model.addAttribute("currentStatus", status != null ? status.name() : null);
+            model.addAttribute("totalOrders", totalOrders != null ? totalOrders : 0L);
+            model.addAttribute("search", search != null ? search : "");
+            model.addAttribute("vendor", vendor);
+            model.addAttribute("shopId", shopId);
+            model.addAttribute("pageTitle", "Quản lý đơn hàng");
+            
+            return "vendor/orders/list";
+
+        } catch (Exception e) {
+            System.err.println("ERROR: Lỗi nghiêm trọng trong orderList: " + e.getMessage());
+            e.printStackTrace();
+            model.addAttribute("error", "Đã có lỗi xảy ra khi tải danh sách đơn hàng. Vui lòng thử lại.");
+            model.addAttribute("orders", Page.empty());
+            model.addAttribute("statusCounts", new LinkedHashMap<>());
+            return "vendor/orders/list";
+        }
+    }
+
+    @PostMapping("/confirm")
+    public String confirmOrder(@RequestParam("orderId") Long orderId,
+                               @RequestParam(value = "shopId", required = false) Long shopId,
+                               RedirectAttributes redirectAttributes,
+                               HttpSession session) {
+        
         User vendor = ensureVendor(session);
         if (vendor == null) {
             return "redirect:/login";
         }
 
-        // Lấy shop của vendor
-        List<Long> shopIds = getShopIdsByVendor(vendor);
-        System.out.println("DEBUG: Vendor shop IDs: " + shopIds);
-        if (shopIds.isEmpty()) {
-            model.addAttribute("error", "Bạn chưa có shop nào.");
-            return "vendor/orders/list";
+        try {
+            Order order = orderService.findById(orderId)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy đơn hàng #" + orderId));
+
+            List<Long> vendorShopIds = getShopIdsByVendor(vendor);
+            if (order.getShop() == null || !vendorShopIds.contains(order.getShop().getShopId())) {
+                redirectAttributes.addFlashAttribute("error", "Bạn không có quyền xác nhận đơn hàng này.");
+                return "redirect:/vendor/orders" + (shopId != null ? "?shopId=" + shopId : "");
+            }
+
+            orderService.confirmOrder(orderId);
+            redirectAttributes.addFlashAttribute("success", "Đã xác nhận đơn hàng #" + orderId + " thành công.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Lỗi khi xác nhận đơn hàng: " + e.getMessage());
         }
 
-        // Phân trang
-        Pageable pageable = PageRequest.of(page, size);
-        
-        // Lấy danh sách đơn hàng
-        String normalizedSearch = (search != null && !search.trim().isEmpty()) ? search.trim() : null;
-        
-        Page<Order> orders = getOrdersByShops(shopIds, status, normalizedSearch, pageable);
-        System.out.println("DEBUG: Orders found: " + orders.getTotalElements() + " orders");
-        System.out.println("DEBUG: Orders content size: " + orders.getContent().size());
-        
-        // Thống kê theo trạng thái
-        Map<Order.OrderStatus, Long> statusCounts = getOrderCountsByStatus(shopIds);
-        System.out.println("DEBUG: Status counts: " + statusCounts);
-        Long totalOrders = orderService.countByShopIdIn(shopIds);
-        System.out.println("DEBUG: Total orders: " + totalOrders);
-        
-        model.addAttribute("orders", orders);
-        model.addAttribute("statusCounts", statusCounts);
-        model.addAttribute("currentStatus", status != null ? status.name() : null);
-        model.addAttribute("totalOrders", totalOrders != null ? totalOrders : 0L);
-        model.addAttribute("search", search != null ? search : "");
-        model.addAttribute("vendor", vendor);
-        model.addAttribute("pageTitle", "Quản lý đơn hàng");
-        
-        return "vendor/orders/list";
+        String redirectUrl = "/vendor/orders";
+        if (shopId != null) {
+            redirectUrl += "?shopId=" + shopId;
+        }
+        return "redirect:" + redirectUrl;
     }
 
     /**

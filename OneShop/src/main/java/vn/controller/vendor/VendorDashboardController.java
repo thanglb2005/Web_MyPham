@@ -5,7 +5,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -43,14 +42,6 @@ public class VendorDashboardController {
                            HttpSession session, 
                            Model model, 
                            RedirectAttributes redirectAttributes) {
-        return handleDashboard(shopId, session, model, redirectAttributes);
-    }
-
-    @GetMapping("/dashboard/{shopId}")
-    public String dashboardWithPath(@PathVariable Long shopId,
-                                   HttpSession session, 
-                                   Model model, 
-                                   RedirectAttributes redirectAttributes) {
         return handleDashboard(shopId, session, model, redirectAttributes);
     }
 
@@ -108,8 +99,8 @@ public class VendorDashboardController {
         return "vendor/dashboard";
     }
 
-    @PostMapping("/dashboard/{id}/delete")
-    public String deleteProduct(@PathVariable("id") Long productId,
+    @PostMapping("/dashboard/delete")
+    public String deleteProduct(@RequestParam("productId") Long productId,
                                 @RequestParam(value = "shopId", required = false) Long shopId,
                                 HttpSession session,
                                 RedirectAttributes redirectAttributes) {

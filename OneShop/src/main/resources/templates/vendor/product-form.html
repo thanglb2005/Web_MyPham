@@ -63,7 +63,7 @@
         </a>
       </div>
 
-      <form th:action="${product != null} ? @{'/vendor/products/' + ${product.productId} + '/update'} : @{/vendor/products}"
+      <form th:action="${product != null} ? @{'/vendor/products/update?id=' + ${product.productId} + '&shopId=' + ${selectedShopId}} : @{/vendor/products}"
             th:object="${productForm}"
             method="post"
             enctype="multipart/form-data"

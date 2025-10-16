@@ -42,7 +42,7 @@ public class LoginController {
             if (isAdmin) {
                 return "redirect:/admin/home";
             } else if (isVendor) {
-                return "redirect:/vendor/dashboard";
+                return "redirect:/vendor/my-shops";
             } else if (isCSKH) {
                 return "redirect:/cskh/chat";
             } else if (isShipper) {
@@ -86,7 +86,7 @@ public class LoginController {
             if (isAdmin) {
                 return "redirect:/admin/home";
             } else if (isVendor) {
-                return "redirect:/vendor/dashboard";
+                return "redirect:/vendor/my-shops";
             } else if (isCSKH) {
                 return "redirect:/cskh/chat";
             } else if (isShipper) {

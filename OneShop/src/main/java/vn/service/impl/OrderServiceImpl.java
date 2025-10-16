@@ -21,6 +21,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import jakarta.persistence.EntityNotFoundException;
 
 @Service
 public class OrderServiceImpl implements OrderService {
@@ -245,8 +246,26 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public Page<Order> findByShopIdIn(List<Long> shopIds, Pageable pageable) {
-        // Tuân thủ logic cũ
-        return orderRepository.findByShopIdIn(shopIds, pageable);
+        return orderRepository.findByShopShopIdInOrderByOrderDateDesc(shopIds, pageable);
+    }
+
+    @Override
+    public Optional<Order> findById(Long orderId) {
+        return orderRepository.findById(orderId);
+    }
+
+    @Override
+    @Transactional
+    public void confirmOrder(Long orderId) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy đơn hàng với ID: " + orderId));
+
+        if (order.getStatus() != Order.OrderStatus.PENDING) {
+            throw new IllegalStateException("Chỉ có thể xác nhận đơn hàng ở trạng thái 'Chờ xác nhận'.");
+        }
+
+        order.setStatus(Order.OrderStatus.CONFIRMED);
+        orderRepository.save(order);
     }
 
     @Override

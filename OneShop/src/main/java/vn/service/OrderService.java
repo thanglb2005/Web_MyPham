@@ -75,4 +75,8 @@ public interface OrderService {
      * Count orders by shop IDs
      */
     Long countByShopIdIn(List<Long> shopIds);
+
+    Optional<Order> findById(Long orderId);
+
+    void confirmOrder(Long orderId);
 }

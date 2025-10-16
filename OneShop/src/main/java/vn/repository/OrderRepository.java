@@ -245,6 +245,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     @Query("SELECT COUNT(o) FROM Order o WHERE o.shop.shopId IN :shopIds")
     Long countByShopIdIn(@Param("shopIds") List<Long> shopIds);
 
+    Page<Order> findByShopShopIdInOrderByOrderDateDesc(List<Long> shopIds, Pageable pageable);
 
     /**
      * Find available orders for shipper based on their assigned shops
