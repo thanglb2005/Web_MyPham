@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
   <meta http-equiv="content-type" content="text/html;charset=utf-8" />
-<head>
+  <head>
     <meta charset="UTF-8" />
     <meta
       name="viewport"
@@ -23,7 +23,7 @@
         width: 100% !important;
         max-width: 100% !important;
         flex: 0 0 100% !important;
-            margin-bottom: 20px;
+        margin-bottom: 20px;
       }
       #product-container.list-view .product-card {
         display: flex !important;
@@ -68,10 +68,10 @@
         padding: 0 8px;
         border-radius: 50%;
         background: transparent;
-            border: none;
+        border: none;
         color: #007bff;
         font-weight: 500;
-            text-decoration: none;
+        text-decoration: none;
         transition: all 0.3s;
         font-size: 15px;
       }
@@ -94,10 +94,10 @@
       }
       .pagination li a i {
         font-size: 14px;
-        }
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <header th:replace="~{/web/fragments/header :: header}"></header>
 
     <section
@@ -121,11 +121,7 @@
             <div class="shop-widget">
               <h6 class="shop-widget-title">Tìm kiếm yêu thích</h6>
               <form class="shop-widget-form" id="searchForm">
-                <input
-                  type="text"
-                  id="searchInput"
-                  placeholder="Tìm kiếm..."
-                />
+                <input type="text" id="searchInput" placeholder="Tìm kiếm..." />
                 <button type="submit"><i class="icofont-search"></i></button>
               </form>
             </div>
@@ -136,11 +132,17 @@
               <ul class="shop-widget-list shop-widget-scroll" id="categoryList">
                 <li>
                   <div class="shop-widget-content">
-                    <label class="filter-category active-filter" data-category="all" style="cursor: pointer; color: #0d6efd; font-weight: 600">
+                    <label
+                      class="filter-category active-filter"
+                      data-category="all"
+                      style="cursor: pointer; color: #0d6efd; font-weight: 600"
+                    >
                       Tất cả danh mục
                     </label>
                   </div>
-                  <span class="shop-widget-number" id="count-all">(<span th:text="${favorites.size()}">0</span>)</span>
+                  <span class="shop-widget-number" id="count-all"
+                    >(<span th:text="${favorites.size()}">0</span>)</span
+                  >
                 </li>
                 <!-- Dynamic categories will be populated by JavaScript -->
               </ul>
@@ -152,31 +154,61 @@
               <ul class="shop-widget-list">
                 <li>
                   <div class="shop-widget-content">
-                    <label class="filter-price" data-min="0" data-max="999999999" style="cursor: pointer; color: #0d6efd">Tất cả</label>
+                    <label
+                      class="filter-price"
+                      data-min="0"
+                      data-max="999999999"
+                      style="cursor: pointer; color: #0d6efd"
+                      >Tất cả</label
+                    >
                   </div>
                 </li>
                 <li>
                   <div class="shop-widget-content">
-                    <label class="filter-price" data-min="0" data-max="100000" style="cursor: pointer">Dưới 100.000đ</label>
+                    <label
+                      class="filter-price"
+                      data-min="0"
+                      data-max="100000"
+                      style="cursor: pointer"
+                      >Dưới 100.000đ</label
+                    >
                   </div>
                 </li>
                 <li>
                   <div class="shop-widget-content">
-                    <label class="filter-price" data-min="100000" data-max="300000" style="cursor: pointer">100.000đ - 300.000đ</label>
+                    <label
+                      class="filter-price"
+                      data-min="100000"
+                      data-max="300000"
+                      style="cursor: pointer"
+                      >100.000đ - 300.000đ</label
+                    >
                   </div>
                 </li>
                 <li>
                   <div class="shop-widget-content">
-                    <label class="filter-price" data-min="300000" data-max="500000" style="cursor: pointer">300.000đ - 500.000đ</label>
+                    <label
+                      class="filter-price"
+                      data-min="300000"
+                      data-max="500000"
+                      style="cursor: pointer"
+                      >300.000đ - 500.000đ</label
+                    >
                   </div>
                 </li>
                 <li>
                   <div class="shop-widget-content">
-                    <label class="filter-price" data-min="500000" data-max="999999999" style="cursor: pointer">Trên 500.000đ</label>
-                                    </div>
+                    <label
+                      class="filter-price"
+                      data-min="500000"
+                      data-max="999999999"
+                      style="cursor: pointer"
+                      >Trên 500.000đ</label
+                    >
+                  </div>
                 </li>
               </ul>
-                                    </div>
+            </div>
 
             <!-- Promo Banner -->
             <div class="shop-widget-promo">
@@ -186,10 +218,10 @@
                 <a th:href="@{/products}" class="btn btn-inline">
                   <span>Mua ngay</span>
                 </a>
-                                            </div>
-                                        </div>
-                                    </div>
-          
+              </div>
+            </div>
+          </div>
+
           <div class="col-lg-9">
             <!-- Shop Toolbar -->
             <div class="row">
@@ -197,7 +229,11 @@
                 <div class="top-filter">
                   <div class="filter-show">
                     <label class="filter-label">
-                      Có <span id="showing-count" th:text="${favorites.size()}">0</span> sản phẩm yêu thích
+                      Có
+                      <span id="showing-count" th:text="${favorites.size()}"
+                        >0</span
+                      >
+                      sản phẩm yêu thích
                     </label>
                   </div>
                   <div class="filter-short">
@@ -211,7 +247,7 @@
                       <option value="newest">Mới nhất</option>
                       <option value="discount">Giảm giá nhiều nhất</option>
                     </select>
-                                    </div>
+                  </div>
                   <div class="filter-action">
                     <button
                       class="filter-btn active"
@@ -226,9 +262,9 @@
                       title="List View"
                     >
                       <i class="fas fa-list"></i>
-                                            </button>
-                                        </div>
-                                    </div>
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -238,12 +274,15 @@
                 class="row row-cols-2 row-cols-md-3 row-cols-lg-3 row-cols-xl-4"
                 id="product-container"
               >
-                <div class="col product-item" th:each="favorite : ${favorites}"
-                     th:attr="data-name=${favorite.product.productName},
+                <div
+                  class="col product-item"
+                  th:each="favorite : ${favorites}"
+                  th:attr="data-name=${favorite.product.productName},
                               data-price=${favorite.product.price - (favorite.product.price * favorite.product.discount / 100)},
                               data-category=${favorite.product.category.categoryName},
                               data-discount=${favorite.product.discount},
-                              data-date=${favorite.product.enteredDate}">
+                              data-date=${favorite.product.enteredDate}"
+                >
                   <div class="product-card">
                     <div class="product-media">
                       <div class="product-label">
@@ -252,7 +291,7 @@
                           th:if="${favorite.product.enteredDate != null}"
                           >New</label
                         >
-                        <label 
+                        <label
                           class="label-text sale"
                           th:if="${favorite.product.discount > 0}"
                           >- [[${favorite.product.discount + '%'}]]</label
@@ -333,23 +372,26 @@
                           >Còn hàng</span
                         >
                       </p>
-                                </div>
-                            </div>
-                        </div>
                     </div>
+                  </div>
                 </div>
+              </div>
+            </div>
 
-                <!-- Empty State -->
+            <!-- Empty State -->
             <div
               th:if="${favorites == null or favorites.empty}"
               class="text-center py-5"
             >
               <div class="empty-cart">
-                <i class="far fa-heart" style="font-size: 100px; color: #ddd"></i>
+                <i
+                  class="far fa-heart"
+                  style="font-size: 100px; color: #ddd"
+                ></i>
                 <h3 class="mt-4">Chưa có sản phẩm yêu thích</h3>
                 <p class="text-muted">
-                  Hãy khám phá và thêm những sản phẩm bạn yêu thích vào danh sách
-                  này!
+                  Hãy khám phá và thêm những sản phẩm bạn yêu thích vào danh
+                  sách này!
                 </p>
                 <a href="/shop" class="btn btn-primary mt-3">
                   <i class="fas fa-shopping-bag"></i> Khám phá sản phẩm
@@ -358,10 +400,12 @@
             </div>
 
             <!-- No Results Message (hidden by default) -->
-            <div id="no-results" class="text-center py-5" style="display: none;">
+            <div id="no-results" class="text-center py-5" style="display: none">
               <i class="fas fa-search" style="font-size: 80px; color: #ddd"></i>
               <h4 class="mt-4">Không tìm thấy sản phẩm</h4>
-              <p class="text-muted">Vui lòng thử lại với từ khóa khác hoặc bộ lọc khác.</p>
+              <p class="text-muted">
+                Vui lòng thử lại với từ khóa khác hoặc bộ lọc khác.
+              </p>
             </div>
 
             <!-- Pagination -->
@@ -371,10 +415,10 @@
                   <!-- Pagination will be generated by JavaScript -->
                 </ul>
               </div>
-                </div>
             </div>
+          </div>
         </div>
-    </div>
+      </div>
     </section>
 
     <footer th:replace="~{/web/fragments/footer :: footer}"></footer>
@@ -393,16 +437,42 @@
     <script src="/js/slick.js"></script>
     <script src="/js/main.js"></script>
     <script src="/js/favorite.js"></script>
-    
+
     <script>
-      $(document).ready(function() {
+      $(document).ready(function () {
+        // Remove any breadcrumb item injected by the base theme containing external demo text
+        try {
+          $("ol.breadcrumb .breadcrumb-item")
+            .filter(function () {
+              return (
+                ($(this).text() || "").toLowerCase().indexOf("mironmahmud") !==
+                -1
+              );
+            })
+            .remove();
+        } catch (e) {}
+
+        // Hard reset banner breadcrumb to remove any stray demo text
+        (function resetBannerBreadcrumb() {
+          var bannerCrumb = document.querySelector(
+            "section.single-banner ol.breadcrumb"
+          );
+          if (!bannerCrumb) return;
+          // Remove breadcrumb entirely per request
+          try {
+            bannerCrumb.remove();
+          } catch (e) {
+            bannerCrumb.innerHTML = "";
+          }
+        })();
+
         let currentFilter = {
-          search: '',
-          category: 'all',
+          search: "",
+          category: "all",
           minPrice: 0,
-          maxPrice: 999999999
+          maxPrice: 999999999,
         };
-        
+
         let currentPage = 1;
         const itemsPerPage = 12;
         let filteredItems = [];
@@ -410,16 +480,16 @@
         // Build dynamic categories from products
         function buildCategories() {
           const categories = {};
-          
-          $('.product-item').each(function() {
-            const category = $(this).data('category');
+
+          $(".product-item").each(function () {
+            const category = $(this).data("category");
             if (categories[category]) {
               categories[category]++;
-                        } else {
+            } else {
               categories[category] = 1;
             }
           });
-          
+
           // Add categories to sidebar
           for (const [categoryName, count] of Object.entries(categories)) {
             const categoryHtml = `
@@ -433,88 +503,97 @@
                 <span class="shop-widget-number">(${count})</span>
               </li>
             `;
-            $('#categoryList').append(categoryHtml);
+            $("#categoryList").append(categoryHtml);
           }
         }
 
         // Filter and display products
         function filterProducts() {
           filteredItems = [];
-          
-          $('.product-item').each(function() {
+
+          $(".product-item").each(function () {
             const $item = $(this);
-            const name = $item.data('name').toLowerCase();
-            const price = parseFloat($item.data('price'));
-            const category = $item.data('category');
-            
+            const name = $item.data("name").toLowerCase();
+            const price = parseFloat($item.data("price"));
+            const category = $item.data("category");
+
             let show = true;
-            
+
             // Search filter
-            if (currentFilter.search && !name.includes(currentFilter.search.toLowerCase())) {
+            if (
+              currentFilter.search &&
+              !name.includes(currentFilter.search.toLowerCase())
+            ) {
               show = false;
             }
-            
+
             // Category filter
-            if (currentFilter.category !== 'all' && category !== currentFilter.category) {
+            if (
+              currentFilter.category !== "all" &&
+              category !== currentFilter.category
+            ) {
               show = false;
             }
-            
+
             // Price filter
-            if (price < currentFilter.minPrice || price > currentFilter.maxPrice) {
+            if (
+              price < currentFilter.minPrice ||
+              price > currentFilter.maxPrice
+            ) {
               show = false;
             }
-            
+
             if (show) {
               filteredItems.push($item);
             }
           });
-          
+
           currentPage = 1; // Reset to first page
           displayPage();
           updatePagination();
         }
-        
+
         // Display current page
         function displayPage() {
           const start = (currentPage - 1) * itemsPerPage;
           const end = start + itemsPerPage;
-          
+
           // Hide all items first
-          $('.product-item').hide();
-          
+          $(".product-item").hide();
+
           // Show only items for current page
           for (let i = start; i < end && i < filteredItems.length; i++) {
             filteredItems[i].show();
           }
-          
+
           const visibleCount = filteredItems.length;
-          $('#showing-count').text(visibleCount);
-          
+          $("#showing-count").text(visibleCount);
+
           // Show/hide no results message
           if (visibleCount === 0) {
-            $('#product-container').hide();
-            $('#pagination').hide();
-            $('#no-results').show();
+            $("#product-container").hide();
+            $("#pagination").hide();
+            $("#no-results").show();
           } else {
-            $('#product-container').show();
-            $('#pagination').show();
-            $('#no-results').hide();
+            $("#product-container").show();
+            $("#pagination").show();
+            $("#no-results").hide();
           }
         }
-        
+
         // Update pagination
         function updatePagination() {
           const totalPages = Math.ceil(filteredItems.length / itemsPerPage);
-          const $pagination = $('#pagination');
+          const $pagination = $("#pagination");
           $pagination.empty();
-          
+
           if (totalPages <= 1) {
             $pagination.hide();
             return;
           }
-          
+
           $pagination.show();
-          
+
           // Previous button
           if (currentPage > 1) {
             $pagination.append(`
@@ -523,12 +602,16 @@
               </a></li>
             `);
           }
-          
+
           // Page numbers
           for (let i = 1; i <= totalPages; i++) {
-            if (i === 1 || i === totalPages || (i >= currentPage - 2 && i <= currentPage + 2)) {
+            if (
+              i === 1 ||
+              i === totalPages ||
+              (i >= currentPage - 2 && i <= currentPage + 2)
+            ) {
               $pagination.append(`
-                <li class="${i === currentPage ? 'active' : ''}">
+                <li class="${i === currentPage ? "active" : ""}">
                   <a href="#" data-page="${i}">${i}</a>
                 </li>
               `);
@@ -536,7 +619,7 @@
               $pagination.append(`<li><span>...</span></li>`);
             }
           }
-          
+
           // Next button
           if (currentPage < totalPages) {
             $pagination.append(`
@@ -546,14 +629,14 @@
             `);
           }
         }
-        
+
         // Pagination click handler
-        $(document).on('click', '#pagination a', function(e) {
+        $(document).on("click", "#pagination a", function (e) {
           e.preventDefault();
-          currentPage = parseInt($(this).data('page'));
+          currentPage = parseInt($(this).data("page"));
           displayPage();
           updatePagination();
-          $('html, body').animate({ scrollTop: 0 }, 300);
+          $("html, body").animate({ scrollTop: 0 }, 300);
         });
 
         // Initialize
@@ -561,82 +644,94 @@
         filterProducts();
 
         // Search functionality
-        $('#searchForm').on('submit', function(e) {
+        $("#searchForm").on("submit", function (e) {
           e.preventDefault();
-          currentFilter.search = $('#searchInput').val();
+          currentFilter.search = $("#searchInput").val();
           filterProducts();
         });
 
-        $('#searchInput').on('keyup', function() {
+        $("#searchInput").on("keyup", function () {
           currentFilter.search = $(this).val();
           filterProducts();
         });
 
         // Category filter (use delegation for dynamic elements)
-        $(document).on('click', '.filter-category', function() {
-          currentFilter.category = $(this).data('category');
-          $('.filter-category').removeClass('active-filter').css({'font-weight': 'normal'});
-          $(this).addClass('active-filter').css({'font-weight': '600'});
+        $(document).on("click", ".filter-category", function () {
+          currentFilter.category = $(this).data("category");
+          $(".filter-category")
+            .removeClass("active-filter")
+            .css({ "font-weight": "normal" });
+          $(this).addClass("active-filter").css({ "font-weight": "600" });
           filterProducts();
         });
 
         // Price filter
-        $('.filter-price').on('click', function() {
-          currentFilter.minPrice = parseFloat($(this).data('min'));
-          currentFilter.maxPrice = parseFloat($(this).data('max'));
-          $('.filter-price').css({'color': '#212529', 'font-weight': 'normal'});
-          $(this).css({'color': '#0d6efd', 'font-weight': '600'});
+        $(".filter-price").on("click", function () {
+          currentFilter.minPrice = parseFloat($(this).data("min"));
+          currentFilter.maxPrice = parseFloat($(this).data("max"));
+          $(".filter-price").css({ color: "#212529", "font-weight": "normal" });
+          $(this).css({ color: "#0d6efd", "font-weight": "600" });
           filterProducts();
         });
 
         // Sorting functionality
-        $('#sortSelect').on('change', function() {
+        $("#sortSelect").on("change", function () {
           const sortValue = $(this).val();
-          const $items = $('.product-item').get();
-          
-          $items.sort(function(a, b) {
+          const $items = $(".product-item").get();
+
+          $items.sort(function (a, b) {
             const $a = $(a);
             const $b = $(b);
-            
-            switch(sortValue) {
-              case 'name-asc':
-                return $a.data('name').localeCompare($b.data('name'));
-              case 'name-desc':
-                return $b.data('name').localeCompare($a.data('name'));
-              case 'price-asc':
-                return parseFloat($a.data('price')) - parseFloat($b.data('price'));
-              case 'price-desc':
-                return parseFloat($b.data('price')) - parseFloat($a.data('price'));
-              case 'newest':
-                return new Date($b.data('date')) - new Date($a.data('date'));
-              case 'discount':
-                return parseFloat($b.data('discount')) - parseFloat($a.data('discount'));
+
+            switch (sortValue) {
+              case "name-asc":
+                return $a.data("name").localeCompare($b.data("name"));
+              case "name-desc":
+                return $b.data("name").localeCompare($a.data("name"));
+              case "price-asc":
+                return (
+                  parseFloat($a.data("price")) - parseFloat($b.data("price"))
+                );
+              case "price-desc":
+                return (
+                  parseFloat($b.data("price")) - parseFloat($a.data("price"))
+                );
+              case "newest":
+                return new Date($b.data("date")) - new Date($a.data("date"));
+              case "discount":
+                return (
+                  parseFloat($b.data("discount")) -
+                  parseFloat($a.data("discount"))
+                );
               default:
                 return 0;
             }
           });
-          
-          $('#product-container').html($items);
+
+          $("#product-container").html($items);
           filterProducts(); // Reapply filters and pagination
         });
 
         // View mode toggle
-        $('.filter-btn').on('click', function() {
-          const view = $(this).data('view');
-          $('.filter-btn').removeClass('active');
-          $(this).addClass('active');
-          
-          const $container = $('#product-container');
-          if (view === 'grid') {
-            $container.removeClass('list-view').addClass('grid-view');
-            $container.attr('class', 'row row-cols-2 row-cols-md-3 row-cols-lg-3 row-cols-xl-4');
+        $(".filter-btn").on("click", function () {
+          const view = $(this).data("view");
+          $(".filter-btn").removeClass("active");
+          $(this).addClass("active");
+
+          const $container = $("#product-container");
+          if (view === "grid") {
+            $container.removeClass("list-view").addClass("grid-view");
+            $container.attr(
+              "class",
+              "row row-cols-2 row-cols-md-3 row-cols-lg-3 row-cols-xl-4"
+            );
           } else {
-            $container.removeClass('grid-view').addClass('list-view');
-            $container.attr('class', 'row');
-            $('.product-item').addClass('col-12');
+            $container.removeClass("grid-view").addClass("list-view");
+            $container.attr("class", "row");
+            $(".product-item").addClass("col-12");
           }
         });
       });
     </script>
-</body>
+  </body>
 </html>

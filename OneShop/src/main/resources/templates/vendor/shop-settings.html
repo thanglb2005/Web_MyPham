@@ -157,6 +157,28 @@
             />
           </div>
 
+          <!-- Logo upload -->
+          <div class="col-md-6">
+            <label class="form-label" for="logo">Cập nhật logo</label>
+            <input
+              id="logo"
+              type="file"
+              class="form-control"
+              name="logo"
+              accept="image/*"
+            />
+          </div>
+          <div class="col-md-6" th:if="${shop.shopLogo != null}">
+            <label class="form-label">Logo hiện tại</label>
+            <div>
+              <img
+                class="image-preview"
+                th:src="@{'/loadImage?imageName=' + ${shop.shopLogo}}"
+                alt="Logo shop"
+              />
+            </div>
+          </div>
+
           <div class="col-md-6">
             <label class="form-label" for="banner">Cập nhật banner</label>
             <input

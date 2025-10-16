@@ -523,7 +523,12 @@
                       <div class="col-7 col-stats">
                         <div class="numbers">
                           <p class="card-stats-title">Tổng Products</p>
-                          <h4 class="card-stats-number">0</h4>
+                          <h4
+                            class="card-stats-number"
+                            th:text="${totalProducts}"
+                          >
+                            0
+                          </h4>
                         </div>
                       </div>
                     </div>
@@ -543,7 +548,12 @@
                       <div class="col-7 col-stats">
                         <div class="numbers">
                           <p class="card-stats-title">Tổng Orders</p>
-                          <h4 class="card-stats-number">0</h4>
+                          <h4
+                            class="card-stats-number"
+                            th:text="${totalOrders}"
+                          >
+                            0
+                          </h4>
                         </div>
                       </div>
                     </div>
@@ -676,7 +686,7 @@
               </div>
             </div>
           </div>
-          
+
           <!-- Revenue Chart Section -->
           <div class="row mt-4">
             <div class="col-md-12">
@@ -687,7 +697,7 @@
                   </div>
                 </div>
                 <div class="card-body">
-                  <div class="chart-container" style="height: 300px;">
+                  <div class="chart-container" style="height: 300px">
                     <canvas id="revenueChart"></canvas>
                   </div>
                 </div>
@@ -734,23 +744,23 @@
       }
 
       // Đảm bảo Bootstrap collapse hoạt động cho menu
-      $(document).ready(function() {
+      $(document).ready(function () {
         // Khởi tạo collapse cho menu
-        $('[data-toggle="collapse"]').on('click', function(e) {
+        $('[data-toggle="collapse"]').on("click", function (e) {
           e.preventDefault();
-          var target = $(this).attr('href');
-          $(target).collapse('toggle');
+          var target = $(this).attr("href");
+          $(target).collapse("toggle");
         });
 
         // Thêm class active cho menu item được click
-        $('.nav-item a[data-toggle="collapse"]').on('click', function() {
-          $('.nav-item').removeClass('active');
-          $(this).closest('.nav-item').addClass('active');
+        $('.nav-item a[data-toggle="collapse"]').on("click", function () {
+          $(".nav-item").removeClass("active");
+          $(this).closest(".nav-item").addClass("active");
         });
 
         // Đảm bảo menu mở đúng khi trang load
-        $('.collapse').on('show.bs.collapse', function () {
-          $(this).siblings('.nav-item').addClass('active');
+        $(".collapse").on("show.bs.collapse", function () {
+          $(this).siblings(".nav-item").addClass("active");
         });
       });
     </script>

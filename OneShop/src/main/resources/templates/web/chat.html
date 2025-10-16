@@ -1186,9 +1186,9 @@
 
           <h3
             th:if="${shopChatEnabled}"
-            th:text="'Chat vi ' + ${chatShopInfo.name}"
+            th:text="'Chat với ' + ${chatShopInfo.name}"
           >
-            Chat vi shop
+            Chat với shop
           </h3>
 
           <h3 th:unless="${shopChatEnabled}">Chat Tư Vấn Trực Tuyến</h3>
@@ -1223,22 +1223,7 @@
           </div>
 
           <!-- Debug info (chỉ hiển thị khi có shop) -->
-          <div
-            th:if="${shopChatEnabled}"
-            class="debug-info"
-            style="
-              font-size: 11px;
-              color: #666;
-              background: #f8f9fa;
-              padding: 4px 8px;
-              border-radius: 4px;
-              margin-right: 8px;
-            "
-          >
-            <strong>Debug:</strong>
-            Room: <span th:text="${chatRoomId}"></span> | Shop:
-            <span th:text="${chatShopInfo.name}"></span>
-          </div>
+          <!-- Debug info removed per request -->
 
           <!-- Hidden for customers: only seller/admin can clear on their UI -->
 
