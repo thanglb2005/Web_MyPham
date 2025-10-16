@@ -14,9 +14,7 @@ import vn.entity.User;
 import vn.service.OrderService;
 import vn.service.ShopService;
 
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Controller quản lý đơn hàng cho Vendor
@@ -65,7 +63,13 @@ public class VendorOrderController {
             if (shopIds.isEmpty()) {
                 model.addAttribute("error", "Bạn chưa có shop nào.");
                 model.addAttribute("orders", Page.empty());
-                model.addAttribute("statusCounts", new LinkedHashMap<>());
+                model.addAttribute("totalOrders", 0L);
+                model.addAttribute("pendingCount", 0L);
+                model.addAttribute("confirmedCount", 0L);
+                model.addAttribute("shippingCount", 0L);
+                model.addAttribute("deliveredCount", 0L);
+                model.addAttribute("cancelledCount", 0L);
+                model.addAttribute("returnedCount", 0L);
                 return "vendor/orders/list";
             }
 
@@ -97,16 +101,29 @@ public class VendorOrderController {
                 return "vendor/orders/list";
             }
             
-            // Thống kê theo trạng thái
-            Map<Order.OrderStatus, Long> statusCounts = getOrderCountsByStatus(targetShopIds);
-            System.out.println("DEBUG: Status counts: " + statusCounts);
+            // Thống kê theo trạng thái - sử dụng cách đếm riêng biệt như UserOrderController
             Long totalOrders = orderService.countByShopIdIn(targetShopIds);
-            System.out.println("DEBUG: Total orders: " + totalOrders);
+            Long pendingCount = orderService.countByShopIdInAndStatus(targetShopIds, Order.OrderStatus.PENDING);
+            Long confirmedCount = orderService.countByShopIdInAndStatus(targetShopIds, Order.OrderStatus.CONFIRMED);
+            Long shippingCount = orderService.countByShopIdInAndStatus(targetShopIds, Order.OrderStatus.SHIPPING);
+            Long deliveredCount = orderService.countByShopIdInAndStatus(targetShopIds, Order.OrderStatus.DELIVERED);
+            Long cancelledCount = orderService.countByShopIdInAndStatus(targetShopIds, Order.OrderStatus.CANCELLED);
+            Long returnedCount = orderService.countByShopIdInAndStatus(targetShopIds, Order.OrderStatus.RETURNED);
+            
+            // Debug: Log số lượng đơn hàng theo từng trạng thái
+            System.out.println("DEBUG - Total: " + totalOrders + ", Pending: " + pendingCount + ", Confirmed: " + confirmedCount + 
+                              ", Shipping: " + shippingCount + ", Delivered: " + deliveredCount + 
+                              ", Cancelled: " + cancelledCount + ", Returned: " + returnedCount);
             
             model.addAttribute("orders", orders);
-            model.addAttribute("statusCounts", statusCounts);
             model.addAttribute("currentStatus", status != null ? status.name() : null);
             model.addAttribute("totalOrders", totalOrders != null ? totalOrders : 0L);
+            model.addAttribute("pendingCount", pendingCount != null ? pendingCount : 0L);
+            model.addAttribute("confirmedCount", confirmedCount != null ? confirmedCount : 0L);
+            model.addAttribute("shippingCount", shippingCount != null ? shippingCount : 0L);
+            model.addAttribute("deliveredCount", deliveredCount != null ? deliveredCount : 0L);
+            model.addAttribute("cancelledCount", cancelledCount != null ? cancelledCount : 0L);
+            model.addAttribute("returnedCount", returnedCount != null ? returnedCount : 0L);
             model.addAttribute("search", search != null ? search : "");
             model.addAttribute("vendor", vendor);
             model.addAttribute("shopId", shopId);
@@ -119,7 +136,13 @@ public class VendorOrderController {
             e.printStackTrace();
             model.addAttribute("error", "Đã có lỗi xảy ra khi tải danh sách đơn hàng. Vui lòng thử lại.");
             model.addAttribute("orders", Page.empty());
-            model.addAttribute("statusCounts", new LinkedHashMap<>());
+            model.addAttribute("totalOrders", 0L);
+            model.addAttribute("pendingCount", 0L);
+            model.addAttribute("confirmedCount", 0L);
+            model.addAttribute("shippingCount", 0L);
+            model.addAttribute("deliveredCount", 0L);
+            model.addAttribute("cancelledCount", 0L);
+            model.addAttribute("returnedCount", 0L);
             return "vendor/orders/list";
         }
     }
@@ -386,23 +409,4 @@ public class VendorOrderController {
         return orderService.findByIdAndShopIdIn(orderId, shopIds).orElse(null);
     }
 
-    /**
-     * Helper: Lấy số lượng đơn hàng theo từng trạng thái
-     */
-    private Map<Order.OrderStatus, Long> getOrderCountsByStatus(List<Long> shopIds) {
-        Map<Order.OrderStatus, Long> statusCounts = new LinkedHashMap<>();
-        // Khởi tạo tất cả các trạng thái với giá trị 0
-        for (Order.OrderStatus status : Order.OrderStatus.values()) {
-            statusCounts.put(status, 0L);
-        }
-        
-        // Lấy số lượng từ repository và cập nhật map
-        List<Object[]> results = orderService.countOrdersByStatus(shopIds);
-        for (Object[] result : results) {
-            Order.OrderStatus status = (Order.OrderStatus) result[0];
-            Long count = (Long) result[1];
-            statusCounts.put(status, count);
-        }
-        return statusCounts;
-    }
 }
