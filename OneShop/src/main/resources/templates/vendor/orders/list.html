@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
-<head>
+  <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quản lý đơn hàng</title>
@@ -28,21 +28,21 @@
             border-color: #007bff;
         }
         
-        .status-badge {
+      .status-badge {
             font-size: 0.75rem;
             padding: 4px 10px;
             border-radius: 20px;
             font-weight: 500;
         }
 
-        .nav-tabs .nav-link {
-            border: none;
-            color: #6c757d;
+      .nav-tabs .nav-link {
+        border: none;
+        color: #6c757d;
             font-weight: 500;
-        }
+      }
         
-        .nav-tabs .nav-link.active {
-            color: #007bff;
+      .nav-tabs .nav-link.active {
+        color: #007bff;
             background-color: #e7f1ff;
             border-radius: 6px;
         }
@@ -55,9 +55,9 @@
             font-size: 1.1rem;
             font-weight: 600;
             color: #28a745;
-        }
+      }
     </style>
-</head>
+  </head>
 <body class="bg-light">
     <div th:replace="~{vendor/fragments/nav :: vendorNav('orders')}"></div>
     
@@ -75,78 +75,78 @@
                         Tổng: <span th:text="${totalOrders}">0</span> đơn hàng
                     </span>
                 </div>
-            </div>
+      </div>
         </section>
 
         <!-- Search & Filter Section -->
         <section class="vendor-section mb-4">
             <!-- Status Tabs -->
             <ul class="nav nav-tabs mb-4" id="orderTabs" role="tablist">
-                <li class="nav-item" role="presentation">
-                    <a class="nav-link" th:classappend="${currentStatus == null ? 'active' : ''}"
+            <li class="nav-item" role="presentation">
+                <a class="nav-link" th:classappend="${currentStatus == null ? 'active' : ''}"
                        th:href="@{/vendor/orders(shopId=${shopId}, q=${search})}">
-                        Tất cả <span class="badge bg-secondary ms-1" th:text="${totalOrders}">0</span>
-                    </a>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <a class="nav-link" th:classappend="${currentStatus == 'PENDING' ? 'active' : ''}"
+                    Tất cả <span class="badge bg-secondary ms-1" th:text="${totalOrders}">0</span>
+                </a>
+            </li>
+            <li class="nav-item" role="presentation">
+                <a class="nav-link" th:classappend="${currentStatus == 'PENDING' ? 'active' : ''}"
                        th:href="@{/vendor/orders(shopId=${shopId}, status=PENDING, q=${search})}">
                         Chờ xác nhận <span class="badge bg-secondary ms-1" th:text="${statusCounts[T(vn.entity.Order.OrderStatus).PENDING] ?: 0}">0</span>
-                    </a>
-                </li>
-                 <li class="nav-item" role="presentation">
-                    <a class="nav-link" th:classappend="${currentStatus == 'CONFIRMED' ? 'active' : ''}"
+                </a>
+            </li>
+            <li class="nav-item" role="presentation">
+                <a class="nav-link" th:classappend="${currentStatus == 'CONFIRMED' ? 'active' : ''}"
                        th:href="@{/vendor/orders(shopId=${shopId}, status=CONFIRMED, q=${search})}">
                         Đã xác nhận <span class="badge bg-secondary ms-1" th:text="${statusCounts[T(vn.entity.Order.OrderStatus).CONFIRMED] ?: 0}">0</span>
-                    </a>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <a class="nav-link" th:classappend="${currentStatus == 'SHIPPING' ? 'active' : ''}"
+                </a>
+            </li>
+            <li class="nav-item" role="presentation">
+                <a class="nav-link" th:classappend="${currentStatus == 'SHIPPING' ? 'active' : ''}"
                        th:href="@{/vendor/orders(shopId=${shopId}, status=SHIPPING, q=${search})}">
                         Đang giao hàng <span class="badge bg-secondary ms-1" th:text="${statusCounts[T(vn.entity.Order.OrderStatus).SHIPPING] ?: 0}">0</span>
-                    </a>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <a class="nav-link" th:classappend="${currentStatus == 'DELIVERED' ? 'active' : ''}"
+                </a>
+            </li>
+            <li class="nav-item" role="presentation">
+                <a class="nav-link" th:classappend="${currentStatus == 'DELIVERED' ? 'active' : ''}"
                        th:href="@{/vendor/orders(shopId=${shopId}, status=DELIVERED, q=${search})}">
                         Đã giao <span class="badge bg-success ms-1" th:text="${statusCounts[T(vn.entity.Order.OrderStatus).DELIVERED] ?: 0}">0</span>
-                    </a>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <a class="nav-link" th:classappend="${currentStatus == 'CANCELLED' ? 'active' : ''}"
+                </a>
+            </li>
+            <li class="nav-item" role="presentation">
+                <a class="nav-link" th:classappend="${currentStatus == 'CANCELLED' ? 'active' : ''}"
                        th:href="@{/vendor/orders(shopId=${shopId}, status=CANCELLED, q=${search})}">
                         Đã hủy <span class="badge bg-danger ms-1" th:text="${statusCounts[T(vn.entity.Order.OrderStatus).CANCELLED] ?: 0}">0</span>
-                    </a>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <a class="nav-link" th:classappend="${currentStatus == 'RETURNED' ? 'active' : ''}"
+                </a>
+            </li>
+            <li class="nav-item" role="presentation">
+                <a class="nav-link" th:classappend="${currentStatus == 'RETURNED' ? 'active' : ''}"
                        th:href="@{/vendor/orders(shopId=${shopId}, status=RETURNED, q=${search})}">
                         Đã hoàn trả <span class="badge bg-secondary ms-1" th:text="${statusCounts[T(vn.entity.Order.OrderStatus).RETURNED] ?: 0}">0</span>
-                    </a>
-                </li>
-            </ul>
-            
-            <!-- Search Form -->
+                </a>
+            </li>
+        </ul>
+
+      <!-- Search Form -->
             <form th:action="@{/vendor/orders}" method="get">
                 <input type="hidden" name="shopId" th:value="${shopId}">
                 <input type="hidden" name="status" th:value="${currentStatus != null ? currentStatus : ''}">
-                <div class="row">
-                  <div class="col-md-6">
-                    <div class="input-group">
-                      <input
-                        type="text"
+        <div class="row">
+          <div class="col-md-6">
+            <div class="input-group">
+              <input
+                type="text"
                         name="q"
-                        class="form-control"
-                        placeholder="Tìm kiếm theo mã đơn hàng..."
-                        th:value="${search}"
-                      />
-                      <button class="btn btn-primary" type="submit">
-                        <i class="fas fa-search"></i> Tìm kiếm
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </form>
+                class="form-control"
+                placeholder="Tìm kiếm theo mã đơn hàng..."
+                th:value="${search}"
+              />
+              <button class="btn btn-primary" type="submit">
+                <i class="fas fa-search"></i> Tìm kiếm
+              </button>
+            </div>
+          </div>
+        </div>
+      </form>
         </section>
 
         <!-- Orders List -->
@@ -199,19 +199,19 @@
                                                 <form th:action="@{/vendor/orders/confirm}" method="post" class="d-inline">
                                                     <input type="hidden" name="orderId" th:value="${order.orderId}" />
                                                     <input type="hidden" name="shopId" th:value="${shopId}" />
-                                                    <button type="submit" class="btn btn-sm btn-success">
+                      <button type="submit" class="btn btn-sm btn-success">
                                                         <i class="fas fa-check me-1"></i>Xác nhận
-                                                    </button>
-                                                </form>
+                      </button>
+                    </form>
                                                 <form th:action="@{/vendor/orders/cancel}" method="post" class="d-inline">
                                                     <input type="hidden" name="orderId" th:value="${order.orderId}" />
                                                     <input type="hidden" name="shopId" th:value="${shopId}" />
                                                     <button type="submit" class="btn btn-sm btn-danger"
                                                             onclick="return confirm('Bạn có chắc chắn muốn hủy đơn hàng này không?')">
                                                         <i class="fas fa-times me-1"></i>Hủy
-                                                    </button>
+                    </button>
                                                 </form>
-                                            </div>
+                  </div>
 
                                             <!-- Nút Chi tiết -->
                                             <a th:href="@{/vendor/orders/{id}(id=${order.orderId})}"
@@ -220,65 +220,65 @@
                                             </a>
                                         </div>
                                     </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                  </div>
+                  </div>
                 </div>
+        </div>
             </div>
-            
-            <!-- Pagination -->
+        </div>
+
+      <!-- Pagination -->
             <div th:if="${orders.totalPages > 1}" class="d-flex justify-content-center mt-4">
                 <nav aria-label="Page navigation">
                   <ul class="pagination">
-                    <li
-                      class="page-item"
-                      th:classappend="${orders.first ? 'disabled' : ''}"
-                    >
-                      <a
-                        class="page-link"
+          <li
+            class="page-item"
+            th:classappend="${orders.first ? 'disabled' : ''}"
+          >
+            <a
+              class="page-link"
                         th:href="@{/vendor/orders(shopId=${shopId}, status=${currentStatus}, q=${search}, page=${orders.number - 1}, size=${orders.size})}"
                         aria-label="Previous"
-                      >
+            >
                         <span aria-hidden="true">&laquo;</span>
-                      </a>
-                    </li>
-                    <li
-                      class="page-item"
-                      th:each="i : ${#numbers.sequence(0, orders.totalPages - 1)}"
-                      th:classappend="${i == orders.number ? 'active' : ''}"
-                    >
-                      <a
-                        class="page-link"
+            </a>
+          </li>
+          <li
+            class="page-item"
+            th:each="i : ${#numbers.sequence(0, orders.totalPages - 1)}"
+            th:classappend="${i == orders.number ? 'active' : ''}"
+          >
+            <a
+              class="page-link"
                         th:href="@{/vendor/orders(shopId=${shopId}, status=${currentStatus}, q=${search}, page=${i}, size=${orders.size})}"
-                        th:text="${i + 1}"
+              th:text="${i + 1}"
                       >
                         1
                       </a>
-                    </li>
-                    <li
-                      class="page-item"
-                      th:classappend="${orders.last ? 'disabled' : ''}"
-                    >
-                      <a
-                        class="page-link"
+          </li>
+          <li
+            class="page-item"
+            th:classappend="${orders.last ? 'disabled' : ''}"
+          >
+            <a
+              class="page-link"
                         th:href="@{/vendor/orders(shopId=${shopId}, status=${currentStatus}, q=${search}, page=${orders.number + 1}, size=${orders.size})}"
                         aria-label="Next"
-                      >
+            >
                         <span aria-hidden="true">&raquo;</span>
-                      </a>
-                    </li>
-                  </ul>
-                </nav>
-              </div>
+            </a>
+          </li>
+        </ul>
+      </nav>
+    </div>
 
         </section>
         
         <div th:if="${orders == null or orders.content.isEmpty()}" class="text-center py-5 vendor-section">
             <i class="fas fa-shopping-cart fa-3x text-muted mb-3"></i>
             <h5 class="text-muted">Chưa có đơn hàng nào</h5>
-        </div>
-        
+              </div>
+              
     </main>
 </body>
 </html>
