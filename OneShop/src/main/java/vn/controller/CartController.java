@@ -34,8 +34,6 @@ public class CartController {
     @Autowired
     private CartService cartService;
     
-    @Autowired
-    private PromotionService promotionService;
     private VietQRService vietQRService;
     
 
