@@ -14,8 +14,13 @@ import vn.entity.Order;
 import vn.entity.Shop;
 import vn.entity.User;
 import vn.repository.OrderRepository;
+import vn.repository.OrderDetailRepository;
 import vn.repository.ShopRepository;
 import vn.service.OrderService;
+import vn.service.SendMailService;
+import vn.entity.OrderDetail;
+import java.text.NumberFormat;
+import java.util.Locale;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -39,6 +44,12 @@ public class ShipperHomeController {
 
     @Autowired
     private ShopRepository shopRepository;
+
+    @Autowired
+    private SendMailService sendMailService;
+
+    @Autowired
+    private OrderDetailRepository orderDetailRepository;
 
     /**
      * Trang chủ shipper - hiển thị dashboard với các đơn hàng được phân công
@@ -120,6 +131,14 @@ public class ShipperHomeController {
                 // Cập nhật trạng thái đơn hàng sang SHIPPING
                 orderService.updateOrderStatus(orderId, Order.OrderStatus.SHIPPING);
                 
+                // Gửi email thông báo đã nhận đơn tới khách hàng
+                try {
+                    Order picked = orderService.getOrderById(orderId);
+                    if (picked != null) {
+                        sendOrderPickedUpEmail(picked, shipper);
+                    }
+                } catch (Exception ignore) {}
+                
                 model.addAttribute("success", "Đã nhận đơn hàng #" + orderId + " thành công!");
             } else {
                 model.addAttribute("error", "Không thể nhận đơn hàng này!");
@@ -150,8 +169,16 @@ public class ShipperHomeController {
             // Kiểm tra đơn hàng có thuộc về shipper này không
             if (order != null && order.getShipper() != null && 
                 order.getShipper().getUserId().equals(shipper.getUserId())) {
-                
                 orderService.updateOrderStatus(orderId, status);
+                
+                if (status == Order.OrderStatus.DELIVERED) {
+                    try {
+                        Order delivered = orderService.getOrderById(orderId);
+                        if (delivered != null) {
+                            sendOrderDeliveredEmail(delivered);
+                        }
+                    } catch (Exception ignore) {}
+                }
                 
                 model.addAttribute("success", "Đã cập nhật trạng thái đơn hàng thành công!");
             } else {
@@ -510,5 +537,137 @@ public class ShipperHomeController {
         boolean isShipper = user.getRoles() != null &&
                 user.getRoles().stream().anyMatch(role -> "ROLE_SHIPPER".equals(role.getName()));
         return isShipper ? user : null;
+    }
+
+    private void sendOrderDeliveredEmail(Order order) {
+        try {
+            String to = order.getCustomerEmail() != null ? order.getCustomerEmail() :
+                    (order.getUser() != null ? order.getUser().getEmail() : null);
+            if (to == null || to.isEmpty()) return;
+
+            String shopName = (order.getShop() != null && order.getShop().getShopName() != null)
+                    ? order.getShop().getShopName() : "OneShop";
+            String subject = "Giao hàng thành công - Đơn #" + order.getOrderId() + " - " + shopName;
+
+            NumberFormat vnd = NumberFormat.getCurrencyInstance(new Locale("vi", "VN"));
+            double total = order.getTotalAmount() != null ? order.getTotalAmount() : 0.0;
+            String payment = order.getPaymentMethod() != null ? order.getPaymentMethod().name() : "COD";
+
+            StringBuilder itemsHtml = new StringBuilder();
+            try {
+                java.util.List<OrderDetail> details = orderDetailRepository.findByOrderIdWithProductAndShop(order.getOrderId());
+                for (OrderDetail d : details) {
+                    String name = d.getProductName() != null ? d.getProductName() :
+                            (d.getProduct() != null ? d.getProduct().getProductName() : "Sản phẩm");
+                    int qty = d.getQuantity() != null ? d.getQuantity() : 0;
+                    double unit = d.getUnitPrice() != null ? d.getUnitPrice() : 0.0;
+                    double line = d.getTotalPrice() != null ? d.getTotalPrice() : unit * qty;
+                    itemsHtml.append("<tr>")
+                            .append("<td style='padding:8px 12px;border-bottom:1px solid #eee'>").append(name).append("</td>")
+                            .append("<td style='padding:8px 12px;text-align:center;border-bottom:1px solid #eee'>").append(qty).append("</td>")
+                            .append("<td style='padding:8px 12px;text-align:right;border-bottom:1px solid #eee'>").append(vnd.format(unit)).append("</td>")
+                            .append("<td style='padding:8px 12px;text-align:right;border-bottom:1px solid #eee'>").append(vnd.format(line)).append("</td>")
+                            .append("</tr>");
+                }
+            } catch (Exception ignore) {}
+
+            String tracking = order.getTrackingNumber() != null ? order.getTrackingNumber() : "(chưa có)";
+            String deliveredAt = order.getDeliveredDate() != null ? order.getDeliveredDate().toString() : "hôm nay";
+
+            String body = "" +
+                    "<div style='font-family:Arial,Helvetica,sans-serif;line-height:1.6;color:#111'>" +
+                    "<h2 style='color:#16a34a;margin:0 0 12px'>Giao hàng thành công ✅</h2>" +
+                    "<p>Chào " + (order.getCustomerName() != null ? order.getCustomerName() : "bạn") + ",</p>" +
+                    "<p>Đơn hàng <strong>#" + order.getOrderId() + "</strong> của bạn đã được giao thành công vào <strong>" + deliveredAt + "</strong>.</p>" +
+                    "<div style='margin:16px 0;padding:12px;background:#ecfdf5;border:1px solid #86efac;border-radius:8px'>" +
+                    "<p style='margin:0'><strong>Người giao:</strong> Shipper OneShop</p>" +
+                    "<p style='margin:4px 0 0'><strong>Mã vận đơn:</strong> " + tracking + "</p>" +
+                    "<p style='margin:4px 0 0'><strong>Địa chỉ nhận:</strong> " + (order.getShippingAddress() != null ? order.getShippingAddress() : "(chưa có)") + "</p>" +
+                    "<p style='margin:4px 0 0'><strong>Thanh toán:</strong> " + payment + "</p>" +
+                    "</div>" +
+                    "<table style='width:100%;border-collapse:collapse;margin-top:8px'>" +
+                    "<thead><tr>" +
+                    "<th style='text-align:left;padding:8px 12px;border-bottom:2px solid #ddd'>Sản phẩm</th>" +
+                    "<th style='text-align:center;padding:8px 12px;border-bottom:2px solid #ddd'>SL</th>" +
+                    "<th style='text-align:right;padding:8px 12px;border-bottom:2px solid #ddd'>Đơn giá</th>" +
+                    "<th style='text-align:right;padding:8px 12px;border-bottom:2px solid #ddd'>Thành tiền</th>" +
+                    "</tr></thead><tbody>" + itemsHtml + "</tbody></table>" +
+                    "<p style='text-align:right;margin:12px 0;font-size:16px'><strong>Tổng cộng: " + vnd.format(total) + "</strong></p>" +
+                    "<div style='margin-top:16px'>" +
+                    "<a href='http://localhost:8080/review?orderId=" + order.getOrderId() + "' style='display:inline-block;background:#0ea5e9;color:#fff;padding:10px 16px;border-radius:6px;text-decoration:none'>Đánh giá sản phẩm</a>" +
+                    " <a href='http://localhost:8080/my-orders' style='display:inline-block;margin-left:8px;background:#374151;color:#fff;padding:10px 16px;border-radius:6px;text-decoration:none'>Xem đơn hàng</a>" +
+                    "</div>" +
+                    "<p style='margin-top:16px'>Cảm ơn bạn đã mua sắm tại <strong>" + shopName + "</strong>. Hẹn gặp lại bạn trong những lần sau!</p>" +
+                    "<p style='margin-top:16px'>Trân trọng,<br/>Đội ngũ OneShop</p>" +
+                    "</div>";
+
+            sendMailService.queue(to, subject, body);
+        } catch (Exception ignored) { }
+    }
+
+    private void sendOrderPickedUpEmail(Order order, User shipper) {
+        try {
+            String to = order.getCustomerEmail() != null ? order.getCustomerEmail() :
+                    (order.getUser() != null ? order.getUser().getEmail() : null);
+            if (to == null || to.isEmpty()) return;
+
+            String shopName = (order.getShop() != null && order.getShop().getShopName() != null)
+                    ? order.getShop().getShopName() : "OneShop";
+            String subject = "Shipper đã nhận đơn - #" + order.getOrderId() + " - " + shopName;
+
+            NumberFormat vnd = NumberFormat.getCurrencyInstance(new Locale("vi", "VN"));
+            double total = order.getTotalAmount() != null ? order.getTotalAmount() : 0.0;
+            String payment = order.getPaymentMethod() != null ? order.getPaymentMethod().name() : "COD";
+
+            String contactPhone = (order.getShop() != null && order.getShop().getPhoneNumber() != null)
+                    ? order.getShop().getPhoneNumber() : "(chưa có)";
+            String shipperName = shipper != null && shipper.getName() != null ? shipper.getName() : "Shipper OneShop";
+
+            StringBuilder itemsHtml = new StringBuilder();
+            try {
+                java.util.List<OrderDetail> details = orderDetailRepository.findByOrderIdWithProductAndShop(order.getOrderId());
+                for (OrderDetail d : details) {
+                    String name = d.getProductName() != null ? d.getProductName() :
+                            (d.getProduct() != null ? d.getProduct().getProductName() : "Sản phẩm");
+                    int qty = d.getQuantity() != null ? d.getQuantity() : 0;
+                    double unit = d.getUnitPrice() != null ? d.getUnitPrice() : 0.0;
+                    double line = d.getTotalPrice() != null ? d.getTotalPrice() : unit * qty;
+                    itemsHtml.append("<tr>")
+                            .append("<td style='padding:8px 12px;border-bottom:1px solid #eee'>").append(name).append("</td>")
+                            .append("<td style='padding:8px 12px;text-align:center;border-bottom:1px solid #eee'>").append(qty).append("</td>")
+                            .append("<td style='padding:8px 12px;text-align:right;border-bottom:1px solid #eee'>").append(vnd.format(unit)).append("</td>")
+                            .append("<td style='padding:8px 12px;text-align:right;border-bottom:1px solid #eee'>").append(vnd.format(line)).append("</td>")
+                            .append("</tr>");
+                }
+            } catch (Exception ignore) {}
+
+            String body = "" +
+                    "<div style='font-family:Arial,Helvetica,sans-serif;line-height:1.6;color:#111'>" +
+                    "<h2 style='color:#0ea5e9;margin:0 0 12px'>Shipper đã nhận đơn 🚚</h2>" +
+                    "<p>Chào " + (order.getCustomerName() != null ? order.getCustomerName() : "bạn") + ",</p>" +
+                    "<p>Đơn hàng <strong>#" + order.getOrderId() + "</strong> của bạn đã được shipper tiếp nhận và sẽ sớm giao đến bạn.</p>" +
+                    "<div style='margin:16px 0;padding:12px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px'>" +
+                    "<p style='margin:0'><strong>Shipper phụ trách:</strong> " + shipperName + "</p>" +
+                    "<p style='margin:4px 0 0'><strong>Liên hệ shop:</strong> " + contactPhone + "</p>" +
+                    "<p style='margin:4px 0 0'><strong>Địa chỉ nhận:</strong> " + (order.getShippingAddress() != null ? order.getShippingAddress() : "(chưa có)") + "</p>" +
+                    "<p style='margin:4px 0 0'><strong>Thanh toán:</strong> " + payment + "</p>" +
+                    "</div>" +
+                    "<table style='width:100%;border-collapse:collapse;margin-top:8px'>" +
+                    "<thead><tr>" +
+                    "<th style='text-align:left;padding:8px 12px;border-bottom:2px solid #ddd'>Sản phẩm</th>" +
+                    "<th style='text-align:center;padding:8px 12px;border-bottom:2px solid #ddd'>SL</th>" +
+                    "<th style='text-align:right;padding:8px 12px;border-bottom:2px solid #ddd'>Đơn giá</th>" +
+                    "<th style='text-align:right;padding:8px 12px;border-bottom:2px solid #ddd'>Thành tiền</th>" +
+                    "</tr></thead><tbody>" + itemsHtml + "</tbody></table>" +
+                    "<p style='text-align:right;margin:12px 0;font-size:16px'><strong>Tổng cộng: " + vnd.format(total) + "</strong></p>" +
+                    "<div style='margin-top:16px'>" +
+                    "<a href='http://localhost:8080/my-orders' style='display:inline-block;background:#0a7cff;color:#fff;padding:10px 16px;border-radius:6px;text-decoration:none'>Theo dõi đơn hàng</a>" +
+                    "</div>" +
+                    "<p style='margin-top:16px'>Cảm ơn bạn đã mua sắm tại <strong>" + shopName + "</strong>.</p>" +
+                    "<p style='margin-top:16px'>Trân trọng,<br/>Đội ngũ OneShop</p>" +
+                    "</div>";
+
+            sendMailService.queue(to, subject, body);
+        } catch (Exception ignored) { }
     }
 }
