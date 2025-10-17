@@ -35,7 +35,11 @@ CREATE TABLE dbo.[user] (
     password       NVARCHAR(255) NOT NULL,
     register_date  DATE DEFAULT (GETDATE()),
     status         BIT  DEFAULT 1,
-    one_xu_balance DECIMAL(18,2) NOT NULL DEFAULT 0
+    one_xu_balance DECIMAL(18,2) NOT NULL DEFAULT 0,
+    -- OAuth2 fields for social login
+    provider       NVARCHAR(50),     -- facebook, google, etc.
+    provider_id    NVARCHAR(100),    -- ID from OAuth2 provider
+    enabled        BIT DEFAULT 1     -- account enabled status
 );
 -- 9 user (đã thêm shipper và CSKH)
 INSERT INTO dbo.[user](avatar, email, name, password, register_date, status)

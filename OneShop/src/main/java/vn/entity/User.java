@@ -48,7 +48,17 @@ public class User implements Serializable {
     @Column(name = "one_xu_balance")
     private Double oneXuBalance = 0.0;
 
-    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    // OAuth2 fields
+    @Column(name = "provider")
+    private String provider; // facebook, google, etc.
+    
+    @Column(name = "provider_id")
+    private String providerId; // ID from OAuth2 provider
+    
+    @Column(name = "enabled")
+    private Boolean enabled = true;
+
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "users_roles",
             joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id", referencedColumnName = "id"))
