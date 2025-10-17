@@ -260,6 +260,47 @@
       </div>
     </section>
 
+    <!-- Shop Information Section -->
+    <section class="inner-section" th:if="${product.shop != null}">
+      <div class="container">
+        <div class="row">
+          <div class="col-lg-12">
+            <div class="shop-info-card">
+              <div class="shop-avatar">
+                <img th:if="${product.shop.shopLogo != null and !#strings.isEmpty(product.shop.shopLogo)}" 
+                     th:src="@{'/loadImage?imageName='+${product.shop.shopLogo}}" 
+                     alt="Shop Logo" 
+                     onerror="this.src='/images/no-image.png'">
+                <img th:unless="${product.shop.shopLogo != null and !#strings.isEmpty(product.shop.shopLogo)}" 
+                     src="/images/no-image.png" 
+                     alt="Shop Logo">
+              </div>
+              <div class="shop-details">
+                <h3 class="shop-name" th:text="${product.shop.shopName}">Tên Shop</h3>
+                <p class="shop-status">
+                  <i class="fas fa-circle"></i>
+                  Online
+                </p>
+              </div>
+              <div class="shop-actions">
+                <a th:href="@{/chat(shopId=${product.shop.shopId})}" 
+                   class="btn-chat" 
+                   target="_blank">
+                  <i class="fas fa-comments"></i>
+                  Chat Ngay
+                </a>
+                <a th:href="@{/shop(id=${product.shop.shopId})}" 
+                   class="btn-view-shop">
+                  <i class="fas fa-store"></i>
+                  Xem Shop
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- Product Description Tabs -->
     <section class="inner-section">
       <div class="container">
@@ -643,7 +684,124 @@
       </div>
     </section>
 
-    <footer th:replace="~{/web/fragments/footer :: footer}"></footer>
+    <style>
+      /* Shop Information Styles - Simple & Clean */
+      .shop-info-card {
+        background: white;
+        border-radius: 8px;
+        padding: 8px;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+        margin-bottom: 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        border: 1px solid #f0f0f0;
+      }
+
+      .shop-avatar {
+        width: 35px;
+        height: 35px;
+        border-radius: 50%;
+        overflow: hidden;
+        flex-shrink: 0;
+        border: 1px solid #f8f9fa;
+      }
+
+      .shop-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .shop-details {
+        flex: 1;
+      }
+
+      .shop-name {
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: #333;
+        margin: 0 0 1px 0;
+      }
+
+      .shop-status {
+        color: #28a745;
+        font-size: 0.75rem;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 2px;
+      }
+
+      .shop-actions {
+        display: flex;
+        gap: 4px;
+      }
+
+      .btn-chat, .btn-view-shop {
+        padding: 4px 8px;
+        border-radius: 3px;
+        text-decoration: none;
+        font-size: 0.75rem;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 2px;
+        transition: all 0.2s ease;
+        border: 1px solid;
+      }
+
+      .btn-chat {
+        background: #007bff;
+        color: white;
+        border-color: #007bff;
+      }
+
+      .btn-chat:hover {
+        background: #0056b3;
+        border-color: #0056b3;
+        color: white;
+      }
+
+      .btn-view-shop {
+        background: white;
+        color: #6c757d;
+        border-color: #6c757d;
+      }
+
+      .btn-view-shop:hover {
+        background: #6c757d;
+        color: white;
+      }
+
+      /* Responsive */
+      @media (max-width: 768px) {
+        .shop-info-card {
+          flex-direction: column;
+          text-align: center;
+          gap: 4px;
+        }
+
+        .shop-actions {
+          justify-content: center;
+        }
+      }
+
+      @media (max-width: 576px) {
+        .shop-info-card {
+          padding: 6px;
+        }
+
+        .shop-actions {
+          flex-direction: column;
+          width: 100%;
+        }
+
+        .btn-chat, .btn-view-shop {
+          justify-content: center;
+        }
+      }
+    </style>
 
     <script src="/vendor/bootstrap/jquery-1.12.4.min.js"></script>
     <script src="/vendor/bootstrap/popper.min.js"></script>

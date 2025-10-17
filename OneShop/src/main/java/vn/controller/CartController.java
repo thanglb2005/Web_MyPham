@@ -10,8 +10,10 @@ import vn.dto.CartByShopDTO;
 import vn.entity.CartItem;
 import vn.entity.CartItemEntity;
 import vn.entity.Order;
+import vn.entity.OrderDetail;
 import vn.entity.Product;
 import vn.entity.User;
+import vn.repository.OrderDetailRepository;
 import vn.service.CartService;
 import vn.service.OrderService;
 import vn.service.ProductService;
@@ -32,8 +34,12 @@ public class CartController {
     private OrderService orderService;
     
     @Autowired
+    private OrderDetailRepository orderDetailRepository;
+    
+    @Autowired
     private CartService cartService;
     
+    @Autowired
     private VietQRService vietQRService;
     
 
@@ -476,6 +482,10 @@ public class CartController {
         if (order == null || !order.getUser().getUserId().equals(user.getUserId())) {
             return "redirect:/products";
         }
+
+        // Load order details with product information to avoid lazy loading issues
+        List<OrderDetail> orderDetails = orderDetailRepository.findByOrderIdWithProductAndShop(orderId);
+        order.setOrderDetails(orderDetails);
 
         model.addAttribute("order", order);
         model.addAttribute("orderId", orderId);

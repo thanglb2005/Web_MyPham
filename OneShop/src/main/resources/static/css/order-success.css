@@ -1,21 +1,21 @@
 /* Order Success Page Styles */
 .order-success-section {
-    padding: 80px 0;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    min-height: 80vh;
+    padding: 20px 0;
+    background: transparent;
+    min-height: auto;
 }
 
 .success-card {
     background: white;
-    border-radius: 20px;
-    padding: 50px 40px;
-    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+    border-radius: 15px;
+    padding: 30px 25px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.08);
     text-align: center;
     animation: fadeInUp 0.8s ease-out;
 }
 
 .success-icon {
-    margin-bottom: 30px;
+    margin-bottom: 20px;
 }
 
 .success-icon i {
@@ -162,7 +162,7 @@
 }
 
 .summary-row.total {
-    border-top: 2px solid #667eea;
+    border-top: 2px solid #007bff;
     margin-top: 15px;
     padding-top: 20px;
     font-size: 1.3rem;
@@ -205,7 +205,7 @@
 .step-icon {
     width: 60px;
     height: 60px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -248,20 +248,20 @@
 }
 
 .btn-outline {
-    border: 2px solid #667eea;
-    color: #667eea;
+    border: 2px solid #007bff;
+    color: #007bff;
     background: white;
 }
 
 .btn-outline:hover {
-    background: #667eea;
+    background: #007bff;
     color: white;
     transform: translateY(-2px);
     box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
 }
 
 .btn-primary {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
     color: white;
     border: none;
 }
@@ -394,7 +394,7 @@
     width: 20px;
     height: 20px;
     border: 3px solid #f3f3f3;
-    border-top: 3px solid #667eea;
+    border-top: 3px solid #007bff;
     border-radius: 50%;
     animation: spin 1s linear infinite;
 }

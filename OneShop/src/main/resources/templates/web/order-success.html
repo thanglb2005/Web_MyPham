@@ -47,7 +47,13 @@
                             <div class="order-items">
                                 <div th:each="item : ${order.orderDetails}" class="order-item">
                                     <div class="item-image">
-                                        <img th:src="${item.product.productImage}" th:alt="${item.productName}">
+                                        <img th:if="${item.product.productImage != null and !#strings.isEmpty(item.product.productImage)}" 
+                                             th:src="@{'/loadImage?imageName='+${item.product.productImage}}" 
+                                             th:alt="${item.productName}"
+                                             onerror="this.src='/images/no-image.png'">
+                                        <img th:unless="${item.product.productImage != null and !#strings.isEmpty(item.product.productImage)}" 
+                                             src="/images/no-image.png" 
+                                             th:alt="${item.productName}">
                                     </div>
                                     <div class="item-info">
                                         <h4 th:text="${item.productName}">Tên sản phẩm</h4>

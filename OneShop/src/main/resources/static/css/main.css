@@ -24,7 +24,6 @@
   --white: #ffffff;
   --chalk: #f5f5f5;
   --green: #11b76b;
-  --purple: #b12fad;
   --orange: #e86121;
   --yellow: #ffab10;
   --body: #f5f6f7;
@@ -1200,7 +1199,7 @@ tbody tr td:last-child {
   text-transform: capitalize;
 }
 .table-status .stock-in {
-  color: var(--purple);
+  color: var(--blue);
 }
 .table-status .stock-out {
   color: var(--orange);
@@ -1621,7 +1620,7 @@ tbody tr td:last-child {
   background: #ff6b35;
 }
 .label-text.feat {
-  background: var(--purple);
+  background: var(--blue);
 }
 .label-text.rate {
   background: var(--yellow);
@@ -1889,7 +1888,7 @@ tbody tr td:last-child {
   background: #ff6b35;
 }
 .label-text.feat {
-  background: var(--purple);
+  background: var(--blue);
 }
 .label-text.rate {
   background: var(--yellow);
@@ -2126,7 +2125,7 @@ tbody tr td:last-child {
   background: #ff6b35;
 }
 .standard-label.feat {
-  background: var(--purple);
+  background: var(--blue);
 }
 .standard-label.rate {
   background: var(--yellow);
@@ -4790,7 +4789,7 @@ tbody tr td:last-child {
   background: #ff6b35;
 }
 .view-label.feat {
-  background: var(--purple);
+  background: var(--blue);
 }
 .view-label.rate {
   background: var(--yellow);
