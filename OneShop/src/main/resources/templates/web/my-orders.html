@@ -653,8 +653,8 @@
                                     <!-- Action Buttons hidden per request -->
                                 </div>
                                 
-                                <!-- Status Badge -->
-                                <div class="status-container">
+                                <!-- Status Badge + Detail link -->
+                                <div class="status-container" style="display:flex; align-items:center; gap:8px;">
                                     <span class="status-badge" th:switch="${order.status.name()}">
                                         <span th:case="'PENDING'" class="status-pending">Đơn hàng mới</span>
                                         <span th:case="'CONFIRMED'" class="status-confirmed">Đã xác nhận</span>
@@ -664,6 +664,10 @@
                                         <span th:case="'RETURNED'" class="status-returned">Trả hàng - hoàn tiền</span>
                                         <span th:case="*" class="status-pending">Đơn hàng mới</span>
                                     </span>
+                                    <a class="btn btn-sm btn-outline-primary"
+                                       th:href="@{/order-detail/{orderId}(orderId=${order.orderId})}">
+                                        Chi tiết
+                                    </a>
                                 </div>
                             </div>
                             
