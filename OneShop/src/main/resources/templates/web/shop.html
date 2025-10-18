@@ -77,6 +77,7 @@
                     th:each="shop : ${shopList}"
                     th:value="${shop.shopId}"
                     th:text="${shop.shopName}"
+                    th:attr="data-slug=${shop.shopSlug}"
                     th:selected="${selectedShopId != null and selectedShopId == shop.shopId}"
                   ></option>
                 </select>
@@ -125,35 +126,35 @@
               <ul class="shop-widget-list">
                 <li>
                   <div class="shop-widget-content">
-                    <a th:href="@{/products}">
+                    <a href="javascript:void(0);" class="price-filter" data-min="" data-max="">
                       <label style="cursor: pointer">Tất cả</label>
                     </a>
                   </div>
                 </li>
                 <li>
                   <div class="shop-widget-content">
-                    <a href="javascript:void(0);">
+                    <a href="javascript:void(0);" class="price-filter" data-min="0" data-max="100000">
                       <label style="cursor: pointer">Dưới 100.000đ</label>
                     </a>
                   </div>
                 </li>
                 <li>
                   <div class="shop-widget-content">
-                    <a href="javascript:void(0);">
+                    <a href="javascript:void(0);" class="price-filter" data-min="100000" data-max="300000">
                       <label style="cursor: pointer">100.000đ - 300.000đ</label>
                     </a>
                   </div>
                 </li>
                 <li>
                   <div class="shop-widget-content">
-                    <a href="javascript:void(0);">
+                    <a href="javascript:void(0);" class="price-filter" data-min="300000" data-max="500000">
                       <label style="cursor: pointer">300.000đ - 500.000đ</label>
                     </a>
                   </div>
                 </li>
                 <li>
                   <div class="shop-widget-content">
-                    <a href="javascript:void(0);">
+                    <a href="javascript:void(0);" class="price-filter" data-min="500000" data-max="">
                       <label style="cursor: pointer">Trên 500.000đ</label>
                     </a>
                   </div>
@@ -495,18 +496,28 @@
 
     <script>
       $(document).ready(function () {
+        // Initialize sort select from URL (if present)
+        (function initSortFromUrl() {
+          var currentUrl = new URL(window.location.href);
+          var sortValue = currentUrl.searchParams.get("sort");
+          if (sortValue) {
+            $("#sortSelect").val(sortValue);
+          }
+        })();
+
         // Sort functionality
         $("#sortSelect").on("change", function () {
           var sortValue = $(this).val();
           var currentUrl = new URL(window.location.href);
 
           // Add sort parameter to URL and reload
-          if (sortValue !== "default") {
+          if (sortValue && sortValue !== "default") {
             currentUrl.searchParams.set("sort", sortValue);
           } else {
             currentUrl.searchParams.delete("sort");
           }
-
+          // Reset to first page
+          currentUrl.searchParams.delete("page");
           window.location.href = currentUrl.toString();
         });
 
@@ -533,15 +544,47 @@
           }
         });
 
-        // Price range filters (can be enhanced with backend integration)
-        $(".shop-widget-list a").on("click", function (e) {
-          var text = $(this).find("label").text();
-          if (text.includes("đ")) {
-            e.preventDefault();
-            console.log("Price filter clicked:", text);
-            // Add your price filtering logic here
+        // Price range filters -> update URL minPrice/maxPrice
+        $(document).on("click", ".price-filter", function (e) {
+          e.preventDefault();
+          var min = $(this).data("min");
+          var max = $(this).data("max");
+          var currentUrl = new URL(window.location.href);
+
+          if (min !== undefined && min !== null && String(min).length > 0) {
+            currentUrl.searchParams.set("minPrice", min);
+          } else {
+            currentUrl.searchParams.delete("minPrice");
           }
+
+          if (max !== undefined && max !== null && String(max).length > 0) {
+            currentUrl.searchParams.set("maxPrice", max);
+          } else {
+            currentUrl.searchParams.delete("maxPrice");
+          }
+
+          // Reset to first page when filtering
+          currentUrl.searchParams.delete("page");
+
+          window.location.href = currentUrl.toString();
         });
+
+        // Highlight active price range from URL
+        (function highlightActivePriceRange() {
+          var currentUrl = new URL(window.location.href);
+          var min = currentUrl.searchParams.get("minPrice");
+          var max = currentUrl.searchParams.get("maxPrice");
+          $(".price-filter").each(function () {
+            var $a = $(this);
+            var aMin = String($a.data("min") ?? "");
+            var aMax = String($a.data("max") ?? "");
+            if (String(min ?? "") === aMin && String(max ?? "") === aMax) {
+              $a.find("label").css({ "font-weight": "600", color: "#0d6efd" });
+            } else {
+              $a.find("label").css({ "font-weight": "normal", color: "#212529" });
+            }
+          });
+        })();
 
         // Add to cart with feedback
         $(".product-add").on("click", function (e) {
@@ -569,18 +612,45 @@
       // Shop filter function
       function filterByShop() {
         const shopId = document.getElementById("shopSelector").value;
+        const selectEl = document.getElementById("shopSelector");
+        const selectedOption = selectEl.options[selectEl.selectedIndex];
+        const selectedSlug = selectedOption ? selectedOption.getAttribute("data-slug") : null;
         const currentUrl = new URL(window.location.href);
+        const path = currentUrl.pathname || "";
 
-        if (shopId) {
-          currentUrl.searchParams.set("shopId", shopId);
+        // Preserve common query params when navigating
+        const keepParams = ["size", "sort", "minPrice", "maxPrice", "categoryId"];
+        const preserved = new URLSearchParams();
+        keepParams.forEach((k) => {
+          const v = currentUrl.searchParams.get(k);
+          if (v !== null && v !== "") preserved.set(k, v);
+        });
+
+        // Reset to first page when filtering
+        preserved.delete("page");
+
+        if (path.startsWith("/shop/")) {
+          // On shop page: navigate by slug; blank -> back to /products
+          if (shopId && selectedSlug) {
+            const next = new URL(window.location.origin + "/shop/" + selectedSlug);
+            next.search = preserved.toString();
+            window.location.href = next.toString();
+          } else {
+            const next = new URL(window.location.origin + "/products");
+            next.search = preserved.toString();
+            window.location.href = next.toString();
+          }
         } else {
-          currentUrl.searchParams.delete("shopId");
+          // On /products or others: use shopId as query param
+          const next = new URL(currentUrl);
+          if (shopId) {
+            next.searchParams.set("shopId", shopId);
+          } else {
+            next.searchParams.delete("shopId");
+          }
+          next.searchParams.delete("page");
+          window.location.href = next.toString();
         }
-
-        // Reset to page 1 when filtering
-        currentUrl.searchParams.delete("page");
-
-        window.location.href = currentUrl.toString();
       }
     </script>
   </body>

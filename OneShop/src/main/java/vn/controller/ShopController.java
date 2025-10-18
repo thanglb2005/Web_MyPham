@@ -58,6 +58,9 @@ public class ShopController {
                            @RequestParam(value = "page") Optional<Integer> page,
                            @RequestParam(value = "size") Optional<Integer> size,
                            @RequestParam(value = "categoryId") Optional<Long> categoryId,
+                           @RequestParam(value = "sort", required = false) Optional<String> sort,
+                           @RequestParam(value = "minPrice", required = false) Optional<Double> minPrice,
+                           @RequestParam(value = "maxPrice", required = false) Optional<Double> maxPrice,
                            HttpSession session,
                            Model model) {
         Shop shop = shopService.findBySlug(slug)
@@ -84,6 +87,25 @@ public class ShopController {
             model.addAttribute("selectedCategoryId", selectedCategoryId);
         } else {
             model.addAttribute("selectedCategoryId", null);
+        }
+
+        // Apply price filtering if provided
+        if (isActive && (minPrice.isPresent() || maxPrice.isPresent())) {
+            double min = minPrice.orElse(0.0);
+            double max = maxPrice.orElse(Double.MAX_VALUE);
+            filteredProducts = filteredProducts.stream()
+                    .filter(p -> {
+                        try {
+                            double price = effectivePrice(p);
+                            return price >= min && price <= max;
+                        } catch (Exception e) { return false; }
+                    })
+                    .collect(Collectors.toList());
+        }
+
+        // Apply sorting if provided
+        if (isActive && sort.isPresent()) {
+            filteredProducts = sortProducts(filteredProducts, sort.get());
         }
 
         Page<Product> productPage = isActive
@@ -115,6 +137,8 @@ public class ShopController {
         model.addAttribute("shop", shop);
         model.addAttribute("inactiveShop", !isActive);
         model.addAttribute("shopStatusLabel", shop.getStatus());
+        // Preselect current shop in sidebar dropdown
+        try { model.addAttribute("selectedShopId", shop.getShopId()); } catch (Exception ignored) {}
         return "web/shop";
     }
 
@@ -122,6 +146,9 @@ public class ShopController {
     public String shop(Model model, Pageable pageable, @RequestParam("page") Optional<Integer> page,
             @RequestParam("size") Optional<Integer> size, 
             @RequestParam(value = "shopId", required = false) Long shopId,
+            @RequestParam(value = "sort", required = false) Optional<String> sort,
+            @RequestParam(value = "minPrice", required = false) Optional<Double> minPrice,
+            @RequestParam(value = "maxPrice", required = false) Optional<Double> maxPrice,
             HttpSession session) {
 
         int currentPage = page.orElse(1);
@@ -144,6 +171,25 @@ public class ShopController {
                     .filter(p -> Boolean.TRUE.equals(p.getStatus()))
                     .collect(Collectors.toList());
             model.addAttribute("selectedShopId", null);
+        }
+
+        // Apply price filtering if provided
+        if (minPrice.isPresent() || maxPrice.isPresent()) {
+            double min = minPrice.orElse(0.0);
+            double max = maxPrice.orElse(Double.MAX_VALUE);
+            allProducts = allProducts.stream()
+                    .filter(p -> {
+                        try {
+                            double price = effectivePrice(p);
+                            return price >= min && price <= max;
+                        } catch (Exception e) { return false; }
+                    })
+                    .collect(Collectors.toList());
+        }
+
+        // Apply sorting if provided
+        if (sort.isPresent()) {
+            allProducts = sortProducts(allProducts, sort.get());
         }
 
         Page<Product> productPage = findPaginated(allProducts, PageRequest.of(currentPage - 1, pageSize));
@@ -174,6 +220,43 @@ public class ShopController {
         addCartCountToModel(session, model);
 
         return "web/shop";
+    }
+
+    // Helper: compute effective price after discount
+    private double effectivePrice(Product p) {
+        double base = 0.0;
+        try {
+            base = p.getPrice() != null ? p.getPrice() : 0.0;
+        } catch (Exception ignored) {}
+        int discount = 0;
+        try {
+            discount = p.getDiscount() != null ? p.getDiscount() : 0;
+        } catch (Exception ignored) {}
+        return base * (1.0 - (discount / 100.0));
+    }
+
+    // Helper: sort by given key
+    private List<Product> sortProducts(List<Product> list, String sortKey) {
+        if (sortKey == null || sortKey.isBlank()) return list;
+        Comparator<Product> comp = null;
+        switch (sortKey) {
+            case "name-asc" -> comp = Comparator.comparing(
+                    (Product p) -> p.getProductName() != null ? p.getProductName().toLowerCase() : "");
+            case "name-desc" -> comp = Comparator.comparing(
+                    (Product p) -> p.getProductName() != null ? p.getProductName().toLowerCase() : "")
+                    .reversed();
+            case "price-asc" -> comp = Comparator.comparingDouble((Product p) -> effectivePrice(p));
+            case "price-desc" -> comp = Comparator.comparingDouble((Product p) -> effectivePrice(p)).reversed();
+            case "newest" -> comp = Comparator.comparing(
+                    (Product p) -> p.getEnteredDate(),
+                    java.util.Comparator.nullsLast(java.util.Comparator.naturalOrder())
+            ).reversed();
+            case "discount" -> comp = Comparator.<Product>comparingInt(p -> p.getDiscount() != null ? p.getDiscount() : 0)
+                    .reversed();
+            default -> { /* no-op */ }
+        }
+        if (comp == null) return list;
+        return list.stream().sorted(comp).collect(Collectors.toList());
     }
 
     public Page<Product> findPaginated(Pageable pageable) {

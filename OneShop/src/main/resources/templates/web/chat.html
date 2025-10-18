@@ -221,6 +221,46 @@
         flex-wrap: wrap;
       }
 
+      /* Improved shop link banner in header */
+      .shop-link {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        background: var(--chat-light);
+        padding: 10px 14px;
+        border-radius: 12px;
+        border: 1px solid var(--chat-border);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+        white-space: nowrap;
+      }
+      .shop-link i {
+        font-size: 20px;
+        color: var(--chat-primary);
+      }
+      .shop-link .shop-name {
+        font-weight: 700;
+        font-size: 18px;
+        color: var(--chat-dark);
+      }
+      .shop-link .dot {
+        opacity: 0.4;
+      }
+      .shop-link .visit-btn {
+        background: var(--chat-gradient);
+        color: #fff !important;
+        padding: 10px 14px;
+        border-radius: 999px;
+        font-weight: 600;
+        font-size: 14px;
+        text-decoration: none;
+        box-shadow: var(--chat-shadow);
+        transition: transform 0.15s ease, box-shadow 0.2s ease;
+      }
+      .shop-link .visit-btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 10px 24px rgba(37, 99, 235, 0.18);
+      }
+
       .room-selector {
         display: flex;
 
@@ -1194,22 +1234,14 @@
           <h3 th:unless="${shopChatEnabled}">Chat Tư Vấn Trực Tuyến</h3>
         </div>
 
-        <div
-          class="chat-subtitle text-muted"
-          th:if="${shopChatEnabled}"
-          style="font-size: 13px"
-        >
-          <span class="me-2"><i class="fas fa-store text-primary"></i></span>
-
-          <span th:text="${chatShopInfo.name}">Tên shop</span>
-
-          <span class="mx-2">-</span>
-
-          <a
-            th:href="@{/shop/{slug}(slug=${chatShopInfo.slug})}"
-            class="text-decoration-none"
-            >Xem trang shop</a
-          >
+        <div class="shop-link" th:if="${shopChatEnabled}">
+          <i class="fas fa-store"></i>
+          <span class="shop-name" th:text="${chatShopInfo.name}">Tên shop</span>
+          <span class="dot">•</span>
+          <a th:href="@{/shop/{slug}(slug=${chatShopInfo.slug})}" class="visit-btn">
+            <i class="fas fa-external-link-alt"></i>
+            <span style="margin-left:6px">Xem trang shop</span>
+          </a>
         </div>
 
         <div
