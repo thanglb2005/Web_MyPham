@@ -5,6 +5,13 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,7 +21,9 @@ import vn.entity.User;
 import vn.repository.UserRepository;
 
 import java.util.Base64;
+import java.util.Collection;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Controller
 public class LoginController {
@@ -28,6 +37,9 @@ public class LoginController {
         User user = checkRememberMeCookie(request);
         if (user != null) {
             session.setAttribute("user", user);
+            
+            // Set Spring Security authentication context and save to session
+            setAuthenticationContext(user, session);
             
             // Check user role for routing
             boolean isAdmin = user.getRoles().stream()
@@ -62,11 +74,14 @@ public class LoginController {
                        HttpSession session, 
                        HttpServletResponse response,
                        Model model) {
-        Optional<User> userOpt = userRepository.findByEmail(email);
+        Optional<User> userOpt = userRepository.findByEmailWithRoles(email);
         
         if (userOpt.isPresent() && userOpt.get().getPassword().equals(password)) {
             User user = userOpt.get();
             session.setAttribute("user", user);
+            
+            // Set Spring Security authentication context and save to session
+            setAuthenticationContext(user, session);
             
             // Handle Remember Me cookie
             if (rememberMe != null && rememberMe) {
@@ -104,10 +119,36 @@ public class LoginController {
     public String logout(HttpSession session, HttpServletResponse response) {
         session.removeAttribute("user");
         
+        // Clear Spring Security context
+        SecurityContextHolder.clearContext();
+        
         // Clear Remember Me cookie
         clearRememberMeCookie(response);
         
         return "redirect:/login";
+    }
+    
+    // Helper method to set Spring Security authentication context
+    private void setAuthenticationContext(User user, HttpSession session) {
+        // Convert user roles to GrantedAuthority
+        Collection<GrantedAuthority> authorities = user.getRoles().stream()
+                .map(role -> new SimpleGrantedAuthority(role.getName()))
+                .collect(Collectors.toList());
+        
+        // Create authentication token
+        Authentication authentication = new UsernamePasswordAuthenticationToken(
+                user.getEmail(), 
+                user.getPassword(), 
+                authorities
+        );
+        
+        // Create SecurityContext and set authentication
+        SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
+        securityContext.setAuthentication(authentication);
+        SecurityContextHolder.setContext(securityContext);
+        
+        // IMPORTANT: Save SecurityContext to HttpSession so it persists across requests
+        session.setAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY, securityContext);
     }
     
     // Helper methods for Remember Me functionality
@@ -152,7 +193,7 @@ public class LoginController {
                             // Check if token is not too old (30 days)
                             long thirtyDaysInMillis = 30L * 24 * 60 * 60 * 1000;
                             if (System.currentTimeMillis() - timestamp < thirtyDaysInMillis) {
-                                Optional<User> userOpt = userRepository.findById(userId);
+                                Optional<User> userOpt = userRepository.findByIdWithRoles(userId);
                                 if (userOpt.isPresent()) {
                                     return userOpt.get();
                                 }

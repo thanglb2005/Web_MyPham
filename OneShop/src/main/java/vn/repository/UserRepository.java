@@ -11,6 +11,13 @@ import java.util.Optional;
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByEmail(String email);
+    
+    @Query("SELECT u FROM User u LEFT JOIN FETCH u.roles WHERE u.email = :email")
+    Optional<User> findByEmailWithRoles(@org.springframework.data.repository.query.Param("email") String email);
+    
+    @Query("SELECT u FROM User u LEFT JOIN FETCH u.roles WHERE u.userId = :userId")
+    Optional<User> findByIdWithRoles(@org.springframework.data.repository.query.Param("userId") Long userId);
+    
     Optional<User> findByName(String name);
     List<User> findByStatus(Boolean status);
     boolean existsByEmail(String email);
