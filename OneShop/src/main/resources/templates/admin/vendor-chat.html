@@ -1,5 +1,7 @@
 <!DOCTYPE html>
 
+<!DOCTYPE html>
+
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
   <head>
     <meta charset="UTF-8" />
@@ -1555,1084 +1557,144 @@
     <script th:src="@{/webjars/stomp-websocket/2.3.4/stomp.min.js}"></script>
 
     <script>
-      (function () {
-        let stompClient = null;
+(function(){
+  let stompClient = null;
+  let currentRoom = localStorage.getItem("oneshop.vendor.currentRoom") || null;
+  const ctx = window.CHAT_VENDOR_CONTEXT || {};
+  const isVendor = !!ctx.isVendor;
+  const isAdmin = !!ctx.isAdmin;
+  const isCskh = !!ctx.isCskh;
+  const canChatAll = !!ctx.canChatAllCustomers;
+  const vendorName = ctx.displayName || 'Agent';
+  const userShops = Array.isArray(ctx.shops) ? ctx.shops : [];
+  const vendors = Array.isArray(ctx.vendors) ? ctx.vendors : [];
+  const vendorShops = ctx.vendorShops || {};
 
-        let currentRoom = null;
+  function isShopRoom(id){ return /^shop-\d+-(?:customer|guest)-[A-Za-z0-9_-]+$/.test(id); }
+  function isLiaisonVendorRoom(id){ return /^liaison-vendor-\d+-cskh-\d+$/.test(id); }
+  function isLiaisonShopRoom(id){ return /^liaison-shop-\d+-cskh-\d+$/.test(id); }
+  function extractShopId(id){ let m = id.match(/^shop-(\d+)-/); if(m) return parseInt(m[1]); m = id.match(/^liaison-shop-(\d+)-/); return m?parseInt(m[1]):null; }
 
-        // Get vendor context from server
-        const vendorContext = window.CHAT_VENDOR_CONTEXT || {};
-        let vendorName =
-          vendorContext.displayName ||
-          "vendor_" + Math.floor(Math.random() * 1000);
-        const isVendor = vendorContext.isVendor || false;
-        const isAdmin = vendorContext.isAdmin || false;
-        const isCskh = vendorContext.isCskh || false;
-        const canChatAllCustomers = vendorContext.canChatAllCustomers || false;
-        const userShops = vendorContext.shops || [];
+  function addLiaisonPanel(){
+    if(!(isCskh||isAdmin)) return;
+    const header = document.querySelector('.rooms-header');
+    if(!header || document.getElementById('liaisonPanel')) return;
+    const wrap = document.createElement('div');
+    wrap.id='liaisonPanel'; wrap.style.marginTop='12px';
+    const vSel = document.createElement('select'); vSel.id='vendorSelect'; vSel.style.cssText='flex:1;padding:8px;border:1px solid var(--vendor-border);border-radius:6px;margin-right:8px;';
+    const sSel = document.createElement('select'); sSel.id='shopSelect'; sSel.style.cssText='flex:1;padding:8px;border:1px solid var(--vendor-border);border-radius:6px;margin-right:8px;';
+    const btn = document.createElement('button'); btn.id='startLiaisonBtn'; btn.textContent='Lien he Shop'; btn.style.cssText='flex-shrink:0;padding:8px 12px;border:none;border-radius:6px;background:var(--vendor-gradient);color:#fff;font-weight:600;';
+    const row = document.createElement('div'); row.style.cssText='display:flex;gap:8px;align-items:center;';
+    row.appendChild(vSel); row.appendChild(sSel); wrap.appendChild(row); const btnRow = document.createElement('div'); btnRow.style.cssText='display:flex;justify-content:flex-end;margin-top:8px;'; btnRow.appendChild(btn); wrap.appendChild(btnRow); header.appendChild(wrap);
+        // populate vendors (sorted by name)
+    const vds = vendors.slice().sort((a,b)=>String(a.name||'').localeCompare(String(b.name||''),'vi'));
+    vSel.innerHTML = vds.length? '' : '<option value="">Kh�ng c� vendor</option>';
+    vds.forEach(v=>{ const o=document.createElement('option'); o.value=v.id; o.textContent=v.name||('Vendor '+v.id); vSel.appendChild(o); });
+    // restore last selection
+    const savedVendor = localStorage.getItem('oneshop.cskh.vendorId');
+    const savedShop = localStorage.getItem('oneshop.cskh.shopId');
+    if(savedVendor){ vSel.value = savedVendor; }
+    const fillShops = (vid)=>{ const list = (vendorShops[vid]||[]).filter(s=>!s.status || s.status==='ACTIVE'); sSel.innerHTML = list.length? '' : '<option value="">Ch?n shop</option>'; list.forEach(s=>{ const o=document.createElement('option'); o.value=s.id; o.textContent=s.name; sSel.appendChild(o); }); if(savedShop){ sSel.value = savedShop; } };
+    if(vSel.value){ fillShops(vSel.value); } else if(vds[0]){ vSel.value=vds[0].id; fillShops(vds[0].id); }
+    vSel.addEventListener('change', ()=>{ fillShops(vSel.value); localStorage.setItem('oneshop.cskh.vendorId', vSel.value); localStorage.removeItem('oneshop.cskh.shopId'); });
+    sSel.addEventListener('change', ()=>{ localStorage.setItem('oneshop.cskh.shopId', sSel.value); });btn.addEventListener('click', ()=>{
+      const shopId = sSel.value; if(!shopId){ alert('Ch?n shop d? li�n h?'); return; }
+      const room = `liaison-shop-${shopId}-cskh-${ctx.userId}`;
+      openRoom(room, sSel.options[sSel.selectedIndex]?.textContent || ('Shop #'+shopId));
+    });
+  }
 
-        // Debug log để kiểm tra vendorName
-        console.log("=== VENDOR CHAT DEBUG ===");
-        console.log("vendorName:", vendorName);
-        console.log("vendorContext:", vendorContext);
-        console.log("isVendor:", isVendor);
-        console.log("isAdmin:", isAdmin);
-        console.log("isCskh:", isCskh);
-        console.log("userShops:", userShops);
-
-        let isConnected = false;
-
-        let typingTimer = null;
-
-        let seenKeys = new Set();
-
-        // Update UI based on user role
-        function updateUIForRole() {
-          const titleElement = document.getElementById("chatTitle");
-          if (titleElement) {
-            if (isCskh) {
-              titleElement.textContent = "CSKH - Chat Hỗ Trợ Khách Hàng";
-            } else if (isAdmin) {
-              titleElement.textContent = "Admin - Quản Lý Chat Toàn Hệ Thống";
-            } else if (isVendor) {
-              titleElement.textContent = "Vendor - Chat Khách Hàng Shop";
-            } else {
-              titleElement.textContent = "Quản Lý Chat Khách Hàng";
-            }
-          }
+  function connect(){
+    const socket = new SockJS('/ws');
+    stompClient = Stomp.over(socket);
+    stompClient.connect({}, frame => {
+      loadRoomsList(100);
+      if(currentRoom){ subscribeRoom(currentRoom); joinCurrent(); }
+      if(window._roomsGlobalSub) window._roomsGlobalSub.unsubscribe();
+      window._roomsGlobalSub = stompClient.subscribe('/topic/rooms', msg => {
+        const data = JSON.parse(msg.body || '{}');
+        if(data.type==='ROOM_OPEN' || data.type==='ROOM_MESSAGE' || data.type==='ROOM_ASSIGNED'){
+          // reload list on important events
+          loadRoomsList(100);
+        } else if(data.type==='LIAISON_OPEN'){
+          // Vendors may need to see liaison rooms
+          if(canChatAll){ addOrActivateRoom(data.roomId, data.vendorName||'Vendor'); }
+          else if(isVendor && (data.vendorId==ctx.userId)){ addOrActivateRoom(data.roomId, data.cskhName||'CSKH'); }
         }
+      });
+      if(window._errorSub) window._errorSub.unsubscribe();
+      window._errorSub = stompClient.subscribe('/user/queue/errors', m=>{ try{ const d=JSON.parse(m.body||'{}'); alert(d.message||'L?i'); }catch(e){} });
+    }, err => setTimeout(connect, 2000));
+  }
 
-        function getQueryParam(name) {
-          const params = new URLSearchParams(window.location.search);
-
-          return params.get(name);
+  function loadRoomsList(limit){
+    return fetch(`/api/chat/rooms?limit=${limit||100}`).then(r=>r.ok?r.json():[]).then(rooms=>{
+      rooms = Array.isArray(rooms)? rooms:[];
+      rooms = rooms.filter(r=>{
+        const id = String(r.roomId||'');
+        const shop = isShopRoom(id); const lv = isLiaisonVendorRoom(id); const ls = isLiaisonShopRoom(id);
+        if(!shop && !lv && !ls) return false;
+        if(canChatAll) return true;
+        if(isVendor){
+          const myShopIds = userShops.map(s=>s.id);
+          if(shop){ const sid = extractShopId(id); return sid && myShopIds.includes(sid); }
+          if(lv){ const m = id.match(/^liaison-vendor-(\d+)-/); return m && parseInt(m[1])===ctx.userId; }
+          if(ls){ const sid = extractShopId(id); return sid && myShopIds.includes(sid); }
+          return false;
         }
-
-        function extractShopIdFromRoomId(roomId) {
-          const match = roomId.match(/^shop-(\d+)-/);
-          return match ? parseInt(match[1]) : null;
-        }
-
-        function connect() {
-          const socket = new SockJS("/ws");
-
-          stompClient = Stomp.over(socket);
-
-          // Optional vendorName/room overrides via query
-
-          // Persist vendor name across reloads
-
-          const savedVendor = localStorage.getItem("oneshop.vendor.name");
-
-          const qpVendor = getQueryParam("vn") || getQueryParam("vendorName");
-
-          vendorName = qpVendor || savedVendor || vendorName;
-
-          localStorage.setItem("oneshop.vendor.name", vendorName);
-
-          const qpRoom = getQueryParam("room");
-
-          if (qpRoom) currentRoom = qpRoom;
-
-          if (!currentRoom) {
-            const savedRoom = localStorage.getItem(
-              "oneshop.vendor.currentRoom"
-            );
-
-            if (savedRoom) currentRoom = savedRoom;
-          }
-
-          stompClient.connect(
-            {},
-
-            function (frame) {
-              console.log("Vendor connected");
-
-              isConnected = true;
-
-              // Load recent rooms from DB first so dashboard recovers after reload
-
-              loadRoomsList(100).then(() => {
-                if (currentRoom) {
-                  loadHistory(currentRoom, 50).finally(() => {
-                    subscribeRoom(currentRoom);
-
-                    stompClient.send(
-                      "/app/chat.join",
-
-                      {},
-
-                      JSON.stringify({
-                        roomId: currentRoom,
-
-                        userType: "vendor",
-
-                        senderName: vendorName,
-                      })
-                    );
-                  });
-                } else {
-                  // Pick first room if any
-
-                  const first = document.querySelector("#roomsList .room-item");
-
-                  if (first) onRoomItemClick.call(first);
-                }
-              });
-
-              // Subscribe to global room events so vendors see new rooms instantly
-
-              if (window._roomsGlobalSub)
-                window._roomsGlobalSub.unsubscribe &&
-                  window._roomsGlobalSub.unsubscribe();
-
-              window._roomsGlobalSub = stompClient.subscribe(
-                "/topic/rooms",
-
-                function (message) {
-                  const data = JSON.parse(message.body);
-
-                  switch (data.type) {
-                    case "ROOM_OPEN":
-                      addOrActivateRoom(data.roomId, data.customerName);
-
-                      // Auto-open the first incoming room if none selected yet
-
-                      if (!currentRoom) {
-                        const item = document.querySelector(
-                          `[data-room="${data.roomId}"]`
-                        );
-
-                        if (item) onRoomItemClick.call(item);
-                      }
-
-                      break;
-
-                    case "ROOM_MESSAGE":
-                      updateRoomFromMessage(
-                        data.roomId,
-
-                        data.from,
-
-                        data.preview,
-
-                        data.pendingCount || 0,
-
-                        data.sentAt
-                      );
-
-                      if (!currentRoom) {
-                        const item = document.querySelector(
-                          `[data-room="${data.roomId}"]`
-                        );
-
-                        if (item) onRoomItemClick.call(item);
-                      }
-
-                      break;
-
-                    case "ROOM_ASSIGNED":
-
-                    case "ROOM_UPDATED":
-                      updateRoomFromMessage(
-                        data.roomId,
-
-                        data.lastMessageBy || "Khách hàng",
-
-                        data.preview || "",
-
-                        data.pendingCount || 0,
-
-                        data.sentAt
-                      );
-
-                      break;
-                  }
-                }
-              );
-
-              // Subscribe to error messages
-              if (window._errorSub)
-                window._errorSub.unsubscribe && window._errorSub.unsubscribe();
-
-              window._errorSub = stompClient.subscribe(
-                "/user/queue/errors",
-                function (message) {
-                  const data = JSON.parse(message.body);
-                  if (data.type === "ACCESS_DENIED") {
-                    alert(data.message);
-                    // Remove the room from UI if access denied
-                    const roomItem = document.querySelector(
-                      `[data-room="${data.roomId}"]`
-                    );
-                    if (roomItem) {
-                      roomItem.remove();
-                    }
-                    // If current room is the denied room, clear it
-                    if (currentRoom === data.roomId) {
-                      currentRoom = null;
-                      document.getElementById("messages").innerHTML = "";
-                    }
-                  }
-                }
-              );
-            },
-
-            function (error) {
-              console.log("Connection error: ", error);
-
-              isConnected = false;
-
-              setTimeout(() => connect(), 3000);
-            }
-          );
-        }
-
-        async function loadRoomsList(limit) {
-          try {
-            const res = await fetch(`/api/chat/rooms?limit=${limit || 100}`);
-
-            if (!res.ok) return;
-
-            let rooms = await res.json();
-
-            // Debug log để xem rooms được load
-            console.log("=== ROOMS LOADED ===");
-            console.log("Total rooms:", rooms.length);
-            console.log("All rooms:", rooms);
-
-            // Filter rooms based on user role and shop ownership
-            rooms = rooms.filter((r) => {
-              const id = String(r.roomId || "");
-
-              // Only show shop-specific rooms
-              if (!/^shop-\d+-(?:customer|guest)-[A-Za-z0-9_-]+$/.test(id)) {
-                return false;
-              }
-
-              // CSKH and Admin can see all rooms
-              if (canChatAllCustomers) {
-                console.log("Admin/CSKH can see all rooms:", id);
-                return true;
-              }
-
-              // Vendor can only see rooms from their shops
-              if (isVendor && userShops.length > 0) {
-                const shopIds = userShops.map((shop) => shop.id);
-                const roomShopId = extractShopIdFromRoomId(id);
-                const hasAccess = roomShopId && shopIds.includes(roomShopId);
-                console.log("Vendor room filter:", {
-                  roomId: id,
-                  roomShopId: roomShopId,
-                  userShopIds: shopIds,
-                  hasAccess: hasAccess,
-                });
-                return hasAccess;
-              }
-
-              console.log("No access to room:", id);
-              return false;
-            });
-
-            const roomsList = document.getElementById("roomsList");
-
-            if (!roomsList) return;
-
-            roomsList.innerHTML = "";
-
-            rooms.forEach((r) => {
-              // Prefer stored customerName; fallback to lastMessageBy (not system); else parse from roomId
-
-              let displayName = (r.customerName || "").toString().trim();
-
-              if (!displayName) {
-                const lastBy = (r.lastMessageBy || "").toString().trim();
-
-                if (lastBy && lastBy.toLowerCase() !== "system")
-                  displayName = lastBy;
-              }
-
-              if (!displayName) {
-                const roomIdStr = String(r.roomId || "");
-
-                const m = roomIdStr.match(/customer-(\d+)/);
-
-                displayName = m ? "User #" + m[1] : "Khách hàng";
-              }
-
-              const avatar = displayName.trim().charAt(0).toUpperCase();
-
-              const item = document.createElement("div");
-
-              item.className = "room-item";
-
-              item.setAttribute("data-room", r.roomId);
-
-              const preview = (r.lastMessage || "").toString();
-
-              const timeStr = r.sentAt
-                ? new Date(r.sentAt).toLocaleTimeString("vi-VN", {
-                    hour: "2-digit",
-
-                    minute: "2-digit",
-                  })
-                : "";
-
-              // Get shop info for this room
-              const roomShopId = extractShopIdFromRoomId(r.roomId);
-              const shopInfo = userShops.find((shop) => shop.id === roomShopId);
-              const shopName = shopInfo ? shopInfo.name : `Shop #${roomShopId}`;
-
-              item.innerHTML = `
-
-                <div class="room-avatar">${avatar}</div>
-
-                <div class="room-info">
-
-                  <div class="room-name">${displayName || r.roomId}</div>
-
-                  <div class="room-shop-info" style="font-size: 11px; color: #666; margin-bottom: 2px;">
-                    <i class="fas fa-store" style="margin-right: 4px;"></i>${shopName}
-                  </div>
-
-                  <div class="room-last-message">${
-                    preview.length > 100
-                      ? preview.substring(0, 100) + "..."
-                      : preview
-                  }</div>
-
-                </div>
-
-                <div class="room-meta">
-
-                  <div class="room-time">${timeStr}</div>
-
-                </div>`;
-
-              item.addEventListener("click", onRoomItemClick);
-
-              roomsList.appendChild(item);
-            });
-          } catch (e) {
-            console.warn("loadRoomsList failed", e);
-          }
-        }
-
-        function subscribeRoom(roomId) {
-          if (!stompClient || !stompClient.connected) return;
-
-          // Unsubscribe previous
-
-          if (window._roomSub) window._roomSub.unsubscribe();
-
-          if (window._typingSub) window._typingSub.unsubscribe();
-
-          // Subscribe to room messages
-
-          window._roomSub = stompClient.subscribe(
-            "/topic/room/" + roomId,
-
-            function (message) {
-              const data = JSON.parse(message.body);
-
-              appendMessage(data);
-            }
-          );
-
-          // Subscribe to typing indicators
-
-          window._typingSub = stompClient.subscribe(
-            "/topic/room/" + roomId + "/typing",
-
-            function (message) {
-              const data = JSON.parse(message.body);
-
-              showTypingIndicator(data);
-            }
-          );
-        }
-
-        function messageKey(msg) {
-          return [
-            msg.sender || "",
-
-            msg.sentAt || "",
-
-            msg.messageContent || "",
-          ].join("|");
-        }
-
-        function appendMessage(msg) {
-          const key = messageKey(msg);
-
-          if (seenKeys.has(key)) return;
-
-          seenKeys.add(key);
-
-          const isVendor =
-            msg.sender === vendorName || msg.sender.startsWith("vendor");
-
-          const isSystem = msg.sender === "system";
-
-          const container = document.getElementById("chatMessages");
-
-          if (isSystem) {
-            const systemEl = document.createElement("div");
-
-            systemEl.className = "system-message";
-
-            systemEl.style.cssText =
-              "text-align: center; margin: 16px 0; padding: 8px 16px; background: var(--vendor-warning); color: white; border-radius: 16px; font-size: 12px;";
-
-            systemEl.innerHTML = `<i class="fas fa-info-circle"></i> ${msg.messageContent}`;
-
-            container.appendChild(systemEl);
-          } else {
-            const messageEl = document.createElement("div");
-
-            messageEl.className = "message" + (isVendor ? " vendor" : "");
-
-            const avatarLetter = (msg.sender || "?").charAt(0).toUpperCase();
-
-            const timeStr = new Date(
-              msg.sentAt || Date.now()
-            ).toLocaleTimeString("vi-VN", {
-              hour: "2-digit",
-
-              minute: "2-digit",
-            });
-
-            const isImage = (msg.messageType || "").toUpperCase() === "IMAGE";
-
-            const contentHtml = isImage
-              ? `<a href="${msg.messageContent}" target="_blank"><img src="${msg.messageContent}" style="max-width:240px;border-radius:8px"/></a>`
-              : `<div class=\"message-content\">${escapeHtml(
-                  msg.messageContent || ""
-                )}</div>`;
-
-            messageEl.innerHTML = `
-
-                        <div class="message-avatar">${avatarLetter}</div>
-
-                        <div class="message-bubble">
-
-                            ${contentHtml}
-
-                            <div class="message-time">${timeStr}</div>
-
-                        </div>
-
-                    `;
-
-            container.appendChild(messageEl);
-          }
-
-          container.scrollTop = container.scrollHeight;
-        }
-
-        function showTypingIndicator(data) {
-          const indicator = document.getElementById("typingIndicator");
-
-          if (data.isTyping && data.userName !== vendorName) {
-            indicator.innerHTML = `
-
-                        <i class="fas fa-user"></i>
-
-                        ${data.userName} đang nhập tin nhắn...
-
-                    `;
-          } else {
-            indicator.innerHTML = "";
-          }
-        }
-
-        function sendMessage(text) {
-          if (!stompClient || !stompClient.connected || !text.trim()) return;
-
-          stompClient.send(
-            "/app/chat.send",
-
-            {},
-
-            JSON.stringify({
-              roomId: currentRoom,
-
-              messageContent: text.trim(),
-
-              messageType: "TEXT",
-
-              userType: "vendor",
-
-              senderName: vendorName,
-            })
-          );
-        }
-
-        async function uploadAndSendImage(file) {
-          if (!file) return;
-
-          const form = new FormData();
-
-          form.append("file", file);
-
-          const res = await fetch("/api/chat/uploadImage", {
-            method: "POST",
-
-            body: form,
-          });
-
-          if (!res.ok) {
-            alert("Tải ảnh thất bại");
-
-            return;
-          }
-
-          const data = await res.json();
-
-          if (!data.success || !data.url) {
-            alert("Tải ảnh thất bại");
-
-            return;
-          }
-
-          stompClient.send(
-            "/app/chat.send",
-
-            {},
-
-            JSON.stringify({
-              roomId: currentRoom,
-
-              messageContent: data.url,
-
-              messageType: "IMAGE",
-
-              userType: "vendor",
-
-              senderName: vendorName,
-            })
-          );
-        }
-
-        function sendTyping(isTyping) {
-          if (!stompClient || !stompClient.connected) return;
-
-          stompClient.send(
-            "/app/chat.typing",
-
-            {},
-
-            JSON.stringify({
-              roomId: currentRoom,
-
-              isTyping: !!isTyping,
-
-              senderName: vendorName,
-
-              userType: "vendor",
-            })
-          );
-        }
-
-        function escapeHtml(text) {
-          const div = document.createElement("div");
-
-          div.textContent = text;
-
-          return div.innerHTML;
-        }
-
-        function autoResizeTextarea(textarea) {
-          textarea.style.height = "auto";
-
-          textarea.style.height = Math.min(textarea.scrollHeight, 120) + "px";
-        }
-
-        async function loadHistory(roomId, limit) {
-          try {
-            const res = await fetch(
-              `/api/chat/history?roomId=${encodeURIComponent(roomId)}&limit=${
-                limit || 50
-              }`
-            );
-
-            if (!res.ok) return;
-
-            const items = await res.json();
-
-            // reset seen keys for new room
-
-            seenKeys.clear();
-
-            items.forEach(appendMessage);
-
-            // scroll after initial render
-
-            const container = document.getElementById("chatMessages");
-
-            container.scrollTop = container.scrollHeight;
-          } catch (e) {
-            console.warn("loadHistory failed", e);
-          }
-        }
-
-        // Global functions
-
-        window.sendQuickReply = function (message) {
-          sendMessage(message);
-        };
-
-        window.transferChat = function () {
-          alert(
-            "Chức năng chuyển chat sẽ được phát triển trong phiên bản tiếp theo"
-          );
-        };
-
-        window.closeChat = function () {
-          if (confirm("Bạn có chắc muốn đóng cuộc trò chuyện này?")) {
-            sendMessage("Cuộc trò chuyện đã được đóng bởi tư vấn viên.");
-          }
-        };
-
-        // Event listeners
-
-        document
-
-          .getElementById("chatForm")
-
-          .addEventListener("submit", function (e) {
-            e.preventDefault();
-
-            const input = document.getElementById("messageInput");
-
-            const text = input.value.trim();
-
-            if (text) {
-              sendMessage(text);
-
-              input.value = "";
-
-              autoResizeTextarea(input);
-            }
-          });
-
-        document
-
-          .getElementById("messageInput")
-
-          .addEventListener("input", function (e) {
-            autoResizeTextarea(e.target);
-
-            sendTyping(true);
-
-            clearTimeout(typingTimer);
-
-            typingTimer = setTimeout(() => sendTyping(false), 1000);
-          });
-
-        document
-
-          .getElementById("messageInput")
-
-          .addEventListener("keydown", function (e) {
-            if (e.key === "Enter" && !e.shiftKey) {
-              e.preventDefault();
-
-              document
-
-                .getElementById("chatForm")
-
-                .dispatchEvent(new Event("submit"));
-            }
-          });
-
-        // Image button wiring (vendor)
-
-        (function () {
-          const imgBtn = document.getElementById("imageButton");
-
-          const imgInput = document.getElementById("imageInput");
-
-          if (imgBtn && imgInput) {
-            imgBtn.addEventListener("click", function () {
-              imgInput.click();
-            });
-
-            imgInput.addEventListener("change", function (e) {
-              const file = e.target.files && e.target.files[0];
-
-              if (file) {
-                uploadAndSendImage(file).catch(function () {
-                  alert("Tải ảnh thất bại");
-                });
-              }
-
-              e.target.value = "";
-            });
-          }
-        })();
-
-        function addOrActivateRoom(roomId, customerName) {
-          const roomsList = document.getElementById("roomsList");
-
-          let existing = roomsList.querySelector(`[data-room="${roomId}"]`);
-
-          if (!existing) {
-            const avatar = (customerName || "KH")
-
-              .trim()
-
-              .charAt(0)
-
-              .toUpperCase();
-
-            const wrapper = document.createElement("div");
-
-            wrapper.className = "room-item";
-
-            wrapper.setAttribute("data-room", roomId);
-
-            wrapper.innerHTML = `
-
-              <div class="room-avatar">${avatar}</div>
-
-              <div class="room-info">
-
-                <div class="room-name">${
-                  customerName || "Khách hàng " + roomId
-                }</div>
-
-                <div class="room-last-message">phòng mới được tạo</div>
-
-              </div>
-
-              <div class="room-meta">
-
-                <div class="room-time">${new Date().toLocaleTimeString(
-                  "vi-VN",
-
-                  { hour: "2-digit", minute: "2-digit" }
-                )}</div>
-
-                <div class="room-badge">1</div>
-
-              </div>
-
-            `;
-
-            roomsList.prepend(wrapper);
-
-            // attach click handler and auto-open if first room
-
-            wrapper.addEventListener("click", onRoomItemClick);
-
-            if (!currentRoom) {
-              onRoomItemClick.call(wrapper);
-            }
-          }
-        }
-
-        function onRoomItemClick() {
-          // Remove active class from all rooms
-
-          document
-
-            .querySelectorAll(".room-item")
-
-            .forEach((r) => r.classList.remove("active"));
-
-          // Add active class to clicked room
-
-          this.classList.add("active");
-
-          // Switch room
-
-          const newRoom = this.dataset.room;
-
-          if (newRoom !== currentRoom) {
-            currentRoom = newRoom;
-
-            try {
-              localStorage.setItem("oneshop.vendor.currentRoom", currentRoom);
-            } catch (e) {}
-
-            // clear previous state and load history first
-
-            seenKeys.clear();
-
-            // Join as vendor to notify and assign
-
-            if (stompClient && stompClient.connected) {
-              // Load history then subscribe and join
-
-              loadHistory(currentRoom, 50).finally(() => {
-                subscribeRoom(currentRoom);
-
-                stompClient.send(
-                  "/app/chat.join",
-
-                  {},
-
-                  JSON.stringify({
-                    roomId: currentRoom,
-
-                    userType: "vendor",
-
-                    senderName: vendorName,
-                  })
-                );
-              });
-            }
-
-            // Clear messages
-
-            const messagesContainer = document.getElementById("chatMessages");
-
-            messagesContainer.innerHTML = `
-
-              <div class="system-message" style="text-align: center; margin: 20px 0; padding: 8px 16px; background: var(--vendor-warning); color: white; border-radius: 16px; font-size: 12px;">
-
-                <i class="fas fa-door-open"></i>
-
-                 chuyển sang phòng: ${currentRoom}
-
-              </div>
-
-            `;
-
-            // Update header
-
-            const roomName = this.querySelector(".room-name").textContent;
-
-            const customerAvatar =
-              this.querySelector(".room-avatar").textContent;
-
-            document.querySelector(".customer-avatar").textContent =
-              customerAvatar;
-
-            document.querySelector(".customer-details h6").textContent =
-              roomName;
-
-            // Reset unread badge for this room
-
-            const badgeEl = this.querySelector(".room-badge");
-
-            if (badgeEl) {
-              badgeEl.textContent = "0";
-
-              badgeEl.style.display = "none";
-            }
-
-            // Focus input for quick reply
-
-            const input = document.getElementById("messageInput");
-
-            input && input.focus();
-          }
-        }
-
-        // Room switching (initial items)
-
-        document.querySelectorAll(".room-item").forEach((item) => {
-          item.addEventListener("click", onRoomItemClick);
-        });
-
-        // Event delegation for dynamically added rooms
-
-        document
-
-          .getElementById("roomsList")
-
-          .addEventListener("click", function (e) {
-            const item = e.target.closest(".room-item");
-
-            if (item && this.contains(item)) {
-              onRoomItemClick.call(item, e);
-            }
-          });
-
-        function updateRoomFromMessage(
-          roomId,
-
-          from,
-
-          preview,
-
-          pendingCount,
-
-          sentAt
-        ) {
-          const roomsList = document.getElementById("roomsList");
-
-          let item = roomsList.querySelector(`[data-room="${roomId}"]`);
-
-          if (!item) {
-            addOrActivateRoom(roomId, from || "Khách hàng");
-
-            item = roomsList.querySelector(`[data-room="${roomId}"]`);
-          }
-
-          if (!item) return;
-
-          const lastMsgEl = item.querySelector(".room-last-message");
-
-          const timeEl = item.querySelector(".room-time");
-
-          const nameEl = item.querySelector(".room-name");
-
-          const badgeEl = item.querySelector(".room-badge");
-
-          if (lastMsgEl) lastMsgEl.textContent = preview || "Tin nhắn mới";
-
-          if (timeEl && sentAt) {
-            timeEl.textContent = new Date(sentAt).toLocaleTimeString("vi-VN", {
-              hour: "2-digit",
-
-              minute: "2-digit",
-            });
-          }
-
-          // If we have a customer name (from) and current label looks generic or 'system', update it
-
-          if (nameEl && from && from.toLowerCase() !== "system") {
-            const currentName = nameEl.textContent && nameEl.textContent.trim();
-
-            if (
-              !currentName ||
-              currentName.toLowerCase() === "system" ||
-              currentName.startsWith("Khách hàng ")
-            ) {
-              nameEl.textContent = from;
-            }
-          }
-
-          if (badgeEl) {
-            const count = Number(pendingCount || 0);
-
-            badgeEl.textContent = String(count);
-
-            badgeEl.style.display = count > 0 ? "inline-block" : "none";
-          } else if (pendingCount > 0) {
-            const meta = item.querySelector(".room-meta");
-
-            if (meta) {
-              const newBadge = document.createElement("div");
-
-              newBadge.className = "room-badge";
-
-              newBadge.textContent = String(pendingCount);
-
-              meta.appendChild(newBadge);
-            }
-          }
-
-          // Move room to top on new message
-
-          roomsList.prepend(item);
-        }
-
-        // Search functionality
-
-        document
-
-          .getElementById("roomSearch")
-
-          .addEventListener("input", function (e) {
-            const searchTerm = e.target.value.toLowerCase();
-
-            document.querySelectorAll(".room-item").forEach((room) => {
-              const roomName = room
-
-                .querySelector(".room-name")
-
-                .textContent.toLowerCase();
-
-              const lastMessage = room
-
-                .querySelector(".room-last-message")
-
-                .textContent.toLowerCase();
-
-              if (
-                roomName.includes(searchTerm) ||
-                lastMessage.includes(searchTerm)
-              ) {
-                room.style.display = "flex";
-              } else {
-                room.style.display = "none";
-              }
-            });
-          });
-
-        // Initialize connection
-
-        // Clear History button
-
-        document
-
-          .getElementById("clearHistoryBtn")
-
-          .addEventListener("click", async function () {
-            if (!currentRoom) {
-              alert("Chưa chọn phòng chat.");
-
-              return;
-            }
-
-            if (!confirm("Bạn có chắc muốn xóa lịch sử phòng này?")) return;
-
-            try {
-              // Use POST alias and include credentials to ensure session is sent
-
-              const res = await fetch(
-                `/api/chat/history/clear?roomId=${encodeURIComponent(
-                  currentRoom
-                )}`,
-
-                {
-                  method: "POST",
-
-                  credentials: "include",
-
-                  headers: { "X-Requested-With": "XMLHttpRequest" },
-                }
-              );
-
-              const ok = res.ok ? (await res.json()).success !== false : false;
-
-              if (ok) {
-                // Clear messages UI
-
-                seenKeys.clear();
-
-                const messagesContainer =
-                  document.getElementById("chatMessages");
-
-                messagesContainer.innerHTML = `<div class=\"system-message\" style=\"text-align: center; margin: 20px 0; padding: 8px 16px; background: var(--vendor-warning); color: white; border-radius: 16px; font-size: 12px;\"><i class=\"fas fa-trash\"></i> Lịch sử đã được xóa.</div>`;
-
-                // Update room preview
-
-                const item = document.querySelector(
-                  `[data-room=\"${currentRoom}\"]`
-                );
-
-                if (item) {
-                  const lastMsgEl = item.querySelector(".room-last-message");
-
-                  if (lastMsgEl) lastMsgEl.textContent = "Đã xóa lịch sử";
-                }
-              } else {
-                alert("Không thể xóa lịch sử.");
-              }
-            } catch (e) {
-              alert("Có lỗi khi xóa lịch sử.");
-            }
-          });
-
-        // Initialize UI and connect
-        updateUIForRole();
-        connect();
-      })();
-    </script>
+        return false;
+      });
+      const ul = document.getElementById('roomsList'); if(!ul) return;
+      ul.innerHTML='';
+      rooms.forEach(r=>{ const item=document.createElement('div'); item.className='room-item'; item.dataset.room=r.roomId; const display=(r.customerName||'').trim() || (r.lastMessageBy||''); const name=display||r.roomId; const av=name.charAt(0).toUpperCase(); const sid=extractShopId(r.roomId); let shopName = r.shopName || (userShops.find(s=>s.id===sid)?.name) || (sid?('Shop #'+sid):''); item.innerHTML = `
+        <div class="room-avatar">${av}</div>
+        <div class="room-info">
+          <div class="room-name">${name}</div>
+          <div class="room-shop-info" style="font-size:11px;color:#666;margin-bottom:2px;"><i class="fas fa-store" style="margin-right:4px;"></i>${shopName}</div>
+          <div class="room-last-message">${(r.lastMessage||'')}</div>
+        </div>
+        <div class="room-meta"><div class="room-time">${r.sentAt? new Date(r.sentAt).toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit'}) : ''}</div></div>`;
+        item.addEventListener('click', onRoomClick);
+        ul.appendChild(item);
+      });
+      addLiaisonPanel();
+    }).catch(()=>{});
+  }
+
+  function subscribeRoom(room){ if(!stompClient||!stompClient.connected) return; if(window._roomSub) window._roomSub.unsubscribe(); if(window._typingSub) window._typingSub.unsubscribe(); window._roomSub = stompClient.subscribe(`/topic/room/${room}`, m=>appendMessage(JSON.parse(m.body||'{}'))); window._typingSub = stompClient.subscribe(`/topic/room/${room}/typing`, m=>showTyping(JSON.parse(m.body||'{}'))); }
+
+  function onRoomClick(){ document.querySelectorAll('.room-item').forEach(el=>el.classList.remove('active')); this.classList.add('active'); const room=this.dataset.room; if(room!==currentRoom){ openRoom(room, this.querySelector('.room-name')?.textContent || room); } }
+
+  function openRoom(room, label){ currentRoom=room; localStorage.setItem('oneshop.vendor.currentRoom', room); document.getElementById('chatMessages').innerHTML=''; loadHistory(room,50).then(()=>{ subscribeRoom(room); joinCurrent(); updateHeader(label); }); }
+
+  function joinCurrent(){ if(!stompClient||!stompClient.connected||!currentRoom) return; stompClient.send('/app/chat.join', {}, JSON.stringify({ roomId: currentRoom, userType: (isCskh||isAdmin)?'cskh':'vendor', senderName: vendorName })); }
+
+  function appendMessage(msg){ const box=document.getElementById('chatMessages'); const isSystem=(msg.sender||'')==='system'; if(isSystem){ const d=document.createElement('div'); d.className='system-message'; d.style.cssText='text-align:center;margin:16px 0;padding:8px 16px;background:var(--vendor-warning);color:#fff;border-radius:16px;font-size:12px;'; d.innerHTML = `<i class="fas fa-info-circle"></i> ${msg.messageContent}`; box.appendChild(d); return; } const mineType=(isCskh||isAdmin)?'cskh':'vendor'; const payloadType=String((msg.senderType||msg.userType||'')).toLowerCase(); const isMine = payloadType? (payloadType===mineType) : (msg.sender===vendorName); const el=document.createElement('div'); el.className='message'+(isMine?' vendor':''); const timeStr=new Date(msg.sentAt||Date.now()).toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit'}); const isImg=((msg.messageType||'').toUpperCase()==='IMAGE'); const contentHtml = isImg? `<a href="${msg.messageContent}" target="_blank"><img src="${msg.messageContent}" style="max-width:240px;border-radius:8px"/></a>` : `<div class="message-content">${escapeHtml(msg.messageContent||'')}</div>`; el.innerHTML = `<div class="message-avatar">${(msg.sender||'?').charAt(0).toUpperCase()}</div><div class="message-bubble">${contentHtml}<div class="message-time">${timeStr}</div></div>`; box.appendChild(el); box.scrollTop = box.scrollHeight; }
+
+  function showTyping(t){}
+  function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c])); }
+  function updateHeader(name){ try{ const n=document.querySelector('.customer-details h6'); const a=document.querySelector('.customer-avatar'); if(n) n.textContent=name; if(a) a.textContent=(name||'KH').trim().charAt(0).toUpperCase(); }catch(e){} }
+  function loadHistory(room,limit){ return fetch(`/api/chat/history?roomId=${encodeURIComponent(room)}&limit=${limit||50}`).then(r=>r.ok?r.json():[]).then(items=>{ const box=document.getElementById('chatMessages'); box.innerHTML=''; items.forEach(appendMessage); box.scrollTop = box.scrollHeight; }).catch(()=>{}); }
+
+    // Enter to send
+  (function(){ const input=document.getElementById('messageInput'); if(!input) return; input.addEventListener('keydown', (e)=>{ if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); document.getElementById('chatForm').dispatchEvent(new Event('submit')); } }); })();document.getElementById('chatForm').addEventListener('submit', e=>{ e.preventDefault(); const input=document.getElementById('messageInput'); const text=(input.value||'').trim(); if(text){ if(stompClient&&stompClient.connected&&currentRoom){ stompClient.send('/app/chat.send',{}, JSON.stringify({ roomId: currentRoom, messageContent: text, messageType: 'TEXT', userType: (isCskh||isAdmin)?'cskh':'vendor', senderName: vendorName })); } input.value=''; }});
+
+    // Image upload
+  (function(){ const btn=document.getElementById('imageButton'); const file=document.getElementById('imageInput'); if(!btn||!file) return; btn.addEventListener('click',()=>file.click()); file.addEventListener('change', async (ev)=>{ const f=ev.target.files&&ev.target.files[0]; ev.target.value=''; if(!f||!currentRoom) return; const fd=new FormData(); fd.append('file', f); try{ const res = await fetch('/api/chat/uploadImage', { method:'POST', body: fd }); if(!res.ok){ alert('T?i ?nh th?t b?i'); return; } const data = await res.json(); if(!data.success||!data.url){ alert('T?i ?nh th?t b?i'); return; } if(stompClient&&stompClient.connected){ stompClient.send('/app/chat.send',{}, JSON.stringify({ roomId: currentRoom, messageContent: data.url, messageType: 'IMAGE', userType: (isCskh||isAdmin)?'cskh':'vendor', senderName: vendorName })); } } catch(e){ alert('T?i ?nh th?t b?i'); } }); })();// Clear history
+  document.getElementById('clearHistoryBtn').addEventListener('click', async ()=>{ if(!currentRoom){ alert('Chua ch?n ph�ng chat.'); return; } if(!confirm('B?n ch?c mu?n x�a l?ch s??')) return; const res = await fetch(`/api/chat/history/clear?roomId=${encodeURIComponent(currentRoom)}`, { method:'POST', credentials:'include', headers:{'X-Requested-With':'XMLHttpRequest'} }); const ok = res.ok ? (await res.json()).success!==false : false; if(ok){ document.getElementById('chatMessages').innerHTML=''; }
+  });
+
+  addLiaisonPanel();
+  connect();
+})();
+</script>
   </body>
 </html>
+
+
+
+
+
+
+
+

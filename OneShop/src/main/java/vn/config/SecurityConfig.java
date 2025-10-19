@@ -33,6 +33,8 @@ public class SecurityConfig {
                 // Public pages
                 .requestMatchers("/oauth2/**", "/login/**", "/register/**", "/", "/forgotPassword/**", "/resetPassword/**", "/privacy", "/delete-data", "/delete-data-callback").permitAll()
                 // Role-based access
+                // Allow CSKH and Vendor to access the vendor chat console as well
+                .requestMatchers("/admin/vendor-chat").hasAnyRole("ADMIN", "CSKH", "VENDOR")
                 .requestMatchers("/admin/**").hasRole("ADMIN")
                 .requestMatchers("/vendor/**").hasRole("VENDOR")
                 .requestMatchers("/cskh/**").hasRole("CSKH")

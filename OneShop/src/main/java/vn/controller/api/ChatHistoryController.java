@@ -19,6 +19,7 @@ import vn.entity.User;
 import vn.repository.ChatMessageRepository;
 import vn.service.ShopService;
 import vn.service.chat.ChatHistoryService;
+import vn.service.UserService;
 import vn.util.chat.ChatRoomUtils;
 
 import java.util.ArrayList;
@@ -38,6 +39,8 @@ public class ChatHistoryController {
     private ChatMessageRepository chatMessageRepository;
     @Autowired
     private ShopService shopService;
+    @Autowired
+    private UserService userService;
 
     @GetMapping("/api/chat/conversations")
     public ResponseEntity<List<Map<String, Object>>> getUserConversations(HttpSession session) {
@@ -220,9 +223,68 @@ public class ChatHistoryController {
         for (ChatMessage message : lastPerRoom) {
             String roomId = message.getRoomId();
             Long shopId = ChatRoomUtils.extractShopId(roomId).orElse(null);
+
+            // Handle liaison rooms (CSKH ↔ Vendor) which don't have shopId embedded
+            if (shopId == null && roomId != null && roomId.startsWith("liaison-vendor-")) {
+                Long vendorId = null;
+                try {
+                    int startIdx = "liaison-vendor-".length();
+                    int endIdx = roomId.indexOf('-', startIdx);
+                    if (endIdx > startIdx) vendorId = Long.parseLong(roomId.substring(startIdx, endIdx));
+                } catch (Exception ignored) {}
+                if (vendorId != null) {
+                    if ((admin || cskh) || (vendor && user.getUserId().equals(vendorId))) {
+                        Map<String, Object> map = new HashMap<>();
+                        map.put("roomId", roomId);
+                        map.put("preview", message.getContent());
+                        map.put("sentAt", message.getSentAt());
+                        String vendorName = null;
+                        try {
+                            User v = userService.getUserById(vendorId).orElse(null);
+                            if (v != null) vendorName = v.getName();
+                        } catch (Exception ignored) {}
+                        String shopName = null;
+                        try {
+                            final Long vId = vendorId;
+                            shopName = shopService.findAll().stream()
+                                    .filter(s -> s.getVendor() != null && s.getVendor().getUserId().equals(vId))
+                                    .map(Shop::getShopName)
+                                    .findFirst().orElse(null);
+                        } catch (Exception ignored) {}
+                        if (admin || cskh) {
+                            map.put("customerName", (vendorName != null ? vendorName : ("Vendor #" + vendorId)) + (shopName != null ? (" - " + shopName) : ""));
+                        } else {
+                            map.put("customerName", "CSKH");
+                        }
+                        map.put("pendingCount", 0);
+                        filtered.add(map);
+                        continue;
+                    }
+                }
+            }
             
             // CSKH có thể thấy cả support rooms và shop rooms
-            if (shopId == null) {
+            if (shopId == null) {                // Liaison-shop rooms (CSKH ? Vendor by shop)
+                if (roomId.startsWith("liaison-shop-")) {
+                    Long lsId = vn.util.chat.ChatRoomUtils.extractLiaisonShopId(roomId).orElse(null);
+                    if (lsId != null && (admin || cskh || (vendor && shopService.findByIdAndVendor(lsId, user).isPresent()))) {
+                        Map<String, Object> map = new HashMap<>();
+                        map.put("roomId", roomId);
+                        map.put("preview", message.getContent());
+                        map.put("sentAt", message.getSentAt());
+                        map.put("pendingCount", 0);
+                        map.put("shopId", lsId);
+                        try {
+                            Shop s = shopService.findById(lsId).orElse(null);
+                            if (s != null) {
+                                map.put("shopName", s.getShopName());
+                                map.put("customerName", (admin || cskh) ? (s.getVendor() != null ? s.getVendor().getName() : ("Shop #" + lsId)) : "CSKH");
+                            }
+                        } catch (Exception ignored) {}
+                        filtered.add(map);
+                        continue;
+                    }
+                }
                 // Đây là support room hoặc room khác không có shopId
                 if (roomId.startsWith("support-") && (admin || cskh)) {
                     // CSKH và Admin có thể thấy support rooms
@@ -333,8 +395,28 @@ public class ChatHistoryController {
         
         Optional<Long> shopIdOpt = ChatRoomUtils.extractShopId(roomId);
         if (shopIdOpt.isEmpty()) {
-            // Support rooms or other rooms without shopId
-            if (hasRole(user, "ROLE_VENDOR")) {
+            // Non-shop rooms: allow Admin/CSKH; for Vendor allow if liaison room targets them
+            boolean isVendor = hasRole(user, "ROLE_VENDOR");
+            if (isVendor) {
+                String rid = roomId != null ? roomId : "";
+                if (rid.startsWith("liaison-vendor-")) {
+                    try {
+                        int start = "liaison-vendor-".length();
+                        int end = rid.indexOf('-', start);
+                        Long vendorId = end > start ? Long.parseLong(rid.substring(start, end)) : null;
+                        if (vendorId != null && vendorId.equals(user.getUserId())) {
+                            return; // vendor can access their liaison rooms
+                        }
+                    } catch (Exception ignored) {}
+                }
+                if (rid.startsWith("liaison-shop-")) {
+                    try {
+                        Long lsId = vn.util.chat.ChatRoomUtils.extractLiaisonShopId(rid).orElse(null);
+                        if (lsId != null && shopService.findByIdAndVendor(lsId, user).isPresent()) {
+                            return; // vendor can access liaison-shop rooms of their shops
+                        }
+                    } catch (Exception ignored) {}
+                }
                 throw new ResponseStatusException(HttpStatus.FORBIDDEN);
             }
             return;
@@ -393,3 +475,4 @@ public class ChatHistoryController {
         return List.of();
     }
 }
+

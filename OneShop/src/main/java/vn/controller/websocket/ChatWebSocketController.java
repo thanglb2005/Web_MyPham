@@ -13,6 +13,7 @@ import vn.repository.ChatMessageRepository;
 import vn.service.ShopService;
 import vn.service.UserService;
 import vn.util.chat.ChatRoomUtils;
+import vn.service.chat.SupportAssignmentService;
 
 import java.security.Principal;
 import java.time.LocalDateTime;
@@ -38,6 +39,8 @@ public class ChatWebSocketController {
     private ShopService shopService;
     @Autowired
     private UserService userService;
+    @Autowired
+    private SupportAssignmentService supportAssignmentService;
     
     // In-memory storage for active users (room-based)
     private final Map<String, Map<String, String>> activeUsers = new ConcurrentHashMap<>();
@@ -331,7 +334,7 @@ public class ChatWebSocketController {
 
             messagingTemplate.convertAndSend("/topic/room/" + roomId + "/users", joinNotification);
 
-            // Broadcast global room-open event so vendors can see and pick up the conversation
+            // Broadcast global room-open event so vendors/CSKH see and pick up the conversation
             if (isNewRoom && "customer".equalsIgnoreCase(userType)) {
                 Map<String, Object> roomOpenEvent = new HashMap<>();
                 roomOpenEvent.put("type", "ROOM_OPEN");
@@ -362,6 +365,74 @@ public class ChatWebSocketController {
                     }
                 }
                 chatHistoryService.appendMessage(roomId, tagMsg);
+            }
+
+            // Enforce assignment for liaison-shop rooms: one CSKH per shop
+            if ("cskh".equalsIgnoreCase(userType) && roomId != null && roomId.startsWith("liaison-shop-")) {
+                Long liaisonShopId = vn.util.chat.ChatRoomUtils.extractLiaisonShopId(roomId).orElse(null);
+                Long liaisonCskhId = vn.util.chat.ChatRoomUtils.extractLiaisonCskhId(roomId).orElse(null);
+                if (liaisonShopId != null && liaisonCskhId != null) {
+                    boolean ok = supportAssignmentService.ensureAssignment(liaisonShopId, liaisonCskhId);
+                    if (!ok) {
+                        Map<String, Object> errorMsg = new HashMap<>();
+                        errorMsg.put("type", "ACCESS_DENIED");
+                        errorMsg.put("message", "Shop này đã được một CSKH khác phụ trách");
+                        errorMsg.put("roomId", roomId);
+                        messagingTemplate.convertAndSendToUser(userName, "/queue/errors", errorMsg);
+                        return;
+                    }
+                }
+            }
+
+            // Liaison room open by CSKH
+            if (isNewRoom && "cskh".equalsIgnoreCase(userType) && roomId != null && roomId.startsWith("liaison-")) {
+                Long vendorId = null;
+                try {
+                    int a = roomId.indexOf("liaison-vendor-");
+                    if (a == 0) {
+                        int start = "liaison-vendor-".length();
+                        int end = roomId.indexOf('-', start);
+                        if (end > start) {
+                            vendorId = Long.parseLong(roomId.substring(start, end));
+                        }
+                    }
+                } catch (Exception ignored) {}
+                if (vendorId == null && roomId.startsWith("liaison-shop-")) {
+                    try {
+                        Long lsId = vn.util.chat.ChatRoomUtils.extractLiaisonShopId(roomId).orElse(null);
+                        if (lsId != null) {
+                            Shop s = shopService.findById(lsId).orElse(null);
+                            if (s != null && s.getVendor() != null) {
+                                vendorId = s.getVendor().getUserId();
+                            }
+                        }
+                    } catch (Exception ignored) {}
+                }
+                Map<String, Object> liaisonOpen = new HashMap<>();
+                liaisonOpen.put("type", "LIAISON_OPEN");
+                liaisonOpen.put("roomId", roomId);
+                liaisonOpen.put("cskhName", userName);
+                if (vendorId != null) {
+                    liaisonOpen.put("vendorId", vendorId);
+                    try {
+                        User v = userService.getUserById(vendorId).orElse(null);
+                        if (v != null) liaisonOpen.put("vendorName", v.getName());
+                    } catch (Exception ignored) {}
+                }
+                messagingTemplate.convertAndSend("/topic/rooms", liaisonOpen);
+
+                // Persist a system tag so room appears in recent list after reload
+                try {
+                    Map<String, Object> tag = new HashMap<>();
+                    tag.put("roomId", roomId);
+                    tag.put("sender", "system");
+                    tag.put("senderType", "system");
+                    tag.put("messageType", "SYSTEM");
+                    tag.put("messageContent", "Liên hệ với vendor" + (liaisonOpen.get("vendorName") != null ? (": " + liaisonOpen.get("vendorName")) : ""));
+                    tag.put("cskhName", userName);
+                    tag.put("sentAt", System.currentTimeMillis());
+                    chatHistoryService.appendMessage(roomId, tag);
+                } catch (Exception ignored) {}
             }
 
             // If a vendor joins and there is no assigned vendor, check permissions first

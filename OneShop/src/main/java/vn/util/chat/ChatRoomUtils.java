@@ -24,6 +24,13 @@ public final class ChatRoomUtils {
     private static final Pattern LEGACY_USER_ROOM_PATTERN =
             Pattern.compile("^user-(\\d+)(?:-seller-(\\d+))?$");
 
+    // Liaison room patterns (CSKH ↔ Vendor/Shop)
+    private static final Pattern LIAISON_VENDOR_PATTERN =
+            Pattern.compile("^liaison-vendor-(\\d+)-cskh-(\\d+)$");
+
+    private static final Pattern LIAISON_SHOP_PATTERN =
+            Pattern.compile("^liaison-shop-(\\d+)-cskh-(\\d+)$");
+
     private ChatRoomUtils() {
         // utility
     }
@@ -124,5 +131,51 @@ public final class ChatRoomUtils {
     private static String randomGuestKey() {
         return UUID.randomUUID().toString().replace("-", "").substring(0, 12);
     }
-}
 
+    public static boolean isLiaisonVendorRoom(String roomId) {
+        if (roomId == null) return false;
+        return LIAISON_VENDOR_PATTERN.matcher(roomId).matches();
+    }
+
+    public static boolean isLiaisonShopRoom(String roomId) {
+        if (roomId == null) return false;
+        return LIAISON_SHOP_PATTERN.matcher(roomId).matches();
+    }
+
+    public static Optional<Long> extractLiaisonVendorId(String roomId) {
+        if (roomId == null) return Optional.empty();
+        java.util.regex.Matcher m = LIAISON_VENDOR_PATTERN.matcher(roomId);
+        if (m.matches()) {
+            try { return Optional.of(Long.parseLong(m.group(1))); } catch (NumberFormatException ignore) {}
+        }
+        return Optional.empty();
+    }
+
+    public static Optional<Long> extractLiaisonShopId(String roomId) {
+        if (roomId == null) return Optional.empty();
+        java.util.regex.Matcher m = LIAISON_SHOP_PATTERN.matcher(roomId);
+        if (m.matches()) {
+            try { return Optional.of(Long.parseLong(m.group(1))); } catch (NumberFormatException ignore) {}
+        }
+        return Optional.empty();
+    }
+
+    public static Optional<Long> extractLiaisonCskhId(String roomId) {
+        if (roomId == null) return Optional.empty();
+        java.util.regex.Matcher m1 = LIAISON_VENDOR_PATTERN.matcher(roomId);
+        if (m1.matches()) {
+            try { return Optional.of(Long.parseLong(m1.group(2))); } catch (NumberFormatException ignore) {}
+        }
+        java.util.regex.Matcher m2 = LIAISON_SHOP_PATTERN.matcher(roomId);
+        if (m2.matches()) {
+            try { return Optional.of(Long.parseLong(m2.group(2))); } catch (NumberFormatException ignore) {}
+        }
+        return Optional.empty();
+    }
+
+    public static String buildLiaisonShopRoom(Long shopId, Long cskhId) {
+        Objects.requireNonNull(shopId, "shopId is required");
+        Objects.requireNonNull(cskhId, "cskhId is required");
+        return "liaison-shop-" + shopId + "-cskh-" + cskhId;
+    }
+}

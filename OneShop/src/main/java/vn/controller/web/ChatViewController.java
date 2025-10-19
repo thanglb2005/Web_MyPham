@@ -136,8 +136,40 @@ public class ChatViewController {
             boolean vendor = hasRole(user, "ROLE_VENDOR");
             boolean admin = hasRole(user, "ROLE_ADMIN");
             boolean cskh = hasRole(user, "ROLE_CSKH");
+            // If this is a CSKH user, prefer the dedicated CSKH route
+            if (cskh && !vendor && !admin) {
+                return "redirect:/cskh/vendor-chat";
+            }
             if (vendor || admin || cskh) {
-                model.addAttribute("chatVendorContext", buildVendorContext(user, vendor, admin, cskh));
+                java.util.Map<String,Object> ctx = buildVendorContext(user, vendor, admin, cskh);
+                if (admin || cskh) {
+                    // Build vendor list + their ACTIVE shops for liaison chat
+                    try {
+                        java.util.Map<Long, java.util.Map<String, Object>> vendors = new java.util.LinkedHashMap<>();
+                        java.util.Map<Long, java.util.List<java.util.Map<String,Object>>> vendorShops = new java.util.LinkedHashMap<>();
+                        for (Shop s : shopService.findAll()) {
+                            if (s.getVendor() == null) continue;
+                            vn.entity.User v = s.getVendor();
+                            if (!vendors.containsKey(v.getUserId())) {
+                                java.util.Map<String, Object> m = new java.util.HashMap<>();
+                                m.put("id", v.getUserId());
+                                m.put("name", safeName(v.getName(), v.getEmail()));
+                                m.put("email", v.getEmail());
+                                vendors.put(v.getUserId(), m);
+                            }
+                            if (s.getStatus() == Shop.ShopStatus.ACTIVE) {
+                                java.util.Map<String,Object> sm = new java.util.HashMap<>();
+                                sm.put("id", s.getShopId());
+                                sm.put("name", s.getShopName());
+                                sm.put("status", s.getStatus().name());
+                                vendorShops.computeIfAbsent(v.getUserId(), id -> new java.util.ArrayList<>()).add(sm);
+                            }
+                        }
+                        ctx.put("vendors", new java.util.ArrayList<>(vendors.values()));
+                        ctx.put("vendorShops", vendorShops);
+                    } catch (Exception ignored) {}
+                }
+                model.addAttribute("chatVendorContext", ctx);
                 return "admin/vendor-chat";
             }
         }
@@ -154,6 +186,46 @@ public class ChatViewController {
             }
             model.addAttribute("chatVendorContext", buildVendorContext(user, false, false, false));
             return "admin/vendor-chat";
+        }
+        return "redirect:/login";
+    }
+
+    // CSKH liaison view: reuse the vendor chat dashboard so CSKH có thể liên hệ Vendor
+    @GetMapping("/cskh/vendor-chat")
+    public String cskhVendorChat(HttpSession session, Model model) {
+        Object userObj = session.getAttribute("user");
+        if (userObj instanceof User user) {
+            if (hasRole(user, "ROLE_CSKH") || hasRole(user, "ROLE_ADMIN")) {
+                java.util.Map<String,Object> ctx = buildVendorContext(user, false, true, true);
+                try {
+                    java.util.Map<Long, java.util.Map<String, Object>> vendors = new java.util.LinkedHashMap<>();
+                    java.util.Map<Long, java.util.List<java.util.Map<String,Object>>> vendorShops = new java.util.LinkedHashMap<>();
+                    for (Shop s : shopService.findAll()) {
+                        if (s.getVendor() == null) continue;
+                        vn.entity.User v = s.getVendor();
+                        vendors.computeIfAbsent(v.getUserId(), id -> {
+                            java.util.Map<String, Object> m = new java.util.HashMap<>();
+                            m.put("id", v.getUserId());
+                            m.put("name", safeName(v.getName(), v.getEmail()));
+                            m.put("email", v.getEmail());
+                            return m;
+                        });
+                        // Only expose ACTIVE shops to CSKH liaison
+                        if (s.getStatus() == Shop.ShopStatus.ACTIVE) {
+                            java.util.Map<String,Object> sm = new java.util.HashMap<>();
+                            sm.put("id", s.getShopId());
+                            sm.put("name", s.getShopName());
+                            sm.put("status", s.getStatus().name());
+                            vendorShops.computeIfAbsent(v.getUserId(), id -> new java.util.ArrayList<>()).add(sm);
+                        }
+                    }
+                    ctx.put("vendors", new java.util.ArrayList<>(vendors.values()));
+                    ctx.put("vendorShops", vendorShops);
+                } catch (Exception ignored) {}
+                model.addAttribute("chatVendorContext", ctx);
+                return "admin/vendor-chat";
+            }
+            return "redirect:/admin/vendor-chat"; // fallback
         }
         return "redirect:/login";
     }
@@ -268,4 +340,3 @@ public class ChatViewController {
         return ctx;
     }
 }
-
