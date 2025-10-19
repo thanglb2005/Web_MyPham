@@ -8,8 +8,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import vn.entity.Order;
 import vn.entity.OrderDetail;
 import vn.entity.User;
@@ -19,8 +21,8 @@ import vn.repository.OrderDetailRepository;
 import vn.repository.UserRepository;
 import vn.service.CommentService;
 
-import java.util.List;
-import java.util.Optional;
+import java.time.LocalDateTime;
+import java.util.*;
 
 @Controller
 public class UserOrderController {
@@ -189,13 +191,21 @@ public class UserOrderController {
             return "redirect:/user/my-orders";
         }
 
+        // Load shop information to avoid lazy loading issues
+        if (order.getShop() != null) {
+            order.getShop().getShopName();
+            System.out.println("Debug - Order shop: " + order.getShop().getShopName());
+        } else {
+            System.out.println("Debug - Order shop is null");
+        }
+
         List<Object[]> orderDetails = orderDetailRepository.findOrderDetailsByOrderId(orderId);
 
         model.addAttribute("user", user);
         model.addAttribute("order", order);
         model.addAttribute("orderDetails", orderDetails);
 
-        return "web/order-detail";
+        return "web/order-detail-simple";
     }
 
     /**
@@ -231,10 +241,10 @@ public class UserOrderController {
     }
 
     /**
-     * Yêu cầu trả hàng (chỉ được yêu cầu khi đơn hàng đã giao)
+     * Hiển thị form yêu cầu trả hàng
      */
     @GetMapping("/return-order/{orderId}")
-    public String returnOrder(@PathVariable Long orderId, HttpSession session) {
+    public String showReturnOrderForm(@PathVariable Long orderId, HttpSession session, Model model) {
         User user = (User) session.getAttribute("user");
         if (user == null) {
             return "redirect:/login";
@@ -253,11 +263,65 @@ public class UserOrderController {
         }
 
         // Chỉ cho phép yêu cầu trả hàng khi đơn hàng đã giao
-        if (order.getStatus() == Order.OrderStatus.DELIVERED) {
-            order.setStatus(Order.OrderStatus.RETURNED);
-            orderRepository.save(order);
+        if (order.getStatus() != Order.OrderStatus.DELIVERED) {
+            return "redirect:/user/my-orders?error=invalid_status";
         }
 
-        return "redirect:/user/my-orders?status=returned";
+        model.addAttribute("order", order);
+        return "web/return-order-form";
+    }
+
+    /**
+     * Xử lý yêu cầu trả hàng với lý do
+     */
+    @PostMapping("/return-order/{orderId}")
+    public String processReturnOrder(@PathVariable Long orderId, 
+                                   @RequestParam String returnReason,
+                                   HttpSession session, 
+                                   RedirectAttributes redirectAttributes) {
+        User user = (User) session.getAttribute("user");
+        if (user == null) {
+            return "redirect:/login";
+        }
+
+        Optional<Order> orderOpt = orderRepository.findById(orderId);
+        if (orderOpt.isEmpty()) {
+            redirectAttributes.addFlashAttribute("error", "Không tìm thấy đơn hàng");
+            return "redirect:/user/my-orders";
+        }
+
+        Order order = orderOpt.get();
+        
+        // Kiểm tra xem đơn hàng có thuộc về user này không
+        if (!order.getUser().getUserId().equals(user.getUserId())) {
+            redirectAttributes.addFlashAttribute("error", "Bạn không có quyền truy cập đơn hàng này");
+            return "redirect:/user/my-orders";
+        }
+
+        // Kiểm tra trạng thái đơn hàng
+        if (order.getStatus() != Order.OrderStatus.DELIVERED) {
+            redirectAttributes.addFlashAttribute("error", "Chỉ có thể yêu cầu trả hàng khi đơn hàng đã được giao");
+            return "redirect:/user/my-orders";
+        }
+
+        // Kiểm tra lý do trả hàng
+        if (returnReason == null || returnReason.trim().isEmpty()) {
+            redirectAttributes.addFlashAttribute("error", "Vui lòng nhập lý do trả hàng");
+            return "redirect:/return-order/" + orderId;
+        }
+
+        try {
+            // Cập nhật trạng thái đơn hàng và lý do trả hàng
+            order.setStatus(Order.OrderStatus.RETURNED);
+            order.setCancellationReason(returnReason.trim());
+            order.setCancelledDate(LocalDateTime.now());
+            orderRepository.save(order);
+
+            redirectAttributes.addFlashAttribute("success", "Đã gửi yêu cầu trả hàng thành công. Chúng tôi sẽ xem xét và phản hồi trong thời gian sớm nhất.");
+            return "redirect:/user/my-orders?status=returned";
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Có lỗi xảy ra khi xử lý yêu cầu trả hàng: " + e.getMessage());
+            return "redirect:/return-order/" + orderId;
+        }
     }
 }

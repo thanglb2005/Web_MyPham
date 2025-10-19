@@ -23,6 +23,12 @@ public interface CommentService {
     // Media
     CommentMedia saveMedia(CommentMedia media);
     List<CommentMedia> listMediaByComment(Long commentId);
+    
+    // Delete comment
+    void deleteComment(Long commentId, Long userId);
+    
+    // Check and delete old comment before creating new one
+    void deleteOldCommentIfExists(Long userId, Long productId);
 }
 
 

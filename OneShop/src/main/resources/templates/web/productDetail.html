@@ -427,7 +427,8 @@
                     <!-- Review list -->
                     <div th:if="${reviewCount > 0}" class="mb-4">
                       <div th:each="rv : ${reviews}" class="p-3 mb-3 bg-light rounded">
-                        <div class="d-flex align-items-center mb-2">
+                        <!-- Header đánh giá với nút xóa -->
+                        <div class="d-flex justify-content-between align-items-start mb-2">
                           <div class="flex-grow-1">
                             <div class="d-flex align-items-center mb-1">
                               <strong class="text-primary me-2" th:text="${rv.user.name}">Tên người dùng</strong>
@@ -441,11 +442,25 @@
                                 <i class="icofont-star" th:style="${rv.rating} >= 4 ? 'color:#f5c518' : 'color:#cfd3d7'"></i>
                                 <i class="icofont-star" th:style="${rv.rating} >= 5 ? 'color:#f5c518' : 'color:#cfd3d7'"></i>
                               </span>
-                              <small class="text-muted ms-auto" th:text="${#dates.format(rv.rateDate, 'dd/MM/yyyy')}"></small>
+                              <small class="text-muted ms-2" th:text="${#dates.format(rv.rateDate, 'dd/MM/yyyy')}"></small>
                             </div>
                           </div>
+                          <!-- Nút xóa đánh giá - chỉ hiển thị cho đánh giá của user hiện tại -->
+                          <div th:if="${user != null and rv.user.userId == user.userId}" class="ms-3">
+                            <form th:action="@{/reviews/delete/product/{commentId}(commentId=${rv.id})}" method="post" style="display: inline;">
+                              <input type="hidden" name="productId" th:value="${product.productId}" />
+                              <button type="submit" class="btn btn-sm btn-outline-danger" 
+                                      onclick="return confirm('Bạn có chắc chắn muốn xóa đánh giá này?')"
+                                      title="Xóa đánh giá"
+                                      style="border-radius: 50%; width: 32px; height: 32px; padding: 0; display: flex; align-items: center; justify-content: center;">
+                                <i class="fas fa-trash" style="font-size: 12px;"></i>
+                              </button>
+                            </form>
+                          </div>
                         </div>
-                        <div class="mb-1" th:text="${rv.content}"></div>
+                        
+                        <!-- Nội dung đánh giá -->
+                        <div class="mb-2" th:text="${rv.content}"></div>
                         <!-- Media preview nếu có -->
                         <div class="d-flex flex-wrap gap-2 mt-2"
                              th:if="${rv.commentMedia != null and !rv.commentMedia.isEmpty()}">

@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chi tiết đơn hàng - OneShop</title>
+    <link rel="icon" href="/images/icon.png" />
+    <link rel="stylesheet" href="/fonts/flaticon/flaticon.css" />
+    <link rel="stylesheet" href="/fonts/icofont/icofont.min.css" />
+    <link rel="stylesheet" href="/fonts/fontawesome/fontawesome.min.css" />
+    <link rel="stylesheet" href="/vendor/bootstrap/bootstrap.min.css" />
+    <link rel="stylesheet" href="/css/main.css" />
+    <style>
+        body {
+            background-color: #f5f5f5;
+            padding: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .order-card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            padding: 20px;
+        }
+        
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .order-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #333;
+            margin: 0;
+        }
+        
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+        }
+        
+        .status-pending { background: #fff3cd; color: #856404; }
+        .status-confirmed { background: #d1ecf1; color: #0c5460; }
+        .status-shipping { background: #d4edda; color: #155724; }
+        .status-delivered { background: #cce5ff; color: #004085; }
+        .status-cancelled { background: #f8d7da; color: #721c24; }
+        .status-returned { background: #f0f0f0; color: #6c757d; }
+        
+        .order-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .info-item {
+            display: flex;
+            align-items: center;
+            font-size: 0.9rem;
+        }
+        
+        .info-item i {
+            margin-right: 8px;
+            color: #667eea;
+            width: 16px;
+        }
+        
+        .payment-status {
+            padding: 2px 6px;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .payment-paid { background: #d4edda; color: #155724; }
+        .payment-pending { background: #fff3cd; color: #856404; }
+        .payment-failed { background: #f8d7da; color: #721c24; }
+        
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #667eea;
+        }
+        
+        .product-item {
+            display: flex;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .product-item:last-child {
+            border-bottom: none;
+        }
+        
+        .product-image {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 6px;
+            margin-right: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .product-details {
+            flex: 1;
+        }
+        
+        .product-name {
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: #333;
+            margin-bottom: 5px;
+            line-height: 1.3;
+        }
+        
+        .product-price {
+            font-size: 0.85rem;
+            color: #666;
+        }
+        
+        .product-quantity {
+            font-size: 0.9rem;
+            color: #333;
+            margin-right: 20px;
+            min-width: 30px;
+            text-align: center;
+            font-weight: 600;
+        }
+        
+        .product-total {
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: #333;
+            min-width: 100px;
+            text-align: right;
+        }
+        
+        .summary-section {
+            display: flex;
+            justify-content: flex-start;
+        }
+        
+        .summary-details {
+            min-width: 200px;
+            width: 100%;
+        }
+        
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 5px 0;
+            font-size: 0.9rem;
+        }
+        
+        .summary-row.total {
+            font-weight: 700;
+            font-size: 1rem;
+            border-top: 1px solid #e9ecef;
+            margin-top: 8px;
+            padding-top: 8px;
+        }
+        
+        .back-button {
+            background: white;
+            border: 2px solid #007bff;
+            color: #007bff;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+        }
+        
+        .back-button:hover {
+            background: #007bff;
+            color: white;
+            text-decoration: none;
+        }
+        
+        @media (max-width: 768px) {
+            .order-info {
+                grid-template-columns: 1fr;
+            }
+            
+            .product-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            
+            .product-details {
+                width: 100%;
+            }
+            
+            .summary-section {
+                justify-content: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Order Details Card -->
+        <div class="order-card">
+            <div class="order-header">
+                <h1 class="order-title">Chi tiết đơn hàng #<span th:text="${order?.orderId ?: 'N/A'}">N/A</span></h1>
+                <span th:if="${order?.status != null}" 
+                      class="status-badge" 
+                      th:switch="${order.status.name()}">
+                    <span th:case="'PENDING'" class="status-pending">PENDING</span>
+                    <span th:case="'CONFIRMED'" class="status-confirmed">CONFIRMED</span>
+                    <span th:case="'SHIPPING'" class="status-shipping">SHIPPING</span>
+                    <span th:case="'DELIVERED'" class="status-delivered">DELIVERED</span>
+                    <span th:case="'CANCELLED'" class="status-cancelled">CANCELLED</span>
+                    <span th:case="'RETURNED'" class="status-returned">RETURNED</span>
+                    <span th:case="*" class="status-pending">PENDING</span>
+                </span>
+            </div>
+            
+            <div class="order-info">
+                <div class="info-item">
+                    <i class="fas fa-calendar"></i>
+                    <span>Ngày đặt: <span th:text="${order?.orderDate != null ? #temporals.format(order.orderDate, 'dd/MM/yyyy HH:mm') : 'N/A'}">N/A</span></span>
+                </div>
+                <div class="info-item">
+                    <i class="fas fa-credit-card"></i>
+                    <span>Phương thức thanh toán: 
+                        <span th:switch="${order?.paymentMethod?.name()}">
+                            <span th:case="'COD'">COD</span>
+                            <span th:case="'MOMO'">MoMo</span>
+                            <span th:case="'BANK_TRANSFER'">Chuyển khoản</span>
+                            <span th:case="'VIETQR'">VietQR</span>
+                            <span th:case="*">COD</span>
+                        </span>
+                        <span th:if="${order?.paymentPaid == true}" class="payment-status payment-paid">Đã thanh toán</span>
+                        <span th:if="${order?.paymentPaid == false}" class="payment-status payment-pending">Chưa thanh toán</span>
+                        <span th:if="${order?.paymentPaid == null}" class="payment-status payment-pending">Chưa thanh toán</span>
+                    </span>
+                </div>
+                <div class="info-item">
+                    <i class="fas fa-store"></i>
+                    <span>Cửa hàng: <span th:text="${order?.shop?.shopName ?: (orderDetails != null and !orderDetails.isEmpty() and orderDetails[0][6] != null ? orderDetails[0][6] : 'Chưa xác định')}">Chưa xác định</span></span>
+                </div>
+                <div class="info-item">
+                    <i class="fas fa-user"></i>
+                    <span>Người nhận: <span th:text="${order?.customerName ?: 'N/A'}">N/A</span></span>
+                </div>
+                <div class="info-item">
+                    <i class="fas fa-phone"></i>
+                    <span>SDT: <span th:text="${order?.customerPhone ?: 'N/A'}">N/A</span></span>
+                </div>
+                <div class="info-item" style="grid-column: 1 / -1;">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <span>Địa chỉ giao: <span th:text="${order?.shippingAddress ?: 'N/A'}">N/A</span></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Products Card -->
+        <div class="order-card">
+            <h2 class="section-title">Sản phẩm</h2>
+            <div th:if="${orderDetails != null and !orderDetails.isEmpty()}">
+                <div th:each="detail : ${orderDetails}" class="product-item">
+                    <img th:src="${detail[5] != null and detail[5] != '' ? '/upload/images/' + detail[5] : '/images/no-image.png'}" 
+                         th:alt="${detail[1]}" 
+                         class="product-image" 
+                         th:onerror="this.src='/images/no-image.png'">
+                    <div class="product-details">
+                        <div class="product-name" th:text="${detail[1]}">Tên sản phẩm</div>
+                        <div class="product-price" th:text="${detail[3] != null ? #numbers.formatDecimal(detail[3], 1, 'DEFAULT', 0, 'DEFAULT') + ' ₫' : 'N/A'}">N/A</div>
+                    </div>
+                    <div class="product-quantity" th:text="${detail[2]}">1</div>
+                    <div class="product-total" th:text="${detail[4] != null ? #numbers.formatDecimal(detail[4], 1, 'DEFAULT', 0, 'DEFAULT') + ' ₫' : 'N/A'}">N/A</div>
+                </div>
+            </div>
+            <div th:if="${orderDetails == null or orderDetails.isEmpty()}">
+                <div class="text-center text-muted py-3">
+                    <i class="fas fa-box-open fa-2x mb-2"></i>
+                    <p>Không có sản phẩm nào trong đơn hàng này</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Summary Card -->
+        <div class="order-card">
+            <h2 class="section-title">Tổng kết</h2>
+            <div class="summary-section">
+                <div class="summary-details">
+                    <div class="summary-row">
+                        <span>Tiền hàng:</span>
+                        <span th:text="${orderDetails != null and !orderDetails.isEmpty() ? #numbers.formatDecimal(#aggregates.sum(orderDetails.![4]), 1, 'DEFAULT', 0, 'DEFAULT') + ' ₫' : '0 ₫'}">0 ₫</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Giảm giá:</span>
+                        <span th:text="${order?.discountAmount != null and order.discountAmount > 0 ? '- ' + #numbers.formatDecimal(order.discountAmount, 1, 'DEFAULT', 0, 'DEFAULT') + ' ₫' : '0 ₫'}">0 ₫</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Phí vận chuyển:</span>
+                        <span th:text="${order?.shippingFee != null and order.shippingFee > 0 ? #numbers.formatDecimal(order.shippingFee, 1, 'DEFAULT', 0, 'DEFAULT') + ' ₫' : '0 ₫'}">0 ₫</span>
+                    </div>
+                    <div class="summary-row total">
+                        <span>Tổng cộng:</span>
+                        <span th:text="${order?.totalAmount != null ? #numbers.formatDecimal(order.totalAmount, 1, 'DEFAULT', 0, 'DEFAULT') + ' ₫' : '0 ₫'}">0 ₫</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Notes Card -->
+        <div class="order-card">
+            <h2 class="section-title">Ghi chú</h2>
+            <div th:if="${order?.note != null and order.note != ''}">
+                <p th:text="${order.note}">Ghi chú đơn hàng</p>
+            </div>
+        </div>
+
+        <!-- Back Button -->
+        <a href="/user/my-orders" class="back-button">
+            <i class="fas fa-arrow-left"></i>
+            QUAY LẠI LỊCH SỬ
+        </a>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons mt-3">
+            <div th:if="${order.status.name() == 'PENDING' or order.status.name() == 'CONFIRMED'}">
+                <a th:href="@{/cancel-order/{id}(id=${order.orderId})}" 
+                   class="btn btn-danger w-100 mb-2"
+                   onclick="return confirm('Bạn có chắc chắn muốn hủy đơn hàng này?')">
+                    <i class="fas fa-times me-1"></i>Hủy đơn hàng
+                </a>
+            </div>
+            
+            <div th:if="${order.status.name() == 'DELIVERED'}">
+                <a th:href="@{/return-order/{id}(id=${order.orderId})}" 
+                   class="btn btn-warning w-100 mb-2">
+                    <i class="fas fa-undo me-1"></i>Yêu cầu trả hàng
+                </a>
+            </div>
+            
+            <a href="/" class="btn btn-primary w-100">
+                <i class="fas fa-shopping-cart me-1"></i>Tiếp tục mua sắm
+            </a>
+        </div>
+    </div>
+
+    <script src="/vendor/bootstrap/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Tính tổng tiền hàng từ các sản phẩm
+            const productTotals = document.querySelectorAll('.product-total');
+            let subtotal = 0;
+            
+            productTotals.forEach(function(element) {
+                const text = element.textContent.trim();
+                const amount = parseFloat(text.replace(/[^\d]/g, ''));
+                if (!isNaN(amount)) {
+                    subtotal += amount;
+                }
+            });
+            
+            // Lấy giảm giá và phí vận chuyển
+            const discountElement = document.querySelector('.summary-row:nth-child(2) span:last-child');
+            const shippingElement = document.querySelector('.summary-row:nth-child(3) span:last-child');
+            
+            let discount = 0;
+            let shipping = 0;
+            
+            if (discountElement) {
+                const discountText = discountElement.textContent.trim();
+                discount = parseFloat(discountText.replace(/[^\d]/g, ''));
+                if (isNaN(discount)) discount = 0;
+            }
+            
+            if (shippingElement) {
+                const shippingText = shippingElement.textContent.trim();
+                shipping = parseFloat(shippingText.replace(/[^\d]/g, ''));
+                if (isNaN(shipping)) shipping = 0;
+            }
+            
+            // Tính tổng cộng: Tiền hàng - Giảm giá + Phí vận chuyển
+            const total = subtotal - discount + shipping;
+            
+            // Cập nhật tiền hàng
+            const subtotalElement = document.querySelector('.summary-row:first-child span:last-child');
+            if (subtotalElement && subtotal > 0) {
+                subtotalElement.textContent = subtotal.toLocaleString('vi-VN') + ' ₫';
+            }
+            
+            // Cập nhật tổng cộng
+            const totalElement = document.querySelector('.summary-row.total span:last-child');
+            if (totalElement && total > 0) {
+                totalElement.textContent = total.toLocaleString('vi-VN') + ' ₫';
+            }
+        });
+    </script>
+</body>
+</html>

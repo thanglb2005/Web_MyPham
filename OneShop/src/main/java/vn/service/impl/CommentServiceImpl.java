@@ -62,6 +62,29 @@ public class CommentServiceImpl implements CommentService {
     public List<CommentMedia> listMediaByComment(Long commentId) {
         return commentMediaRepository.findByComment_Id(commentId);
     }
+
+    @Override
+    @Transactional
+    public void deleteComment(Long commentId, Long userId) {
+        Optional<Comment> commentOpt = commentRepository.findById(commentId);
+        if (commentOpt.isPresent()) {
+            Comment comment = commentOpt.get();
+            // Chỉ cho phép xóa đánh giá của chính user đó
+            if (comment.getUser().getUserId().equals(userId)) {
+                commentRepository.delete(comment);
+            }
+        }
+    }
+
+    @Override
+    @Transactional
+    public void deleteOldCommentIfExists(Long userId, Long productId) {
+        // Tìm đánh giá cũ của user cho sản phẩm này
+        Optional<Comment> oldComment = commentRepository.findTopByProduct_ProductIdAndUser_UserIdOrderByRateDateDesc(productId, userId);
+        if (oldComment.isPresent()) {
+            commentRepository.delete(oldComment.get());
+        }
+    }
 }
 
 

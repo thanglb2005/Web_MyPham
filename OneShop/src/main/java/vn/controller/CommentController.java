@@ -83,6 +83,9 @@ public class CommentController {
         Product product = productRepository.findById(productId).orElse(null);
         if (product == null) return "redirect:/user/my-orders";
 
+        // Xóa đánh giá cũ nếu có trước khi tạo mới
+        commentService.deleteOldCommentIfExists(user.getUserId(), productId);
+
         // Lưu comment chính
         Comment c = commentService.createComment(user, product, orderDetail, content, rating);
 
@@ -136,6 +139,9 @@ public class CommentController {
         Product product = productRepository.findById(productId).orElse(null);
         if (product == null) return "redirect:/";
 
+        // Xóa đánh giá cũ nếu có trước khi tạo mới
+        commentService.deleteOldCommentIfExists(user.getUserId(), productId);
+
         Comment c = commentService.createComment(user, product, null, content, rating);
 
         // Lưu file media nếu có (ảnh/video) – tái sử dụng ImageStorageService
@@ -171,6 +177,50 @@ public class CommentController {
             return "redirect:" + redirect;
         }
         return "redirect:/productDetail?id=" + productId;
+    }
+
+    /**
+     * Xóa đánh giá của user
+     */
+    @PostMapping("/reviews/delete/{commentId}")
+    public String deleteReview(@PathVariable Long commentId,
+                              HttpSession session,
+                              RedirectAttributes redirectAttributes) {
+        User user = (User) session.getAttribute("user");
+        if (user == null) return "redirect:/login";
+
+        try {
+            commentService.deleteComment(commentId, user.getUserId());
+            redirectAttributes.addFlashAttribute("success", "Đã xóa đánh giá thành công");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Không thể xóa đánh giá");
+        }
+
+        return "redirect:/user/my-orders";
+    }
+
+    /**
+     * Xóa đánh giá từ trang chi tiết sản phẩm
+     */
+    @PostMapping("/reviews/delete/product/{commentId}")
+    public String deleteProductReview(@PathVariable Long commentId,
+                                     @RequestParam(value = "productId", required = false) Long productId,
+                                     HttpSession session,
+                                     RedirectAttributes redirectAttributes) {
+        User user = (User) session.getAttribute("user");
+        if (user == null) return "redirect:/login";
+
+        try {
+            commentService.deleteComment(commentId, user.getUserId());
+            redirectAttributes.addFlashAttribute("success", "Đã xóa đánh giá thành công");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Không thể xóa đánh giá");
+        }
+
+        if (productId != null) {
+            return "redirect:/productDetail?id=" + productId;
+        }
+        return "redirect:/";
     }
 }
 
