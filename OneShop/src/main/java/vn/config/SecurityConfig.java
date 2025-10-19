@@ -58,13 +58,8 @@ public class SecurityConfig {
                     }
                 })
             )
-            .logout(logout -> logout
-                .logoutUrl("/logout")
-                .logoutSuccessUrl("/login?logout")
-                .invalidateHttpSession(true)
-                .clearAuthentication(true)
-                .permitAll()
-            );
+            // DISABLE Spring Security logout - using custom LoginController.logout() instead
+            .logout(logout -> logout.disable());
 
         return http.build();
     }
