@@ -8,23 +8,13 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
-import vn.dto.UserVoucherGroup;
-import vn.entity.Promotion;
-import vn.entity.Shop;
 import vn.entity.User;
 import vn.repository.UserRepository;
 import vn.service.ImageStorageService;
 import vn.service.OneXuService;
-import vn.service.PromotionService;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
 
 @Controller
 public class AccountController {
@@ -37,9 +27,6 @@ public class AccountController {
     
     @Autowired
     private OneXuService oneXuService;
-
-    @Autowired
-    private PromotionService promotionService;
 
     @GetMapping("/profile")
     public String profile(HttpSession session, Model model) {
@@ -70,53 +57,6 @@ public class AccountController {
         model.addAttribute("totalVouchers", 3); // Mock data
         
         return "profile";
-    }
-
-    @GetMapping("/user/vouchers")
-    public String userVouchers(HttpSession session, Model model) {
-        User user = (User) session.getAttribute("user");
-        if (user == null) {
-            return "redirect:/login";
-        }
-
-        List<Promotion> activePromotions = promotionService.getActivePromotions();
-        Map<Long, UserVoucherGroup> grouped = new LinkedHashMap<>();
-
-        for (Promotion promotion : activePromotions) {
-            Shop shop = promotion.getShop();
-            if (shop == null) {
-                continue;
-            }
-            grouped.computeIfAbsent(shop.getShopId(), id -> new UserVoucherGroup(shop))
-                    .addVoucher(promotion);
-        }
-
-        List<UserVoucherGroup> voucherGroups = new ArrayList<>(grouped.values());
-        Comparator<UserVoucherGroup.VoucherItem> voucherComparator = Comparator
-                .comparing((UserVoucherGroup.VoucherItem item) ->
-                        item.getEndDate() == null ? LocalDateTime.MAX : item.getEndDate())
-                .thenComparing(item -> item.getPromotionName() != null
-                        ? item.getPromotionName().toLowerCase()
-                        : "");
-        for (UserVoucherGroup group : voucherGroups) {
-            group.getVouchers().sort(voucherComparator);
-        }
-
-        voucherGroups.sort(Comparator.comparing(UserVoucherGroup::getShopName, String.CASE_INSENSITIVE_ORDER));
-
-        long totalVouchers = voucherGroups.stream()
-                .mapToLong(group -> group.getVouchers().size())
-                .sum();
-        long expiringSoon = voucherGroups.stream()
-                .mapToLong(UserVoucherGroup::getExpiringSoonCount)
-                .sum();
-
-        model.addAttribute("voucherGroups", voucherGroups);
-        model.addAttribute("totalVoucherCount", totalVouchers);
-        model.addAttribute("expiringSoonCount", expiringSoon);
-        model.addAttribute("shopVoucherCount", voucherGroups.size());
-
-        return "web/user-vouchers";
     }
 
     @PostMapping("/update-profile")
