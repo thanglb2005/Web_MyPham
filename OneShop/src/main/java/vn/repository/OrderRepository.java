@@ -272,4 +272,47 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
            "WHERE o.shipper = :shipper " +
            "ORDER BY o.orderDate DESC")
     List<Order> findOrdersByShipper(User shipper);
+
+    /**
+     * Find orders that are overdue (past estimated delivery date and still shipping or already marked overdue)
+     */
+    @Query("SELECT o FROM Order o " +
+           "WHERE (o.status = 'SHIPPING' OR o.status = 'OVERDUE') " +
+           "AND o.estimatedDeliveryDate IS NOT NULL " +
+           "AND o.estimatedDeliveryDate < :currentTime " +
+           "ORDER BY o.estimatedDeliveryDate ASC")
+    List<Order> findOverdueOrders(@Param("currentTime") java.time.LocalDateTime currentTime);
+
+    /**
+     * Find overdue orders for a specific shipper
+     */
+    @Query("SELECT o FROM Order o " +
+           "WHERE o.shipper = :shipper " +
+           "AND (o.status = 'SHIPPING' OR o.status = 'OVERDUE') " +
+           "AND o.estimatedDeliveryDate IS NOT NULL " +
+           "AND o.estimatedDeliveryDate < :currentTime " +
+           "ORDER BY o.estimatedDeliveryDate ASC")
+    List<Order> findOverdueOrdersByShipper(@Param("shipper") User shipper, 
+                                          @Param("currentTime") java.time.LocalDateTime currentTime);
+
+    /**
+     * Count overdue orders for a specific shipper
+     */
+    @Query("SELECT COUNT(o) FROM Order o " +
+           "WHERE o.shipper = :shipper " +
+           "AND (o.status = 'SHIPPING' OR o.status = 'OVERDUE') " +
+           "AND o.estimatedDeliveryDate IS NOT NULL " +
+           "AND o.estimatedDeliveryDate < :currentTime")
+    long countOverdueOrdersByShipper(@Param("shipper") User shipper, 
+                                    @Param("currentTime") java.time.LocalDateTime currentTime);
+
+    /**
+     * Find orders that need to be marked as overdue (currently SHIPPING but past estimated delivery date)
+     */
+    @Query("SELECT o FROM Order o " +
+           "WHERE o.status = 'SHIPPING' " +
+           "AND o.estimatedDeliveryDate IS NOT NULL " +
+           "AND o.estimatedDeliveryDate < :currentTime " +
+           "ORDER BY o.estimatedDeliveryDate ASC")
+    List<Order> findOrdersToMarkOverdue(@Param("currentTime") java.time.LocalDateTime currentTime);
 }

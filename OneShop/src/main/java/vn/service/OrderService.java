@@ -83,4 +83,36 @@ public interface OrderService {
     void cancelOrder(Long orderId, User vendor);
 
     List<Object[]> countOrdersByStatus(List<Long> shopIds);
+
+    // ===== OVERDUE DELIVERY MANAGEMENT METHODS =====
+
+    /**
+     * Find all overdue orders (past estimated delivery date and still shipping)
+     */
+    List<Order> findOverdueOrders();
+
+    /**
+     * Find overdue orders for a specific shipper
+     */
+    List<Order> findOverdueOrdersByShipper(User shipper);
+
+    /**
+     * Count overdue orders for a specific shipper
+     */
+    long countOverdueOrdersByShipper(User shipper);
+
+    /**
+     * Mark orders as overdue (automatically called by scheduled task)
+     */
+    void markOverdueOrders();
+
+    /**
+     * Check if an order is overdue
+     */
+    boolean isOrderOverdue(Order order);
+
+    /**
+     * Find orders that need to be marked as overdue (currently SHIPPING but past estimated delivery date)
+     */
+    List<Order> findOrdersToMarkOverdue();
 }

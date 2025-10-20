@@ -83,6 +83,9 @@ public class ShipperHomeController {
             Order.OrderStatus.CONFIRMED
         );
 
+        // Lấy các đơn hàng giao muộn của shipper
+        List<Order> overdueOrders = orderService.findOverdueOrdersByShipper(shipper);
+
         // Thống kê các đơn hàng của shipper - chỉ status liên quan đến giao hàng
         long totalOrders = assignedOrders.size();
         long confirmedOrders = assignedOrders.stream()
@@ -94,16 +97,19 @@ public class ShipperHomeController {
         long deliveredOrders = assignedOrders.stream()
             .filter(order -> order.getStatus() == Order.OrderStatus.DELIVERED)
             .count();
+        long overdueOrdersCount = orderService.countOverdueOrdersByShipper(shipper);
 
         model.addAttribute("shipper", shipper);
         model.addAttribute("displayName", displayName);
         model.addAttribute("assignedShops", assignedShops);
         model.addAttribute("assignedOrders", assignedOrders);
         model.addAttribute("availableOrders", availableOrders);
+        model.addAttribute("overdueOrders", overdueOrders);
         model.addAttribute("totalOrders", totalOrders);
         model.addAttribute("confirmedOrders", confirmedOrders);
         model.addAttribute("shippingOrders", shippingOrders);
         model.addAttribute("deliveredOrders", deliveredOrders);
+        model.addAttribute("overdueOrdersCount", overdueOrdersCount);
         model.addAttribute("pageTitle", "Trang chủ Shipper");
 
         return "shipper/home";
@@ -169,7 +175,16 @@ public class ShipperHomeController {
             // Kiểm tra đơn hàng có thuộc về shipper này không
             if (order != null && order.getShipper() != null && 
                 order.getShipper().getUserId().equals(shipper.getUserId())) {
-                orderService.updateOrderStatus(orderId, status);
+                
+                // Cho phép cập nhật từ OVERDUE về DELIVERED
+                if (order.getStatus() == Order.OrderStatus.OVERDUE && status == Order.OrderStatus.DELIVERED) {
+                    orderService.updateOrderStatus(orderId, status);
+                } else if (order.getStatus() != Order.OrderStatus.OVERDUE) {
+                    orderService.updateOrderStatus(orderId, status);
+                } else {
+                    model.addAttribute("error", "Không thể cập nhật trạng thái đơn hàng này!");
+                    return "redirect:/shipper/home";
+                }
                 
                 if (status == Order.OrderStatus.DELIVERED) {
                     try {
@@ -233,6 +248,9 @@ public class ShipperHomeController {
         long deliveredOrders = myOrders.stream()
             .filter(order -> order.getStatus() == Order.OrderStatus.DELIVERED)
             .count();
+        long overdueOrders = myOrders.stream()
+            .filter(order -> order.getStatus() == Order.OrderStatus.OVERDUE)
+            .count();
 
         // Tạo danh sách đã lọc theo trạng thái
         List<Order> confirmedOrdersList = myOrders.stream()
@@ -244,6 +262,9 @@ public class ShipperHomeController {
         List<Order> deliveredOrdersList = myOrders.stream()
             .filter(order -> order.getStatus() == Order.OrderStatus.DELIVERED)
             .collect(Collectors.toList());
+        List<Order> overdueOrdersList = myOrders.stream()
+            .filter(order -> order.getStatus() == Order.OrderStatus.OVERDUE)
+            .collect(Collectors.toList());
 
         model.addAttribute("shipper", shipper);
         model.addAttribute("displayName", displayName);
@@ -254,12 +275,15 @@ public class ShipperHomeController {
         model.addAttribute("confirmedOrders", confirmedOrders);
         model.addAttribute("shippingOrders", shippingOrders);
         model.addAttribute("deliveredOrders", deliveredOrders);
+        model.addAttribute("overdueOrders", overdueOrders);
         model.addAttribute("confirmedOrdersList", confirmedOrdersList);
         model.addAttribute("shippingOrdersList", shippingOrdersList);
         model.addAttribute("deliveredOrdersList", deliveredOrdersList);
+        model.addAttribute("overdueOrdersList", overdueOrdersList);
         model.addAttribute("totalOrdersCount", totalOrders);
         model.addAttribute("shippingOrdersCount", shippingOrders);
         model.addAttribute("deliveredOrdersCount", deliveredOrders);
+        model.addAttribute("overdueOrdersCount", overdueOrders);
         model.addAttribute("pageTitle", "Đơn hàng của tôi");
 
         return "shipper/my-orders";
@@ -669,5 +693,113 @@ public class ShipperHomeController {
 
             sendMailService.queue(to, subject, body);
         } catch (Exception ignored) { }
+    }
+
+    /**
+     * API để test dữ liệu thật - kiểm tra đơn hàng giao muộn
+     */
+    @GetMapping("/test-overdue-data")
+    @ResponseBody
+    public Map<String, Object> testOverdueData(HttpSession session) {
+        User shipper = ensureShipper(session);
+        Map<String, Object> response = new HashMap<>();
+        
+        if (shipper == null) {
+            response.put("error", "Unauthorized");
+            return response;
+        }
+
+        try {
+            // Test 1: Lấy tất cả đơn hàng của shipper
+            List<Order> allOrders = orderRepository.findOrdersByShipper(shipper);
+            
+            // Test 2: Lấy đơn hàng giao muộn
+            List<Order> overdueOrders = orderService.findOverdueOrdersByShipper(shipper);
+            
+            // Test 3: Lấy đơn hàng cần đánh dấu giao muộn
+            List<Order> ordersToMark = orderService.findOrdersToMarkOverdue();
+            
+            // Test 4: Thống kê
+            long totalOrders = allOrders.size();
+            long overdueCount = orderService.countOverdueOrdersByShipper(shipper);
+            
+            response.put("shipper", shipper.getName());
+            response.put("totalOrders", totalOrders);
+            response.put("overdueCount", overdueCount);
+            response.put("allOrders", allOrders.stream().map(order -> {
+                Map<String, Object> orderData = new HashMap<>();
+                orderData.put("id", order.getOrderId());
+                orderData.put("status", order.getStatus());
+                orderData.put("estimatedDeliveryDate", order.getEstimatedDeliveryDate());
+                orderData.put("orderDate", order.getOrderDate());
+                orderData.put("customerName", order.getCustomerName());
+                return orderData;
+            }).collect(Collectors.toList()));
+            
+            response.put("overdueOrders", overdueOrders.stream().map(order -> {
+                Map<String, Object> orderData = new HashMap<>();
+                orderData.put("id", order.getOrderId());
+                orderData.put("status", order.getStatus());
+                orderData.put("estimatedDeliveryDate", order.getEstimatedDeliveryDate());
+                orderData.put("customerName", order.getCustomerName());
+                orderData.put("isOverdue", orderService.isOrderOverdue(order));
+                return orderData;
+            }).collect(Collectors.toList()));
+            
+            response.put("ordersToMark", ordersToMark.stream().map(order -> {
+                Map<String, Object> orderData = new HashMap<>();
+                orderData.put("id", order.getOrderId());
+                orderData.put("status", order.getStatus());
+                orderData.put("estimatedDeliveryDate", order.getEstimatedDeliveryDate());
+                orderData.put("customerName", order.getCustomerName());
+                orderData.put("shipper", order.getShipper() != null ? order.getShipper().getName() : "N/A");
+                return orderData;
+            }).collect(Collectors.toList()));
+            
+            response.put("currentTime", LocalDateTime.now());
+            response.put("success", true);
+            
+        } catch (Exception e) {
+            response.put("error", "Error testing data: " + e.getMessage());
+            e.printStackTrace();
+        }
+        
+        return response;
+    }
+
+    /**
+     * API để force check và đánh dấu đơn hàng giao muộn
+     */
+    @PostMapping("/force-check-overdue")
+    @ResponseBody
+    public Map<String, Object> forceCheckOverdue(HttpSession session) {
+        User shipper = ensureShipper(session);
+        Map<String, Object> response = new HashMap<>();
+        
+        if (shipper == null) {
+            response.put("error", "Unauthorized");
+            return response;
+        }
+
+        try {
+            // Force check và đánh dấu đơn hàng giao muộn
+            orderService.markOverdueOrders();
+            
+            // Lấy dữ liệu sau khi cập nhật
+            List<Order> overdueOrders = orderService.findOverdueOrdersByShipper(shipper);
+            long overdueCount = orderService.countOverdueOrdersByShipper(shipper);
+            
+            response.put("success", true);
+            response.put("message", "Đã kiểm tra và cập nhật đơn hàng giao muộn");
+            response.put("overdueCount", overdueCount);
+            response.put("overdueOrders", overdueOrders.size());
+            response.put("timestamp", LocalDateTime.now());
+            
+        } catch (Exception e) {
+            response.put("error", "Error checking overdue orders: " + e.getMessage());
+            e.printStackTrace();
+        }
+        
+        return response;
     }
 }

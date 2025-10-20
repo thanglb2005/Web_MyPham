@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class OrderServiceImpl implements OrderService {
@@ -347,5 +348,63 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public void deleteOrder(Long orderId) {
         orderRepository.deleteById(orderId);
+    }
+
+    // ===== OVERDUE DELIVERY MANAGEMENT METHODS =====
+
+    @Override
+    public List<Order> findOverdueOrders() {
+        LocalDateTime currentTime = LocalDateTime.now();
+        return orderRepository.findOverdueOrders(currentTime);
+    }
+
+    @Override
+    public List<Order> findOverdueOrdersByShipper(User shipper) {
+        LocalDateTime currentTime = LocalDateTime.now();
+        return orderRepository.findOverdueOrdersByShipper(shipper, currentTime);
+    }
+
+    @Override
+    public long countOverdueOrdersByShipper(User shipper) {
+        LocalDateTime currentTime = LocalDateTime.now();
+        return orderRepository.countOverdueOrdersByShipper(shipper, currentTime);
+    }
+
+    @Override
+    @Transactional
+    public void markOverdueOrders() {
+        LocalDateTime currentTime = LocalDateTime.now();
+        List<Order> ordersToMark = orderRepository.findOrdersToMarkOverdue(currentTime);
+        int updatedCount = 0;
+        
+        for (Order order : ordersToMark) {
+            order.setStatus(Order.OrderStatus.OVERDUE);
+            orderRepository.save(order);
+            updatedCount++;
+            
+            System.out.println("Order #" + order.getOrderId() + " marked as OVERDUE - " +
+                             "Estimated delivery: " + order.getEstimatedDeliveryDate() +
+                             " | Shipper: " + (order.getShipper() != null ? order.getShipper().getName() : "N/A"));
+        }
+        
+        if (updatedCount > 0) {
+            System.out.println("Marked " + updatedCount + " orders as OVERDUE");
+        }
+    }
+
+    @Override
+    public boolean isOrderOverdue(Order order) {
+        if (order == null || order.getEstimatedDeliveryDate() == null) {
+            return false;
+        }
+        
+        return (order.getStatus() == Order.OrderStatus.SHIPPING || order.getStatus() == Order.OrderStatus.OVERDUE) && 
+               order.getEstimatedDeliveryDate().isBefore(LocalDateTime.now());
+    }
+
+    @Override
+    public List<Order> findOrdersToMarkOverdue() {
+        LocalDateTime currentTime = LocalDateTime.now();
+        return orderRepository.findOrdersToMarkOverdue(currentTime);
     }
 }

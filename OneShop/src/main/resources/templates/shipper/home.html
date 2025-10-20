@@ -46,6 +46,7 @@
     .stat-card.success .stat-icon { background: rgba(16, 185, 129, 0.1); color: #10b981; }
     .stat-card.warning .stat-icon { background: rgba(251, 146, 60, 0.1); color: #fb923c; }
     .stat-card.info .stat-icon { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
+    .stat-card.danger .stat-icon { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
     .stat-card .stat-value { font-size: 2rem; font-weight: 700; color: #0f172a; }
     .stat-card .stat-label { font-size: 0.875rem; color: #64748b; font-weight: 500; }
     .order-card { 
@@ -72,6 +73,8 @@
     .order-status.delivered { background: rgba(16, 185, 129, 0.1); color: #10b981; }
     .order-status.pending { background: rgba(251, 146, 60, 0.1); color: #fb923c; }
     .order-status.confirmed { background: rgba(168, 85, 247, 0.1); color: #a855f7; }
+    .order-status.overdue { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+    .border-danger { border: 2px solid #ef4444 !important; }
     .section-title { 
       font-size: 1.25rem; 
       font-weight: 600; 
@@ -300,7 +303,7 @@
 
     <!-- Statistics Cards -->
     <section class="row g-4 mb-5">
-      <div class="col-md-4">
+      <div class="col-md-3">
         <div class="stat-card success">
           <div class="stat-icon">
             <i class="fas fa-box"></i>
@@ -309,7 +312,7 @@
           <div class="stat-label">Tổng đơn hàng</div>
         </div>
       </div>
-      <div class="col-md-4">
+      <div class="col-md-3">
         <div class="stat-card warning">
           <div class="stat-icon">
             <i class="fas fa-truck"></i>
@@ -318,7 +321,23 @@
           <div class="stat-label">Đang giao</div>
         </div>
       </div>
-      <div class="col-md-4">
+      <div class="col-md-3">
+        <div class="stat-card danger" th:if="${overdueOrdersCount > 0}">
+          <div class="stat-icon">
+            <i class="fas fa-exclamation-triangle"></i>
+          </div>
+          <div class="stat-value" th:text="${overdueOrdersCount}">0</div>
+          <div class="stat-label">Giao muộn</div>
+        </div>
+        <div class="stat-card success" th:if="${overdueOrdersCount == 0}">
+          <div class="stat-icon">
+            <i class="fas fa-clock"></i>
+          </div>
+          <div class="stat-value">0</div>
+          <div class="stat-label">Giao muộn</div>
+        </div>
+      </div>
+      <div class="col-md-3">
         <div class="stat-card info">
           <div class="stat-icon">
             <i class="fas fa-check-circle"></i>
@@ -452,6 +471,69 @@
               </div>
               <div th:if="${order.status.name() == 'DELIVERED'}" class="text-success fw-bold">
                 <i class="fas fa-check-circle me-1"></i>Hoàn thành
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Overdue Orders Section -->
+    <section class="mb-5" th:if="${overdueOrders != null && !overdueOrders.isEmpty()}">
+      <div class="section-title">
+        <i class="fas fa-exclamation-triangle text-danger"></i>
+        <span>Đơn hàng giao muộn</span>
+        <span class="badge bg-danger rounded-pill ms-2" th:text="${overdueOrders.size()}">0</span>
+      </div>
+
+      <div class="row g-4">
+        <div class="col-12" th:each="order : ${overdueOrders}">
+          <div class="order-card border-danger">
+            <div class="row align-items-center">
+              <div class="col-md-7">
+                <div class="d-flex align-items-start">
+                  <div class="order-info flex-grow-1">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                      <h5 class="order-title mb-0">Đơn hàng #<span th:text="${order.orderId}">12345</span></h5>
+                      <span class="order-status overdue">
+                        <i class="fas fa-exclamation-triangle me-1"></i>Giao muộn
+                      </span>
+                    </div>
+                    <p class="mb-2" style="line-height: 1.6;">
+                      <i class="fas fa-user me-2 text-muted"></i>
+                      <span th:text="${order.customerName}">Tên khách hàng</span>
+                    </p>
+                    <p class="mb-2" style="line-height: 1.6;">
+                      <i class="fas fa-map-marker-alt me-2 text-muted"></i>
+                      <span th:text="${order.shippingAddress}" style="word-wrap: break-word; white-space: normal;">Địa chỉ giao hàng</span>
+                    </p>
+                    <p class="mb-2 text-danger" style="line-height: 1.6;">
+                      <i class="fas fa-clock me-2"></i>
+                      <strong>Dự kiến giao:</strong> 
+                      <span th:text="${order.estimatedDeliveryDate != null ? #temporals.format(order.estimatedDeliveryDate, 'dd/MM/yyyy HH:mm') : 'Chưa có'}" 
+                            th:style="${order.estimatedDeliveryDate != null && order.estimatedDeliveryDate.isBefore(T(java.time.LocalDateTime).now())} ? 'color: #dc3545; font-weight: bold;' : ''">
+                        Chưa có
+                      </span>
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-5 text-md-end mt-3 mt-md-0">
+                <div class="mb-3">
+                  <div class="text-muted small">Tổng giá trị</div>
+                  <h4 class="text-success mb-0">
+                    <span th:text="${#numbers.formatDecimal(order.totalAmount, 0, 'DEFAULT', 0, 'DEFAULT')} + ' đ'">0 đ</span>
+                  </h4>
+                </div>
+                <div class="d-flex gap-2 justify-content-md-end">
+                  <form th:action="@{/shipper/update-status}" method="post" style="display: inline;">
+                    <input type="hidden" name="orderId" th:value="${order.orderId}" />
+                    <input type="hidden" name="status" value="DELIVERED" />
+                    <button type="submit" class="btn-update">
+                      <i class="fas fa-check me-1"></i>Đã giao
+                    </button>
+                  </form>
+                </div>
               </div>
             </div>
           </div>

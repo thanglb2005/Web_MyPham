@@ -121,6 +121,7 @@ public class Order {
         CONFIRMED,              // Da xac nhan
         SHIPPING,               // Dang giao
         DELIVERED,              // Da giao
+        OVERDUE,                // Giao muon - qua han
         CANCELLED,              // Huy (chuan - 2 chu L)
         RETURNED                // Tra hang - hoan tien
     }
