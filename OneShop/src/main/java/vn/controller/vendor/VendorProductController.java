@@ -267,6 +267,20 @@ public class VendorProductController {
         return "vendor/product-form";
     }
 
+    /**
+     * Support pretty URL pattern: /vendor/products/{id}/edit
+     * Redirects to the existing query-parameter based handler to avoid code duplication.
+     */
+    @GetMapping("/{id}/edit")
+    public String editFormPath(@org.springframework.web.bind.annotation.PathVariable("id") Long productId,
+                               @RequestParam(value = "shopId", required = false) Long shopId) {
+        String base = "/vendor/products/edit?id=" + productId;
+        if (shopId != null) {
+            base += "&shopId=" + shopId;
+        }
+        return "redirect:" + base;
+    }
+
     @PostMapping("/update")
     public String updateProduct(@RequestParam("id") Long productId,
                                 @RequestParam(value = "shopId", required = false) Long shopId,
