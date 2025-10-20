@@ -209,13 +209,17 @@
                                 <i class="fas fa-users me-2"></i>Shipper hiện tại:
                             </div>
                             <div th:if="${shop.shippers != null and !shop.shippers.isEmpty()}">
-                                <span th:each="shipper : ${shop.shippers}" class="shipper-badge">
+                                <span th:each="shipper : ${shop.shippers}" class="shipper-badge" style="display:inline-flex; align-items:center; gap:8px;">
                                     <i class="fas fa-user"></i>
                                     <span th:text="${shipper.name}">Shipper Name</span>
-                                    <i class="fas fa-times" 
+                                    <i class="fas fa-times"
                                        th:attr="data-shop-id=${shop.shopId}, data-shipper-id=${shipper.userId}"
                                        onclick="removeShipper(this)"
                                        title="Xóa shipper"></i>
+                                    <button type="button" class="btn btn-sm btn-outline-danger" 
+                                            th:onclick="'removeShipperByIds(' + ${shop.shopId} + ',' + ${shipper.userId} + ')'">
+                                        Xóa
+                                    </button>
                                 </span>
                             </div>
                             <div th:if="${shop.shippers == null or shop.shippers.isEmpty()}" class="no-shippers">
@@ -348,6 +352,28 @@
                 error: function() {
                     showAlert('Có lỗi kết nối đến server!', 'danger');
                     element.className = 'fas fa-times';
+                }
+            });
+        }
+
+        function removeShipperByIds(shopId, shipperId) {
+            if (!confirm('Bạn có chắc muốn xóa shipper này khỏi shop?')) {
+                return;
+            }
+            $.ajax({
+                url: '/admin/remove-shipper',
+                method: 'POST',
+                data: { shopId: shopId, shipperId: shipperId },
+                success: function(response) {
+                    if (response === 'success') {
+                        showAlert('Đã xóa shipper thành công!', 'success');
+                        setTimeout(() => location.reload(), 1200);
+                    } else {
+                        showAlert('Có lỗi xảy ra!', 'danger');
+                    }
+                },
+                error: function() {
+                    showAlert('Có lỗi kết nối đến server!', 'danger');
                 }
             });
         }
