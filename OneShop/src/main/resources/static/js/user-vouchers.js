@@ -1,87 +1,77 @@
 document.addEventListener("DOMContentLoaded", () => {
-  const filterButtons = Array.from(document.querySelectorAll(".filter-btn"));
-  const searchInput = document.getElementById("voucher-search");
-  const shopCards = Array.from(document.querySelectorAll(".shop-voucher-card"));
+  // Simple section filter
+  const filterBtns = Array.from(document.querySelectorAll('.sf-btn'));
+  const systemSection = document.querySelector('[th\\:if]') ? null : null; // placeholder to avoid thymeleaf syntax here
+  const systemContainer = document.querySelector('.voucher-section:nth-of-type(1)');
+  const shopContainer = document.querySelector('.voucher-section:nth-of-type(2)');
 
-  function getActiveFilter() {
-    const active = filterButtons.find((btn) => btn.classList.contains("active"));
-    return active ? active.dataset.filter : "all";
-  }
-
-  function matchFilter(item, filter) {
-    if (filter === "expiring") {
-      return item.dataset.expiring === "true";
+  function setFilter(target) {
+    if (systemContainer && shopContainer) {
+      if (target === 'system') {
+        systemContainer.style.display = '';
+        shopContainer.style.display = 'none';
+      } else if (target === 'shop') {
+        systemContainer.style.display = 'none';
+        shopContainer.style.display = '';
+      } else {
+        systemContainer.style.display = '';
+        shopContainer.style.display = '';
+      }
     }
-    if (filter === "usable") {
-      const remaining = parseInt(item.dataset.remaining ?? "1", 10);
-      return Number.isNaN(remaining) || remaining > 0;
-    }
-    return true;
   }
 
-  function applyFilters() {
-    const filter = getActiveFilter();
-    const query = searchInput ? searchInput.value.trim().toLowerCase() : "";
-
-    shopCards.forEach((card) => {
-      const voucherItems = Array.from(card.querySelectorAll(".voucher-item"));
-      let visibleCount = 0;
-      const shopName = (card.dataset.shop || "").toLowerCase();
-
-      voucherItems.forEach((item) => {
-        const matchesFilter = matchFilter(item, filter);
-        const code = item.querySelector(".voucher-code strong")?.textContent?.toLowerCase() ?? "";
-        const title = item.querySelector(".voucher-title")?.textContent?.toLowerCase() ?? "";
-        const matchesSearch =
-          !query || shopName.includes(query) || code.includes(query) || title.includes(query);
-        const shouldShow = matchesFilter && matchesSearch;
-        item.style.display = shouldShow ? "" : "none";
-        if (shouldShow) {
-          visibleCount += 1;
-        }
-      });
-
-      card.style.display = visibleCount > 0 ? "" : "none";
-    });
-  }
-
-  filterButtons.forEach((button) => {
-    button.addEventListener("click", () => {
-      filterButtons.forEach((btn) => btn.classList.remove("active"));
-      button.classList.add("active");
-      applyFilters();
+  filterBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      filterBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      setFilter(btn.dataset.target);
     });
   });
 
-  if (searchInput) {
-    searchInput.addEventListener("input", () => {
-      applyFilters();
-    });
-  }
-
-  document.querySelectorAll(".copy-btn").forEach((button) => {
-    button.addEventListener("click", async () => {
+  // Copy voucher code functionality only
+  const copyButtons = document.querySelectorAll(".btn-copy-code, .copy-btn-icon");
+  copyButtons.forEach((button) => {
+    button.addEventListener("click", async (e) => {
+      e.preventDefault();
       const code = button.dataset.code;
-      if (!code) {
-        return;
-      }
+      if (!code) return;
+
       try {
         await navigator.clipboard.writeText(code);
-        button.textContent = "Đã sao chép";
+        
+        // Visual feedback
+        const originalHTML = button.innerHTML;
+        const icon = button.querySelector("i");
+        
+        if (icon) {
+          icon.className = "fa-solid fa-check";
+        } else {
+          button.innerHTML = '<i class="fa-solid fa-check"></i>';
+        }
+        
         button.classList.add("copied");
+
+        // Reset after 2 seconds
         setTimeout(() => {
-          button.textContent = "Sao chép";
+          button.innerHTML = originalHTML;
           button.classList.remove("copied");
         }, 2000);
+
       } catch (err) {
-        console.warn("Copy voucher code failed", err);
-        button.textContent = "Thử lại";
-        setTimeout(() => {
-          button.textContent = "Sao chép";
-        }, 2000);
+        console.warn("Copy failed", err);
+        alert("Không thể sao chép mã. Vui lòng thử lại.");
       }
     });
   });
 
-  applyFilters();
+  // Optional: graceful fallback when Clipboard API missing
+  if (!navigator.clipboard) {
+    copyButtons.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        alert("Sao chép mã: " + (btn.dataset.code || ""));
+      });
+    });
+  }
 });
+
+

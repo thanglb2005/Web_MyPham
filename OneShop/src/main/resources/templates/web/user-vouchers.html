@@ -15,153 +15,149 @@
     <header th:replace="~{/web/fragments/header :: header}"></header>
 
     <main class="voucher-page">
-      <section class="voucher-hero container">
-        <div class="hero-text">
-          <h1>Kho voucher của bạn</h1>
-          <p th:text="${totalVoucherCount > 0} ? 'Chọn voucher phù hợp để tiết kiệm thêm khi thanh toán.' : 'Bạn chưa có voucher nào khả dụng. Ghé thăm các shop để săn ưu đãi nhé!'">
-            Mô tả ngắn
-          </p>
-        </div>
-        <div class="hero-stats">
-          <div class="stat-card">
-            <div class="stat-label">Voucher khả dụng</div>
-            <div class="stat-value" th:text="${totalVoucherCount}">0</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-label">Shop đang ưu đãi</div>
-            <div class="stat-value" th:text="${shopVoucherCount}">0</div>
-          </div>
-          <div class="stat-card highlight" th:classappend="${expiringSoonCount > 0} ? ' pulse'">
-            <div class="stat-label">Sắp hết hạn</div>
-            <div class="stat-value" th:text="${expiringSoonCount}">0</div>
-          </div>
-        </div>
-      </section>
+      
 
-      <section class="voucher-toolbar container" th:if="${totalVoucherCount > 0}">
-        <div class="filter-buttons">
-          <button class="filter-btn active" data-filter="all">Tất cả</button>
-          <button class="filter-btn" data-filter="expiring">
-            Sắp hết hạn
-            <span class="badge" th:text="${expiringSoonCount}">0</span>
+      <section class="voucher-filter container" th:if="${totalVoucherCount > 0}">
+        <div class="simple-filter">
+          <button class="sf-btn active" data-target="all">
+            Tất cả (<span th:text="${totalVoucherCount}">0</span>)
           </button>
-          <button class="filter-btn" data-filter="usable">Chưa sử dụng hết</button>
-        </div>
-        <div class="actions">
-          <div class="search-box">
-            <i class="fa-solid fa-magnifying-glass"></i>
-            <input
-              id="voucher-search"
-              type="search"
-              placeholder="Tìm theo shop hoặc mã voucher"
-              autocomplete="off"
-            />
-          </div>
+          <button class="sf-btn" data-target="system" th:if="${systemVoucherCount > 0}">
+            One Voucher (<span th:text="${systemVoucherCount}">0</span>)
+          </button>
+          <button class="sf-btn" data-target="shop" th:if="${shopVoucherCount > 0}">
+            Shop Voucher (<span th:text="${shopVoucherCount}">0</span>)
+          </button>
         </div>
       </section>
 
       <section class="voucher-content container">
-        <div class="empty-state" th:if="${voucherGroups == null || voucherGroups.isEmpty()}">
+        <div class="empty-state" th:if="${totalVoucherCount == 0}">
           <i class="fa-solid fa-ticket-simple empty-icon"></i>
           <h2>Hiện chưa có voucher nào</h2>
           <p>Giỏ hàng của bạn sẽ tiết kiệm hơn khi sưu tầm voucher từ các shop yêu thích.</p>
           <a class="btn btn-primary" href="/" role="button">Khám phá sản phẩm</a>
         </div>
 
-        <div
-          class="shop-voucher-grid"
-          th:if="${voucherGroups != null and !voucherGroups.isEmpty()}"
-        >
-          <article
-            class="shop-voucher-card"
-            th:each="group : ${voucherGroups}"
-            th:attr="data-expiring=${group.expiringSoonCount > 0}, data-shop=${group.shopName}"
-          >
-            <div class="shop-card-header">
-              <div class="shop-logo">
-                <img
-                  th:if="${group.shopLogo != null}"
-                  th:src="@{'/loadImage?imageName=' + ${group.shopLogo}}"
-                  alt="Shop logo"
-                  onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
-                />
-                <div class="shop-avatar-fallback" th:text="${#strings.substring(group.shopName,0,1)}"></div>
+        <!-- System Vouchers Section -->
+        <div class="voucher-section one-section" th:if="${systemVouchers != null and !systemVouchers.isEmpty()}">
+          <div class="section-min">
+            <div class="section-min-title">One Voucher</div>
+            <div class="section-min-sub">Áp dụng toàn hệ thống</div>
+          </div>
+          <div class="voucher-list-container">
+            <div
+              class="voucher-card-horizontal"
+              th:each="voucher : ${systemVouchers}"
+              th:attr="data-expiring=${voucher.expiringSoon}, data-remaining=${voucher.remainingUses}, data-type='system'"
+            >
+              <!-- Left Icon Section -->
+              <div class="voucher-icon-section">
+                <div class="voucher-icon one-shop-icon">
+                  <img th:src="@{/images/icon.png}" alt="OneShop" class="oneshop-logo" />
+                </div>
+                <div class="voucher-source">ONESHOP</div>
               </div>
-              <div class="shop-meta">
-                <div class="shop-name" th:text="${group.shopName}">Tên shop</div>
-                <div class="shop-location" th:text="${group.location}">Địa điểm</div>
-                <div class="shop-tags">
-                  <span class="tag">Voucher: <span th:text="${group.vouchers.size()}">0</span></span>
-                  <span class="tag success" th:if="${group.allowCod}">COD</span>
-                  <span class="tag warning" th:if="${group.expiringSoonCount > 0}">
+
+              <!-- Middle Info Section -->
+              <div class="voucher-info-section">
+                <div class="voucher-discount-text" th:text="${voucher.discountLabel}">Giảm 15%</div>
+                <div class="voucher-condition" th:text="${voucher.minimumOrderLabel}">Đơn Tối Thiểu 0đ</div>
+                <div class="voucher-expiry">
+                  <i class="icofont-clock-time"></i>
+                  <span>HSD: <span th:text="${voucher.expiryLabel}">31/12/2025 23:59</span></span>
+                  <a href="#" class="link-detail">Điều kiện</a>
+                </div>
+                <div class="voucher-badges">
+                  <span class="badge-live" th:if="${voucher.expiringSoon}">
                     <i class="fa-solid fa-hourglass-half"></i>
-                    <span th:text="${group.expiringSoonCount} + ' sắp hết hạn'">0 sắp hết hạn</span>
+                    Sắp hết hạn
                   </span>
                 </div>
               </div>
-              <a class="shop-link" th:href="@{${group.shopUrl}}" target="_blank">
-                Xem shop
-              </a>
-            </div>
 
-            <div class="voucher-list">
-              <div
-                class="voucher-item"
-                th:each="voucher : ${group.vouchers}"
-                th:attr="data-expiring=${voucher.expiringSoon}, data-remaining=${voucher.remainingUses}"
-              >
-                <div class="voucher-value">
-                  <span class="value-text" th:text="${voucher.discountLabel}">-20%</span>
-                  <span class="voucher-type" th:text="${voucher.type.name()}">PERCENTAGE</span>
-                </div>
-                <div class="voucher-info">
-                  <div class="voucher-title" th:text="${voucher.promotionName}">
-                    Tiêu đề voucher
-                  </div>
-                  <div class="voucher-meta">
-                    <span class="voucher-code">
-                      Mã:
-                      <strong th:text="${voucher.promotionCode}">VOUCHER2025</strong>
-                    </span>
-                    <button
-                      class="copy-btn"
-                      type="button"
-                      th:attr="data-code=${voucher.promotionCode}"
-                    >
-                      Sao chép
-                    </button>
-                  </div>
-                  <ul class="voucher-conditions">
-                    <li th:text="${voucher.minimumOrderLabel}">Đơn tối thiểu</li>
-                    <li th:text="${voucher.maximumDiscountLabel}">Giảm tối đa</li>
-                    <li>
-                      Hạn dùng:
-                      <span th:text="${voucher.expiryLabel}">31/12/2025 23:59</span>
-                      <span
-                        class="badge danger"
-                        th:if="${voucher.expiringSoon}"
-                        th:text="${voucher.daysRemaining == 0 ? 'Hết hạn hôm nay' : 'Còn ' + voucher.daysRemaining + ' ngày'}"
-                      >
-                        Còn 2 ngày
-                      </span>
-                    </li>
-                    <li th:if="${voucher.remainingUses != null}">
-                      Lượt sử dụng còn lại:
-                      <span th:text="${voucher.remainingUses}">3</span>
-                    </li>
-                  </ul>
-                </div>
-                <div class="voucher-actions">
-                  <a
-                    th:href="@{${group.shopUrl}}"
-                    class="btn btn-outline-primary"
-                    target="_blank"
-                    >Áp dụng</a
+              <!-- Right Action Section -->
+              <div class="voucher-action-section">
+                <a href="/cart" class="btn-apply">Áp dụng</a>
+                <div class="voucher-code-display">
+                  Mã: <strong th:text="${voucher.promotionCode}">ONESHOP20</strong>
+                  <button
+                    class="btn-copy-code"
+                    type="button"
+                    th:attr="data-code=${voucher.promotionCode}"
+                    title="Sao chép"
                   >
+                    <i class="fa-solid fa-copy"></i>
+                  </button>
                 </div>
               </div>
             </div>
-          </article>
+          </div>
+        </div>
+
+        <!-- Shop Vouchers Section -->
+        <div class="voucher-section shop-section" th:if="${voucherGroups != null and !voucherGroups.isEmpty()}">
+          <div class="section-min">
+            <div class="section-min-title">Shop Voucher</div>
+            <div class="section-min-sub">Áp dụng theo cửa hàng</div>
+          </div>
+          <div class="voucher-list-container">
+            <th:block th:each="group : ${voucherGroups}">
+              <div
+                class="voucher-card-horizontal"
+                th:each="voucher : ${group.vouchers}"
+                th:attr="data-expiring=${voucher.expiringSoon}, data-remaining=${voucher.remainingUses}, data-type='shop', data-shop=${group.shopName}"
+              >
+                <!-- Left Icon Section -->
+                <div class="voucher-icon-section">
+                  <div class="voucher-icon shop-icon">
+                    <img
+                      th:if="${group.shopLogo != null}"
+                      th:src="@{'/loadImage?imageName=' + ${group.shopLogo}}"
+                      alt="Shop logo"
+                      class="shop-logo-img"
+                      onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+                    />
+                    <div class="shop-logo-fallback" th:text="${#strings.substring(group.shopName,0,1)}">S</div>
+                  </div>
+                  <div class="voucher-source" th:text="${group.shopName}">Shop Name</div>
+                </div>
+
+                <!-- Middle Info Section -->
+                <div class="voucher-info-section">
+                  <div class="voucher-discount-text" th:text="${voucher.discountLabel}">Giảm 15%</div>
+                  <div class="voucher-condition" th:text="${voucher.minimumOrderLabel}">Đơn Tối Thiểu 0đ</div>
+                  <div class="voucher-expiry">
+                    <i class="icofont-clock-time"></i>
+                    <span>HSD: <span th:text="${voucher.expiryLabel}">31/12/2025 23:59</span></span>
+                    <a href="#" class="link-detail" th:attr="onclick=|event.preventDefault(); alert('${voucher.promotionName}\n${voucher.minimumOrderLabel}\n${voucher.maximumDiscountLabel}');|">Điều kiện</a>
+                  </div>
+                  <div class="voucher-badges">
+                    <span class="badge-live" th:if="${voucher.expiringSoon}">
+                      <i class="fa-solid fa-hourglass-half"></i>
+                      Sắp hết hạn
+                    </span>
+                  </div>
+                </div>
+
+                <!-- Right Action Section -->
+                <div class="voucher-action-section">
+                  <a th:href="@{${group.shopUrl}}" class="btn-apply">Áp dụng</a>
+                  <div class="voucher-code-display">
+                    Mã: <strong th:text="${voucher.promotionCode}">SHOP20</strong>
+                    <button
+                      class="btn-copy-code"
+                      type="button"
+                      th:attr="data-code=${voucher.promotionCode}"
+                      title="Sao chép"
+                    >
+                      <i class="fa-solid fa-copy"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </th:block>
+          </div>
         </div>
       </section>
     </main>

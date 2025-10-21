@@ -42,7 +42,7 @@ public class UserVoucherGroup {
             }
             address += shop.getCity();
         }
-        this.location = address.isEmpty() ? "Toan quoc" : address;
+        this.location = address.isEmpty() ? "Toàn quốc" : address;
         this.allowCod = shop.getAllowCod();
     }
 
@@ -159,12 +159,12 @@ public class UserVoucherGroup {
             }
 
             String discountLabel = buildDiscountLabel(promotion.getPromotionType(), promotion.getDiscountValue());
-            String minOrder = buildCurrencyLabel("Don toi thieu", promotion.getMinimumOrderAmount());
-            String maxDiscount = buildCurrencyLabel("Giam toi da", promotion.getMaximumDiscountAmount());
+            String minOrder = buildCurrencyLabel("Đơn tối thiểu", promotion.getMinimumOrderAmount());
+            String maxDiscount = buildCurrencyLabel("Giảm tối đa", promotion.getMaximumDiscountAmount());
             Integer usageLimit = promotion.getUsageLimit();
             Integer usedCount = promotion.getUsedCount() != null ? promotion.getUsedCount() : 0;
             Integer remainingUses = usageLimit != null ? Math.max(usageLimit - usedCount, 0) : null;
-            String expiry = endDate != null ? DATE_FORMATTER.format(endDate) : "Khong thoi han";
+            String expiry = endDate != null ? DATE_FORMATTER.format(endDate) : "Không thời hạn";
 
             boolean active = Boolean.TRUE.equals(promotion.getIsActive()) && (endDate == null || !endDate.isBefore(now));
 
@@ -190,19 +190,19 @@ public class UserVoucherGroup {
 
         private static String buildDiscountLabel(Promotion.PromotionType type, BigDecimal value) {
             if (value == null) {
-                return "Uu dai";
+                return "Ưu đãi";
             }
             return switch (type) {
-                case PERCENTAGE -> value.stripTrailingZeros().toPlainString() + "% giam";
-                case FIXED_AMOUNT -> formatCurrency(value) + " giam ngay";
-                case FREE_SHIPPING -> "Freeship toi " + formatCurrency(value);
-                case BUY_X_GET_Y -> "Mua X tang Y";
+                case PERCENTAGE -> value.stripTrailingZeros().toPlainString() + "% giảm";
+                case FIXED_AMOUNT -> formatCurrency(value) + " giảm ngay";
+                case FREE_SHIPPING -> "Freeship tới " + formatCurrency(value);
+                case BUY_X_GET_Y -> "Mua X tặng Y";
             };
         }
 
         private static String buildCurrencyLabel(String prefix, BigDecimal value) {
             if (value == null) {
-                return prefix + ": Khong ro";
+                return prefix + ": Không rõ";
             }
             return prefix + ": " + formatCurrency(value);
         }

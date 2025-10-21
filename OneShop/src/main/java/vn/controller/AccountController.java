@@ -80,41 +80,60 @@ public class AccountController {
         }
 
         List<Promotion> activePromotions = promotionService.getActivePromotions();
+        
+        // Separate system vouchers and shop vouchers
+        List<UserVoucherGroup.VoucherItem> systemVouchers = new ArrayList<>();
         Map<Long, UserVoucherGroup> grouped = new LinkedHashMap<>();
 
         for (Promotion promotion : activePromotions) {
             Shop shop = promotion.getShop();
             if (shop == null) {
-                continue;
+                // System voucher
+                systemVouchers.add(UserVoucherGroup.VoucherItem.fromPromotion(promotion));
+            } else {
+                // Shop voucher
+                grouped.computeIfAbsent(shop.getShopId(), id -> new UserVoucherGroup(shop))
+                        .addVoucher(promotion);
             }
-            grouped.computeIfAbsent(shop.getShopId(), id -> new UserVoucherGroup(shop))
-                    .addVoucher(promotion);
         }
 
-        List<UserVoucherGroup> voucherGroups = new ArrayList<>(grouped.values());
+        // Sort system vouchers
         Comparator<UserVoucherGroup.VoucherItem> voucherComparator = Comparator
                 .comparing((UserVoucherGroup.VoucherItem item) ->
                         item.getEndDate() == null ? LocalDateTime.MAX : item.getEndDate())
                 .thenComparing(item -> item.getPromotionName() != null
                         ? item.getPromotionName().toLowerCase()
                         : "");
+        systemVouchers.sort(voucherComparator);
+
+        // Sort shop vouchers
+        List<UserVoucherGroup> voucherGroups = new ArrayList<>(grouped.values());
         for (UserVoucherGroup group : voucherGroups) {
             group.getVouchers().sort(voucherComparator);
         }
-
         voucherGroups.sort(Comparator.comparing(UserVoucherGroup::getShopName, String.CASE_INSENSITIVE_ORDER));
 
-        long totalVouchers = voucherGroups.stream()
+        // Calculate statistics
+        long systemVoucherCount = systemVouchers.size();
+        long shopVoucherCount = voucherGroups.stream()
                 .mapToLong(group -> group.getVouchers().size())
                 .sum();
-        long expiringSoon = voucherGroups.stream()
+        long totalVouchers = systemVoucherCount + shopVoucherCount;
+        
+        long systemExpiringSoon = systemVouchers.stream()
+                .filter(UserVoucherGroup.VoucherItem::isExpiringSoon)
+                .count();
+        long shopExpiringSoon = voucherGroups.stream()
                 .mapToLong(UserVoucherGroup::getExpiringSoonCount)
                 .sum();
+        long expiringSoon = systemExpiringSoon + shopExpiringSoon;
 
+        model.addAttribute("systemVouchers", systemVouchers);
         model.addAttribute("voucherGroups", voucherGroups);
         model.addAttribute("totalVoucherCount", totalVouchers);
+        model.addAttribute("systemVoucherCount", systemVoucherCount);
+        model.addAttribute("shopVoucherCount", shopVoucherCount);
         model.addAttribute("expiringSoonCount", expiringSoon);
-        model.addAttribute("shopVoucherCount", voucherGroups.size());
 
         return "web/user-vouchers";
     }

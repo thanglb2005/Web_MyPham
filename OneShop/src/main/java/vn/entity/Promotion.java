@@ -56,9 +56,9 @@ public class Promotion {
     @Column(name = "is_active", nullable = false)
     private Boolean isActive = true;
     
-    // Liên kết với Shop
+    // Liên kết với Shop (nullable = true để hỗ trợ voucher hệ thống)
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "shop_id", nullable = false)
+    @JoinColumn(name = "shop_id", nullable = true)
     @JsonIgnoreProperties({"promotions", "vendor", "hibernateLazyInitializer", "handler"})
     private Shop shop;
     
