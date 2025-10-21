@@ -694,7 +694,7 @@
                                 <div class="order-meta-item total-amount-inline">
                                     <i class="fas fa-money-bill-wave"></i>
                                     <span class="amount-inline">
-                                        <span th:text="${#numbers.formatDecimal(order.totalAmount, 1, 'DEFAULT', 0, 'DEFAULT')}">0</span> đ
+                                        <span th:text="${#numbers.formatDecimal(order.finalAmount != null ? order.finalAmount : order.totalAmount, 1, 'DEFAULT', 0, 'DEFAULT')}">0</span> đ
                                     </span>
                                 </div>
                             </div>

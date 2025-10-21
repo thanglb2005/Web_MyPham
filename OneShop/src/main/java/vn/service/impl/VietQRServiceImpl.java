@@ -30,7 +30,11 @@ public class VietQRServiceImpl implements VietQRService {
     @Override
     public String generateVietQRUrl(Order order) {
         String addInfo = "Thanh toan don hang #" + order.getOrderId();
-        return generateVietQRUrl(bankAccountNo, bankAccountName, order.getTotalAmount(), addInfo);
+        // Use finalAmount (after discount) instead of totalAmount
+        Double paymentAmount = (order.getFinalAmount() != null && order.getFinalAmount() > 0) 
+            ? order.getFinalAmount() 
+            : order.getTotalAmount();
+        return generateVietQRUrl(bankAccountNo, bankAccountName, paymentAmount, addInfo);
     }
     
     @Override

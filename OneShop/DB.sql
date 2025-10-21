@@ -1021,6 +1021,10 @@ CREATE INDEX IX_promotions_usage ON dbo.promotions(used_count, usage_limit);
 CREATE INDEX IX_promotions_shop_id ON dbo.promotions(shop_id);
 GO
 
+-- Modify promotions table to allow NULL shop_id for platform vouchers
+ALTER TABLE dbo.promotions ALTER COLUMN shop_id BIGINT NULL;
+GO
+
 -- Insert sample promotion data
 INSERT INTO dbo.promotions (
     promotion_name, 
@@ -1038,7 +1042,170 @@ INSERT INTO dbo.promotions (
     shop_id,
     created_by
 ) VALUES 
--- Product percentage discount
+-- ═══════ PLATFORM VOUCHERS (OneShop Vouchers - shop_id = NULL) ═══════
+(
+    N'OneShop - Giảm 5% toàn sàn',
+    N'Giảm 5% cho tất cả đơn hàng từ 200,000đ trên toàn sàn OneShop',
+    'ONESHOP5',
+    'PERCENTAGE',
+    5.00,
+    200000.00,
+    100000.00,
+    2000,
+    15,
+    '2025-10-01 00:00:00',
+    '2025-12-31 23:59:59',
+    1,
+    NULL,  -- Platform voucher
+    4      -- created_by = 4 (Admin)
+),
+(
+    N'OneShop - Miễn phí ship toàn quốc',
+    N'Miễn phí vận chuyển cho đơn hàng từ 300,000đ trên toàn sàn',
+    'ONESHIP',
+    'FREE_SHIPPING',
+    50000.00,
+    300000.00,
+    50000.00,
+    1500,
+    23,
+    '2025-10-01 00:00:00',
+    '2025-12-31 23:59:59',
+    1,
+    NULL,  -- Platform voucher
+    4      -- created_by = 4 (Admin)
+),
+(
+    N'OneShop - Giảm 10% đơn hàng lớn',
+    N'Giảm 10% cho đơn hàng từ 1,000,000đ trên toàn sàn OneShop',
+    'ONESHOP10',
+    'PERCENTAGE',
+    10.00,
+    1000000.00,
+    300000.00,
+    500,
+    8,
+    '2025-10-01 00:00:00',
+    '2025-12-31 23:59:59',
+    1,
+    NULL,  -- Platform voucher
+    4      -- created_by = 4 (Admin)
+),
+(
+    N'OneShop - Giảm 50k cho khách mới',
+    N'Giảm ngay 50,000đ cho khách hàng mới đăng ký tài khoản',
+    'WELCOME50',
+    'FIXED_AMOUNT',
+    50000.00,
+    400000.00,
+    50000.00,
+    1000,
+    32,
+    '2025-10-01 00:00:00',
+    '2025-12-31 23:59:59',
+    1,
+    NULL,  -- Platform voucher
+    4      -- created_by = 4 (Admin)
+),
+(
+    N'OneShop - Giảm 15% Black Friday',
+    N'Đặc biệt Black Friday - Giảm 15% toàn sàn không giới hạn',
+    'BLACKONE15',
+    'PERCENTAGE',
+    15.00,
+    500000.00,
+    400000.00,
+    800,
+    12,
+    '2025-11-15 00:00:00',
+    '2025-11-30 23:59:59',
+    1,
+    NULL,  -- Platform voucher
+    4      -- created_by = 4 (Admin)
+),
+(
+    N'OneShop - Giảm 100k VIP',
+    N'Voucher VIP giảm 100,000đ cho thành viên thân thiết',
+    'VIP100',
+    'FIXED_AMOUNT',
+    100000.00,
+    1500000.00,
+    100000.00,
+    300,
+    5,
+    '2025-10-01 00:00:00',
+    '2025-12-31 23:59:59',
+    1,
+    NULL,  -- Platform voucher
+    4      -- created_by = 4 (Admin)
+),
+(
+    N'OneShop - Miễn phí ship cuối tuần',
+    N'Miễn phí ship mọi đơn hàng vào cuối tuần (Thứ 7 & Chủ nhật)',
+    'WEEKEND',
+    'FREE_SHIPPING',
+    50000.00,
+    250000.00,
+    50000.00,
+    1000,
+    67,
+    '2025-10-01 00:00:00',
+    '2025-12-31 23:59:59',
+    1,
+    NULL,  -- Platform voucher
+    4      -- created_by = 4 (Admin)
+),
+(
+    N'OneShop - Giảm 8% đơn hàng trung bình',
+    N'Giảm 8% cho đơn hàng từ 600,000đ trên toàn sàn OneShop',
+    'ONESHOP8',
+    'PERCENTAGE',
+    8.00,
+    600000.00,
+    150000.00,
+    1200,
+    19,
+    '2025-10-01 00:00:00',
+    '2025-12-31 23:59:59',
+    1,
+    NULL,  -- Platform voucher
+    4      -- created_by = 4 (Admin)
+),
+(
+    N'OneShop - Giảm 200k siêu VIP',
+    N'Voucher siêu VIP giảm 200,000đ cho đơn hàng lớn',
+    'SUPERVIP200',
+    'FIXED_AMOUNT',
+    200000.00,
+    3000000.00,
+    200000.00,
+    100,
+    2,
+    '2025-10-01 00:00:00',
+    '2025-12-31 23:59:59',
+    1,
+    NULL,  -- Platform voucher
+    4      -- created_by = 4 (Admin)
+),
+(
+    N'OneShop - Sale sốc 20%',
+    N'Flash Sale giảm 20% trong thời gian giới hạn',
+    'FLASH20',
+    'PERCENTAGE',
+    20.00,
+    800000.00,
+    500000.00,
+    200,
+    45,
+    '2025-10-20 00:00:00',
+    '2025-10-25 23:59:59',
+    1,
+    NULL,  -- Platform voucher
+    4      -- created_by = 4 (Admin)
+),
+
+-- ═══════ SHOP VOUCHERS (Shop-specific vouchers) ═══════
+-- Shop 1 vouchers (Mỹ Phẩm An Nguyễn)
 (
     N'Giảm giá 20% cho đơn hàng từ 500k',
     N'Áp dụng cho tất cả sản phẩm, giảm 20% cho đơn hàng từ 500,000đ trở lên',
@@ -1055,7 +1222,6 @@ INSERT INTO dbo.promotions (
     1,  -- shop_id = 1 (Mỹ Phẩm An Nguyễn)
     4   -- created_by = 4 (Admin)
 ),
--- Shipping discount
 (
     N'Miễn phí ship cho đơn hàng từ 300k',
     N'Miễn phí vận chuyển cho đơn hàng từ 300,000đ trở lên',
@@ -1072,7 +1238,8 @@ INSERT INTO dbo.promotions (
     1,  -- shop_id = 1 (Mỹ Phẩm An Nguyễn)
     4   -- created_by = 4 (Admin)
 ),
--- Fixed amount discount
+
+-- Shop 2 vouchers (Cosmetic House Bình)
 (
     N'Giảm 100k cho đơn hàng từ 1 triệu',
     N'Giảm ngay 100,000đ cho đơn hàng từ 1,000,000đ trở lên',
@@ -1089,6 +1256,23 @@ INSERT INTO dbo.promotions (
     2,  -- shop_id = 2 (Cosmetic House Bình)
     4   -- created_by = 4 (Admin)
 ),
+(
+    N'Khuyến mãi Black Friday',
+    N'Giảm giá lớn nhân dịp Black Friday',
+    'BLACKFRIDAY',
+    'PERCENTAGE',
+    30.00,
+    1000000.00,
+    500000.00,
+    50,
+    5,
+    '2025-11-01 00:00:00',
+    '2025-12-31 23:59:59',
+    1,
+    2,  -- shop_id = 2 (Cosmetic House Bình)
+    4   -- created_by = 4 (Admin)
+),
+
 -- Expired promotion
 (
     N'Khuyến mãi Tết 2025',
@@ -1104,23 +1288,6 @@ INSERT INTO dbo.promotions (
     '2025-02-15 23:59:59',
     0,
     1,  -- shop_id = 1 (Mỹ Phẩm An Nguyễn)
-    4   -- created_by = 4 (Admin)
-),
--- Expiring soon promotion
-(
-    N'Khuyến mãi Black Friday',
-    N'Giảm giá lớn nhân dịp Black Friday',
-    'BLACKFRIDAY',
-    'PERCENTAGE',
-    30.00,
-    1000000.00,
-    500000.00,
-    50,
-    5,
-    '2025-11-01 00:00:00',
-    '2025-12-31 23:59:59',
-    1,
-    2,  -- shop_id = 2 (Cosmetic House Bình)
     4   -- created_by = 4 (Admin)
 );
 GO

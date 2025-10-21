@@ -68,9 +68,17 @@
                                     <span>Tổng số sản phẩm:</span>
                                     <span th:text="${order.orderDetails.size()}">0</span>
                                 </div>
-                                <div class="summary-row total">
-                                    <span>Tổng tiền:</span>
+                                <div class="summary-row" th:if="${order.discountAmount != null && order.discountAmount > 0}">
+                                    <span>Tổng tiền gốc:</span>
                                     <span th:text="${#numbers.formatDecimal(order.totalAmount, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">0 VNĐ</span>
+                                </div>
+                                <div class="summary-row" th:if="${order.discountAmount != null && order.discountAmount > 0}">
+                                    <span>Giảm giá:</span>
+                                    <span style="color: #28a745; font-weight: 600;">-<span th:text="${#numbers.formatDecimal(order.discountAmount, 0, 'COMMA', 0, 'POINT')}">0</span> VNĐ</span>
+                                </div>
+                                <div class="summary-row total">
+                                    <span>Tổng thanh toán:</span>
+                                    <span th:text="${#numbers.formatDecimal(order.finalAmount != null ? order.finalAmount : order.totalAmount, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">0 VNĐ</span>
                                 </div>
                             </div>
                         </div>

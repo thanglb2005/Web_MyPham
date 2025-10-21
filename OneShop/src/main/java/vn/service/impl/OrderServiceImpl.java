@@ -145,18 +145,25 @@ public class OrderServiceImpl implements OrderService {
             }
         }
 
-        double totalAmount = cartItems.values().stream()
+        double originalAmount = cartItems.values().stream()
                 .mapToDouble(item -> item.getQuantity() * item.getUnitPrice())
                 .sum();
         
+        // Set original total amount first
+        order.setTotalAmount(originalAmount);
+        
         // Áp dụng khuyến mãi nếu có
         if (promotionCode != null && discountAmount != null && discountAmount > 0) {
-            totalAmount = Math.max(0, totalAmount - discountAmount);
+            order.setDiscountAmount(discountAmount);
+            double finalAmount = Math.max(0, originalAmount - discountAmount);
+            order.setFinalAmount(finalAmount);
             order.setNote(note + (note != null && !note.isEmpty() ? "\n" : "") + 
                          "Mã khuyến mãi: " + promotionCode + " - Giảm: " + discountAmount + " VNĐ");
+            System.out.println("Applied discount - Original: " + originalAmount + ", Discount: " + discountAmount + ", Final: " + finalAmount);
+        } else {
+            order.setDiscountAmount(0.0);
+            order.setFinalAmount(originalAmount);
         }
-        
-        order.setTotalAmount(totalAmount);
 
         Order savedOrder = orderRepository.save(order);
 

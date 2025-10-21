@@ -27,7 +27,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     List<Product> listProductNew20();
     
     // Search Product
-    @Query(value = "SELECT * FROM products WHERE product_name LIKE %?1%", nativeQuery = true)
+    @Query(value = "SELECT * FROM products WHERE product_name LIKE CONCAT('%', ?1, '%')", nativeQuery = true)
     List<Product> searchProduct(String productName);
     
     // Count quantity by product
@@ -45,7 +45,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
                    "ORDER BY SoLuong DESC", nativeQuery = true)
     List<Object[]> bestSaleProduct20();
     
-    @Query(value = "SELECT * FROM products WHERE product_id IN :ids", nativeQuery = true)
+    @Query(value = "SELECT * FROM products WHERE product_id IN (:ids)", nativeQuery = true)
     List<Product> findByInventoryIds(@Param("ids") List<Long> listProductId);
     
     // Additional methods for admin management

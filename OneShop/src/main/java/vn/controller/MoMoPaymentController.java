@@ -110,8 +110,43 @@ public class MoMoPaymentController {
             }
 
             if (paymentSuccess) {
+                // Deduct xu from user balance if xu was used (parse from order note)
+                String orderNote = order.getNote();
+                if (orderNote != null && orderNote.contains("OneXu:")) {
+                    try {
+                        // Parse xu amount from note like "OneXu: 50000 xu"
+                        int xuStartIndex = orderNote.indexOf("OneXu:") + 7;
+                        int xuEndIndex = orderNote.indexOf("xu", xuStartIndex);
+                        if (xuEndIndex > xuStartIndex) {
+                            String xuAmountStr = orderNote.substring(xuStartIndex, xuEndIndex).trim();
+                            Integer xuAmount = Integer.parseInt(xuAmountStr);
+                            
+                            Double currentBalance = user.getOneXuBalance() != null ? user.getOneXuBalance() : 0.0;
+                            Double newBalance = currentBalance - xuAmount;
+                            if (newBalance < 0) newBalance = 0.0;
+                            
+                            user.setOneXuBalance(newBalance);
+                            // Update user in session
+                            request.getSession().setAttribute("user", user);
+                            
+                            System.out.println("MoMo Payment - Deducted " + xuAmount + " xu. New balance: " + newBalance);
+                        }
+                    } catch (Exception e) {
+                        System.out.println("Failed to parse xu amount from order note: " + e.getMessage());
+                    }
+                }
+                
                 // Thanh toán thành công - clear cart và hiển thị success
                 cartService.clearCart(user);
+                
+                // Clear voucher and xu session data
+                request.getSession().removeAttribute("oneVoucher");
+                request.getSession().removeAttribute("oneVoucherDiscount");
+                request.getSession().removeAttribute("shopVoucher");
+                request.getSession().removeAttribute("shopVoucherDiscount");
+                request.getSession().removeAttribute("xuAmount");
+                request.getSession().removeAttribute("xuDiscount");
+                
                 model.addAttribute("message", "Thanh toán thành công!");
                 model.addAttribute("order", order);
                 return "web/checkout-success";

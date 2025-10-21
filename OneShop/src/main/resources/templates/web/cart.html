@@ -167,34 +167,39 @@
                                     </div>
                                 </div>
                                 
-                                <!-- Voucher section -->
+                                <!-- Shop Voucher section -->
                                 <div class="shop-voucher" style="padding: 12px 16px; background: #eff9fc; border-top: 1px solid #f5f5f5; display: flex; align-items: center; justify-content: space-between;">
+                                    
+                                    <!-- No shop voucher selected -->
+                                    <th:block th:if="${shopVoucher == null}">
                                     <div style="display: flex; align-items: center;">
                                         <i class="fas fa-ticket-alt" style="color: #33a3cc; margin-right: 8px; font-size: 14px;"></i>
                                         <span style="font-size: 13px; color: #333;">Xem tất cả Voucher của Shop</span>
                         </div>
-                                    <div style="color: #33a3cc; font-size: 13px; cursor: pointer;">
+                                        <div style="color: #33a3cc; font-size: 13px; cursor: pointer;" th:onclick="'openShopVoucherModal(' + ${shopGroup.shop?.shopId} + ')'">
                                         <span>Xem thêm voucher</span>
                                         <i class="fas fa-chevron-right" style="margin-left: 4px; font-size: 10px;"></i>
                     </div>
+                                    </th:block>
+                                    
+                                    <!-- Shop voucher selected -->
+                                    <th:block th:if="${shopVoucher != null}">
+                                        <div style="display: flex; align-items: center; gap: 8px;">
+                                            <i class="fas fa-ticket-alt" style="color: #33a3cc; margin-right: 8px; font-size: 14px;"></i>
+                                            <div style="background: #e3f2fd; padding: 4px 8px; border-radius: 4px; font-size: 12px; color: #1976d2; font-weight: 500; border: 1px solid #bbdefb;">
+                                                <i class="fas fa-check-circle" style="margin-right: 4px;"></i>
+                                                <span th:text="${shopVoucher.promotionCode}"></span>
                 </div>
+                                            <span style="font-size: 13px; color: #1976d2; font-weight: 500;" th:text="'Giảm ' + ${#numbers.formatDecimal(shopVoucherDiscount ?: 0, 0, 'DEFAULT', 0, 'DEFAULT')} + 'đ'"></span>
             </div>
+                                        <button onclick="removeShopVoucher()" style="background: none; border: none; color: #dc3545; cursor: pointer; font-size: 12px; padding: 2px 4px;">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </th:block>
+                                    
         </div>
-                            <!-- One Voucher Section -->
-                            <th:block th:if="${cartItemsByShop != null and !#lists.isEmpty(cartItemsByShop)}">
-                                <div class="One-voucher-section" style="background: #fff; margin-bottom: 12px; border-radius: 8px; padding: 16px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
-                                    <div style="display: flex; align-items: center; justify-content: space-between;">
-                                        <div style="display: flex; align-items: center;">
-                                            <i class="fas fa-gift" style="color: #33a3cc; margin-right: 8px; font-size: 16px;"></i>
-                                            <span style="font-size: 14px; color: #333; font-weight: 500;">One Voucher</span>
                     </div>
-                                        <div style="color: #33a3cc; font-size: 13px; cursor: pointer;">
-                                            <span>Chọn hoặc nhập mã</span>
-                                            <i class="fas fa-chevron-right" style="margin-left: 4px; font-size: 10px;"></i>
                 </div>
-            </div>
-        </div>
-                            </th:block>
     
     <!-- Sticky Checkout Bar (part of the cart block, not global footer) -->
     <div th:if="${cartItemsByShop != null and !#lists.isEmpty(cartItemsByShop)}"
@@ -205,21 +210,51 @@
                 <div style="display: flex; align-items: center; justify-content: space-between;">
                     <!-- One Voucher -->
                     <div style="display: flex; align-items: center; gap: 20px;">
-                        <div style="display: flex; align-items: center; cursor: pointer;">
+                        <div th:if="${appliedPromotion == null}" style="display: flex; align-items: center; cursor: pointer;" onclick="openVoucherModal()">
                             <i class="fas fa-gift" style="color: #33a3cc; margin-right: 6px; font-size: 14px;"></i>
                             <span style="font-size: 14px; color: #333;">One Voucher</span>
                             <span style="font-size: 14px; color: #0088ff; margin-left: 16px;">Chọn hoặc nhập mã</span>
                         </div>
+                        <div th:if="${appliedPromotion != null}" style="display: flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-gift" style="color: #28a745; margin-right: 6px; font-size: 14px;"></i>
+                            <span style="font-size: 14px; color: #333;">Voucher:</span>
+                            <span style="background: #e8f5e8; padding: 2px 6px; border-radius: 3px; font-size: 12px; color: #28a745; font-weight: 500;" th:text="${appliedPromotion.promotionCode}"></span>
+                            <span style="color: #28a745; font-size: 12px; font-weight: 500;">-[[${#numbers.formatDecimal(discountAmount, 0, 'DEFAULT', 0, 'DEFAULT')}]]đ</span>
+                            <button onclick="removeAppliedVoucher()" style="background: none; border: none; color: #dc3545; cursor: pointer; font-size: 11px; padding: 1px 3px;" title="Bỏ voucher">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
                     </div>
                     
                     <!-- One Xu -->
-                    <div style="display: flex; align-items: center;">
-                        <i class="fas fa-coins" style="color: #33a3cc; margin-right: 6px; font-size: 14px;"></i>
-                        <span style="font-size: 14px; color: #333;">One Xu</span>
-                        <span style="font-size: 12px; color: #757575; margin-left: 8px;">Bạn chưa chọn sản phẩm</span>
-                        <i class="fas fa-question-circle" style="margin-left: 4px; color: #757575; font-size: 12px; cursor: pointer;"></i>
-                        <span style="font-size: 12px; color: #757575; margin-left: 16px;">-0đ</span>
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <div style="display: flex; align-items: center;">
+                            <i class="fas fa-coins" style="color: #33a3cc; margin-right: 6px; font-size: 14px;"></i>
+                            <span style="font-size: 14px; color: #333;">One Xu</span>
                         </div>
+                        
+                        <!-- Xu Balance Display -->
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span style="font-size: 12px; color: #666;">Số dư:</span>
+                            <span id="xuBalanceDisplay" style="font-size: 12px; color: #33a3cc; font-weight: 500;" th:text="${user?.oneXuBalance != null ? #numbers.formatDecimal(user.oneXuBalance, 0, 'DEFAULT', 0, 'DEFAULT') + ' xu' : '0 xu'}"></span>
+                        </div>
+                        
+                        <!-- Xu Input -->
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <input type="number" id="xuInput" placeholder="Nhập xu" min="0" th:max="${user?.oneXuBalance ?: 0}" 
+                                   style="width: 80px; padding: 4px 6px; border: 1px solid #ddd; border-radius: 4px; font-size: 12px;" 
+                                   oninput="validateXuInput()">
+                            <span style="font-size: 12px; color: #666;">xu</span>
+                            <button onclick="applyXuDiscount()" style="background: #33a3cc; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 12px; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='#2a8bb8'" onmouseout="this.style.background='#33a3cc'">
+                                Áp dụng
+                            </button>
+                        </div>
+                        
+                        <!-- Xu Discount Display -->
+                        <div style="display: flex; align-items: center;">
+                            <span id="xuDiscountDisplay" style="font-size: 12px; color: #28a745; font-weight: 500;">-0đ</span>
+                        </div>
+                    </div>
                     </div>
                 </div>
             
@@ -239,10 +274,37 @@
                     
                     <!-- Right side - Price and checkout -->
                     <div style="display: flex; align-items: center; gap: 20px;">
-                        <div style="text-align: right;">
-                            <div style="font-size: 16px; color: #333; margin-bottom: 2px;">
-                                <span>Tổng cộng (<span id="selected-count-footer">[[${selectedItems}]]</span> Sản phẩm): </span>
-                                <span style="color: #33a3cc; font-size: 20px; font-weight: 500;">₫<span id="selected-total-footer">[[${#numbers.formatDecimal(selectedPrice, 0, 'DEFAULT', 0, 'DEFAULT')}]]</span></span>
+                        <div class="cart-footer-summary" style="text-align: right;">
+                            <!-- No vouchers applied -->
+                            <div th:if="${totalDiscount == null or totalDiscount == 0}" style="font-size: 16px; color: #333; margin-bottom: 2px;">
+                                <span>Tổng cộng (<span id="selected-count-footer" th:text="${selectedItems ?: 0}"></span> Sản phẩm): </span>
+                                <span style="color: #33a3cc; font-size: 20px; font-weight: 500;">₫<span id="selected-total-footer" th:text="${#numbers.formatDecimal(selectedPrice ?: 0, 0, 'DEFAULT', 0, 'DEFAULT')}"></span></span>
+                            </div>
+                            
+                            <!-- Vouchers applied -->
+                            <div th:if="${totalDiscount != null and totalDiscount > 0}" style="font-size: 14px; color: #333;">
+                                <div style="margin-bottom: 4px;">
+                                    <span>Tạm tính (<span th:text="${selectedItems ?: 0}"></span> Sản phẩm): </span>
+                                    <span style="color: #666; font-size: 16px;" th:text="'₫' + ${#numbers.formatDecimal(selectedPrice ?: 0, 0, 'DEFAULT', 0, 'DEFAULT')}"></span>
+                                </div>
+                                
+                                <!-- OneShop voucher discount -->
+                                <div th:if="${oneVoucherDiscount != null and oneVoucherDiscount > 0}" style="margin-bottom: 4px;">
+                                    <span>OneShop voucher: </span>
+                                    <span style="color: #1976d2; font-size: 16px;" th:text="'-₫' + ${#numbers.formatDecimal(oneVoucherDiscount ?: 0, 0, 'DEFAULT', 0, 'DEFAULT')}"></span>
+                                </div>
+                                
+                                <!-- Shop voucher discount -->
+                                <div th:if="${shopVoucherDiscount != null and shopVoucherDiscount > 0}" style="margin-bottom: 4px;">
+                                    <span>Shop voucher: </span>
+                                    <span style="color: #1976d2; font-size: 16px;" th:text="'-₫' + ${#numbers.formatDecimal(shopVoucherDiscount ?: 0, 0, 'DEFAULT', 0, 'DEFAULT')}"></span>
+                                </div>
+                                
+                                <div style="border-top: 1px solid #e5e5e5; padding-top: 4px;">
+                                    <span>Tổng thanh toán: </span>
+                                    <span style="color: #33a3cc; font-size: 20px; font-weight: 500;">₫<span th:text="${#numbers.formatDecimal(finalPrice ?: 0, 0, 'DEFAULT', 0, 'DEFAULT')}"></span></span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                         <button id="checkout-btn-footer" onclick="proceedToCheckout()" 
@@ -305,6 +367,116 @@
                     <div class="modal-footer">
                         <a id="yesOption" type="button" class="btn btn-success">Có</a>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Voucher Modal -->
+    <div class="modal fade" id="voucherModal" tabindex="-1" style="z-index: 1055;">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content" style="border: none; border-radius: 8px; overflow: hidden;">
+                <div class="modal-header" style="background: #33a3cc; color: white; border: none; padding: 16px 20px;">
+                    <h5 class="modal-title" style="margin: 0; font-weight: 500; font-size: 18px;">
+                        Chọn OneShop Voucher
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                
+                <div class="modal-body" style="padding: 0; background: white;">
+                    <!-- Voucher Input -->
+                    <div style="padding: 16px; border-bottom: 1px solid #f1f1f1;">
+                        <div style="display: flex; gap: 8px;">
+                            <input type="text" id="voucher-input" placeholder="Mã Voucher" 
+                                   style="flex: 1; padding: 10px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;"
+                                   onkeypress="if(event.key==='Enter') applyManualVoucher()">
+                            <button onclick="applyManualVoucher()" 
+                                    style="background: #33a3cc; color: white; border: none; padding: 10px 16px; border-radius: 4px; font-size: 14px; cursor: pointer;">
+                                ÁP DỤNG
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Mã Miễn Phí Vận Chuyển -->
+                    <div style="padding: 16px; border-bottom: 1px solid #f1f1f1;">
+                        <h6 style="margin: 0 0 12px 0; font-size: 14px; color: #333;">Mã Miễn Phí Vận Chuyển</h6>
+                        
+                        <!-- Loading state -->
+                        <div id="voucher-loading" style="text-align: center; padding: 20px; display: none;">
+                            <i class="fas fa-spinner fa-spin" style="color: #999;"></i>
+                            <span style="margin-left: 8px; color: #999; font-size: 14px;">Đang tải...</span>
+                        </div>
+                        
+                        <!-- Voucher list -->
+                        <div id="voucher-list">
+                            <!-- Vouchers will be loaded here -->
+                        </div>
+                        
+                        <!-- No vouchers -->
+                        <div id="no-vouchers" style="text-align: center; padding: 20px; color: #999; font-size: 14px; display: none;">
+                            Không có voucher khả dụng
+                        </div>
+                        
+                        <!-- Warning message -->
+                        <div style="background: #fff3e0; border: 1px solid #ffcc02; border-radius: 4px; padding: 8px 12px; margin-top: 12px; display: flex; align-items: center;">
+                            <i class="fas fa-exclamation-triangle" style="color: #ff6600; margin-right: 8px; font-size: 14px;"></i>
+                            <span style="color: #ff6600; font-size: 13px;">Vui lòng chọn sản phẩm trong giỏ hàng để áp dụng Voucher này</span>
+                        </div>
+                    </div>
+                    
+                </div>
+                
+                <div class="modal-footer" style="border-top: 1px solid #f1f1f1; padding: 16px 20px; background: white; display: flex; gap: 10px;">
+                    <button type="button" class="btn" data-bs-dismiss="modal" 
+                            style="flex: 1; background: white; border: 1px solid #ddd; color: #333; padding: 10px; border-radius: 4px; font-size: 14px;">
+                        TRỞ LẠI
+                    </button>
+                    <button type="button" class="btn" onclick="applySelectedVoucher()" 
+                            style="flex: 1; background: #33a3cc; border: none; color: white; padding: 10px; border-radius: 4px; font-size: 14px;">
+                        OK
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Shop Voucher Modal -->
+    <div class="modal fade" id="shopVoucherModal" tabindex="-1" style="z-index: 1060;">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content" style="border: none; border-radius: 8px; overflow: hidden;">
+                <div class="modal-header" style="background: #33a3cc; color: white; border: none; padding: 16px 20px;">
+                    <h5 class="modal-title" style="margin: 0; font-weight: 500; font-size: 18px;">
+                        <i class="fas fa-store" style="margin-right: 8px;"></i>
+                        <span id="shop-voucher-title">Voucher của Shop</span>
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body" style="padding: 0; background: white; max-height: 500px; overflow-y: auto;">
+                    <!-- Loading state -->
+                    <div id="shop-voucher-loading" style="text-align: center; padding: 40px; display: none;">
+                        <i class="fas fa-spinner fa-spin" style="color: #999; font-size: 24px;"></i>
+                        <div style="margin-top: 12px; color: #999; font-size: 14px;">Đang tải voucher...</div>
+                    </div>
+
+                    <!-- Voucher list -->
+                    <div id="shop-voucher-list" style="padding: 16px;">
+                        <!-- Shop vouchers will be loaded here -->
+                    </div>
+
+                    <!-- No vouchers -->
+                    <div id="shop-no-vouchers" style="text-align: center; padding: 40px; color: #999; display: none;">
+                        <i class="fas fa-ticket-alt" style="font-size: 48px; opacity: 0.3; margin-bottom: 16px;"></i>
+                        <div style="font-size: 16px; margin-bottom: 8px;">Shop này chưa có voucher</div>
+                        <div style="font-size: 14px;">Hãy quay lại sau để xem voucher mới!</div>
+                    </div>
+                </div>
+
+                <div class="modal-footer" style="border-top: 1px solid #f1f1f1; padding: 16px 20px; background: white;">
+                    <button type="button" class="btn" data-bs-dismiss="modal"
+                            style="width: 100%; background: #33a3cc; border: none; color: white; padding: 12px; border-radius: 4px; font-size: 14px;">
+                        ĐÓNG
+                    </button>
                 </div>
             </div>
         </div>
@@ -450,9 +622,79 @@
             const selectedCountElement = document.getElementById('selected-count');
             const checkoutCountElement = document.getElementById('checkout-count');
             
-            // Footer elements
-            const selectedTotalFooter = document.getElementById('selected-total-footer');
-            const selectedCountFooter = document.getElementById('selected-count-footer');
+            // Footer elements - use querySelector to find visible elements
+            const footerContainer = document.querySelector('.cart-footer-summary');
+            
+            // Check if footer has voucher structure (3 divs instead of 1)
+            const hasVoucher = footerContainer && footerContainer.querySelector('div > div');
+            
+            if (hasVoucher) {
+                // Footer has voucher structure, need to rebuild with updated values
+                // Extract discount amounts from current display
+                const discountElements = footerContainer.querySelectorAll('span');
+                let oneVoucherDiscount = 0;
+                let shopVoucherDiscount = 0;
+                
+                discountElements.forEach(el => {
+                    const text = el.textContent;
+                    if (text.includes('OneShop voucher') || text.includes('Giảm giá voucher')) {
+                        const nextElement = el.nextElementSibling;
+                        if (nextElement && nextElement.textContent.includes('-₫')) {
+                            const discountText = nextElement.textContent.replace(/[^\d]/g, '');
+                            oneVoucherDiscount = parseInt(discountText) || 0;
+                        }
+                    } else if (text.includes('Shop voucher')) {
+                        const nextElement = el.nextElementSibling;
+                        if (nextElement && nextElement.textContent.includes('-₫')) {
+                            const discountText = nextElement.textContent.replace(/[^\d]/g, '');
+                            shopVoucherDiscount = parseInt(discountText) || 0;
+                        }
+                    }
+                });
+                
+                const totalDiscount = oneVoucherDiscount + shopVoucherDiscount;
+                const finalTotal = selectedTotal - totalDiscount;
+                
+                // Rebuild footer with updated values
+                let footerHTML = '<div style="font-size: 14px; color: #333;"><div style="margin-bottom: 4px;">';
+                footerHTML += `<span>Tạm tính (${selectedCount} Sản phẩm): </span>`;
+                footerHTML += `<span style="color: #666; font-size: 16px;">₫${formatNumber(selectedTotal)}</span></div>`;
+                
+                if (oneVoucherDiscount > 0) {
+                    footerHTML += '<div style="margin-bottom: 4px;">';
+                    footerHTML += '<span>OneShop voucher: </span>';
+                    footerHTML += `<span style="color: #1976d2; font-size: 16px;">-₫${formatNumber(oneVoucherDiscount)}</span></div>`;
+                }
+                
+                if (shopVoucherDiscount > 0) {
+                    footerHTML += '<div style="margin-bottom: 4px;">';
+                    footerHTML += '<span>Shop voucher: </span>';
+                    footerHTML += `<span style="color: #1976d2; font-size: 16px;">-₫${formatNumber(shopVoucherDiscount)}</span></div>`;
+                }
+                
+                footerHTML += '<div style="border-top: 1px solid #e5e5e5; padding-top: 4px;">';
+                footerHTML += '<span>Tổng thanh toán: </span>';
+                footerHTML += `<span style="color: #33a3cc; font-size: 20px; font-weight: 500;">₫${formatNumber(finalTotal)}</span></div></div>`;
+                
+                footerContainer.innerHTML = footerHTML;
+            } else {
+                // No voucher, use simple update
+                let selectedTotalFooter = null;
+                let selectedCountFooter = null;
+                
+                if (footerContainer) {
+                    selectedTotalFooter = footerContainer.querySelector('#selected-total-footer');
+                    selectedCountFooter = footerContainer.querySelector('#selected-count-footer');
+                }
+                
+            if (selectedTotalFooter) {
+                selectedTotalFooter.textContent = formatNumber(selectedTotal);
+            }
+            if (selectedCountFooter) {
+                selectedCountFooter.textContent = selectedCount;
+                }
+            }
+            
             const selectAllBottom = document.getElementById('selectAllBottom');
             
             if (selectedTotalElement) {
@@ -463,14 +705,6 @@
             }
             if (checkoutCountElement) {
                 checkoutCountElement.textContent = selectedCount;
-            }
-            
-            // Update footer elements
-            if (selectedTotalFooter) {
-                selectedTotalFooter.textContent = formatNumber(selectedTotal);
-            }
-            if (selectedCountFooter) {
-                selectedCountFooter.textContent = selectedCount;
             }
             
             // Sync bottom select all checkbox
@@ -574,14 +808,180 @@
             updateSelectAllCheckbox();
             updateAllShopCheckboxes();
             
+            // Restore checkbox states after reload (for shop voucher)
+            const savedSelectedItems = sessionStorage.getItem('selectedItems');
+            if (savedSelectedItems) {
+                const selectedItemIds = JSON.parse(savedSelectedItems);
+                console.log('Restoring selected items:', selectedItemIds);
+                
+                let syncCount = 0;
+                const totalItems = selectedItemIds.length;
+                
+                // Force sync ALL items in sessionStorage with backend (regardless of UI state)
+                selectedItemIds.forEach((itemId, index) => {
+                    const checkbox = document.querySelector(`.item-checkbox[data-product-id="${itemId}"]`);
+                    if (checkbox) {
+                        // Always sync with backend to ensure state consistency
+                        fetch('/cart/update-selected', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded',
+                            },
+                            body: `productId=${itemId}&selected=true`
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            syncCount++;
+                            if (data.success) {
+                                checkbox.checked = true;
+                                // Only update totals on the last sync to avoid multiple updates
+                                if (syncCount === totalItems) {
+                                    updateTotals(data.selectedTotal, data.selectedCount);
+                                    updateSelectAllCheckbox();
+                                    updateAllShopCheckboxes();
+                                    console.log('All items synced successfully');
+                                }
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error restoring item selection:', error);
+                            syncCount++;
+                        });
+                    }
+                });
+                
+                sessionStorage.removeItem('selectedItems'); // Clean up
+            } else {
+                // No sessionStorage, but still need to sync current UI state with backend
+                const currentCheckedItems = document.querySelectorAll('.item-checkbox:checked');
+                console.log('Syncing current checked items with backend:', currentCheckedItems.length);
+                
+                if (currentCheckedItems.length > 0) {
+                    let syncCount = 0;
+                    const totalItems = currentCheckedItems.length;
+                    
+                    currentCheckedItems.forEach(checkbox => {
+                        const itemId = checkbox.getAttribute('data-product-id');
+                        if (itemId) {
+                            fetch('/cart/update-selected', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/x-www-form-urlencoded',
+                                },
+                                body: `productId=${itemId}&selected=true`
+                            })
+                            .then(response => response.json())
+                            .then(data => {
+                                syncCount++;
+                                if (data.success && syncCount === totalItems) {
+                                    updateTotals(data.selectedTotal, data.selectedCount);
+                                    updateSelectAllCheckbox();
+                                    updateAllShopCheckboxes();
+                                    console.log('Current UI state synced with backend');
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Error syncing current state:', error);
+                                syncCount++;
+                            });
+                        }
+                    });
+                }
+            }
+            
             // Initial state of checkout button
-            const selectedCount = parseInt(document.getElementById('selected-count').textContent) || 0;
+            const selectedCountElement = document.getElementById('selected-count');
+            const selectedCount = selectedCountElement ? parseInt(selectedCountElement.textContent) || 0 : 0;
             updateTotals(0, selectedCount); // Use 0 for total as we'll get it from server
         });
         
+        // ===== ONE XU FUNCTIONALITY =====
+        
+        // Validate xu input
+        function validateXuInput() {
+            const xuInput = document.getElementById('xuInput');
+            const maxXu = parseInt(xuInput.getAttribute('max')) || 0;
+            const currentValue = parseInt(xuInput.value) || 0;
+            
+            if (currentValue > maxXu) {
+                xuInput.value = maxXu;
+                alert(`Bạn chỉ có ${maxXu} xu trong tài khoản!`);
+            }
+            
+            if (currentValue < 0) {
+                xuInput.value = 0;
+            }
+        }
+        
+        // Apply xu discount
+        function applyXuDiscount() {
+            const xuInput = document.getElementById('xuInput');
+            const xuAmount = parseInt(xuInput.value) || 0;
+            
+            if (xuAmount === 0) {
+                // Remove xu discount
+                removeXuDiscount();
+                return;
+            }
+            
+            // Send to backend to apply xu discount
+            fetch('/cart/apply-xu', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `xuAmount=${xuAmount}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Update xu discount display
+                    document.getElementById('xuDiscountDisplay').textContent = `-${formatNumber(data.xuDiscount)}đ`;
+                    
+                    // Update footer totals
+                    updateFooterTotals();
+                } else {
+                    alert(data.message || 'Có lỗi xảy ra khi áp dụng xu');
+                    xuInput.value = 0;
+                    document.getElementById('xuDiscountDisplay').textContent = '-0đ';
+                }
+            })
+            .catch(error => {
+                console.error('Error applying xu:', error);
+                alert('Có lỗi xảy ra khi áp dụng xu');
+                xuInput.value = 0;
+                document.getElementById('xuDiscountDisplay').textContent = '-0đ';
+            });
+        }
+        
+        // Remove xu discount
+        function removeXuDiscount() {
+            fetch('/cart/remove-xu', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('xuInput').value = 0;
+                    document.getElementById('xuDiscountDisplay').textContent = '-0đ';
+                    updateFooterTotals();
+                }
+            })
+            .catch(error => {
+                console.error('Error removing xu:', error);
+            });
+        }
+        
+        
         // Proceed to checkout function
         function proceedToCheckout() {
-            const selectedCount = parseInt(document.getElementById('selected-count-footer').textContent) || 0;
+            // Check directly from checkboxes instead of DOM elements
+            const checkedItems = document.querySelectorAll('.item-checkbox:checked');
+            const selectedCount = checkedItems.length;
+            
             if (selectedCount === 0) {
                 alert('Vui lòng chọn ít nhất một sản phẩm để thanh toán!');
                 return;
@@ -606,6 +1006,663 @@
             originalUpdateSelectAllCheckbox();
             syncSelectAllCheckboxes();
         };
+        
+        // ===== VOUCHER FUNCTIONALITY =====
+        
+        // Open voucher modal
+        function openVoucherModal() {
+            $('#voucherModal').modal('show');
+            loadAvailableVouchers();
+        }
+        
+        // Simple initialization for voucher modal
+        document.addEventListener('DOMContentLoaded', function() {
+            // No more tabs, just simple initialization
+        });
+
+        // ===== SHOP VOUCHER FUNCTIONALITY =====
+        function openShopVoucherModal(shopId) {
+            if (!shopId) {
+                alert('Không thể xác định shop ID');
+                return;
+            }
+            
+            // Show modal
+            if (typeof $ !== 'undefined') {
+                $('#shopVoucherModal').modal('show');
+            } else {
+                const modalElement = document.getElementById('shopVoucherModal');
+                if (modalElement) {
+                    const modal = new bootstrap.Modal(modalElement);
+                    modal.show();
+                } else {
+                    alert('Không thể mở modal voucher shop');
+                    return;
+                }
+            }
+            
+            loadShopVouchers(shopId);
+        }
+
+        function loadShopVouchers(shopId) {
+            // Show loading state
+            document.getElementById('shop-voucher-loading').style.display = 'block';
+            document.getElementById('shop-voucher-list').style.display = 'none';
+            document.getElementById('shop-no-vouchers').style.display = 'none';
+
+            fetch(`/cart/shop-promotions/${shopId}`)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('shop-voucher-loading').style.display = 'none';
+
+                    if (data.success && data.promotions && data.promotions.length > 0) {
+                        // Update modal title with shop name if available
+                        const titleElement = document.getElementById('shop-voucher-title');
+                        if (titleElement && data.shopName) {
+                            titleElement.textContent = `Voucher của ${data.shopName}`;
+                        }
+                        
+                        displayShopVouchers(data.promotions);
+                        document.getElementById('shop-voucher-list').style.display = 'block';
+                    } else {
+                        document.getElementById('shop-no-vouchers').style.display = 'block';
+                    }
+                })
+                .catch(error => {
+                    document.getElementById('shop-voucher-loading').style.display = 'none';
+                    document.getElementById('shop-no-vouchers').style.display = 'block';
+                });
+        }
+
+        function displayShopVouchers(promotions) {
+            const voucherList = document.getElementById('shop-voucher-list');
+            if (!voucherList) {
+                return;
+            }
+
+            voucherList.innerHTML = '';
+
+            promotions.forEach((promotion) => {
+                try {
+                    const voucherCard = createShopVoucherCard(promotion);
+                    voucherList.appendChild(voucherCard);
+                } catch (error) {
+                    // Skip invalid voucher cards
+                }
+            });
+        }
+
+        function createShopVoucherCard(promotion) {
+            const card = document.createElement('div');
+            card.style.cssText = 'border: 1px solid #f1f1f1; border-radius: 8px; margin-bottom: 12px; padding: 16px; background: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1);';
+
+            try {
+                const discountText = getDiscountText(promotion);
+                const expiryDate = new Date(promotion.endDate).toLocaleDateString('vi-VN');
+                const isActive = promotion.isActive;
+                const isExpired = new Date(promotion.endDate) < new Date();
+
+                let bgColor = isActive && !isExpired ? '#4db3f1' : '#999';
+                let voucherDisplay = '';
+
+                if (promotion.promotionType === 'FREE_SHIPPING') {
+                    voucherDisplay = '<div style="font-size: 18px; font-weight: bold; margin: 2px 0;">FREE</div><div style="font-size: 18px; font-weight: bold;">SHIP</div>';
+                } else {
+                    voucherDisplay = '<div style="font-size: 18px; font-weight: bold; margin: 2px 0;">GIẢM</div><div style="font-size: 18px; font-weight: bold;">GIÁ</div>';
+                }
+
+                const maxDiscount = promotion.maximumDiscountAmount || promotion.discountValue || 0;
+                const minOrder = promotion.minimumOrderAmount || 0;
+                const usedPercent = Math.round(((promotion.usedCount || 0) / (promotion.usageLimit || 1)) * 100);
+
+                const statusText = !isActive ? 'HẾT HIỆU LỰC' : isExpired ? 'HẾT HẠN' : 'KHẢ DỤNG';
+                const statusColor = !isActive || isExpired ? '#ff4757' : '#2ed573';
+                const canApply = isActive && !isExpired;
+
+                card.innerHTML =
+                    '<div style="display: flex; align-items: center; gap: 16px;">' +
+                        '<div style="background: ' + bgColor + '; color: white; padding: 12px; border-radius: 8px; min-width: 100px; text-align: center;">' +
+                            '<div style="font-size: 12px; opacity: 0.9;">SHOP</div>' +
+                            voucherDisplay +
+                            '<div style="font-size: 11px; opacity: 0.9;">Tối đa ' + formatNumber(maxDiscount) + 'đ</div>' +
+                        '</div>' +
+                        '<div style="flex: 1;">' +
+                            '<div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">' +
+                                '<h6 style="margin: 0; font-size: 16px; color: #333; font-weight: 600;">' + (promotion.promotionName || 'Voucher Shop') + '</h6>' +
+                                '<span style="background: ' + statusColor + '; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 500;">' + statusText + '</span>' +
+                            '</div>' +
+                            '<div style="font-size: 14px; color: #666; margin-bottom: 4px;">' + discountText + '</div>' +
+                            '<div style="font-size: 13px; color: #333; margin-bottom: 6px;">Mã: <strong>' + (promotion.promotionCode || 'N/A') + '</strong></div>' +
+                            '<div style="font-size: 13px; color: #333; margin-bottom: 6px;">Đơn Tối Thiểu: ₫' + formatNumber(minOrder) + '</div>' +
+                            '<div style="font-size: 12px; color: #999; margin-bottom: 8px;">' +
+                                'Đã sử dụng ' + usedPercent + '% • HSD: ' + expiryDate +
+                            '</div>' +
+                            (promotion.description ? '<div style="font-size: 12px; color: #666; margin-bottom: 8px; font-style: italic;">' + promotion.description + '</div>' : '') +
+                            '<div style="text-align: right;">' +
+                                (canApply ? 
+                                    '<button onclick="applyShopVoucher(\'' + (promotion.promotionCode || '') + '\')" style="background: #33a3cc; color: white; border: none; padding: 6px 16px; border-radius: 4px; font-size: 12px; cursor: pointer; font-weight: 500;">ÁP MÃ</button>' :
+                                    '<button disabled style="background: #ccc; color: #999; border: none; padding: 6px 16px; border-radius: 4px; font-size: 12px; cursor: not-allowed; font-weight: 500;">KHÔNG KHẢ DỤNG</button>'
+                                ) +
+                            '</div>' +
+                        '</div>' +
+                    '</div>';
+
+                return card;
+
+            } catch (error) {
+                card.innerHTML = '<div style="padding: 10px; color: red;">Lỗi hiển thị voucher: ' + (promotion.promotionName || 'Unknown') + '</div>';
+                return card;
+            }
+        }
+
+        // Apply shop voucher from shop modal
+        function applyShopVoucher(promotionCode) {
+            if (!promotionCode) {
+                alert('Mã voucher không hợp lệ');
+                return;
+            }
+
+            // Close shop modal first
+            if (typeof $ !== 'undefined') {
+                $('#shopVoucherModal').modal('hide');
+            } else {
+                const modalElement = document.getElementById('shopVoucherModal');
+                if (modalElement) {
+                    const modal = bootstrap.Modal.getInstance(modalElement);
+                    if (modal) {
+                        modal.hide();
+                    }
+                    // Remove focus from any focused elements in modal to fix accessibility warning
+                    const focusedElement = modalElement.querySelector(':focus');
+                    if (focusedElement) {
+                        focusedElement.blur();
+                    }
+                }
+            }
+
+            // Apply shop voucher via dedicated API
+            fetch('/cart/apply-shop-voucher', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: 'promotionCode=' + encodeURIComponent(promotionCode)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Áp dụng shop voucher thành công!');
+                    
+                    // Update shop voucher section specifically
+                    updateCartWithShopVoucher(data);
+                    
+                    // Also update footer with dual voucher system
+                    updateFooterTotals(data);
+                } else {
+                    alert(data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error applying shop voucher:', error);
+                alert('Có lỗi xảy ra khi áp dụng voucher');
+            });
+        }
+        
+        // Load available vouchers
+        function loadAvailableVouchers() {
+            document.getElementById('voucher-loading').style.display = 'block';
+            document.getElementById('voucher-list').style.display = 'none';
+            document.getElementById('no-vouchers').style.display = 'none';
+            
+            fetch('/cart/promotions')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('voucher-loading').style.display = 'none';
+
+                    if (data.success && data.promotions && data.promotions.length > 0) {
+                        displayVouchers(data.promotions);
+                        document.getElementById('voucher-list').style.display = 'block';
+                    } else {
+                        document.getElementById('no-vouchers').style.display = 'block';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading vouchers:', error);
+                    document.getElementById('voucher-loading').style.display = 'none';
+                    document.getElementById('no-vouchers').style.display = 'block';
+                });
+        }
+        
+        // Display vouchers in list
+        function displayVouchers(promotions) {
+            const voucherList = document.getElementById('voucher-list');
+            if (!voucherList) {
+                console.error('voucher-list element not found!');
+                return;
+            }
+
+            voucherList.innerHTML = '';
+
+            promotions.forEach((promotion, index) => {
+                try {
+                    const voucherCard = createVoucherCard(promotion);
+                    voucherList.appendChild(voucherCard);
+                } catch (error) {
+                    console.error(`Error creating card ${index}:`, error);
+                }
+            });
+        }
+        
+        // Create voucher card element (Simple Shopee style)
+        function createVoucherCard(promotion) {
+            
+            const card = document.createElement('div');
+            card.style.cssText = 'border: 1px solid #f1f1f1; border-radius: 4px; margin-bottom: 8px; padding: 12px; cursor: pointer; transition: all 0.2s ease;';
+            
+            try {
+                const discountText = getDiscountText(promotion);
+                const expiryDate = new Date(promotion.endDate).toLocaleDateString('vi-VN');
+                
+                // Simple background color based on promotion type
+                let bgColor = '#4db3f1';
+                let labelText = 'OneShop';
+                let voucherDisplay = '';
+                
+                if (promotion.promotionType === 'FREE_SHIPPING') {
+                    voucherDisplay = '<div style="font-size: 16px; font-weight: bold; margin: 2px 0;">FREE</div><div style="font-size: 16px; font-weight: bold;">SHIP</div>';
+                } else {
+                    voucherDisplay = '<div style="font-size: 16px; font-weight: bold; margin: 2px 0;">GIẢM</div><div style="font-size: 16px; font-weight: bold;">GIÁ</div>';
+                }
+                
+                const maxDiscount = promotion.maximumDiscountAmount || promotion.discountValue || 0;
+                const minOrder = promotion.minimumOrderAmount || 0;
+                const usedPercent = Math.round(((promotion.usedCount || 0) / (promotion.usageLimit || 1)) * 100);
+                
+                card.innerHTML = 
+                    '<div style="display: flex; align-items: center; gap: 12px;">' +
+                        '<input type="radio" name="selectedVoucher" value="' + (promotion.promotionCode || '') + '" style="accent-color: #33a3cc;">' +
+                        '<div style="background: ' + bgColor + '; color: white; padding: 8px; border-radius: 4px; min-width: 80px; text-align: center;">' +
+                            '<div style="font-size: 11px; opacity: 0.9;">' + labelText + '</div>' +
+                            voucherDisplay +
+                            '<div style="font-size: 10px; opacity: 0.9;">Giảm tối đa ' + formatNumber(maxDiscount) + 'đ</div>' +
+                        '</div>' +
+                        '<div style="flex: 1;">' +
+                            '<div style="font-size: 14px; color: #333; margin-bottom: 4px;">' + discountText + '</div>' +
+                            '<div style="font-size: 13px; color: #333; margin-bottom: 4px;">Đơn Tối Thiểu ₫' + formatNumber(minOrder) + '</div>' +
+                            '<div style="font-size: 12px; color: #999;">' +
+                                'Đã dùng ' + usedPercent + '%. HSD: ' + expiryDate +
+                                '<a href="#" style="color: #05a; text-decoration: none; margin-left: 8px;">Điều Kiện</a>' +
+                            '</div>' +
+                        '</div>' +
+                    '</div>';
+                
+                // Add click event to select radio
+                card.addEventListener('click', function() {
+                    const radio = card.querySelector('input[type="radio"]');
+                    radio.checked = true;
+                    
+                    // Update visual selection
+                    document.querySelectorAll('#voucher-list > div').forEach(c => {
+                        c.style.borderColor = '#f1f1f1';
+                        c.style.backgroundColor = 'white';
+                    });
+                    
+                    this.style.borderColor = '#33a3cc';
+                    this.style.backgroundColor = '#f0f9fc';
+                });
+                
+                return card;
+                
+            } catch (error) {
+                console.error('Error in createVoucherCard:', error);
+                // Return simple fallback card
+                card.innerHTML = '<div style="padding: 10px; color: red;">Lỗi hiển thị voucher: ' + (promotion.promotionName || 'Unknown') + '</div>';
+                return card;
+            }
+        }
+        
+        // Get discount text based on promotion type
+        function getDiscountText(promotion) {
+            try {
+                switch (promotion.promotionType) {
+                    case 'PERCENTAGE':
+                        return 'Giảm tối đa ' + formatNumber(promotion.maximumDiscountAmount || 0) + 'đ';
+                    case 'FIXED_AMOUNT':
+                        return 'Giảm ' + formatNumber(promotion.discountValue || 0) + 'đ';
+                    case 'FREE_SHIPPING':
+                        return 'Giảm tối đa ' + formatNumber(promotion.maximumDiscountAmount || 50000) + 'đ';
+                    case 'BUY_X_GET_Y':
+                        return 'Mua X tặng Y';
+                    default:
+                        return 'Khuyến mãi đặc biệt';
+                }
+            } catch (error) {
+                console.error('Error in getDiscountText:', error);
+                return 'Khuyến mãi';
+            }
+        }
+        
+        // Format currency
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('vi-VN', {
+                style: 'currency',
+                currency: 'VND'
+            }).format(amount);
+        }
+        
+        // Apply voucher
+        function applyVoucher(promotionCode, event) {
+            if (event) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            
+            // Show loading
+            const button = event ? event.target : null;
+            const originalText = button ? button.textContent : '';
+            if (button) {
+                button.textContent = 'Đang áp dụng...';
+                button.disabled = true;
+            }
+            
+            fetch('/cart/apply-promotion', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `promotionCode=${encodeURIComponent(promotionCode)}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (button) {
+                    button.textContent = originalText;
+                    button.disabled = false;
+                }
+                
+                if (data.success) {
+                    alert(data.message);
+                    $('#voucherModal').modal('hide');
+                    // Update cart totals display without full reload
+                    updateCartWithVoucher(data);
+                } else {
+                    alert(data.message);
+                }
+            })
+            .catch(error => {
+                if (button) {
+                    button.textContent = originalText;
+                    button.disabled = false;
+                }
+                console.error('Error applying voucher:', error);
+                alert('Có lỗi xảy ra khi áp dụng voucher');
+            });
+        }
+        
+        // Apply manual voucher
+        function applyManualVoucher() {
+            const codeInput = document.getElementById('voucher-input');
+            const code = codeInput.value.trim();
+            
+            if (!code) {
+                alert('Vui lòng nhập mã voucher');
+                return;
+            }
+            
+            applyVoucher(code);
+        }
+        
+        // Apply selected voucher from radio buttons
+        function applySelectedVoucher() {
+            const selectedRadio = document.querySelector('input[name="selectedVoucher"]:checked');
+            if (selectedRadio) {
+                const code = selectedRadio.value;
+                applyVoucher(code);
+            } else {
+                alert('Vui lòng chọn một voucher');
+            }
+        }
+        
+        // Update cart with shop voucher information
+        function updateCartWithShopVoucher(voucherData) {
+            // Update shop voucher display in the shop section
+            const shopVoucherElements = document.querySelectorAll('[onclick*="openShopVoucherModal"]');
+            
+            shopVoucherElements.forEach(element => {
+                if (element.textContent.includes('Xem thêm voucher')) {
+                    // Update to show applied voucher
+                    element.innerHTML = `
+                        <span style="background: #e3f2fd; padding: 2px 6px; border-radius: 3px; font-size: 12px; color: #1976d2; font-weight: 500;">${voucherData.promotion.promotionCode}</span>
+                        <span style="color: #1976d2; font-size: 12px; font-weight: 500; margin-left: 4px;">-${formatNumber(voucherData.discountAmount)}đ</span>
+                        <button onclick="removeShopVoucher()" style="background: none; border: none; color: #dc3545; cursor: pointer; font-size: 11px; padding: 1px 3px; margin-left: 6px;" title="Bỏ shop voucher">
+                            ✕
+                        </button>
+                    `;
+                    element.onclick = null; // Remove click handler
+                }
+            });
+            
+            // Save checkbox states 
+            const selectedItems = [];
+            document.querySelectorAll('.item-checkbox:checked').forEach(checkbox => {
+                selectedItems.push(checkbox.value);
+            });
+            sessionStorage.setItem('selectedItems', JSON.stringify(selectedItems));
+        }
+        
+        // Update cart with voucher information
+        function updateCartWithVoucher(voucherData) {
+            // Update all "Chọn hoặc nhập mã" text to show applied voucher
+            const voucherSelectors = document.querySelectorAll('[onclick="openVoucherModal()"]');
+            
+            voucherSelectors.forEach(element => {
+                if (element.textContent.includes('Chọn hoặc nhập mã')) {
+                    // Replace with voucher info
+                    element.innerHTML = `
+                        <span style="background: #e8f5e8; padding: 2px 6px; border-radius: 3px; font-size: 12px; color: #28a745; font-weight: 500;">${voucherData.promotion.promotionCode}</span>
+                        <span style="color: #28a745; font-size: 12px; font-weight: 500; margin-left: 4px;">-${formatNumber(voucherData.discountAmount)}đ</span>
+                        <button onclick="removeAppliedVoucher()" style="background: none; border: none; color: #dc3545; cursor: pointer; font-size: 11px; padding: 1px 3px; margin-left: 6px;" title="Bỏ voucher">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    `;
+                    element.style.cursor = 'default';
+                    element.onclick = null; // Remove click handler
+                }
+            });
+            
+            // Update totals in footer
+            updateFooterTotals(voucherData);
+        }
+        
+        // Update footer totals with voucher - supports dual voucher system
+        function updateFooterTotals(voucherData = null) {
+            const footerContainer = document.querySelector('.cart-footer-summary');
+            if (footerContainer) {
+                // Add small delay to ensure session is updated
+                setTimeout(() => {
+                    // Fetch current session voucher data to display both vouchers
+                    fetch('/cart/voucher-status')
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(sessionData => {
+                        console.log('Session data from API:', sessionData);
+                        const selectedItems = document.querySelectorAll('.item-checkbox:checked').length;
+                        
+                        // Calculate original amount by summing all selected items
+                        let original = 0;
+                        document.querySelectorAll('.item-checkbox:checked').forEach(checkbox => {
+                            const productRow = checkbox.closest('.product-item');
+                            if (productRow) {
+                                const rightColumns = productRow.querySelector('div[style*="display: flex; gap: 20px"]');
+                                if (rightColumns) {
+                                    // Find the div that contains total price (has color: #33a3cc and font-size: 16px)
+                                    const allDivs = rightColumns.querySelectorAll('div');
+                                    allDivs.forEach(div => {
+                                        const style = div.getAttribute('style');
+                                        if (style && style.includes('color: #33a3cc') && style.includes('font-size: 16px')) {
+                                            const priceText = div.textContent.replace(/[^\d]/g, '');
+                                            const price = parseInt(priceText) || 0;
+                                            if (price > 0) {
+                                                original += price;
+                                            }
+                                        }
+                                    });
+                                }
+                            }
+                        });
+                        
+                        // Fallback to voucherData if calculation fails
+                        if (original === 0 && voucherData && voucherData.originalAmount) {
+                            original = voucherData.originalAmount;
+                        }
+                        
+                        let footerHTML = `<div style="font-size: 14px; color: #333;">`;
+                        footerHTML += `<div style="margin-bottom: 4px;">`;
+                        footerHTML += `<span>Tạm tính (${selectedItems} Sản phẩm): </span>`;
+                        footerHTML += `<span style="color: #666; font-size: 16px;">₫${formatNumber(original)}</span></div>`;
+                        
+                        let totalDiscount = 0;
+                        
+                        // OneShop voucher
+                        if (sessionData.oneVoucherDiscount && sessionData.oneVoucherDiscount > 0) {
+                            footerHTML += `<div style="margin-bottom: 4px;">`;
+                            footerHTML += `<span>OneShop voucher: </span>`;
+                            footerHTML += `<span style="color: #1976d2; font-size: 16px;">-₫${formatNumber(sessionData.oneVoucherDiscount)}</span></div>`;
+                            totalDiscount += sessionData.oneVoucherDiscount;
+                        }
+                        
+                        // Shop voucher  
+                        if (sessionData.shopVoucherDiscount && sessionData.shopVoucherDiscount > 0) {
+                            footerHTML += `<div style="margin-bottom: 4px;">`;
+                            footerHTML += `<span>Shop voucher: </span>`;
+                            footerHTML += `<span style="color: #1976d2; font-size: 16px;">-₫${formatNumber(sessionData.shopVoucherDiscount)}</span></div>`;
+                            totalDiscount += sessionData.shopVoucherDiscount;
+                        }
+                        
+                        // One Xu discount
+                        if (sessionData.xuDiscount && sessionData.xuDiscount > 0) {
+                            footerHTML += `<div style="margin-bottom: 4px;">`;
+                            footerHTML += `<span>One Xu: </span>`;
+                            footerHTML += `<span style="color: #ff9800; font-size: 16px;">-₫${formatNumber(sessionData.xuDiscount)}</span></div>`;
+                            totalDiscount += sessionData.xuDiscount;
+                        }
+                        
+                        const finalTotal = original - totalDiscount;
+                        
+                        footerHTML += `<div style="border-top: 1px solid #e5e5e5; padding-top: 4px;">`;
+                        footerHTML += `<span>Tổng thanh toán: </span>`;
+                        footerHTML += `<span style="color: #33a3cc; font-size: 20px; font-weight: 500;">₫${formatNumber(finalTotal)}</span></div>`;
+                        footerHTML += `</div>`;
+                        
+                        footerContainer.innerHTML = footerHTML;
+                    })
+                    .catch(error => {
+                        console.error('Error fetching voucher status:', error);
+                        // Fallback to single voucher display
+                        const selectedItems = document.querySelectorAll('.item-checkbox:checked').length;
+                        const newTotal = voucherData.finalAmount;
+                        const discount = voucherData.discountAmount;
+                        const original = voucherData.originalAmount;
+                        
+                        footerContainer.innerHTML = `
+                            <div style="font-size: 14px; color: #333;">
+                                <div style="margin-bottom: 4px;">
+                                    <span>Tạm tính (${selectedItems} Sản phẩm): </span>
+                                    <span style="color: #666; font-size: 16px;">₫${formatNumber(original)}</span>
+                                </div>
+                                <div style="margin-bottom: 4px;">
+                                    <span>Giảm giá voucher: </span>
+                                    <span style="color: #1976d2; font-size: 16px;">-₫${formatNumber(discount)}</span>
+                                </div>
+                                <div style="border-top: 1px solid #e5e5e5; padding-top: 4px;">
+                                    <span>Tổng thanh toán: </span>
+                                    <span style="color: #33a3cc; font-size: 20px; font-weight: 500;">₫${formatNumber(newTotal)}</span>
+                                </div>
+                            </div>
+                        `;
+                    });
+                }, 100); // 100ms delay
+            }
+        }
+        
+        
+        // Remove applied voucher
+        function removeAppliedVoucher() {
+            if (confirm('Bạn có chắc muốn bỏ voucher này không?')) {
+                fetch('/cart/remove-promotion', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(data.message);
+                        location.reload();
+                    } else {
+                        alert(data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error removing voucher:', error);
+                    alert('Có lỗi xảy ra khi bỏ voucher');
+                });
+            }
+        }
+        
+        // Remove OneShop voucher
+        function removeOneVoucher() {
+            if (confirm('Bạn có chắc muốn bỏ OneShop voucher này không?')) {
+                fetch('/cart/remove-promotion', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: 'type=one'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert(data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error removing OneShop voucher:', error);
+                    alert('Có lỗi xảy ra khi bỏ voucher');
+                });
+            }
+        }
+        
+        // Remove Shop voucher
+        function removeShopVoucher() {
+            if (confirm('Bạn có chắc muốn bỏ shop voucher này không?')) {
+                fetch('/cart/remove-promotion', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: 'type=shop'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert(data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error removing shop voucher:', error);
+                    alert('Có lỗi xảy ra khi bỏ voucher');
+                });
+            }
+        }
     </script>
 </body>
 </html>

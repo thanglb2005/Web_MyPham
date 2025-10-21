@@ -1,5 +1,6 @@
 package vn.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -58,11 +59,13 @@ public class Promotion {
     // Liên kết với Shop
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "shop_id", nullable = false)
+    @JsonIgnoreProperties({"promotions", "vendor", "hibernateLazyInitializer", "handler"})
     private Shop shop;
     
     // Liên kết với User (người tạo)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by", nullable = false)
+    @JsonIgnoreProperties({"password", "roles", "hibernateLazyInitializer", "handler"})
     private User createdBy;
     
     @CreatedDate

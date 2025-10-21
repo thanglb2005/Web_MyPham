@@ -324,7 +324,7 @@
                     </div>
                     <div class="summary-row total">
                         <span>Tổng cộng:</span>
-                        <span th:text="${order?.totalAmount != null ? #numbers.formatDecimal(order.totalAmount, 1, 'DEFAULT', 0, 'DEFAULT') + ' ₫' : '0 ₫'}">0 ₫</span>
+                        <span th:text="${order?.finalAmount != null ? #numbers.formatDecimal(order.finalAmount, 1, 'DEFAULT', 0, 'DEFAULT') + ' ₫' : (order?.totalAmount != null ? #numbers.formatDecimal(order.totalAmount, 1, 'DEFAULT', 0, 'DEFAULT') + ' ₫' : '0 ₫')}">0 ₫</span>
                     </div>
                 </div>
             </div>

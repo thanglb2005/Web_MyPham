@@ -57,8 +57,13 @@ public class MoMoPaymentServiceImpl implements MoMoPaymentService {
             System.out.println("Order ID: " + orderId);
             System.out.println("Request ID: " + requestId);
             System.out.println("Order Total Amount (VND): " + order.getTotalAmount());
+            System.out.println("Order Final Amount (VND): " + order.getFinalAmount());
             
-            String amount = String.valueOf((long) Math.round(order.getTotalAmount())); // Gửi trực tiếp bằng VND
+            // Use finalAmount (after discount) instead of totalAmount
+            Double paymentAmount = (order.getFinalAmount() != null && order.getFinalAmount() > 0) 
+                ? order.getFinalAmount() 
+                : order.getTotalAmount();
+            String amount = String.valueOf((long) Math.round(paymentAmount)); // Gửi trực tiếp bằng VND
             System.out.println("MoMo Amount (VND): " + amount);
             System.out.println("Partner Code: " + partnerCode);
             System.out.println("Access Key: " + accessKey);
@@ -144,6 +149,20 @@ public class MoMoPaymentServiceImpl implements MoMoPaymentService {
                 return false;
             }
 
+            // Validate amount matches finalAmount
+            Double expectedAmount = (order.getFinalAmount() != null && order.getFinalAmount() > 0) 
+                ? order.getFinalAmount() 
+                : order.getTotalAmount();
+            
+            System.out.println("=== MoMo Callback Validation ===");
+            System.out.println("Expected Amount: " + expectedAmount);
+            System.out.println("Received Amount: " + amount);
+            
+            if (amount != null && Math.abs(expectedAmount - amount) > 1.0) {
+                System.out.println("Amount mismatch! Payment rejected.");
+                return false;
+            }
+
             // Kiểm tra mã kết quả từ MoMo
             if ("0".equals(resultCode)) {
                 // Thanh toán thành công
@@ -154,6 +173,7 @@ public class MoMoPaymentServiceImpl implements MoMoPaymentService {
                 order.setNote(order.getNote() + " | MoMo Transaction ID: " + transId);
                 
                 orderService.updateOrder(order);
+                System.out.println("Payment successful for order #" + orderId);
                 return true;
             } else {
                 // Thanh toán thất bại

@@ -229,6 +229,10 @@
                                 <span>Tạm tính:</span>
                                 <span th:text="${#numbers.formatDecimal(order.totalAmount, 1, 'DEFAULT', 0, 'DEFAULT')} + ' đ'">0 đ</span>
                             </div>
+                            <div class="d-flex justify-content-between mb-2" th:if="${order.discountAmount != null && order.discountAmount > 0}">
+                                <span>Giảm giá:</span>
+                                <span style="color: #28a745; font-weight: 600;">-<span th:text="${#numbers.formatDecimal(order.discountAmount, 1, 'DEFAULT', 0, 'DEFAULT')}">0</span> đ</span>
+                            </div>
                             <div class="d-flex justify-content-between mb-2">
                                 <span>Phí vận chuyển:</span>
                                 <span>Miễn phí</span>
@@ -236,7 +240,7 @@
                             <hr>
                             <div class="d-flex justify-content-between">
                                 <strong>Tổng cộng:</strong>
-                                <strong class="text-primary" th:text="${#numbers.formatDecimal(order.totalAmount, 1, 'DEFAULT', 0, 'DEFAULT')} + ' đ'">0 đ</strong>
+                                <strong class="text-primary" th:text="${#numbers.formatDecimal(order.finalAmount != null ? order.finalAmount : order.totalAmount, 1, 'DEFAULT', 0, 'DEFAULT')} + ' đ'">0 đ</strong>
                             </div>
                         </div>
 

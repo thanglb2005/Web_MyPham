@@ -490,9 +490,17 @@
                                     <strong>Shop:</strong>
                                     <span th:text="${order.shop.shopName}" class="badge bg-info text-white"></span>
                                 </div>
-                                <div class="col-12 order-info-item">
-                                    <strong>Tổng tiền:</strong> 
+                                <div class="col-12 order-info-item" th:if="${order.discountAmount != null && order.discountAmount > 0}">
+                                    <strong>Tổng tiền gốc:</strong> 
                                     <span th:text="${order.totalAmount != null ? #numbers.formatDecimal(order.totalAmount, 1, 'DEFAULT', 0, 'DEFAULT') + ' đ' : '--'}"></span>
+                                </div>
+                                <div class="col-12 order-info-item" th:if="${order.discountAmount != null && order.discountAmount > 0}">
+                                    <strong>Giảm giá:</strong> 
+                                    <span style="color: #28a745; font-weight: 600;">-<span th:text="${#numbers.formatDecimal(order.discountAmount, 1, 'DEFAULT', 0, 'DEFAULT')}">0</span> đ</span>
+                                </div>
+                                <div class="col-12 order-info-item">
+                                    <strong>Tổng thanh toán:</strong> 
+                                    <span th:text="${order.finalAmount != null ? #numbers.formatDecimal(order.finalAmount, 1, 'DEFAULT', 0, 'DEFAULT') + ' đ' : (order.totalAmount != null ? #numbers.formatDecimal(order.totalAmount, 1, 'DEFAULT', 0, 'DEFAULT') + ' đ' : '--')}"></span>
                                 </div>
                 </div>
               </div>

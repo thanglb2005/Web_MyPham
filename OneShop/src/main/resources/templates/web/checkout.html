@@ -44,41 +44,77 @@
                             <h4 style="color: #119744">Hãy mua sắm đi nào!</h4>
                             <a th:href="@{/products}" style="text-decoration: underline;">Click tại đây!</a>
                         </div>
-                        <div class="account-content">
-                            <div class="table-scroll">
-                                <table class="table-list" th:if="${totalCartItems!=0}">
+                        
+                        <!-- Empty State -->
+                        <div th:unless="${totalCartItems!=0}" class="text-center" style="padding: 60px 24px;">
+                            <i class="fas fa-shopping-cart" style="font-size: 64px; color: #ddd; margin-bottom: 20px;"></i>
+                            <h3 style="color: #119744; margin-bottom: 12px;">Hiện tại bạn chưa có sản phẩm nào trong giỏ hàng!</h3>
+                            <h4 style="color: #666; margin-bottom: 20px;">Hãy mua sắm đi nào!</h4>
+                            <a th:href="@{/products}" style="display: inline-block; padding: 12px 32px; background: #33a3cc; color: white; text-decoration: none; border-radius: 8px; font-weight: 500; transition: all 0.3s;">
+                                Khám phá sản phẩm
+                            </a>
+                        </div>
+                        
+                        <!-- Table Container -->
+                        <div style="padding: 0;">
+                            <div style="overflow-x: auto;">
+                                <table th:if="${totalCartItems!=0}" style="width: 100%; border-collapse: separate; border-spacing: 0;">
+                                    <!-- Modern Header -->
                                     <thead>
-                                        <tr>
-                                            <th scope="col">#</th>
-                                            <th scope="col">Sản phẩm</th>
-                                            <th scope="col">Tên sản phẩm</th>
-                                            <th scope="col">Đơn giá</th>
-                                            <th scope="col">Thể loại</th>
-                                            <th scope="col">Số lượng</th>
-                                            <th scope="col">action</th>
+                                        <tr style="background: #f5f5f5;">
+                                            <th style="padding: 16px 20px; text-align: center; font-weight: 600; color: #666; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid #e0e0e0;">#</th>
+                                            <th style="padding: 16px 20px; text-align: center; font-weight: 600; color: #666; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid #e0e0e0;">Sản Phẩm</th>
+                                            <th style="padding: 16px 20px; text-align: left; font-weight: 600; color: #666; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid #e0e0e0;">Tên Sản Phẩm</th>
+                                            <th style="padding: 16px 20px; text-align: right; font-weight: 600; color: #666; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid #e0e0e0;">Đơn Giá</th>
+                                            <th style="padding: 16px 20px; text-align: center; font-weight: 600; color: #666; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid #e0e0e0;">Thể Loại</th>
+                                            <th style="padding: 16px 20px; text-align: center; font-weight: 600; color: #666; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid #e0e0e0;">Số Lượng</th>
+                                            <th style="padding: 16px 20px; text-align: center; font-weight: 600; color: #666; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid #e0e0e0;">Thao Tác</th>
                                         </tr>
                                     </thead>
+                                    <!-- Zebra Striped Body -->
                                     <tbody>
-                                        <tr th:each="item,State : ${cartItems}">
-                                            <td class="table-serial"><h6 th:text="${State.index + 1}">1</h6></td>
-                                            <td class="table-image">
-                                                <img th:src="@{'/loadImage?imageName='+${item.imageUrl}}" alt="product" onerror="this.src='/images/no-image.png'" />
+                                        <tr th:each="item,State : ${cartItems}" th:style="${State.odd} ? 'background: #fafafa;' : 'background: #fff;'" style="transition: all 0.2s;" onmouseover="this.style.background='#f0f7fa';" th:onmouseout="${State.odd} ? 'this.style.background=\'#fafafa\';' : 'this.style.background=\'#fff\';'">
+                                            <!-- Serial Number -->
+                                            <td style="padding: 20px; text-align: center; border-bottom: 1px solid #f0f0f0;">
+                                                <span style="font-weight: 600; color: #333; font-size: 15px;" th:text="${State.index + 1}">1</span>
                                             </td>
-                                            <td class="table-name"><h6 th:text="${item.name}">Tên sản phẩm</h6></td>
-                                            <td class="table-price">
-                                                <h6><span th:text="${item.unitPrice} + ' VNĐ'">0 VNĐ</span><small>/kg</small></h6>
+                                            <!-- Product Image -->
+                                            <td style="padding: 20px; text-align: center; border-bottom: 1px solid #f0f0f0;">
+                                                <img th:src="@{'/loadImage?imageName='+${item.imageUrl}}" alt="product" 
+                                                     style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px; border: 2px solid #e0e0e0;"
+                                                     onerror="this.src='/images/no-image.png'" />
                                             </td>
-                                            <td class="table-brand"><h6 th:text="${item.categoryName}">Danh mục</h6></td>
-                                            <td class="table-quantity"><h6 th:text="${item.quantity}">1</h6></td>
-                                            <td class="table-action">
-                                                <a class="view" th:href="@{/productDetail(id=${item.id})}" title="Chi tiết sản phẩm">
-                                                    <i class="fas fa-eye"></i>
+                                            <!-- Product Name -->
+                                            <td style="padding: 20px; border-bottom: 1px solid #f0f0f0;">
+                                                <h6 style="margin: 0; font-size: 15px; font-weight: 500; color: #333; line-height: 1.5;" th:text="${item.name}">Tên sản phẩm</h6>
+                                            </td>
+                                            <!-- Unit Price -->
+                                            <td style="padding: 20px; text-align: right; border-bottom: 1px solid #f0f0f0;">
+                                                <span style="font-size: 16px; font-weight: 600; color: #33a3cc;" th:text="${#numbers.formatDecimal(item.unitPrice, 0, 'DEFAULT', 0, 'DEFAULT')} + ' ₫'">0 ₫</span>
+                                                <small style="color: #999; font-size: 12px;">/kg</small>
+                                            </td>
+                                            <!-- Category -->
+                                            <td style="padding: 20px; text-align: center; border-bottom: 1px solid #f0f0f0;">
+                                                <span style="display: inline-block; padding: 6px 12px; background: #e3f2fd; color: #1976d2; border-radius: 6px; font-size: 13px; font-weight: 500;" th:text="${item.categoryName}">Danh mục</span>
+                                            </td>
+                                            <!-- Quantity -->
+                                            <td style="padding: 20px; text-align: center; border-bottom: 1px solid #f0f0f0;">
+                                                <span style="display: inline-block; min-width: 40px; padding: 8px 16px; background: #fff; border: 2px solid #33a3cc; border-radius: 8px; font-weight: 600; color: #33a3cc; font-size: 15px;" th:text="${item.quantity}">1</span>
+                                            </td>
+                                            <!-- Action -->
+                                            <td style="padding: 20px; text-align: center; border-bottom: 1px solid #f0f0f0;">
+                                                <a th:href="@{/productDetail(id=${item.id})}" 
+                                                   style="display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; background: #33a3cc; color: white; border-radius: 8px; text-decoration: none; transition: all 0.3s;"
+                                                   onmouseover="this.style.background='#2a8bb8';" onmouseout="this.style.background='#33a3cc';"
+                                                   title="Chi tiết sản phẩm">
+                                                    <i class="fas fa-eye" style="font-size: 16px;"></i>
                                                 </a>
                                             </td>
                                         </tr>
                                     </tbody>
                                 </table>
                             </div>
+                        </div>
                             <th:block th:if="${totalCartItems!=0}">
                                 <div class="chekout-coupon">
                                     <h4>Tổng tiền thanh toán</h4>
@@ -86,8 +122,35 @@
                                 <div class="checkout-charge">
                                     <ul>
                                         <li>
-                                            <span>Tổng tiền thanh toán<small>(Incl. VAT)</small></span>
-                                            <span th:text="${totalPrice} + ' VNĐ'">0 VNĐ</span>
+                                            <span>Tạm tính</span>
+                                            <span th:text="${#numbers.formatDecimal(totalPrice, 0, 'DEFAULT', 0, 'DEFAULT')} + ' VNĐ'">0 VNĐ</span>
+                                        </li>
+                                        
+                                        <!-- OneShop Voucher Discount -->
+                                        <li th:if="${oneVoucherDiscount != null && oneVoucherDiscount > 0}">
+                                            <span>OneShop Voucher <small th:text="'(' + ${oneVoucher?.promotionCode} + ')'"></small></span>
+                                            <span style="color: #1976d2;" th:text="'-' + ${#numbers.formatDecimal(oneVoucherDiscount, 0, 'DEFAULT', 0, 'DEFAULT')} + ' VNĐ'">0 VNĐ</span>
+                                        </li>
+                                        
+                                        <!-- Shop Voucher Discount -->
+                                        <li th:if="${shopVoucherDiscount != null && shopVoucherDiscount > 0}">
+                                            <span>Shop Voucher <small th:text="'(' + ${shopVoucher?.promotionCode} + ')'"></small></span>
+                                            <span style="color: #1976d2;" th:text="'-' + ${#numbers.formatDecimal(shopVoucherDiscount, 0, 'DEFAULT', 0, 'DEFAULT')} + ' VNĐ'">0 VNĐ</span>
+                                        </li>
+                                        
+                                        <!-- OneXu Discount -->
+                                        <li th:if="${xuDiscount != null && xuDiscount > 0}">
+                                            <span>One Xu <small th:text="'(' + ${xuAmount} + ' xu)'"></small></span>
+                                            <span style="color: #ff9800;" th:text="'-' + ${#numbers.formatDecimal(xuDiscount, 0, 'DEFAULT', 0, 'DEFAULT')} + ' VNĐ'">0 VNĐ</span>
+                                        </li>
+                                        
+                                        <!-- Final Total -->
+                                        <li style="border-top: 2px solid #ddd; padding-top: 12px; margin-top: 10px;">
+                                            <span style="font-weight: 600; font-size: 16px; color: #333;">
+                                                Tổng thanh toán
+                                                <small style="font-size: 11px; color: #999; font-weight: normal;">(Incl. VAT)</small>
+                                            </span>
+                                            <span style="color: #33a3cc; font-weight: 700; font-size: 26px;" th:text="${#numbers.formatDecimal(finalPrice, 0, 'DEFAULT', 0, 'DEFAULT')} + ' VNĐ'">0 VNĐ</span>
                                         </li>
                                     </ul>
                                 </div>

@@ -199,9 +199,19 @@
                 <span class="info-label">Mã đơn hàng:</span>
                 <span class="info-value">#<span th:text="${order.orderId}"></span></span>
             </div>
+            <div class="info-row" th:if="${order.discountAmount != null && order.discountAmount > 0}">
+                <span class="info-label">Tổng tiền gốc:</span>
+                <span class="info-value"><span th:text="${#numbers.formatDecimal(order.totalAmount, 0, 'COMMA', 0, 'POINT')}"></span> VNĐ</span>
+            </div>
+            <div class="info-row" th:if="${order.discountAmount != null && order.discountAmount > 0}">
+                <span class="info-label">Giảm giá:</span>
+                <span class="info-value" style="color: #28a745;">-<span th:text="${#numbers.formatDecimal(order.discountAmount, 0, 'COMMA', 0, 'POINT')}"></span> VNĐ</span>
+            </div>
             <div class="info-row">
-                <span class="info-label">Tổng tiền:</span>
-                <span class="info-value amount"><span th:text="${#numbers.formatDecimal(order.totalAmount, 0, 'COMMA', 0, 'POINT')}"></span> VNĐ</span>
+                <span class="info-label">Tổng thanh toán:</span>
+                <span class="info-value amount">
+                    <span th:text="${#numbers.formatDecimal(order.finalAmount != null ? order.finalAmount : order.totalAmount, 0, 'COMMA', 0, 'POINT')}"></span> VNĐ
+                </span>
             </div>
             <div class="info-row">
                 <span class="info-label">Ngày đặt:</span>

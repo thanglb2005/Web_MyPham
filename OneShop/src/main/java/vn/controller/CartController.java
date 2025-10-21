@@ -1,6 +1,7 @@
 package vn.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -18,11 +19,16 @@ import vn.service.CartService;
 import vn.service.OrderService;
 import vn.service.ProductService;
 import vn.service.VietQRService;
+import vn.service.PromotionService;
+import vn.entity.Promotion;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Controller
 public class CartController {
@@ -42,6 +48,8 @@ public class CartController {
     @Autowired
     private VietQRService vietQRService;
     
+    @Autowired
+    private PromotionService promotionService;
 
     @GetMapping("/add-to-cart")
     public String addToCart(@RequestParam("productId") Long productId,
@@ -100,6 +108,60 @@ public class CartController {
         Double totalPrice = cartService.getCartTotalPrice(user);
         Integer selectedItems = cartService.getSelectedCartItemCount(user);
         Double selectedPrice = cartService.getSelectedCartTotalPrice(user);
+
+        // Check for applied vouchers - dual system
+        Promotion oneVoucher = (Promotion) request.getSession().getAttribute("oneVoucher");
+        Double oneVoucherDiscount = (Double) request.getSession().getAttribute("oneVoucherDiscount");
+        Promotion shopVoucher = (Promotion) request.getSession().getAttribute("shopVoucher");
+        Double shopVoucherDiscount = (Double) request.getSession().getAttribute("shopVoucherDiscount");
+        
+        // Check for applied xu
+        Integer xuAmount = (Integer) request.getSession().getAttribute("xuAmount");
+        Double xuDiscount = (Double) request.getSession().getAttribute("xuDiscount");
+        
+        Double finalPrice = selectedPrice;
+        Double totalDiscount = 0.0;
+        
+        
+        // Auto-clear vouchers and xu if no items selected
+        if (selectedItems == 0) {
+            request.getSession().removeAttribute("oneVoucher");  
+            request.getSession().removeAttribute("oneVoucherDiscount");
+            request.getSession().removeAttribute("shopVoucher");
+            request.getSession().removeAttribute("shopVoucherDiscount");
+            request.getSession().removeAttribute("xuAmount");
+            request.getSession().removeAttribute("xuDiscount");
+            oneVoucher = null;
+            oneVoucherDiscount = null;
+            shopVoucher = null;
+            shopVoucherDiscount = null;
+            xuAmount = null;
+            xuDiscount = null;
+        }
+        
+        // Calculate total discount from vouchers and xu
+        if (selectedItems > 0) {
+            if (oneVoucher != null && oneVoucherDiscount != null) {
+                totalDiscount += oneVoucherDiscount;
+            }
+            if (shopVoucher != null && shopVoucherDiscount != null) {
+                totalDiscount += shopVoucherDiscount;
+            }
+            if (xuAmount != null && xuDiscount != null) {
+                totalDiscount += xuDiscount;
+            }
+            finalPrice = selectedPrice - totalDiscount;
+        }
+        
+        // Add voucher and xu data to model
+        model.addAttribute("oneVoucher", oneVoucher);
+        model.addAttribute("oneVoucherDiscount", oneVoucherDiscount != null ? oneVoucherDiscount : 0.0);
+        model.addAttribute("shopVoucher", shopVoucher);
+        model.addAttribute("shopVoucherDiscount", shopVoucherDiscount != null ? shopVoucherDiscount : 0.0);
+        model.addAttribute("xuAmount", xuAmount != null ? xuAmount : 0);
+        model.addAttribute("xuDiscount", xuDiscount != null ? xuDiscount : 0.0);
+        model.addAttribute("totalDiscount", totalDiscount);
+        model.addAttribute("finalPrice", finalPrice);
 
         model.addAttribute("cartItemsByShop", cartItemsByShop);
         model.addAttribute("totalItems", totalItems);
@@ -306,10 +368,36 @@ public class CartController {
                 .mapToDouble(item -> item.getQuantity() * item.getUnitPrice())
                 .sum();
 
+        // Get voucher and xu data from session
+        Promotion oneVoucher = (Promotion) request.getSession().getAttribute("oneVoucher");
+        Double oneVoucherDiscount = (Double) request.getSession().getAttribute("oneVoucherDiscount");
+        Promotion shopVoucher = (Promotion) request.getSession().getAttribute("shopVoucher");
+        Double shopVoucherDiscount = (Double) request.getSession().getAttribute("shopVoucherDiscount");
+        Integer xuAmount = (Integer) request.getSession().getAttribute("xuAmount");
+        Double xuDiscount = (Double) request.getSession().getAttribute("xuDiscount");
+        
+        // Calculate total discount
+        Double totalDiscount = 0.0;
+        if (oneVoucherDiscount != null) totalDiscount += oneVoucherDiscount;
+        if (shopVoucherDiscount != null) totalDiscount += shopVoucherDiscount;
+        if (xuDiscount != null) totalDiscount += xuDiscount;
+        
+        // Calculate final price
+        Double finalPrice = totalPrice - totalDiscount;
+        if (finalPrice < 0) finalPrice = 0.0; // Safety check
+
         model.addAttribute("cartItems", cartItems);
         model.addAttribute("totalItems", totalItems);
         model.addAttribute("totalCartItems", totalItems);
         model.addAttribute("totalPrice", totalPrice);
+        model.addAttribute("oneVoucher", oneVoucher);
+        model.addAttribute("oneVoucherDiscount", oneVoucherDiscount != null ? oneVoucherDiscount : 0.0);
+        model.addAttribute("shopVoucher", shopVoucher);
+        model.addAttribute("shopVoucherDiscount", shopVoucherDiscount != null ? shopVoucherDiscount : 0.0);
+        model.addAttribute("xuAmount", xuAmount != null ? xuAmount : 0);
+        model.addAttribute("xuDiscount", xuDiscount != null ? xuDiscount : 0.0);
+        model.addAttribute("totalDiscount", totalDiscount);
+        model.addAttribute("finalPrice", finalPrice);
         model.addAttribute("user", user);
 
         return "web/checkout";
@@ -387,6 +475,34 @@ public class CartController {
             System.out.println("Payment method: " + paymentMethodEnum);
 
 
+            // Calculate total discount from all sources
+            Double oneVoucherDiscount = (Double) request.getSession().getAttribute("oneVoucherDiscount");
+            Double shopVoucherDiscount = (Double) request.getSession().getAttribute("shopVoucherDiscount");
+            Double xuDiscount = (Double) request.getSession().getAttribute("xuDiscount");
+            
+            Double totalDiscount = 0.0;
+            if (oneVoucherDiscount != null) totalDiscount += oneVoucherDiscount;
+            if (shopVoucherDiscount != null) totalDiscount += shopVoucherDiscount;
+            if (xuDiscount != null) totalDiscount += xuDiscount;
+            
+            // Build promotion code description
+            String promotionDescription = "";
+            if (oneVoucherDiscount != null && oneVoucherDiscount > 0) {
+                Promotion oneVoucher = (Promotion) request.getSession().getAttribute("oneVoucher");
+                promotionDescription += "OneShop: " + (oneVoucher != null ? oneVoucher.getPromotionCode() : "") + "; ";
+            }
+            if (shopVoucherDiscount != null && shopVoucherDiscount > 0) {
+                Promotion shopVoucher = (Promotion) request.getSession().getAttribute("shopVoucher");
+                promotionDescription += "Shop: " + (shopVoucher != null ? shopVoucher.getPromotionCode() : "") + "; ";
+            }
+            if (xuDiscount != null && xuDiscount > 0) {
+                Integer xuAmount = (Integer) request.getSession().getAttribute("xuAmount");
+                promotionDescription += "OneXu: " + (xuAmount != null ? xuAmount : 0) + " xu";
+            }
+            
+            System.out.println("Total discount applied: " + totalDiscount);
+            System.out.println("Promotion description: " + promotionDescription);
+
             // Chỉ tạo order cho COD và BANK_TRANSFER
             // MOMO và VIETQR sẽ tạo order sau khi thanh toán thành công
             if (paymentMethodEnum == Order.PaymentMethod.COD || paymentMethodEnum == Order.PaymentMethod.BANK_TRANSFER) {
@@ -399,13 +515,35 @@ public class CartController {
                     note,
                     paymentMethodEnum,
                     cartMap,
-                    null,
-                    0.0
+                    promotionDescription.isEmpty() ? null : promotionDescription,
+                    totalDiscount
                 );
                 System.out.println("Order created successfully with ID: " + order.getOrderId());
 
+                // Deduct xu from user balance if xu was used
+                Integer xuAmount = (Integer) request.getSession().getAttribute("xuAmount");
+                if (xuAmount != null && xuAmount > 0) {
+                    Double currentBalance = user.getOneXuBalance() != null ? user.getOneXuBalance() : 0.0;
+                    Double newBalance = currentBalance - xuAmount;
+                    if (newBalance < 0) newBalance = 0.0;
+                    
+                    user.setOneXuBalance(newBalance);
+                    // Update user in session
+                    request.getSession().setAttribute("user", user);
+                    
+                    System.out.println("Deducted " + xuAmount + " xu. New balance: " + newBalance);
+                }
+                
                 // Clear cart after successful order
                 cartService.clearCart(user);
+                
+                // Clear voucher and xu session data
+                request.getSession().removeAttribute("oneVoucher");
+                request.getSession().removeAttribute("oneVoucherDiscount");
+                request.getSession().removeAttribute("shopVoucher");
+                request.getSession().removeAttribute("shopVoucherDiscount");
+                request.getSession().removeAttribute("xuAmount");
+                request.getSession().removeAttribute("xuDiscount");
 
                 model.addAttribute("message", "Đặt hàng thành công! Mã đơn hàng: #" + order.getOrderId());
                 model.addAttribute("orderId", order.getOrderId());
@@ -422,8 +560,8 @@ public class CartController {
                     note,
                     paymentMethodEnum,
                     cartMap,
-                    null,
-                    0.0
+                    promotionDescription.isEmpty() ? null : promotionDescription,
+                    totalDiscount
                 );
                 return "redirect:/payment/momo/create?orderId=" + momoOrder.getOrderId();
             } else if (paymentMethodEnum == Order.PaymentMethod.VIETQR) {
@@ -437,8 +575,8 @@ public class CartController {
                     note,
                     paymentMethodEnum,
                     cartMap,
-                    null,
-                    0.0
+                    promotionDescription.isEmpty() ? null : promotionDescription,
+                    totalDiscount
                 );
                 return "redirect:/vietqr-payment?orderId=" + vietqrOrder.getOrderId();
             }
@@ -576,4 +714,521 @@ public class CartController {
         return cartMap;
     }
     
+    /**
+     * Get available promotions for voucher selection popup
+     */
+    /**
+     * Get shop promotions by shop ID
+     */
+    @GetMapping("/cart/shop-promotions/{shopId}")
+    @ResponseBody
+    public Map<String, Object> getShopPromotions(@PathVariable Long shopId, HttpServletRequest request) {
+        Map<String, Object> response = new HashMap<>();
+        
+        try {
+            User user = (User) request.getSession().getAttribute("user");
+            if (user == null) {
+                response.put("success", false);
+                response.put("message", "Vui lòng đăng nhập để xem voucher shop");
+                return response;
+            }
+            
+            // Get promotions for specific shop
+            List<Promotion> shopPromotions = promotionService.getPromotionsByShop(shopId);
+            
+            // Get shop name for modal title
+            String shopName = "Shop";
+            if (!shopPromotions.isEmpty() && shopPromotions.get(0).getShop() != null) {
+                shopName = shopPromotions.get(0).getShop().getShopName();
+            }
+            
+            // Create simple DTOs to avoid Hibernate proxy issues
+            List<Map<String, Object>> simplifiedPromotions = new ArrayList<>();
+            
+            for (Promotion p : shopPromotions) {
+                Map<String, Object> promoDto = new HashMap<>();
+                promoDto.put("promotionId", p.getPromotionId());
+                promoDto.put("promotionName", p.getPromotionName());
+                promoDto.put("description", p.getDescription());
+                promoDto.put("promotionCode", p.getPromotionCode());
+                promoDto.put("promotionType", p.getPromotionType().name());
+                promoDto.put("discountValue", p.getDiscountValue());
+                promoDto.put("minimumOrderAmount", p.getMinimumOrderAmount());
+                promoDto.put("maximumDiscountAmount", p.getMaximumDiscountAmount());
+                promoDto.put("usageLimit", p.getUsageLimit());
+                promoDto.put("usedCount", p.getUsedCount());
+                promoDto.put("startDate", p.getStartDate() != null ? p.getStartDate().toString() : null);
+                promoDto.put("endDate", p.getEndDate() != null ? p.getEndDate().toString() : null);
+                promoDto.put("isActive", p.getIsActive());
+                
+                simplifiedPromotions.add(promoDto);
+            }
+            
+            response.put("success", true);
+            response.put("promotions", simplifiedPromotions);
+            response.put("shopId", shopId);
+            response.put("shopName", shopName);
+            
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "Có lỗi xảy ra khi lấy voucher shop: " + e.getMessage());
+        }
+        
+        return response;
+    }
+
+    @GetMapping("/cart/promotions")
+    @ResponseBody
+    public Map<String, Object> getAvailablePromotions(HttpServletRequest request) {
+        Map<String, Object> response = new HashMap<>();
+        
+        try {
+            User user = (User) request.getSession().getAttribute("user");
+            if (user == null) {
+                response.put("success", false);
+                response.put("message", "Vui lòng đăng nhập để xem voucher");
+                return response;
+            }
+            
+            // Get platform promotions only (shop_id = null, platform-wide vouchers)
+            List<Promotion> activePromotions = promotionService.getAllActivePromotions()
+                .stream()
+                .filter(p -> p.getShop() == null) // Only platform vouchers, not shop-specific
+                .collect(Collectors.toList());
+            
+            // Create simple DTOs to avoid Hibernate proxy issues
+            List<Map<String, Object>> simplifiedPromotions = new ArrayList<>();
+            
+            for (Promotion p : activePromotions) {
+                Map<String, Object> promoDto = new HashMap<>();
+                promoDto.put("promotionId", p.getPromotionId());
+                promoDto.put("promotionName", p.getPromotionName());
+                promoDto.put("description", p.getDescription());
+                promoDto.put("promotionCode", p.getPromotionCode());
+                promoDto.put("promotionType", p.getPromotionType().name());
+                promoDto.put("discountValue", p.getDiscountValue());
+                promoDto.put("minimumOrderAmount", p.getMinimumOrderAmount());
+                promoDto.put("maximumDiscountAmount", p.getMaximumDiscountAmount());
+                promoDto.put("usageLimit", p.getUsageLimit());
+                promoDto.put("usedCount", p.getUsedCount());
+                promoDto.put("startDate", p.getStartDate() != null ? p.getStartDate().toString() : null);
+                promoDto.put("endDate", p.getEndDate() != null ? p.getEndDate().toString() : null);
+                promoDto.put("isActive", p.getIsActive());
+                
+                simplifiedPromotions.add(promoDto);
+            }
+            
+            response.put("success", true);
+            response.put("promotions", simplifiedPromotions);
+            
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "Có lỗi xảy ra khi lấy danh sách voucher: " + e.getMessage());
+        }
+        
+        return response;
+    }
+    
+    /**
+     * Apply promotion code to cart
+     */
+    @PostMapping("/cart/apply-promotion")
+    @ResponseBody
+    public Map<String, Object> applyPromotion(@RequestParam("promotionCode") String promotionCode,
+                                             HttpServletRequest request) {
+        Map<String, Object> response = new HashMap<>();
+        
+        try {
+            User user = (User) request.getSession().getAttribute("user");
+            if (user == null) {
+                response.put("success", false);
+                response.put("message", "Vui lòng đăng nhập để sử dụng voucher");
+                return response;
+            }
+            
+            // Find promotion by code
+            Optional<Promotion> promotionOpt = promotionService.getPromotionByCode(promotionCode);
+            if (!promotionOpt.isPresent()) {
+                response.put("success", false);
+                response.put("message", "Mã voucher không tồn tại");
+                return response;
+            }
+            
+            Promotion promotion = promotionOpt.get();
+            
+            // Validate promotion
+            if (!promotionService.isPromotionValid(promotionCode)) {
+                response.put("success", false);
+                response.put("message", "Mã voucher đã hết hạn hoặc không khả dụng");
+                return response;
+            }
+            
+            // Get selected cart items to calculate total
+            List<CartItemEntity> selectedItems = cartService.getSelectedCartItems(user);
+            if (selectedItems.isEmpty()) {
+                response.put("success", false);
+                response.put("message", "Vui lòng chọn ít nhất một sản phẩm để áp dụng voucher");
+                return response;
+            }
+            
+            double totalAmount = selectedItems.stream()
+                .mapToDouble(item -> item.getTotalPrice())
+                .sum();
+            
+            // Check minimum order amount
+            if (totalAmount < promotion.getMinimumOrderAmount().doubleValue()) {
+                response.put("success", false);
+                response.put("message", String.format("Đơn hàng tối thiểu %,.0f VNĐ để sử dụng voucher này", 
+                    promotion.getMinimumOrderAmount().doubleValue()));
+                return response;
+            }
+            
+            // Calculate discount
+            double discountAmount = calculateDiscountAmount(promotion, totalAmount);
+            double finalAmount = totalAmount - discountAmount;
+            
+            // Store promotion in session based on type
+            if (promotion.getShop() == null) {
+                // OneShop voucher (platform voucher)
+                request.getSession().setAttribute("oneVoucher", promotion);
+                request.getSession().setAttribute("oneVoucherDiscount", discountAmount);
+            } else {
+                // Shop voucher
+                request.getSession().setAttribute("shopVoucher", promotion);
+                request.getSession().setAttribute("shopVoucherDiscount", discountAmount);
+            }
+            
+            // Create simple DTO to avoid circular reference
+            Map<String, Object> promotionDto = new HashMap<>();
+            promotionDto.put("promotionId", promotion.getPromotionId());
+            promotionDto.put("promotionName", promotion.getPromotionName());
+            promotionDto.put("promotionCode", promotion.getPromotionCode());
+            promotionDto.put("promotionType", promotion.getPromotionType().name());
+            promotionDto.put("discountValue", promotion.getDiscountValue());
+            promotionDto.put("maximumDiscountAmount", promotion.getMaximumDiscountAmount());
+            
+            response.put("success", true);
+            response.put("message", "Áp dụng voucher thành công");
+            response.put("promotion", promotionDto);
+            response.put("originalAmount", totalAmount);
+            response.put("discountAmount", discountAmount);
+            response.put("finalAmount", finalAmount);
+            
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "Có lỗi xảy ra khi áp dụng voucher: " + e.getMessage());
+        }
+        
+        return response;
+    }
+    
+    /**
+     * Remove applied promotion from cart
+     */
+    @PostMapping("/cart/remove-promotion")
+    @ResponseBody
+    public Map<String, Object> removePromotion(@RequestParam(value = "type", defaultValue = "all") String type,
+                                             HttpServletRequest request) {
+        Map<String, Object> response = new HashMap<>();
+        
+        try {
+            User user = (User) request.getSession().getAttribute("user");
+            if (user == null) {
+                response.put("success", false);
+                response.put("message", "Vui lòng đăng nhập");
+                return response;
+            }
+            
+            // Remove promotion from session based on type
+            if ("one".equals(type)) {
+                request.getSession().removeAttribute("oneVoucher");
+                request.getSession().removeAttribute("oneVoucherDiscount");
+                response.put("message", "Đã bỏ OneShop voucher thành công");
+            } else if ("shop".equals(type)) {
+                request.getSession().removeAttribute("shopVoucher");
+                request.getSession().removeAttribute("shopVoucherDiscount");
+                response.put("message", "Đã bỏ shop voucher thành công");
+            } else {
+                // Remove all vouchers
+                request.getSession().removeAttribute("oneVoucher");
+                request.getSession().removeAttribute("oneVoucherDiscount");
+                request.getSession().removeAttribute("shopVoucher");
+                request.getSession().removeAttribute("shopVoucherDiscount");
+                response.put("message", "Đã bỏ tất cả voucher thành công");
+            }
+            
+            response.put("success", true);
+            
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "Có lỗi xảy ra: " + e.getMessage());
+        }
+        
+        return response;
+    }
+    
+    /**
+     * Get current voucher status from session
+     */
+    @GetMapping("/cart/voucher-status")
+    @ResponseBody
+    public Map<String, Object> getVoucherStatus(HttpServletRequest request) {
+        Map<String, Object> response = new HashMap<>();
+        
+        try {
+            // Check if session exists
+            HttpSession session = request.getSession(false);
+            if (session == null) {
+                System.out.println("No session found, returning default values");
+                response.put("oneVoucher", null);
+                response.put("oneVoucherDiscount", 0.0);
+                response.put("shopVoucher", null);
+                response.put("shopVoucherDiscount", 0.0);
+                return response;
+            }
+            
+            System.out.println("Session ID: " + session.getId());
+            
+            Promotion oneVoucher = (Promotion) session.getAttribute("oneVoucher");
+            Double oneVoucherDiscount = (Double) session.getAttribute("oneVoucherDiscount");
+            Promotion shopVoucher = (Promotion) session.getAttribute("shopVoucher");
+            Double shopVoucherDiscount = (Double) session.getAttribute("shopVoucherDiscount");
+            Integer xuAmount = (Integer) session.getAttribute("xuAmount");
+            Double xuDiscount = (Double) session.getAttribute("xuDiscount");
+            
+            System.out.println("OneVoucher: " + (oneVoucher != null ? oneVoucher.getPromotionCode() : "null"));
+            System.out.println("OneVoucherDiscount: " + oneVoucherDiscount);
+            System.out.println("ShopVoucher: " + (shopVoucher != null ? shopVoucher.getPromotionCode() : "null"));
+            System.out.println("ShopVoucherDiscount: " + shopVoucherDiscount);
+            System.out.println("XuAmount: " + xuAmount);
+            System.out.println("XuDiscount: " + xuDiscount);
+            
+            // Return only essential data to avoid serialization issues
+            response.put("oneVoucher", oneVoucher != null ? oneVoucher.getPromotionCode() : null);
+            response.put("oneVoucherDiscount", oneVoucherDiscount != null ? oneVoucherDiscount : 0.0);
+            response.put("shopVoucher", shopVoucher != null ? shopVoucher.getPromotionCode() : null);
+            response.put("shopVoucherDiscount", shopVoucherDiscount != null ? shopVoucherDiscount : 0.0);
+            response.put("xuAmount", xuAmount != null ? xuAmount : 0);
+            response.put("xuDiscount", xuDiscount != null ? xuDiscount : 0.0);
+            
+        } catch (Exception e) {
+            System.out.println("Error in getVoucherStatus: " + e.getMessage());
+            e.printStackTrace();
+            response.put("oneVoucher", null);
+            response.put("oneVoucherDiscount", 0.0);
+            response.put("shopVoucher", null);
+            response.put("shopVoucherDiscount", 0.0);
+            response.put("xuAmount", 0);
+            response.put("xuDiscount", 0.0);
+        }
+        
+        return response;
+    }
+
+    /**
+     * Apply shop voucher specifically from shop modal
+     */
+    @PostMapping("/cart/apply-shop-voucher")
+    @ResponseBody
+    public Map<String, Object> applyShopVoucher(@RequestParam("promotionCode") String promotionCode,
+                                               HttpServletRequest request) {
+        Map<String, Object> response = new HashMap<>();
+        
+        try {
+            User user = (User) request.getSession().getAttribute("user");
+            if (user == null) {
+                response.put("success", false);
+                response.put("message", "Vui lòng đăng nhập để sử dụng voucher");
+                return response;
+            }
+            
+            // Find promotion by code
+            Optional<Promotion> promotionOpt = promotionService.getPromotionByCode(promotionCode);
+            if (!promotionOpt.isPresent()) {
+                response.put("success", false);
+                response.put("message", "Mã voucher không tồn tại");
+                return response;
+            }
+            
+            Promotion promotion = promotionOpt.get();
+            
+            // Validate that this is a shop voucher
+            if (promotion.getShop() == null) {
+                response.put("success", false);
+                response.put("message", "Đây không phải voucher của shop");
+                return response;
+            }
+            
+            // Validate promotion
+            if (!promotionService.isPromotionValid(promotionCode)) {
+                response.put("success", false);
+                response.put("message", "Mã voucher đã hết hạn hoặc không khả dụng");
+                return response;
+            }
+            
+            // Get selected cart items to calculate total
+            List<CartItemEntity> selectedItems = cartService.getSelectedCartItems(user);
+            if (selectedItems.isEmpty()) {
+                response.put("success", false);
+                response.put("message", "Vui lòng chọn ít nhất một sản phẩm để áp dụng voucher");
+                return response;
+            }
+            
+            double totalAmount = selectedItems.stream()
+                .mapToDouble(item -> item.getTotalPrice())
+                .sum();
+            
+            // Check minimum order amount
+            if (totalAmount < promotion.getMinimumOrderAmount().doubleValue()) {
+                response.put("success", false);
+                response.put("message", String.format("Đơn hàng tối thiểu %,.0f VNĐ để sử dụng voucher này", 
+                    promotion.getMinimumOrderAmount().doubleValue()));
+                return response;
+            }
+            
+            // Calculate discount
+            double discountAmount = calculateDiscountAmount(promotion, totalAmount);
+            double finalAmount = totalAmount - discountAmount;
+            
+            // Store shop voucher in session
+            request.getSession().setAttribute("shopVoucher", promotion);
+            request.getSession().setAttribute("shopVoucherDiscount", discountAmount);
+            
+            // Create promotion DTO to match OneShop voucher response structure
+            Map<String, Object> promotionDto = new HashMap<>();
+            promotionDto.put("promotionId", promotion.getPromotionId());
+            promotionDto.put("promotionName", promotion.getPromotionName());
+            promotionDto.put("promotionCode", promotion.getPromotionCode());
+            promotionDto.put("promotionType", promotion.getPromotionType().name());
+            promotionDto.put("discountValue", promotion.getDiscountValue());
+            promotionDto.put("maximumDiscountAmount", promotion.getMaximumDiscountAmount());
+            
+            response.put("success", true);
+            response.put("message", "Áp dụng shop voucher thành công");
+            response.put("promotion", promotionDto);
+            response.put("originalAmount", totalAmount);
+            response.put("discountAmount", discountAmount);
+            response.put("finalAmount", finalAmount);
+            
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "Có lỗi xảy ra khi áp dụng voucher: " + e.getMessage());
+        }
+        
+        return response;
+    }
+    
+    /**
+     * Calculate discount amount based on promotion type
+     */
+    private double calculateDiscountAmount(Promotion promotion, double totalAmount) {
+        double discountAmount = 0;
+        
+        switch (promotion.getPromotionType()) {
+            case PERCENTAGE:
+                discountAmount = totalAmount * (promotion.getDiscountValue().doubleValue() / 100.0);
+                break;
+            case FIXED_AMOUNT:
+                discountAmount = promotion.getDiscountValue().doubleValue();
+                break;
+            case FREE_SHIPPING:
+                // Assuming shipping cost is 30,000 VND
+                discountAmount = 30000;
+                break;
+            case BUY_X_GET_Y:
+                // This would need more complex logic based on specific products
+                discountAmount = 0;
+                break;
+        }
+        
+        // Apply maximum discount limit
+        if (discountAmount > promotion.getMaximumDiscountAmount().doubleValue()) {
+            discountAmount = promotion.getMaximumDiscountAmount().doubleValue();
+        }
+        
+        return discountAmount;
+    }
+
+    /**
+     * Apply xu discount
+     */
+    @PostMapping("/cart/apply-xu")
+    @ResponseBody
+    public Map<String, Object> applyXu(@RequestParam("xuAmount") Integer xuAmount,
+                                      HttpServletRequest request) {
+        Map<String, Object> response = new HashMap<>();
+        
+        try {
+            User user = (User) request.getSession().getAttribute("user");
+            if (user == null) {
+                response.put("success", false);
+                response.put("message", "Vui lòng đăng nhập để sử dụng xu");
+                return response;
+            }
+            
+            // Validate xu amount
+            if (xuAmount == null || xuAmount <= 0) {
+                response.put("success", false);
+                response.put("message", "Số xu không hợp lệ");
+                return response;
+            }
+            
+            // Check if user has enough xu
+            Double userXuBalance = user.getOneXuBalance() != null ? user.getOneXuBalance() : 0.0;
+            if (xuAmount > userXuBalance) {
+                response.put("success", false);
+                response.put("message", "Số xu không đủ. Bạn chỉ có " + userXuBalance.intValue() + " xu");
+                return response;
+            }
+            
+            // Store xu discount in session (1 xu = 1 đồng)
+            Double xuDiscount = xuAmount.doubleValue();
+            request.getSession().setAttribute("xuAmount", xuAmount);
+            request.getSession().setAttribute("xuDiscount", xuDiscount);
+            
+            System.out.println("Applied xu: " + xuAmount + " xu = " + xuDiscount + " đồng");
+            
+            response.put("success", true);
+            response.put("message", "Áp dụng xu thành công");
+            response.put("xuAmount", xuAmount);
+            response.put("xuDiscount", xuDiscount);
+            
+        } catch (Exception e) {
+            System.out.println("Error applying xu: " + e.getMessage());
+            e.printStackTrace();
+            response.put("success", false);
+            response.put("message", "Có lỗi xảy ra khi áp dụng xu");
+        }
+        
+        return response;
+    }
+
+    /**
+     * Remove xu discount
+     */
+    @PostMapping("/cart/remove-xu")
+    @ResponseBody
+    public Map<String, Object> removeXu(HttpServletRequest request) {
+        Map<String, Object> response = new HashMap<>();
+        
+        try {
+            // Remove xu from session
+            request.getSession().removeAttribute("xuAmount");
+            request.getSession().removeAttribute("xuDiscount");
+            
+            System.out.println("Removed xu discount from session");
+            
+            response.put("success", true);
+            response.put("message", "Đã bỏ xu");
+            
+        } catch (Exception e) {
+            System.out.println("Error removing xu: " + e.getMessage());
+            e.printStackTrace();
+            response.put("success", false);
+            response.put("message", "Có lỗi xảy ra khi bỏ xu");
+        }
+        
+        return response;
+    }
+
 }
