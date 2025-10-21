@@ -8,6 +8,9 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import vn.entity.Order;
 import vn.entity.User;
+import vn.entity.OneXuTransaction;
+import vn.repository.UserRepository;
+import vn.repository.OneXuTransactionRepository;
 import vn.service.CartService;
 import vn.service.MoMoPaymentService;
 import vn.service.OrderService;
@@ -24,6 +27,12 @@ public class MoMoPaymentController {
 
     @Autowired
     private CartService cartService;
+    
+    @Autowired
+    private UserRepository userRepository;
+    
+    @Autowired
+    private OneXuTransactionRepository oneXuTransactionRepository;
 
     @Value("${momo.return.url}")
     private String returnUrl;
@@ -126,10 +135,24 @@ public class MoMoPaymentController {
                             if (newBalance < 0) newBalance = 0.0;
                             
                             user.setOneXuBalance(newBalance);
+                            // Save to database
+                            userRepository.save(user);
+                            
+                            // Create OneXu transaction record
+                            OneXuTransaction xuTransaction = new OneXuTransaction(
+                                user.getUserId(),
+                                OneXuTransaction.TransactionType.PURCHASE,
+                                -xuAmount.doubleValue(), // Negative because it's a deduction
+                                newBalance,
+                                "Sử dụng " + xuAmount + " xu cho đơn hàng #" + order.getOrderId() + " (MoMo)",
+                                order.getOrderId()
+                            );
+                            oneXuTransactionRepository.save(xuTransaction);
+                            
                             // Update user in session
                             request.getSession().setAttribute("user", user);
                             
-                            System.out.println("MoMo Payment - Deducted " + xuAmount + " xu. New balance: " + newBalance);
+                            System.out.println("MoMo Payment - Deducted " + xuAmount + " xu. New balance: " + newBalance + ". Transaction saved.");
                         }
                     } catch (Exception e) {
                         System.out.println("Failed to parse xu amount from order note: " + e.getMessage());

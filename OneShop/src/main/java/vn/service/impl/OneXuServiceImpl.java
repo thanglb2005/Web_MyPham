@@ -181,13 +181,15 @@ public class OneXuServiceImpl implements OneXuService {
     public void syncUserBalance(Long userId) {
         try {
             // Tính toán số dư thực tế từ transactions
+            // Lấy tổng tất cả transactions (CHECKIN/ORDER_REWARD là dương, PURCHASE là âm)
             Double totalEarned = transactionRepository.getTotalEarnedXu(userId);
             Double totalSpent = transactionRepository.getTotalSpentXu(userId);
             
             if (totalEarned == null) totalEarned = 0.0;
             if (totalSpent == null) totalSpent = 0.0;
             
-            Double actualBalance = totalEarned - totalSpent;
+            // PURCHASE amount đã là số âm, nên cộng trực tiếp (totalSpent sẽ là số âm)
+            Double actualBalance = totalEarned + totalSpent;
             
             // Lấy user hiện tại
             User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User không tồn tại!"));

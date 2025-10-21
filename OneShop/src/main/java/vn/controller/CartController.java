@@ -14,7 +14,10 @@ import vn.entity.Order;
 import vn.entity.OrderDetail;
 import vn.entity.Product;
 import vn.entity.User;
+import vn.entity.OneXuTransaction;
 import vn.repository.OrderDetailRepository;
+import vn.repository.UserRepository;
+import vn.repository.OneXuTransactionRepository;
 import vn.service.CartService;
 import vn.service.OrderService;
 import vn.service.ProductService;
@@ -50,6 +53,12 @@ public class CartController {
     
     @Autowired
     private PromotionService promotionService;
+    
+    @Autowired
+    private UserRepository userRepository;
+    
+    @Autowired
+    private OneXuTransactionRepository oneXuTransactionRepository;
 
     @GetMapping("/add-to-cart")
     public String addToCart(@RequestParam("productId") Long productId,
@@ -99,6 +108,11 @@ public class CartController {
         if (user == null) {
             return "redirect:/login";
         }
+        
+        // Refresh user from database to get latest OneXu balance
+        user = userRepository.findById(user.getUserId()).orElse(user);
+        // Update session with fresh data
+        request.getSession().setAttribute("user", user);
 
         // Get cart items grouped by shop (Shopee-like)
         List<CartByShopDTO> cartItemsByShop = cartService.getCartItemsByShop(user);
@@ -528,10 +542,24 @@ public class CartController {
                     if (newBalance < 0) newBalance = 0.0;
                     
                     user.setOneXuBalance(newBalance);
+                    // Save to database
+                    userRepository.save(user);
+                    
+                    // Create OneXu transaction record
+                    OneXuTransaction xuTransaction = new OneXuTransaction(
+                        user.getUserId(),
+                        OneXuTransaction.TransactionType.PURCHASE,
+                        -xuAmount.doubleValue(), // Negative because it's a deduction
+                        newBalance,
+                        "Sử dụng " + xuAmount + " xu cho đơn hàng #" + order.getOrderId(),
+                        order.getOrderId()
+                    );
+                    oneXuTransactionRepository.save(xuTransaction);
+                    
                     // Update user in session
                     request.getSession().setAttribute("user", user);
                     
-                    System.out.println("Deducted " + xuAmount + " xu. New balance: " + newBalance);
+                    System.out.println("Deducted " + xuAmount + " xu. New balance: " + newBalance + ". Transaction saved.");
                 }
                 
                 // Clear cart after successful order

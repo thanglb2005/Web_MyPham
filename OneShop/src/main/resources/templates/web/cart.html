@@ -383,9 +383,9 @@
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 
-                <div class="modal-body" style="padding: 0; background: white;">
+                <div class="modal-body" style="padding: 0; background: white; max-height: 70vh; overflow-y: auto;">
                     <!-- Voucher Input -->
-                    <div style="padding: 16px; border-bottom: 1px solid #f1f1f1;">
+                    <div style="padding: 16px; border-bottom: 1px solid #f1f1f1; position: sticky; top: 0; background: white; z-index: 10;">
                         <div style="display: flex; gap: 8px;">
                             <input type="text" id="voucher-input" placeholder="Mã Voucher" 
                                    style="flex: 1; padding: 10px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;"
@@ -452,7 +452,7 @@
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
 
-                <div class="modal-body" style="padding: 0; background: white; max-height: 500px; overflow-y: auto;">
+                <div class="modal-body" style="padding: 0; background: white; max-height: 70vh; overflow-y: auto;">
                     <!-- Loading state -->
                     <div id="shop-voucher-loading" style="text-align: center; padding: 40px; display: none;">
                         <i class="fas fa-spinner fa-spin" style="color: #999; font-size: 24px;"></i>
