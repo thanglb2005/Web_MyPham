@@ -228,6 +228,13 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
                                                                   @Param("search") String search,
                                                                   Pageable pageable);
 
+    @Query("SELECT DISTINCT o FROM Order o " +
+           "LEFT JOIN FETCH o.orderDetails od " +
+           "LEFT JOIN FETCH od.product p " +
+           "WHERE o.orderId = :orderId AND o.shop.shopId IN :shopIds")
+    Optional<Order> findWithDetailsByIdAndShopIds(@Param("orderId") Long orderId,
+                                                  @Param("shopIds") List<Long> shopIds);
+
     // ===== Revenue by shop (DELIVERED) =====
     @Query("SELECT COALESCE(SUM(o.totalAmount), 0) FROM Order o WHERE o.status = 'DELIVERED' AND o.shop.shopId = :shopId")
     Double sumDeliveredRevenueByShopId(@Param("shopId") Long shopId);

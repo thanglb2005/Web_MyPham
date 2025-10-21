@@ -242,7 +242,47 @@ public class VendorOrderController {
             return "redirect:/vendor/orders";
         }
         
+        List<OrderDetail> orderDetails = orderDetailRepository.findByOrderIdWithProductAndShop(orderId);
+        if (orderDetails == null) {
+            orderDetails = new java.util.ArrayList<>();
+        }
+        if (orderDetails.isEmpty() && order.getOrderDetails() != null && !order.getOrderDetails().isEmpty()) {
+            orderDetails = new java.util.ArrayList<>(order.getOrderDetails());
+            orderDetails.forEach(detail -> {
+                if (detail.getProduct() != null) {
+                    try {
+                        detail.getProduct().getProductName();
+                        detail.getProduct().getProductImage();
+                    } catch (Exception ignored) {}
+                }
+            });
+        }
+        double subtotal = orderDetails.stream()
+                .mapToDouble(detail -> {
+                    Double lineTotal = detail.getTotalPrice();
+                    if (lineTotal != null) {
+                        return lineTotal;
+                    }
+                    Double unit = detail.getUnitPrice();
+                    Integer qty = detail.getQuantity();
+                    return (unit != null ? unit : 0.0) * (qty != null ? qty : 0);
+                })
+                .sum();
+        double shippingFee = order.getShippingFee() != null ? order.getShippingFee() : 0.0;
+        double discountAmount = order.getDiscountAmount() != null ? order.getDiscountAmount() : 0.0;
+        double finalAmount;
+        if (order.getFinalAmount() != null && order.getFinalAmount() > 0) {
+            finalAmount = order.getFinalAmount();
+        } else {
+            finalAmount = subtotal + shippingFee - discountAmount;
+        }
+        
         model.addAttribute("order", order);
+        model.addAttribute("orderDetails", orderDetails);
+        model.addAttribute("subtotal", subtotal);
+        model.addAttribute("shippingFee", shippingFee);
+        model.addAttribute("discountAmount", discountAmount);
+        model.addAttribute("finalAmount", finalAmount);
         model.addAttribute("vendor", vendor);
         model.addAttribute("pageTitle", "Chi tiết đơn hàng #" + orderId);
         
@@ -429,7 +469,8 @@ public class VendorOrderController {
         if (shopIds.isEmpty()) {
             return null;
         }
-        return orderService.findByIdAndShopIdIn(orderId, shopIds).orElse(null);
+        return orderService.findWithDetailsByIdAndShopIdIn(orderId, shopIds)
+                .orElseGet(() -> orderService.findByIdAndShopIdIn(orderId, shopIds).orElse(null));
     }
 
     private void sendOrderConfirmedEmail(Order order) {

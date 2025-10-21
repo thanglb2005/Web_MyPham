@@ -329,6 +329,11 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    public Optional<Order> findWithDetailsByIdAndShopIdIn(Long orderId, List<Long> shopIds) {
+        return orderRepository.findWithDetailsByIdAndShopIds(orderId, shopIds);
+    }
+
+    @Override
     public Long countByShopIdInAndStatus(List<Long> shopIds, Order.OrderStatus status) {
         // Tuân thủ logic cũ
         return orderRepository.countByShopIdInAndStatus(shopIds, status);

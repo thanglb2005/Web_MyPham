@@ -66,6 +66,8 @@ public interface OrderService {
      */
     Optional<Order> findByIdAndShopIdIn(Long orderId, List<Long> shopIds);
 
+    Optional<Order> findWithDetailsByIdAndShopIdIn(Long orderId, List<Long> shopIds);
+
     /**
      * Count orders by shop IDs and status
      */
