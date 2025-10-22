@@ -27,6 +27,7 @@ public class LoadImageController {
         try {
         System.out.println("=== LoadImage request for: " + imageName + " ===");
         System.out.println("Upload path: " + pathUploadImage);
+        System.out.println("File type: " + (imageName.toLowerCase().endsWith(".mp4") ? "VIDEO" : "IMAGE"));
         
         // Set content type based on file extension
         String contentType = "image/jpeg"; // default
@@ -36,6 +37,14 @@ public class LoadImageController {
             contentType = "image/gif";
         } else if (imageName.toLowerCase().endsWith(".webp")) {
             contentType = "image/webp";
+        } else if (imageName.toLowerCase().endsWith(".mp4")) {
+            contentType = "video/mp4";
+        } else if (imageName.toLowerCase().endsWith(".webm")) {
+            contentType = "video/webm";
+        } else if (imageName.toLowerCase().endsWith(".avi")) {
+            contentType = "video/avi";
+        } else if (imageName.toLowerCase().endsWith(".mov")) {
+            contentType = "video/quicktime";
         }
         response.setContentType(contentType);
         System.out.println("Content-Type: " + contentType);

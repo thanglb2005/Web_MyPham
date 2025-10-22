@@ -215,9 +215,27 @@ public class OneXuServiceImpl implements OneXuService {
     }
 
     @Override
+    public OneXuTransaction rewardFromReviewWithImage(Long userId, Long productId) {
+        // Thưởng 300 xu cho đánh giá có ảnh
+        Double rewardAmount = 300.0;
+        String description = "Thưởng từ đánh giá có ảnh #" + productId;
+        
+        return addXu(userId, OneXuTransaction.TransactionType.REVIEW_IMAGE, rewardAmount, description, null);
+    }
+
+    @Override
+    public OneXuTransaction rewardFromReviewWithVideo(Long userId, Long productId) {
+        // Thưởng 300 xu cho đánh giá có video
+        Double rewardAmount = 300.0;
+        String description = "Thưởng từ đánh giá có video #" + productId;
+        
+        return addXu(userId, OneXuTransaction.TransactionType.REVIEW_VIDEO, rewardAmount, description, null);
+    }
+
+    @Override
     public OneXuTransaction deductFromReviewDeletion(Long userId, Long productId) {
-        // Trừ 300 xu khi xóa đánh giá sản phẩm
-        Double deductAmount = 300.0;
+        // Trừ 100 xu khi xóa đánh giá sản phẩm
+        Double deductAmount = 100.0;
         String description = "Trừ xu do xóa đánh giá sản phẩm #" + productId;
         
         return deductXu(userId, deductAmount, description);

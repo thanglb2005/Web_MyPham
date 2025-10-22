@@ -101,9 +101,10 @@ public class CommentController {
         // Lưu comment chính
         Comment c = commentService.createComment(user, product, orderDetail, content, rating);
 
-        // Chỉ tặng 300 xu cho đánh giá đầu tiên của người dùng cho sản phẩm này
+        // Chỉ tặng xu cho đánh giá đầu tiên của người dùng cho sản phẩm này
         if (isFirstReview) {
             try {
+                // Tặng 300 xu cho đánh giá cơ bản
                 oneXuService.rewardFromReview(user.getUserId(), productId);
                 
                 // Đồng bộ hóa số dư và refresh session
@@ -116,7 +117,10 @@ public class CommentController {
             }
         }
 
-        // Lưu file media nếu có
+        // Lưu file media nếu có và tặng xu thêm
+        boolean hasImages = false;
+        boolean hasVideos = false;
+        
         try {
             if (images != null) {
                 for (MultipartFile f : images) {
@@ -127,25 +131,57 @@ public class CommentController {
                         media.setMediaType("IMAGE");
                         media.setUrl(stored);
                         commentService.saveMedia(media);
+                        hasImages = true;
                     }
                 }
             }
             if (videos != null) {
+                System.out.println("Processing " + videos.size() + " video files");
                 for (MultipartFile f : videos) {
+                    System.out.println("Video file: " + f.getOriginalFilename() + ", size: " + f.getSize());
                     String stored = imageStorageService.store(f, product.getProductName());
                     if (stored != null && !stored.isBlank()) {
+                        System.out.println("Video stored successfully: " + stored);
                         vn.entity.CommentMedia media = new vn.entity.CommentMedia();
                         media.setComment(c);
                         media.setMediaType("VIDEO");
                         media.setUrl(stored);
                         commentService.saveMedia(media);
+                        hasVideos = true;
+                    } else {
+                        System.out.println("Failed to store video: " + f.getOriginalFilename());
                     }
                 }
             }
         } catch (IOException ignored) {}
+        
+        // Tặng xu thêm cho media (luôn tặng nếu có media)
+        try {
+            if (hasImages) {
+                oneXuService.rewardFromReviewWithImage(user.getUserId(), productId);
+            }
+            if (hasVideos) {
+                oneXuService.rewardFromReviewWithVideo(user.getUserId(), productId);
+            }
+            
+            // Đồng bộ hóa số dư và refresh session
+            oneXuService.syncUserBalance(user.getUserId());
+            User freshUser = userRepository.findById(user.getUserId()).orElse(user);
+            session.setAttribute("user", freshUser);
+        } catch (Exception e) {
+            System.err.println("Lỗi khi tặng xu cho media: " + e.getMessage());
+        }
 
+        // Tính tổng xu nhận được
+        int totalXu = 0;
         if (isFirstReview) {
-            redirectAttributes.addFlashAttribute("success", "Đã gửi đánh giá thành công! Bạn đã nhận được 300 xu thưởng.");
+            totalXu += 300; // Xu cơ bản cho đánh giá đầu tiên
+        }
+        if (hasImages) totalXu += 300; // Xu cho ảnh (luôn tặng)
+        if (hasVideos) totalXu += 300; // Xu cho video (luôn tặng)
+
+        if (totalXu > 0) {
+            redirectAttributes.addFlashAttribute("success", "Đã gửi đánh giá thành công! Bạn đã nhận được " + totalXu + " xu thưởng.");
         } else {
             redirectAttributes.addFlashAttribute("success", "Đã cập nhật đánh giá thành công!");
         }
@@ -179,9 +215,10 @@ public class CommentController {
 
         Comment c = commentService.createComment(user, product, null, content, rating);
 
-        // Chỉ tặng 300 xu cho đánh giá đầu tiên của người dùng cho sản phẩm này
+        // Chỉ tặng xu cho đánh giá đầu tiên của người dùng cho sản phẩm này
         if (isFirstReview) {
             try {
+                // Tặng 300 xu cho đánh giá cơ bản
                 oneXuService.rewardFromReview(user.getUserId(), productId);
                 
                 // Đồng bộ hóa số dư và refresh session
@@ -194,7 +231,10 @@ public class CommentController {
             }
         }
 
-        // Lưu file media nếu có (ảnh/video) – tái sử dụng ImageStorageService
+        // Lưu file media nếu có và tặng xu thêm
+        boolean hasImages = false;
+        boolean hasVideos = false;
+        
         try {
             if (images != null) {
                 for (MultipartFile f : images) {
@@ -205,25 +245,57 @@ public class CommentController {
                         media.setMediaType("IMAGE");
                         media.setUrl(stored);
                         commentService.saveMedia(media);
+                        hasImages = true;
                     }
                 }
             }
             if (videos != null) {
+                System.out.println("Processing " + videos.size() + " video files");
                 for (MultipartFile f : videos) {
+                    System.out.println("Video file: " + f.getOriginalFilename() + ", size: " + f.getSize());
                     String stored = imageStorageService.store(f, product.getProductName());
                     if (stored != null && !stored.isBlank()) {
+                        System.out.println("Video stored successfully: " + stored);
                         vn.entity.CommentMedia media = new vn.entity.CommentMedia();
                         media.setComment(c);
                         media.setMediaType("VIDEO");
                         media.setUrl(stored);
                         commentService.saveMedia(media);
+                        hasVideos = true;
+                    } else {
+                        System.out.println("Failed to store video: " + f.getOriginalFilename());
                     }
                 }
             }
         } catch (IOException ignored) {}
         
+        // Tặng xu thêm cho media (luôn tặng nếu có media)
+        try {
+            if (hasImages) {
+                oneXuService.rewardFromReviewWithImage(user.getUserId(), productId);
+            }
+            if (hasVideos) {
+                oneXuService.rewardFromReviewWithVideo(user.getUserId(), productId);
+            }
+            
+            // Đồng bộ hóa số dư và refresh session
+            oneXuService.syncUserBalance(user.getUserId());
+            User freshUser = userRepository.findById(user.getUserId()).orElse(user);
+            session.setAttribute("user", freshUser);
+        } catch (Exception e) {
+            System.err.println("Lỗi khi tặng xu cho media: " + e.getMessage());
+        }
+
+        // Tính tổng xu nhận được
+        int totalXu = 0;
         if (isFirstReview) {
-            redirectAttributes.addFlashAttribute("success", "Đã gửi đánh giá thành công! Bạn đã nhận được 300 xu thưởng.");
+            totalXu += 300; // Xu cơ bản cho đánh giá đầu tiên
+        }
+        if (hasImages) totalXu += 300; // Xu cho ảnh (luôn tặng)
+        if (hasVideos) totalXu += 300; // Xu cho video (luôn tặng)
+
+        if (totalXu > 0) {
+            redirectAttributes.addFlashAttribute("success", "Đã gửi đánh giá thành công! Bạn đã nhận được " + totalXu + " xu thưởng.");
         } else {
             redirectAttributes.addFlashAttribute("success", "Đã cập nhật đánh giá thành công!");
         }
@@ -262,7 +334,7 @@ public class CommentController {
                         User freshUser = userRepository.findById(user.getUserId()).orElse(user);
                         session.setAttribute("user", freshUser);
                         
-                        redirectAttributes.addFlashAttribute("success", "Đã xóa đánh giá thành công. Đã trừ 300 xu.");
+                        redirectAttributes.addFlashAttribute("success", "Đã xóa đánh giá thành công. Đã trừ 100 xu.");
                     } catch (Exception e) {
                         redirectAttributes.addFlashAttribute("success", "Đã xóa đánh giá thành công.");
                         System.err.println("Lỗi khi trừ xu do xóa đánh giá: " + e.getMessage());
@@ -296,25 +368,18 @@ public class CommentController {
             Long actualProductId = commentService.deleteCommentAndReturnProductId(commentId, user.getUserId());
             
             if (actualProductId != null) {
-                // Kiểm tra xem đây có phải là đánh giá đầu tiên không (trước khi xóa)
-                boolean wasFirstReview = !commentService.getLatestUserCommentForProduct(user.getUserId(), actualProductId).isPresent();
-                
-                if (wasFirstReview) {
-                    // Trừ 300 xu vì đã xóa đánh giá đầu tiên
-                    try {
-                        oneXuService.deductFromReviewDeletion(user.getUserId(), actualProductId);
-                        
-                        // Đồng bộ hóa số dư và refresh session
-                        oneXuService.syncUserBalance(user.getUserId());
-                        User freshUser = userRepository.findById(user.getUserId()).orElse(user);
-                        session.setAttribute("user", freshUser);
-                        
-                        redirectAttributes.addFlashAttribute("success", "Đã xóa đánh giá thành công. Đã trừ 300 xu.");
-                    } catch (Exception e) {
-                        redirectAttributes.addFlashAttribute("success", "Đã xóa đánh giá thành công.");
-                        System.err.println("Lỗi khi trừ xu do xóa đánh giá: " + e.getMessage());
-                    }
-                } else {
+                // Trừ xu khi xóa đánh giá
+                try {
+                    oneXuService.deductFromReviewDeletion(user.getUserId(), actualProductId);
+                    
+                    // Đồng bộ hóa số dư và refresh session
+                    oneXuService.syncUserBalance(user.getUserId());
+                    User freshUser = userRepository.findById(user.getUserId()).orElse(user);
+                    session.setAttribute("user", freshUser);
+                    
+                    redirectAttributes.addFlashAttribute("success", "Đã xóa đánh giá thành công. Đã trừ 100 xu.");
+                } catch (Exception e) {
+                    System.err.println("Lỗi khi trừ xu: " + e.getMessage());
                     redirectAttributes.addFlashAttribute("success", "Đã xóa đánh giá thành công.");
                 }
             } else {

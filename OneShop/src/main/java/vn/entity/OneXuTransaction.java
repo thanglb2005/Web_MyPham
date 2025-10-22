@@ -39,7 +39,9 @@ public class OneXuTransaction {
         ORDER_REWARD,   // Thưởng từ đơn hàng hoàn thành
         PURCHASE,       // Mua sắm bằng One Xu
         REFUND,         // Hoàn xu
-        REVIEW_REWARD   // Thưởng từ đánh giá sản phẩm lần đầu
+        REVIEW_REWARD,  // Thưởng từ đánh giá sản phẩm (300 xu)
+        REVIEW_IMAGE,   // Thưởng từ đánh giá có ảnh (300 xu)
+        REVIEW_VIDEO    // Thưởng từ đánh giá có video (300 xu)
     }
     
     // Constructors

@@ -40,7 +40,13 @@ public interface OneXuService {
     // Thưởng xu từ đánh giá sản phẩm lần đầu (300 xu)
     OneXuTransaction rewardFromReview(Long userId, Long productId);
     
-    // Trừ xu khi xóa đánh giá sản phẩm (300 xu)
+    // Thưởng xu từ đánh giá có ảnh (300 xu)
+    OneXuTransaction rewardFromReviewWithImage(Long userId, Long productId);
+    
+    // Thưởng xu từ đánh giá có video (300 xu)
+    OneXuTransaction rewardFromReviewWithVideo(Long userId, Long productId);
+    
+    // Trừ xu khi xóa đánh giá sản phẩm (100 xu)
     OneXuTransaction deductFromReviewDeletion(Long userId, Long productId);
     
     // Lấy thống kê One Xu

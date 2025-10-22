@@ -463,16 +463,22 @@
                         <!-- Nội dung đánh giá -->
                         <div class="mb-2" th:text="${rv.content}"></div>
                         <!-- Media preview nếu có -->
-                        <div class="d-flex flex-wrap gap-2 mt-2"
-                             th:if="${rv.commentMedia != null and !rv.commentMedia.isEmpty()}">
-                          <img th:each="m : ${rv.commentMedia}" th:if="${m.mediaType == 'IMAGE'}"
-                               th:src="@{'/loadImage?imageName=' + ${m.url}}" alt="review image"
-                               style="width:80px;height:80px;object-fit:cover;border-radius:4px;border:1px solid #dee2e6;"/>
-                          <video th:each="m : ${rv.commentMedia}" th:if="${m.mediaType == 'VIDEO'}"
-                                 width="240" height="135" controls style="border-radius:6px;border:1px solid #dee2e6;">
-                            <source th:src="@{'/loadImage?imageName=' + ${m.url}}" type="video/mp4" />
-                            Trình duyệt của bạn không hỗ trợ phát video.
-                          </video>
+                        <div class="mt-2" th:if="${rv.commentMedia != null and !rv.commentMedia.isEmpty()}">
+                          <!-- Hiển thị ảnh ở trên -->
+                          <div class="d-flex flex-wrap gap-2 mb-2" 
+                               th:if="${#lists.size(rv.commentMedia.?[mediaType == 'IMAGE'])} > 0">
+                            <img th:each="m : ${rv.commentMedia}" th:if="${m.mediaType == 'IMAGE'}"
+                                 th:src="@{'/loadImage?imageName=' + ${m.url}}" alt="review image"
+                                 style="width:80px;height:80px;object-fit:cover;border-radius:4px;border:1px solid #dee2e6;"/>
+                          </div>
+                          <!-- Hiển thị video ở dưới -->
+                          <div th:if="${#lists.size(rv.commentMedia.?[mediaType == 'VIDEO'])} > 0">
+                            <video th:each="m : ${rv.commentMedia}" th:if="${m.mediaType == 'VIDEO'}"
+                                   width="240" height="135" controls style="border-radius:6px;border:1px solid #dee2e6;">
+                              <source th:src="@{'/loadImage?imageName=' + ${m.url}}" type="video/mp4" />
+                              Trình duyệt của bạn không hỗ trợ phát video.
+                            </video>
+                          </div>
                         </div>
                       </div>
                     </div>
