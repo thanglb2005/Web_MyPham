@@ -94,6 +94,10 @@ public class CommentController {
         // Kiểm tra xem đây có phải là đánh giá đầu tiên của user cho sản phẩm này không
         // Phải kiểm tra TRƯỚC khi xóa đánh giá cũ
         boolean isFirstReview = !commentService.getLatestUserCommentForProduct(user.getUserId(), productId).isPresent();
+        System.out.println("=== REVIEW DEBUG ===");
+        System.out.println("User ID: " + user.getUserId());
+        System.out.println("Product ID: " + productId);
+        System.out.println("Is First Review: " + isFirstReview);
         
         // Xóa đánh giá cũ nếu có trước khi tạo mới
         commentService.deleteOldCommentIfExists(user.getUserId(), productId);
@@ -101,7 +105,7 @@ public class CommentController {
         // Lưu comment chính
         Comment c = commentService.createComment(user, product, orderDetail, content, rating);
 
-        // Chỉ tặng xu cho đánh giá đầu tiên của người dùng cho sản phẩm này
+        // Tặng xu cho đánh giá đầu tiên
         if (isFirstReview) {
             try {
                 // Tặng 300 xu cho đánh giá cơ bản
@@ -120,6 +124,10 @@ public class CommentController {
         // Lưu file media nếu có và tặng xu thêm
         boolean hasImages = false;
         boolean hasVideos = false;
+        
+        System.out.println("=== MEDIA DEBUG ===");
+        System.out.println("Images parameter: " + (images != null ? images.size() : "null"));
+        System.out.println("Videos parameter: " + (videos != null ? videos.size() : "null"));
         
         try {
             if (images != null) {
@@ -157,11 +165,16 @@ public class CommentController {
         
         // Tặng xu thêm cho media (luôn tặng nếu có media)
         try {
+            System.out.println("=== XU REWARD DEBUG ===");
             if (hasImages) {
+                System.out.println("Rewarding xu for images...");
                 oneXuService.rewardFromReviewWithImage(user.getUserId(), productId);
+                System.out.println("Xu rewarded for images successfully");
             }
             if (hasVideos) {
+                System.out.println("Rewarding xu for videos...");
                 oneXuService.rewardFromReviewWithVideo(user.getUserId(), productId);
+                System.out.println("Xu rewarded for videos successfully");
             }
             
             // Đồng bộ hóa số dư và refresh session
@@ -179,6 +192,11 @@ public class CommentController {
         }
         if (hasImages) totalXu += 300; // Xu cho ảnh (luôn tặng)
         if (hasVideos) totalXu += 300; // Xu cho video (luôn tặng)
+        
+        System.out.println("=== XU CALCULATION ===");
+        System.out.println("Has Images: " + hasImages);
+        System.out.println("Has Videos: " + hasVideos);
+        System.out.println("Total Xu: " + totalXu);
 
         if (totalXu > 0) {
             redirectAttributes.addFlashAttribute("success", "Đã gửi đánh giá thành công! Bạn đã nhận được " + totalXu + " xu thưởng.");
@@ -209,13 +227,17 @@ public class CommentController {
         // Kiểm tra xem đây có phải là đánh giá đầu tiên của user cho sản phẩm này không
         // Phải kiểm tra TRƯỚC khi xóa đánh giá cũ
         boolean isFirstReview = !commentService.getLatestUserCommentForProduct(user.getUserId(), productId).isPresent();
+        System.out.println("=== REVIEW DEBUG ===");
+        System.out.println("User ID: " + user.getUserId());
+        System.out.println("Product ID: " + productId);
+        System.out.println("Is First Review: " + isFirstReview);
         
         // Xóa đánh giá cũ nếu có trước khi tạo mới
         commentService.deleteOldCommentIfExists(user.getUserId(), productId);
 
         Comment c = commentService.createComment(user, product, null, content, rating);
 
-        // Chỉ tặng xu cho đánh giá đầu tiên của người dùng cho sản phẩm này
+        // Tặng xu cho đánh giá đầu tiên
         if (isFirstReview) {
             try {
                 // Tặng 300 xu cho đánh giá cơ bản
@@ -234,6 +256,10 @@ public class CommentController {
         // Lưu file media nếu có và tặng xu thêm
         boolean hasImages = false;
         boolean hasVideos = false;
+        
+        System.out.println("=== MEDIA DEBUG ===");
+        System.out.println("Images parameter: " + (images != null ? images.size() : "null"));
+        System.out.println("Videos parameter: " + (videos != null ? videos.size() : "null"));
         
         try {
             if (images != null) {
@@ -271,11 +297,16 @@ public class CommentController {
         
         // Tặng xu thêm cho media (luôn tặng nếu có media)
         try {
+            System.out.println("=== XU REWARD DEBUG ===");
             if (hasImages) {
+                System.out.println("Rewarding xu for images...");
                 oneXuService.rewardFromReviewWithImage(user.getUserId(), productId);
+                System.out.println("Xu rewarded for images successfully");
             }
             if (hasVideos) {
+                System.out.println("Rewarding xu for videos...");
                 oneXuService.rewardFromReviewWithVideo(user.getUserId(), productId);
+                System.out.println("Xu rewarded for videos successfully");
             }
             
             // Đồng bộ hóa số dư và refresh session
@@ -293,6 +324,11 @@ public class CommentController {
         }
         if (hasImages) totalXu += 300; // Xu cho ảnh (luôn tặng)
         if (hasVideos) totalXu += 300; // Xu cho video (luôn tặng)
+        
+        System.out.println("=== XU CALCULATION ===");
+        System.out.println("Has Images: " + hasImages);
+        System.out.println("Has Videos: " + hasVideos);
+        System.out.println("Total Xu: " + totalXu);
 
         if (totalXu > 0) {
             redirectAttributes.addFlashAttribute("success", "Đã gửi đánh giá thành công! Bạn đã nhận được " + totalXu + " xu thưởng.");
