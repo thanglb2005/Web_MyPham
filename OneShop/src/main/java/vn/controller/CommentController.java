@@ -131,50 +131,78 @@ public class CommentController {
         
         try {
             if (images != null) {
+                System.out.println("Processing " + images.size() + " image files");
                 for (MultipartFile f : images) {
-                    String stored = imageStorageService.store(f, product.getProductName());
-                    if (stored != null && !stored.isBlank()) {
-                        vn.entity.CommentMedia media = new vn.entity.CommentMedia();
-                        media.setComment(c);
-                        media.setMediaType("IMAGE");
-                        media.setUrl(stored);
-                        commentService.saveMedia(media);
-                        hasImages = true;
+                    System.out.println("Image file: " + f.getOriginalFilename() + ", size: " + f.getSize() + ", isEmpty: " + f.isEmpty());
+                    if (!f.isEmpty()) {
+                        String stored = imageStorageService.store(f, product.getProductName());
+                        if (stored != null && !stored.isBlank()) {
+                            System.out.println("Image stored successfully: " + stored);
+                            vn.entity.CommentMedia media = new vn.entity.CommentMedia();
+                            media.setComment(c);
+                            media.setMediaType("IMAGE");
+                            media.setUrl(stored);
+                            commentService.saveMedia(media);
+                            hasImages = true;
+                            System.out.println("hasImages set to true");
+                        } else {
+                            System.out.println("Failed to store image: " + f.getOriginalFilename());
+                        }
+                    } else {
+                        System.out.println("Image file is empty: " + f.getOriginalFilename());
                     }
                 }
             }
             if (videos != null) {
                 System.out.println("Processing " + videos.size() + " video files");
                 for (MultipartFile f : videos) {
-                    System.out.println("Video file: " + f.getOriginalFilename() + ", size: " + f.getSize());
-                    String stored = imageStorageService.store(f, product.getProductName());
-                    if (stored != null && !stored.isBlank()) {
-                        System.out.println("Video stored successfully: " + stored);
-                        vn.entity.CommentMedia media = new vn.entity.CommentMedia();
-                        media.setComment(c);
-                        media.setMediaType("VIDEO");
-                        media.setUrl(stored);
-                        commentService.saveMedia(media);
-                        hasVideos = true;
+                    System.out.println("Video file: " + f.getOriginalFilename() + ", size: " + f.getSize() + ", isEmpty: " + f.isEmpty());
+                    if (!f.isEmpty()) {
+                        String stored = imageStorageService.store(f, product.getProductName());
+                        if (stored != null && !stored.isBlank()) {
+                            System.out.println("Video stored successfully: " + stored);
+                            vn.entity.CommentMedia media = new vn.entity.CommentMedia();
+                            media.setComment(c);
+                            media.setMediaType("VIDEO");
+                            media.setUrl(stored);
+                            commentService.saveMedia(media);
+                            hasVideos = true;
+                        } else {
+                            System.out.println("Failed to store video: " + f.getOriginalFilename());
+                        }
                     } else {
-                        System.out.println("Failed to store video: " + f.getOriginalFilename());
+                        System.out.println("Video file is empty: " + f.getOriginalFilename());
                     }
                 }
             }
         } catch (IOException ignored) {}
+        
+        System.out.println("=== FINAL MEDIA STATUS ===");
+        System.out.println("hasImages final: " + hasImages);
+        System.out.println("hasVideos final: " + hasVideos);
         
         // Tặng xu thêm cho media (luôn tặng nếu có media)
         try {
             System.out.println("=== XU REWARD DEBUG ===");
             if (hasImages) {
                 System.out.println("Rewarding xu for images...");
-                oneXuService.rewardFromReviewWithImage(user.getUserId(), productId);
-                System.out.println("Xu rewarded for images successfully");
+                try {
+                    oneXuService.rewardFromReviewWithImage(user.getUserId(), productId);
+                    System.out.println("Xu rewarded for images successfully");
+                } catch (Exception e) {
+                    System.err.println("Error rewarding xu for images: " + e.getMessage());
+                    e.printStackTrace();
+                }
             }
             if (hasVideos) {
                 System.out.println("Rewarding xu for videos...");
-                oneXuService.rewardFromReviewWithVideo(user.getUserId(), productId);
-                System.out.println("Xu rewarded for videos successfully");
+                try {
+                    oneXuService.rewardFromReviewWithVideo(user.getUserId(), productId);
+                    System.out.println("Xu rewarded for videos successfully");
+                } catch (Exception e) {
+                    System.err.println("Error rewarding xu for videos: " + e.getMessage());
+                    e.printStackTrace();
+                }
             }
             
             // Đồng bộ hóa số dư và refresh session
@@ -263,50 +291,78 @@ public class CommentController {
         
         try {
             if (images != null) {
+                System.out.println("Processing " + images.size() + " image files");
                 for (MultipartFile f : images) {
-                    String stored = imageStorageService.store(f, product.getProductName());
-                    if (stored != null && !stored.isBlank()) {
-                        vn.entity.CommentMedia media = new vn.entity.CommentMedia();
-                        media.setComment(c);
-                        media.setMediaType("IMAGE");
-                        media.setUrl(stored);
-                        commentService.saveMedia(media);
-                        hasImages = true;
+                    System.out.println("Image file: " + f.getOriginalFilename() + ", size: " + f.getSize() + ", isEmpty: " + f.isEmpty());
+                    if (!f.isEmpty()) {
+                        String stored = imageStorageService.store(f, product.getProductName());
+                        if (stored != null && !stored.isBlank()) {
+                            System.out.println("Image stored successfully: " + stored);
+                            vn.entity.CommentMedia media = new vn.entity.CommentMedia();
+                            media.setComment(c);
+                            media.setMediaType("IMAGE");
+                            media.setUrl(stored);
+                            commentService.saveMedia(media);
+                            hasImages = true;
+                            System.out.println("hasImages set to true");
+                        } else {
+                            System.out.println("Failed to store image: " + f.getOriginalFilename());
+                        }
+                    } else {
+                        System.out.println("Image file is empty: " + f.getOriginalFilename());
                     }
                 }
             }
             if (videos != null) {
                 System.out.println("Processing " + videos.size() + " video files");
                 for (MultipartFile f : videos) {
-                    System.out.println("Video file: " + f.getOriginalFilename() + ", size: " + f.getSize());
-                    String stored = imageStorageService.store(f, product.getProductName());
-                    if (stored != null && !stored.isBlank()) {
-                        System.out.println("Video stored successfully: " + stored);
-                        vn.entity.CommentMedia media = new vn.entity.CommentMedia();
-                        media.setComment(c);
-                        media.setMediaType("VIDEO");
-                        media.setUrl(stored);
-                        commentService.saveMedia(media);
-                        hasVideos = true;
+                    System.out.println("Video file: " + f.getOriginalFilename() + ", size: " + f.getSize() + ", isEmpty: " + f.isEmpty());
+                    if (!f.isEmpty()) {
+                        String stored = imageStorageService.store(f, product.getProductName());
+                        if (stored != null && !stored.isBlank()) {
+                            System.out.println("Video stored successfully: " + stored);
+                            vn.entity.CommentMedia media = new vn.entity.CommentMedia();
+                            media.setComment(c);
+                            media.setMediaType("VIDEO");
+                            media.setUrl(stored);
+                            commentService.saveMedia(media);
+                            hasVideos = true;
+                        } else {
+                            System.out.println("Failed to store video: " + f.getOriginalFilename());
+                        }
                     } else {
-                        System.out.println("Failed to store video: " + f.getOriginalFilename());
+                        System.out.println("Video file is empty: " + f.getOriginalFilename());
                     }
                 }
             }
         } catch (IOException ignored) {}
+        
+        System.out.println("=== FINAL MEDIA STATUS ===");
+        System.out.println("hasImages final: " + hasImages);
+        System.out.println("hasVideos final: " + hasVideos);
         
         // Tặng xu thêm cho media (luôn tặng nếu có media)
         try {
             System.out.println("=== XU REWARD DEBUG ===");
             if (hasImages) {
                 System.out.println("Rewarding xu for images...");
-                oneXuService.rewardFromReviewWithImage(user.getUserId(), productId);
-                System.out.println("Xu rewarded for images successfully");
+                try {
+                    oneXuService.rewardFromReviewWithImage(user.getUserId(), productId);
+                    System.out.println("Xu rewarded for images successfully");
+                } catch (Exception e) {
+                    System.err.println("Error rewarding xu for images: " + e.getMessage());
+                    e.printStackTrace();
+                }
             }
             if (hasVideos) {
                 System.out.println("Rewarding xu for videos...");
-                oneXuService.rewardFromReviewWithVideo(user.getUserId(), productId);
-                System.out.println("Xu rewarded for videos successfully");
+                try {
+                    oneXuService.rewardFromReviewWithVideo(user.getUserId(), productId);
+                    System.out.println("Xu rewarded for videos successfully");
+                } catch (Exception e) {
+                    System.err.println("Error rewarding xu for videos: " + e.getMessage());
+                    e.printStackTrace();
+                }
             }
             
             // Đồng bộ hóa số dư và refresh session
