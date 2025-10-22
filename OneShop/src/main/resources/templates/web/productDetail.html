@@ -445,8 +445,9 @@
                               <small class="text-muted ms-2" th:text="${#dates.format(rv.rateDate, 'dd/MM/yyyy')}"></small>
                             </div>
                           </div>
-                          <!-- Nút xóa đánh giá - hiển thị cho tất cả đánh giá để test -->
-                          <div class="ms-3">
+                          <!-- Nút xóa đánh giá - chỉ hiển thị cho đánh giá của user hiện tại -->
+                          <!-- Debug: user=${user?.userId}, rv.user=${rv.user.userId} -->
+                          <div th:if="${user != null and rv.user.userId == user.userId}" class="ms-3">
                             <form th:action="@{/reviews/delete/product/{commentId}(commentId=${rv.id})}" method="post" style="display: inline;">
                               <input type="hidden" name="productId" th:value="${product.productId}" />
                               <button type="submit" class="btn btn-sm btn-outline-danger" 
@@ -488,39 +489,6 @@
                           <div>
                             <div class="fw-bold text-primary" th:text="${user.name}">Tên người dùng</div>
                             <small class="text-muted" th:text="${user.email}">email@example.com</small>
-                          </div>
-                        </div>
-                      </div>
-                      
-                      <!-- Hiển thị đánh giá hiện tại của user nếu có -->
-                      <div th:if="${user != null and userReview != null}" class="mb-3 p-3 border rounded">
-                        <div class="d-flex justify-content-between align-items-start">
-                          <div class="flex-grow-1">
-                            <h6 class="mb-1">Đánh giá hiện tại của bạn:</h6>
-                            <div class="d-flex align-items-center mb-2">
-                              <span>
-                                <i class="icofont-star" th:style="${userReview.rating} >= 1 ? 'color:#f5c518' : 'color:#cfd3d7'"></i>
-                                <i class="icofont-star" th:style="${userReview.rating} >= 2 ? 'color:#f5c518' : 'color:#cfd3d7'"></i>
-                                <i class="icofont-star" th:style="${userReview.rating} >= 3 ? 'color:#f5c518' : 'color:#cfd3d7'"></i>
-                                <i class="icofont-star" th:style="${userReview.rating} >= 4 ? 'color:#f5c518' : 'color:#cfd3d7'"></i>
-                                <i class="icofont-star" th:style="${userReview.rating} >= 5 ? 'color:#f5c518' : 'color:#cfd3d7'"></i>
-                              </span>
-                              <small class="text-muted ms-2" th:text="${#dates.format(userReview.rateDate, 'dd/MM/yyyy')}"></small>
-                            </div>
-                            <p class="mb-0 text-muted" th:text="${userReview.content}">Nội dung đánh giá</p>
-                          </div>
-                          
-                          <!-- Nút xóa đánh giá -->
-                          <div class="ms-3">
-                            <form th:action="@{/reviews/delete/product/{commentId}(commentId=${userReview.id})}" method="post" style="display: inline;">
-                              <input type="hidden" name="productId" th:value="${product.productId}" />
-                              <button type="submit" class="btn btn-sm btn-outline-danger" 
-                                      onclick="return confirm('Bạn có chắc chắn muốn xóa đánh giá này?')"
-                                      title="Xóa đánh giá"
-                                      style="border-radius: 50%; width: 32px; height: 32px; padding: 0; display: flex; align-items: center; justify-content: center;">
-                                <i class="fas fa-trash" style="font-size: 12px;"></i>
-                              </button>
-                            </form>
                           </div>
                         </div>
                       </div>
