@@ -3,9 +3,6 @@ package vn.service;
 import org.springframework.data.domain.Page;
 import vn.entity.OneXuTransaction;
 import vn.entity.OneXuWeeklySchedule;
-import vn.entity.User;
-
-import java.time.LocalDate;
 import java.util.List;
 
 public interface OneXuService {
@@ -39,6 +36,12 @@ public interface OneXuService {
     
     // Thưởng xu từ đơn hàng hoàn thành (1% giá trị đơn hàng)
     OneXuTransaction rewardFromOrder(Long userId, Long orderId, Double orderAmount);
+    
+    // Thưởng xu từ đánh giá sản phẩm lần đầu (300 xu)
+    OneXuTransaction rewardFromReview(Long userId, Long productId);
+    
+    // Trừ xu khi xóa đánh giá sản phẩm (300 xu)
+    OneXuTransaction deductFromReviewDeletion(Long userId, Long productId);
     
     // Lấy thống kê One Xu
     OneXuStats getOneXuStats(Long userId);

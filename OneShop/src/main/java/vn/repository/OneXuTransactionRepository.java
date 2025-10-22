@@ -27,7 +27,7 @@ public interface OneXuTransactionRepository extends JpaRepository<OneXuTransacti
     List<OneXuTransaction> findByOrderId(@Param("orderId") Long orderId);
     
     // Thống kê tổng xu đã nhận
-    @Query("SELECT COALESCE(SUM(t.amount), 0) FROM OneXuTransaction t WHERE t.userId = :userId AND t.transactionType IN ('CHECKIN', 'ORDER_REWARD')")
+    @Query("SELECT COALESCE(SUM(t.amount), 0) FROM OneXuTransaction t WHERE t.userId = :userId AND t.transactionType IN ('CHECKIN', 'ORDER_REWARD', 'REVIEW_REWARD')")
     Double getTotalEarnedXu(@Param("userId") Long userId);
     
     // Thống kê tổng xu từ check-in

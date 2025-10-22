@@ -38,7 +38,8 @@ public class OneXuTransaction {
         CHECKIN,        // Check-in hàng ngày
         ORDER_REWARD,   // Thưởng từ đơn hàng hoàn thành
         PURCHASE,       // Mua sắm bằng One Xu
-        REFUND          // Hoàn xu
+        REFUND,         // Hoàn xu
+        REVIEW_REWARD   // Thưởng từ đánh giá sản phẩm lần đầu
     }
     
     // Constructors

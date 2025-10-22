@@ -27,6 +27,9 @@ public interface CommentService {
     // Delete comment
     void deleteComment(Long commentId, Long userId);
     
+    // Delete comment and return productId for xu deduction
+    Long deleteCommentAndReturnProductId(Long commentId, Long userId);
+    
     // Check and delete old comment before creating new one
     void deleteOldCommentIfExists(Long userId, Long productId);
 }

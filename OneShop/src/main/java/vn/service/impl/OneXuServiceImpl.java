@@ -17,7 +17,6 @@ import vn.service.OneXuService;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @Transactional
@@ -204,5 +203,23 @@ public class OneXuServiceImpl implements OneXuService {
         } catch (Exception e) {
             System.err.println("Error syncing balance for user " + userId + ": " + e.getMessage());
         }
+    }
+
+    @Override
+    public OneXuTransaction rewardFromReview(Long userId, Long productId) {
+        // Thưởng 300 xu cho đánh giá sản phẩm lần đầu
+        Double rewardAmount = 300.0;
+        String description = "Thưởng từ đánh giá sản phẩm #" + productId;
+        
+        return addXu(userId, OneXuTransaction.TransactionType.REVIEW_REWARD, rewardAmount, description, null);
+    }
+
+    @Override
+    public OneXuTransaction deductFromReviewDeletion(Long userId, Long productId) {
+        // Trừ 300 xu khi xóa đánh giá sản phẩm
+        Double deductAmount = 300.0;
+        String description = "Trừ xu do xóa đánh giá sản phẩm #" + productId;
+        
+        return deductXu(userId, deductAmount, description);
     }
 }

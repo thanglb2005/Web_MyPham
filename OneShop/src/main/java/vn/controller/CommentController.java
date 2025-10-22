@@ -14,8 +14,10 @@ import vn.entity.Product;
 import vn.entity.User;
 import vn.repository.OrderDetailRepository;
 import vn.repository.ProductRepository;
+import vn.repository.UserRepository;
 import vn.service.CommentService;
 import vn.service.ImageStorageService;
+import vn.service.OneXuService;
 
 import java.io.IOException;
 import java.util.List;
@@ -34,7 +36,13 @@ public class CommentController {
     private ProductRepository productRepository;
 
     @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
     private ImageStorageService imageStorageService;
+
+    @Autowired
+    private OneXuService oneXuService;
 
     // Trang đánh giá: truyền orderDetailId để khóa vào mục đã mua
     @GetMapping("/review/{orderDetailId}")
@@ -83,11 +91,30 @@ public class CommentController {
         Product product = productRepository.findById(productId).orElse(null);
         if (product == null) return "redirect:/user/my-orders";
 
+        // Kiểm tra xem đây có phải là đánh giá đầu tiên của user cho sản phẩm này không
+        // Phải kiểm tra TRƯỚC khi xóa đánh giá cũ
+        boolean isFirstReview = !commentService.getLatestUserCommentForProduct(user.getUserId(), productId).isPresent();
+        
         // Xóa đánh giá cũ nếu có trước khi tạo mới
         commentService.deleteOldCommentIfExists(user.getUserId(), productId);
 
         // Lưu comment chính
         Comment c = commentService.createComment(user, product, orderDetail, content, rating);
+
+        // Chỉ tặng 300 xu cho đánh giá đầu tiên của người dùng cho sản phẩm này
+        if (isFirstReview) {
+            try {
+                oneXuService.rewardFromReview(user.getUserId(), productId);
+                
+                // Đồng bộ hóa số dư và refresh session
+                oneXuService.syncUserBalance(user.getUserId());
+                User freshUser = userRepository.findById(user.getUserId()).orElse(user);
+                session.setAttribute("user", freshUser);
+            } catch (Exception e) {
+                // Log lỗi nhưng không làm gián đoạn quá trình đánh giá
+                System.err.println("Lỗi khi tặng xu cho đánh giá: " + e.getMessage());
+            }
+        }
 
         // Lưu file media nếu có
         try {
@@ -117,7 +144,11 @@ public class CommentController {
             }
         } catch (IOException ignored) {}
 
-        redirectAttributes.addFlashAttribute("success", "Đã gửi đánh giá thành công");
+        if (isFirstReview) {
+            redirectAttributes.addFlashAttribute("success", "Đã gửi đánh giá thành công! Bạn đã nhận được 300 xu thưởng.");
+        } else {
+            redirectAttributes.addFlashAttribute("success", "Đã cập nhật đánh giá thành công!");
+        }
         return redirect != null ? "redirect:" + redirect : "redirect:/user/my-orders";
     }
 
@@ -139,10 +170,29 @@ public class CommentController {
         Product product = productRepository.findById(productId).orElse(null);
         if (product == null) return "redirect:/";
 
+        // Kiểm tra xem đây có phải là đánh giá đầu tiên của user cho sản phẩm này không
+        // Phải kiểm tra TRƯỚC khi xóa đánh giá cũ
+        boolean isFirstReview = !commentService.getLatestUserCommentForProduct(user.getUserId(), productId).isPresent();
+        
         // Xóa đánh giá cũ nếu có trước khi tạo mới
         commentService.deleteOldCommentIfExists(user.getUserId(), productId);
 
         Comment c = commentService.createComment(user, product, null, content, rating);
+
+        // Chỉ tặng 300 xu cho đánh giá đầu tiên của người dùng cho sản phẩm này
+        if (isFirstReview) {
+            try {
+                oneXuService.rewardFromReview(user.getUserId(), productId);
+                
+                // Đồng bộ hóa số dư và refresh session
+                oneXuService.syncUserBalance(user.getUserId());
+                User freshUser = userRepository.findById(user.getUserId()).orElse(user);
+                session.setAttribute("user", freshUser);
+            } catch (Exception e) {
+                // Log lỗi nhưng không làm gián đoạn quá trình đánh giá
+                System.err.println("Lỗi khi tặng xu cho đánh giá: " + e.getMessage());
+            }
+        }
 
         // Lưu file media nếu có (ảnh/video) – tái sử dụng ImageStorageService
         try {
@@ -171,7 +221,12 @@ public class CommentController {
                 }
             }
         } catch (IOException ignored) {}
-        redirectAttributes.addFlashAttribute("success", "Đã gửi đánh giá thành công");
+        
+        if (isFirstReview) {
+            redirectAttributes.addFlashAttribute("success", "Đã gửi đánh giá thành công! Bạn đã nhận được 300 xu thưởng.");
+        } else {
+            redirectAttributes.addFlashAttribute("success", "Đã cập nhật đánh giá thành công!");
+        }
 
         if (redirect != null && !redirect.isBlank()) {
             return "redirect:" + redirect;
@@ -190,8 +245,34 @@ public class CommentController {
         if (user == null) return "redirect:/login";
 
         try {
-            commentService.deleteComment(commentId, user.getUserId());
-            redirectAttributes.addFlashAttribute("success", "Đã xóa đánh giá thành công");
+            // Xóa comment và lấy productId để trừ xu
+            Long productId = commentService.deleteCommentAndReturnProductId(commentId, user.getUserId());
+            
+            if (productId != null) {
+                // Kiểm tra xem đây có phải là đánh giá đầu tiên không (trước khi xóa)
+                boolean wasFirstReview = !commentService.getLatestUserCommentForProduct(user.getUserId(), productId).isPresent();
+                
+                if (wasFirstReview) {
+                    // Trừ 300 xu vì đã xóa đánh giá đầu tiên
+                    try {
+                        oneXuService.deductFromReviewDeletion(user.getUserId(), productId);
+                        
+                        // Đồng bộ hóa số dư và refresh session
+                        oneXuService.syncUserBalance(user.getUserId());
+                        User freshUser = userRepository.findById(user.getUserId()).orElse(user);
+                        session.setAttribute("user", freshUser);
+                        
+                        redirectAttributes.addFlashAttribute("success", "Đã xóa đánh giá thành công. Đã trừ 300 xu.");
+                    } catch (Exception e) {
+                        redirectAttributes.addFlashAttribute("success", "Đã xóa đánh giá thành công.");
+                        System.err.println("Lỗi khi trừ xu do xóa đánh giá: " + e.getMessage());
+                    }
+                } else {
+                    redirectAttributes.addFlashAttribute("success", "Đã xóa đánh giá thành công.");
+                }
+            } else {
+                redirectAttributes.addFlashAttribute("error", "Không thể xóa đánh giá");
+            }
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Không thể xóa đánh giá");
         }
@@ -211,8 +292,34 @@ public class CommentController {
         if (user == null) return "redirect:/login";
 
         try {
-            commentService.deleteComment(commentId, user.getUserId());
-            redirectAttributes.addFlashAttribute("success", "Đã xóa đánh giá thành công");
+            // Xóa comment và lấy productId để trừ xu
+            Long actualProductId = commentService.deleteCommentAndReturnProductId(commentId, user.getUserId());
+            
+            if (actualProductId != null) {
+                // Kiểm tra xem đây có phải là đánh giá đầu tiên không (trước khi xóa)
+                boolean wasFirstReview = !commentService.getLatestUserCommentForProduct(user.getUserId(), actualProductId).isPresent();
+                
+                if (wasFirstReview) {
+                    // Trừ 300 xu vì đã xóa đánh giá đầu tiên
+                    try {
+                        oneXuService.deductFromReviewDeletion(user.getUserId(), actualProductId);
+                        
+                        // Đồng bộ hóa số dư và refresh session
+                        oneXuService.syncUserBalance(user.getUserId());
+                        User freshUser = userRepository.findById(user.getUserId()).orElse(user);
+                        session.setAttribute("user", freshUser);
+                        
+                        redirectAttributes.addFlashAttribute("success", "Đã xóa đánh giá thành công. Đã trừ 300 xu.");
+                    } catch (Exception e) {
+                        redirectAttributes.addFlashAttribute("success", "Đã xóa đánh giá thành công.");
+                        System.err.println("Lỗi khi trừ xu do xóa đánh giá: " + e.getMessage());
+                    }
+                } else {
+                    redirectAttributes.addFlashAttribute("success", "Đã xóa đánh giá thành công.");
+                }
+            } else {
+                redirectAttributes.addFlashAttribute("error", "Không thể xóa đánh giá");
+            }
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Không thể xóa đánh giá");
         }

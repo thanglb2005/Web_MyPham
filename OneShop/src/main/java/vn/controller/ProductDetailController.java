@@ -11,9 +11,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import vn.entity.Product;
 import vn.entity.Comment;
+import vn.entity.User;
 import vn.service.CategoryService;
 import vn.service.ProductService;
 import vn.service.CommentService;
+import jakarta.servlet.http.HttpSession;
 
 @Controller
 public class ProductDetailController {
@@ -28,7 +30,9 @@ public class ProductDetailController {
     private CommentService commentService;
 
     @GetMapping(value = "/productDetail")
-    public String productDetail(@RequestParam(value = "id", required = false) Long id, Model model) {
+    public String productDetail(@RequestParam(value = "id", required = false) Long id, 
+                               Model model, 
+                               HttpSession session) {
         if (id == null) {
             return "redirect:/"; // fallback về trang chủ nếu thiếu id
         }
@@ -66,6 +70,16 @@ public class ProductDetailController {
                     .orElse(0.0);
         }
         model.addAttribute("avgRating", avg);
+
+        // Lấy đánh giá của user hiện tại (nếu có)
+        User user = (User) session.getAttribute("user");
+        if (user != null) {
+            model.addAttribute("user", user); // Truyền user vào template
+            Optional<Comment> userReviewOpt = commentService.getLatestUserCommentForProduct(user.getUserId(), product.getProductId());
+            if (userReviewOpt.isPresent()) {
+                model.addAttribute("userReview", userReviewOpt.get());
+            }
+        }
 
         model.addAttribute("categories", categoryService.getAllCategories());
         return "web/productDetail";
