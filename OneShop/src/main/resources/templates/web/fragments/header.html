@@ -1579,7 +1579,7 @@
               roomId: currentRoomId,
               messageContent: message,
               messageType: 'TEXT',
-              senderName: 'Trần Thảo Chi', // This should come from session
+              senderName: window.CHAT_INIT?.userName || 'Khách hàng',
               userType: 'customer'
             };
 
@@ -1623,7 +1623,7 @@
               messageContent: data.url, // URL to the image
               messageType: 'IMAGE',
               userType: 'customer',
-              senderName: 'Trần Thảo Chi'
+              senderName: window.CHAT_INIT?.userName || 'Khách hàng'
             };
 
             stompClient.send('/app/chat.send', {}, JSON.stringify(messageData));

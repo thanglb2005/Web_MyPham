@@ -1238,9 +1238,12 @@
           <i class="fas fa-store"></i>
           <span class="shop-name" th:text="${chatShopInfo.name}">Tên shop</span>
           <span class="dot">•</span>
-          <a th:href="@{/shop/{slug}(slug=${chatShopInfo.slug})}" class="visit-btn">
+          <a
+            th:href="@{/shop/{slug}(slug=${chatShopInfo.slug})}"
+            class="visit-btn"
+          >
             <i class="fas fa-external-link-alt"></i>
-            <span style="margin-left:6px">Xem trang shop</span>
+            <span style="margin-left: 6px">Xem trang shop</span>
           </a>
         </div>
 
@@ -1436,36 +1439,38 @@
 
         const cookieName = getCookie("oneshop_chat_name");
 
-        // Precedence: query > server-init > cookie > localStorage > random
+        // Định danh an toàn: nếu user đã đăng nhập (server có userId/userName)
+        // thì LUÔN dùng danh tính và room từ server, bỏ qua tham số URL
+        const isLoggedIn = !!(sInit && (sInit.userId || sInit.userName));
 
-        let currentRoom =
-          qp.get("room") ||
-          sInit.roomId ||
-          cookieRoom ||
-          storedRoom ||
-          "support-" + Math.floor(Math.random() * 1e6);
+        let currentRoom;
+        let userName;
 
-        // Server đã tạo room ID rồi, không cần tạo lại
-        // Chỉ sử dụng room ID từ server nếu có
-        if (sInit.roomId && !currentRoom) {
-          currentRoom = sInit.roomId;
-        }
-
-        let userName =
-          qp.get("user") ||
-          sInit.userName ||
-          cookieName ||
-          storedName ||
-          "khach_" + Math.floor(Math.random() * 1000);
-
-        // If server provided identity and no query override, force-persist it
-
-        if (!qp.get("room") && sInit.roomId) {
-          currentRoom = sInit.roomId;
-        }
-
-        if (!qp.get("user") && sInit.userName) {
-          userName = sInit.userName;
+        if (isLoggedIn) {
+          currentRoom =
+            sInit.roomId ||
+            cookieRoom ||
+            storedRoom ||
+            "support-" + (sInit.userId || Math.floor(Math.random() * 1e6));
+          userName =
+            sInit.userName ||
+            cookieName ||
+            storedName ||
+            "khach_" + Math.floor(Math.random() * 1000);
+        } else {
+          // Guest: cho phép lấy từ URL để giữ phiên tạm
+          currentRoom =
+            qp.get("room") ||
+            sInit.roomId ||
+            cookieRoom ||
+            storedRoom ||
+            "support-" + Math.floor(Math.random() * 1e6);
+          userName =
+            qp.get("user") ||
+            sInit.userName ||
+            cookieName ||
+            storedName ||
+            "khach_" + Math.floor(Math.random() * 1000);
         }
 
         persistIdentity(currentRoom, userName);
@@ -1938,8 +1943,10 @@
 
             const items = await res.json();
 
-            seenKeys.clear();
-
+            // Do NOT clear seenKeys here to avoid duplicating messages that were
+            // already pre-rendered from server (CHAT_INIT.messages). The
+            // appendMessage() function will naturally skip any duplicates using
+            // the message key.
             items.forEach(appendMessage);
 
             const container = document.getElementById("messages");

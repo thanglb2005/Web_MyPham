@@ -69,13 +69,10 @@ public class ChatViewController {
         Object userObj = session.getAttribute("user");
         if (userObj instanceof User user) {
             if (shopSpecific && targetShop != null) {
-                // Tạo room ID ngay lập tức cho shop chat để có thể load history
+                // Room cho shop cụ thể
                 roomId = "shop-" + targetShop.getShopId() + "-customer-" + user.getUserId();
-            } else if (cookieRoom != null && !cookieRoom.isEmpty() && !cookieRoom.startsWith("shop-") && !cookieRoom.startsWith("user-")) {
-                // Chỉ sử dụng cookie nếu không phải shop room và không phải user room cũ
-                roomId = cookieRoom;
             } else {
-                // Tạo room ID cho CSKH chat (không có shopId)
+                // LUÔN dùng phòng chuẩn theo userId cho người dùng đã đăng nhập (bỏ qua cookieRoom)
                 roomId = "support-" + user.getUserId();
                 System.out.println("=== CSKH CHAT ROOM ===");
                 System.out.println("Generated roomId: " + roomId);

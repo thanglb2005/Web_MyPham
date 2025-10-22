@@ -382,10 +382,17 @@
             <span class="status" id="connectionStatus">Đang kết nối...</span>
           </div>
           <div class="chat-actions">
-            <a th:href="@{/cskh/vendor-chat}"
-               title="Liên hệ Vendor"
-               class="action-btn"
-               style="background:#2563eb;color:#fff;border:none;margin-right:8px">
+            <a
+              th:href="@{/cskh/vendor-chat}"
+              title="Liên hệ Vendor"
+              class="action-btn"
+              style="
+                background: #2563eb;
+                color: #fff;
+                border: none;
+                margin-right: 8px;
+              "
+            >
               <i class="fas fa-user-tie"></i> Liên hệ Vendor
             </a>
             <button
@@ -428,11 +435,25 @@
 
         <div class="chat-input">
           <input
+            type="file"
+            id="imageInput"
+            accept="image/*"
+            style="display: none"
+          />
+          <input
             type="text"
             id="messageInput"
             placeholder="Nhập tin nhắn hỗ trợ..."
             disabled
           />
+          <button
+            id="imageButton"
+            title="Gửi ảnh"
+            class="action-btn"
+            style="background: #1e40af; color: #fff; border: none"
+          >
+            <i class="fas fa-image"></i>
+          </button>
           <button id="sendButton" disabled>
             <i class="fas fa-paper-plane"></i>
           </button>
@@ -508,12 +529,18 @@
             console.log("Total rooms:", rooms.length);
             console.log("All rooms:", rooms);
 
-            // Filter để chỉ hiện support rooms và shop rooms
-            const supportRooms = rooms.filter(
-              (room) =>
-                room.roomId.startsWith("support-") ||
-                room.roomId.startsWith("shop-")
-            );
+            // Filter để chỉ hiện support rooms (CSKH chỉ nhận tin từ user gửi cho CSKH)
+            const supportRooms = rooms.filter((room) => {
+              // Chỉ nhận phòng support- (user gửi cho CSKH)
+              if (!(room && room.roomId)) return false;
+              if (room.roomId.startsWith("support-")) {
+                // Bóc tách support-<id>, bỏ các phòng có id không phải số
+                const suffix = room.roomId.substring("support-".length);
+                return /^\d+$/.test(suffix);
+              }
+              // Loại bỏ shop- rooms (user gửi cho vendor)
+              return false;
+            });
             console.log("Filtered rooms:", supportRooms);
 
             displayRooms(supportRooms);
@@ -560,6 +587,16 @@
           });
 
           roomsList.appendChild(roomElement);
+
+          // Sau khi append, kiểm tra nếu preview là ảnh thì thay text
+          const previewEl = roomElement.querySelector(".room-preview");
+          if (
+            previewEl &&
+            room.preview &&
+            /\/loadImage\?imageName=/.test(room.preview)
+          ) {
+            previewEl.textContent = "Hình ảnh";
+          }
         });
       }
 
@@ -723,9 +760,17 @@
           isCskhMessage ? "cskh" : "customer"
         }`;
 
+        // Render ảnh giống vendor-chat: chỉ render img khi messageType === IMAGE
+        const type = String(message.messageType || "").toUpperCase();
+        const content = String(message.messageContent || "");
+        const isImg = type === "IMAGE";
+        const contentHtml = isImg
+          ? `<a href="${content}" target="_blank"><img src="${content}" style="max-width:240px;border-radius:8px"/></a>`
+          : `${content}`;
+
         messageElement.innerHTML = `
                 <div class="message-content">
-                    ${message.messageContent}
+                    ${contentHtml}
                     <div class="message-time">${formatTime(
                       message.sentAt
                     )}</div>
@@ -771,6 +816,55 @@
               sendMessage();
             }
           });
+
+        // Image upload wiring (safe, minimal)
+        (function () {
+          const btn = document.getElementById("imageButton");
+          const file = document.getElementById("imageInput");
+          if (!btn || !file) return;
+          btn.addEventListener("click", function () {
+            if (!isConnected || !currentRoom) {
+              alert("Chưa kết nối hoặc chưa chọn phòng");
+              return;
+            }
+            file.click();
+          });
+          file.addEventListener("change", async function (ev) {
+            const f = ev.target.files && ev.target.files[0];
+            ev.target.value = "";
+            if (!f || !currentRoom || !isConnected) return;
+            const fd = new FormData();
+            fd.append("file", f);
+            try {
+              const res = await fetch("/api/chat/uploadImage", {
+                method: "POST",
+                body: fd,
+              });
+              if (!res.ok) {
+                alert("Tải ảnh thất bại");
+                return;
+              }
+              const data = await res.json();
+              if (!data.success || !data.url) {
+                alert("Tải ảnh thất bại");
+                return;
+              }
+              stompClient.send(
+                "/app/chat.send",
+                {},
+                JSON.stringify({
+                  roomId: currentRoom,
+                  messageContent: data.url,
+                  messageType: "IMAGE",
+                  senderName: cskhContext.displayName || "CSKH",
+                  senderType: "cskh",
+                })
+              );
+            } catch (e) {
+              alert("Tải ảnh thất bại");
+            }
+          });
+        })();
 
         document
           .getElementById("messageInput")

@@ -61,6 +61,7 @@ public class VendorProductController {
 
     @GetMapping
     public String listProducts(@RequestParam(value = "shopId", required = false) Long shopId,
+                               @RequestParam(value = "search", required = false) String search,
                                HttpSession session,
                                Model model,
                                RedirectAttributes redirectAttributes) {
@@ -81,13 +82,24 @@ public class VendorProductController {
             return "redirect:/vendor/my-shops";
         }
 
-        List<Product> products = productService.findByShopId(shop.getShopId());
+        // Search by product name within the selected shop when provided
+        List<Product> products;
+        String trimmedSearch = (search != null && !search.trim().isEmpty()) ? search.trim() : null;
+        if (trimmedSearch != null) {
+            products = productService
+                    .findByShopAndName(shop.getShopId(), trimmedSearch,
+                            org.springframework.data.domain.PageRequest.of(0, 500))
+                    .getContent();
+        } else {
+            products = productService.findByShopId(shop.getShopId());
+        }
 
         model.addAttribute("vendor", vendor);
         model.addAttribute("shop", shop);
         model.addAttribute("shopList", shopList);
         model.addAttribute("selectedShopId", shop.getShopId());
         model.addAttribute("products", products);
+        model.addAttribute("search", trimmedSearch);
         model.addAttribute("shopStatus", shop.getStatus());
         model.addAttribute("pageTitle", "Sản phẩm của tôi");
         return "vendor/product-list";

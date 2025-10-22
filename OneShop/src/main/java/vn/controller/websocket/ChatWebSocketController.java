@@ -156,6 +156,8 @@ public class ChatWebSocketController {
                 : determineSenderType(senderName);
             message.put("senderType", senderType);
 
+            // Debug: log outbound message
+            System.out.println("[WS] SEND room=" + roomId + ", sender=" + senderName + ", senderType=" + senderType + ", type=" + messageType + ", content=" + (content.length()>60?content.substring(0,60)+"...":content));
             // Broadcast to room
             messagingTemplate.convertAndSend("/topic/room/" + roomId, message);
             // Persist message to database for durable history
@@ -285,6 +287,8 @@ public class ChatWebSocketController {
             typingNotification.put("senderType", senderType);
             typingNotification.put("timestamp", System.currentTimeMillis());
 
+            // Debug: log typing
+            System.out.println("[WS] TYPING room=" + roomId + ", user=" + userName + ", isTyping=" + isTyping);
             // Broadcast typing indicator to room
             messagingTemplate.convertAndSend("/topic/room/" + roomId + "/typing", typingNotification);
             
@@ -332,6 +336,7 @@ public class ChatWebSocketController {
                 }
             }
 
+            System.out.println("[WS] JOIN room=" + roomId + ", user=" + userName + " (" + userType + ")" + ", isNewRoom=" + isNewRoom);
             messagingTemplate.convertAndSend("/topic/room/" + roomId + "/users", joinNotification);
 
             // Broadcast global room-open event so vendors/CSKH see and pick up the conversation

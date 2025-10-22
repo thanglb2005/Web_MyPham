@@ -1377,6 +1377,14 @@
       </h4>
 
       <div>
+        <a
+          href="/cskh/chat"
+          class="btn btn-outline-primary btn-sm"
+          style="margin-right: 8px"
+        >
+          <i class="fas fa-comments"></i>
+          Về Chat CSKH
+        </a>
         <a href="/logout" class="btn btn-outline-danger btn-sm">
           <i class="fas fa-sign-out-alt"></i>
           &#272;&#258;NG XU&#7844;T
@@ -1557,144 +1565,484 @@
     <script th:src="@{/webjars/stomp-websocket/2.3.4/stomp.min.js}"></script>
 
     <script>
-(function(){
-  let stompClient = null;
-  let currentRoom = localStorage.getItem("oneshop.vendor.currentRoom") || null;
-  const ctx = window.CHAT_VENDOR_CONTEXT || {};
-  const isVendor = !!ctx.isVendor;
-  const isAdmin = !!ctx.isAdmin;
-  const isCskh = !!ctx.isCskh;
-  const canChatAll = !!ctx.canChatAllCustomers;
-  const vendorName = ctx.displayName || 'Agent';
-  const userShops = Array.isArray(ctx.shops) ? ctx.shops : [];
-  const vendors = Array.isArray(ctx.vendors) ? ctx.vendors : [];
-  const vendorShops = ctx.vendorShops || {};
+      (function () {
+        let stompClient = null;
+        let currentRoom =
+          localStorage.getItem("oneshop.vendor.currentRoom") || null;
+        const ctx = window.CHAT_VENDOR_CONTEXT || {};
+        const isVendor = !!ctx.isVendor;
+        const isAdmin = !!ctx.isAdmin;
+        const isCskh = !!ctx.isCskh;
+        const canChatAll = !!ctx.canChatAllCustomers;
+        const vendorName = ctx.displayName || "Agent";
+        const userShops = Array.isArray(ctx.shops) ? ctx.shops : [];
+        const vendors = Array.isArray(ctx.vendors) ? ctx.vendors : [];
+        const vendorShops = ctx.vendorShops || {};
 
-  function isShopRoom(id){ return /^shop-\d+-(?:customer|guest)-[A-Za-z0-9_-]+$/.test(id); }
-  function isLiaisonVendorRoom(id){ return /^liaison-vendor-\d+-cskh-\d+$/.test(id); }
-  function isLiaisonShopRoom(id){ return /^liaison-shop-\d+-cskh-\d+$/.test(id); }
-  function extractShopId(id){ let m = id.match(/^shop-(\d+)-/); if(m) return parseInt(m[1]); m = id.match(/^liaison-shop-(\d+)-/); return m?parseInt(m[1]):null; }
-
-  function addLiaisonPanel(){
-    if(!(isCskh||isAdmin)) return;
-    const header = document.querySelector('.rooms-header');
-    if(!header || document.getElementById('liaisonPanel')) return;
-    const wrap = document.createElement('div');
-    wrap.id='liaisonPanel'; wrap.style.marginTop='12px';
-    const vSel = document.createElement('select'); vSel.id='vendorSelect'; vSel.style.cssText='flex:1;padding:8px;border:1px solid var(--vendor-border);border-radius:6px;margin-right:8px;';
-    const sSel = document.createElement('select'); sSel.id='shopSelect'; sSel.style.cssText='flex:1;padding:8px;border:1px solid var(--vendor-border);border-radius:6px;margin-right:8px;';
-    const btn = document.createElement('button'); btn.id='startLiaisonBtn'; btn.textContent='Lien he Shop'; btn.style.cssText='flex-shrink:0;padding:8px 12px;border:none;border-radius:6px;background:var(--vendor-gradient);color:#fff;font-weight:600;';
-    const row = document.createElement('div'); row.style.cssText='display:flex;gap:8px;align-items:center;';
-    row.appendChild(vSel); row.appendChild(sSel); wrap.appendChild(row); const btnRow = document.createElement('div'); btnRow.style.cssText='display:flex;justify-content:flex-end;margin-top:8px;'; btnRow.appendChild(btn); wrap.appendChild(btnRow); header.appendChild(wrap);
-        // populate vendors (sorted by name)
-    const vds = vendors.slice().sort((a,b)=>String(a.name||'').localeCompare(String(b.name||''),'vi'));
-    vSel.innerHTML = vds.length? '' : '<option value="">Kh�ng c� vendor</option>';
-    vds.forEach(v=>{ const o=document.createElement('option'); o.value=v.id; o.textContent=v.name||('Vendor '+v.id); vSel.appendChild(o); });
-    // restore last selection
-    const savedVendor = localStorage.getItem('oneshop.cskh.vendorId');
-    const savedShop = localStorage.getItem('oneshop.cskh.shopId');
-    if(savedVendor){ vSel.value = savedVendor; }
-    const fillShops = (vid)=>{ const list = (vendorShops[vid]||[]).filter(s=>!s.status || s.status==='ACTIVE'); sSel.innerHTML = list.length? '' : '<option value="">Ch?n shop</option>'; list.forEach(s=>{ const o=document.createElement('option'); o.value=s.id; o.textContent=s.name; sSel.appendChild(o); }); if(savedShop){ sSel.value = savedShop; } };
-    if(vSel.value){ fillShops(vSel.value); } else if(vds[0]){ vSel.value=vds[0].id; fillShops(vds[0].id); }
-    vSel.addEventListener('change', ()=>{ fillShops(vSel.value); localStorage.setItem('oneshop.cskh.vendorId', vSel.value); localStorage.removeItem('oneshop.cskh.shopId'); });
-    sSel.addEventListener('change', ()=>{ localStorage.setItem('oneshop.cskh.shopId', sSel.value); });btn.addEventListener('click', ()=>{
-      const shopId = sSel.value; if(!shopId){ alert('Ch?n shop d? li�n h?'); return; }
-      const room = `liaison-shop-${shopId}-cskh-${ctx.userId}`;
-      openRoom(room, sSel.options[sSel.selectedIndex]?.textContent || ('Shop #'+shopId));
-    });
-  }
-
-  function connect(){
-    const socket = new SockJS('/ws');
-    stompClient = Stomp.over(socket);
-    stompClient.connect({}, frame => {
-      loadRoomsList(100);
-      if(currentRoom){ subscribeRoom(currentRoom); joinCurrent(); }
-      if(window._roomsGlobalSub) window._roomsGlobalSub.unsubscribe();
-      window._roomsGlobalSub = stompClient.subscribe('/topic/rooms', msg => {
-        const data = JSON.parse(msg.body || '{}');
-        if(data.type==='ROOM_OPEN' || data.type==='ROOM_MESSAGE' || data.type==='ROOM_ASSIGNED'){
-          // reload list on important events
-          loadRoomsList(100);
-        } else if(data.type==='LIAISON_OPEN'){
-          // Vendors may need to see liaison rooms
-          if(canChatAll){ addOrActivateRoom(data.roomId, data.vendorName||'Vendor'); }
-          else if(isVendor && (data.vendorId==ctx.userId)){ addOrActivateRoom(data.roomId, data.cskhName||'CSKH'); }
+        function isShopRoom(id) {
+          return /^shop-\d+-(?:customer|guest)-[A-Za-z0-9_-]+$/.test(id);
         }
-      });
-      if(window._errorSub) window._errorSub.unsubscribe();
-      window._errorSub = stompClient.subscribe('/user/queue/errors', m=>{ try{ const d=JSON.parse(m.body||'{}'); alert(d.message||'L?i'); }catch(e){} });
-    }, err => setTimeout(connect, 2000));
-  }
-
-  function loadRoomsList(limit){
-    return fetch(`/api/chat/rooms?limit=${limit||100}`).then(r=>r.ok?r.json():[]).then(rooms=>{
-      rooms = Array.isArray(rooms)? rooms:[];
-      rooms = rooms.filter(r=>{
-        const id = String(r.roomId||'');
-        const shop = isShopRoom(id); const lv = isLiaisonVendorRoom(id); const ls = isLiaisonShopRoom(id);
-        if(!shop && !lv && !ls) return false;
-        if(canChatAll) return true;
-        if(isVendor){
-          const myShopIds = userShops.map(s=>s.id);
-          if(shop){ const sid = extractShopId(id); return sid && myShopIds.includes(sid); }
-          if(lv){ const m = id.match(/^liaison-vendor-(\d+)-/); return m && parseInt(m[1])===ctx.userId; }
-          if(ls){ const sid = extractShopId(id); return sid && myShopIds.includes(sid); }
-          return false;
+        function isLiaisonVendorRoom(id) {
+          return /^liaison-vendor-\d+-cskh-\d+$/.test(id);
         }
-        return false;
-      });
-      const ul = document.getElementById('roomsList'); if(!ul) return;
-      ul.innerHTML='';
-      rooms.forEach(r=>{ const item=document.createElement('div'); item.className='room-item'; item.dataset.room=r.roomId; const display=(r.customerName||'').trim() || (r.lastMessageBy||''); const name=display||r.roomId; const av=name.charAt(0).toUpperCase(); const sid=extractShopId(r.roomId); let shopName = r.shopName || (userShops.find(s=>s.id===sid)?.name) || (sid?('Shop #'+sid):''); item.innerHTML = `
+        function isLiaisonShopRoom(id) {
+          return /^liaison-shop-\d+-cskh-\d+$/.test(id);
+        }
+        function extractShopId(id) {
+          let m = id.match(/^shop-(\d+)-/);
+          if (m) return parseInt(m[1]);
+          m = id.match(/^liaison-shop-(\d+)-/);
+          return m ? parseInt(m[1]) : null;
+        }
+
+        function addLiaisonPanel() {
+          if (!(isCskh || isAdmin)) return;
+          const header = document.querySelector(".rooms-header");
+          if (!header || document.getElementById("liaisonPanel")) return;
+          const wrap = document.createElement("div");
+          wrap.id = "liaisonPanel";
+          wrap.style.marginTop = "12px";
+          const vSel = document.createElement("select");
+          vSel.id = "vendorSelect";
+          vSel.style.cssText =
+            "flex:1;padding:8px;border:1px solid var(--vendor-border);border-radius:6px;margin-right:8px;";
+          const sSel = document.createElement("select");
+          sSel.id = "shopSelect";
+          sSel.style.cssText =
+            "flex:1;padding:8px;border:1px solid var(--vendor-border);border-radius:6px;margin-right:8px;";
+          const btn = document.createElement("button");
+          btn.id = "startLiaisonBtn";
+          btn.textContent = "Lien he Shop";
+          btn.style.cssText =
+            "flex-shrink:0;padding:8px 12px;border:none;border-radius:6px;background:var(--vendor-gradient);color:#fff;font-weight:600;";
+          const row = document.createElement("div");
+          row.style.cssText = "display:flex;gap:8px;align-items:center;";
+          row.appendChild(vSel);
+          row.appendChild(sSel);
+          wrap.appendChild(row);
+          const btnRow = document.createElement("div");
+          btnRow.style.cssText =
+            "display:flex;justify-content:flex-end;margin-top:8px;";
+          btnRow.appendChild(btn);
+          wrap.appendChild(btnRow);
+          header.appendChild(wrap);
+          // populate vendors (sorted by name)
+          const vds = vendors
+            .slice()
+            .sort((a, b) =>
+              String(a.name || "").localeCompare(String(b.name || ""), "vi")
+            );
+          vSel.innerHTML = vds.length
+            ? ""
+            : '<option value="">Kh�ng c� vendor</option>';
+          vds.forEach((v) => {
+            const o = document.createElement("option");
+            o.value = v.id;
+            o.textContent = v.name || "Vendor " + v.id;
+            vSel.appendChild(o);
+          });
+          // restore last selection
+          const savedVendor = localStorage.getItem("oneshop.cskh.vendorId");
+          const savedShop = localStorage.getItem("oneshop.cskh.shopId");
+          if (savedVendor) {
+            vSel.value = savedVendor;
+          }
+          const fillShops = (vid) => {
+            const list = (vendorShops[vid] || []).filter(
+              (s) => !s.status || s.status === "ACTIVE"
+            );
+            sSel.innerHTML = list.length
+              ? ""
+              : '<option value="">Ch?n shop</option>';
+            list.forEach((s) => {
+              const o = document.createElement("option");
+              o.value = s.id;
+              o.textContent = s.name;
+              sSel.appendChild(o);
+            });
+            if (savedShop) {
+              sSel.value = savedShop;
+            }
+          };
+          if (vSel.value) {
+            fillShops(vSel.value);
+          } else if (vds[0]) {
+            vSel.value = vds[0].id;
+            fillShops(vds[0].id);
+          }
+          vSel.addEventListener("change", () => {
+            fillShops(vSel.value);
+            localStorage.setItem("oneshop.cskh.vendorId", vSel.value);
+            localStorage.removeItem("oneshop.cskh.shopId");
+          });
+          sSel.addEventListener("change", () => {
+            localStorage.setItem("oneshop.cskh.shopId", sSel.value);
+          });
+          btn.addEventListener("click", () => {
+            const shopId = sSel.value;
+            if (!shopId) {
+              alert("Ch?n shop d? li�n h?");
+              return;
+            }
+            const room = `liaison-shop-${shopId}-cskh-${ctx.userId}`;
+            openRoom(
+              room,
+              sSel.options[sSel.selectedIndex]?.textContent || "Shop #" + shopId
+            );
+          });
+        }
+
+        function connect() {
+          const socket = new SockJS("/ws");
+          stompClient = Stomp.over(socket);
+          stompClient.connect(
+            {},
+            (frame) => {
+              loadRoomsList(100);
+              if (currentRoom) {
+                subscribeRoom(currentRoom);
+                joinCurrent();
+              }
+              if (window._roomsGlobalSub) window._roomsGlobalSub.unsubscribe();
+              window._roomsGlobalSub = stompClient.subscribe(
+                "/topic/rooms",
+                (msg) => {
+                  const data = JSON.parse(msg.body || "{}");
+                  if (
+                    data.type === "ROOM_OPEN" ||
+                    data.type === "ROOM_MESSAGE" ||
+                    data.type === "ROOM_ASSIGNED"
+                  ) {
+                    // reload list on important events
+                    loadRoomsList(100);
+                  } else if (data.type === "LIAISON_OPEN") {
+                    // Vendors may need to see liaison rooms
+                    if (canChatAll) {
+                      addOrActivateRoom(
+                        data.roomId,
+                        data.vendorName || "Vendor"
+                      );
+                    } else if (isVendor && data.vendorId == ctx.userId) {
+                      addOrActivateRoom(data.roomId, data.cskhName || "CSKH");
+                    }
+                  }
+                }
+              );
+              if (window._errorSub) window._errorSub.unsubscribe();
+              window._errorSub = stompClient.subscribe(
+                "/user/queue/errors",
+                (m) => {
+                  try {
+                    const d = JSON.parse(m.body || "{}");
+                    alert(d.message || "L?i");
+                  } catch (e) {}
+                }
+              );
+            },
+            (err) => setTimeout(connect, 2000)
+          );
+        }
+
+        function loadRoomsList(limit) {
+          return fetch(`/api/chat/rooms?limit=${limit || 100}`)
+            .then((r) => (r.ok ? r.json() : []))
+            .then((rooms) => {
+              rooms = Array.isArray(rooms) ? rooms : [];
+              rooms = rooms.filter((r) => {
+                const id = String(r.roomId || "");
+                const shop = isShopRoom(id);
+                const lv = isLiaisonVendorRoom(id);
+                const ls = isLiaisonShopRoom(id);
+                if (!shop && !lv && !ls) return false;
+                // CSKH chỉ xem phòng liên hệ (liaison), không xem phòng khách hàng ↔ vendor
+                if (isCskh && !isVendor) return lv || ls;
+                if (canChatAll) return true;
+                if (isVendor) {
+                  const myShopIds = userShops.map((s) => s.id);
+                  if (shop) {
+                    const sid = extractShopId(id);
+                    return sid && myShopIds.includes(sid);
+                  }
+                  if (lv) {
+                    const m = id.match(/^liaison-vendor-(\d+)-/);
+                    return m && parseInt(m[1]) === ctx.userId;
+                  }
+                  if (ls) {
+                    const sid = extractShopId(id);
+                    return sid && myShopIds.includes(sid);
+                  }
+                  return false;
+                }
+                return false;
+              });
+              const ul = document.getElementById("roomsList");
+              if (!ul) return;
+              ul.innerHTML = "";
+              rooms.forEach((r) => {
+                const item = document.createElement("div");
+                item.className = "room-item";
+                item.dataset.room = r.roomId;
+                const display =
+                  (r.customerName || "").trim() || r.lastMessageBy || "";
+                const name = display || r.roomId;
+                const av = name.charAt(0).toUpperCase();
+                const sid = extractShopId(r.roomId);
+                let shopName =
+                  r.shopName ||
+                  userShops.find((s) => s.id === sid)?.name ||
+                  (sid ? "Shop #" + sid : "");
+                item.innerHTML = `
         <div class="room-avatar">${av}</div>
         <div class="room-info">
           <div class="room-name">${name}</div>
           <div class="room-shop-info" style="font-size:11px;color:#666;margin-bottom:2px;"><i class="fas fa-store" style="margin-right:4px;"></i>${shopName}</div>
-          <div class="room-last-message">${(r.lastMessage||'')}</div>
+          <div class="room-last-message">${r.lastMessage || ""}</div>
         </div>
-        <div class="room-meta"><div class="room-time">${r.sentAt? new Date(r.sentAt).toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit'}) : ''}</div></div>`;
-        item.addEventListener('click', onRoomClick);
-        ul.appendChild(item);
-      });
-      addLiaisonPanel();
-    }).catch(()=>{});
-  }
+        <div class="room-meta"><div class="room-time">${
+          r.sentAt
+            ? new Date(r.sentAt).toLocaleTimeString("vi-VN", {
+                hour: "2-digit",
+                minute: "2-digit",
+              })
+            : ""
+        }</div></div>`;
+                item.addEventListener("click", onRoomClick);
+                ul.appendChild(item);
+              });
+              addLiaisonPanel();
+            })
+            .catch(() => {});
+        }
 
-  function subscribeRoom(room){ if(!stompClient||!stompClient.connected) return; if(window._roomSub) window._roomSub.unsubscribe(); if(window._typingSub) window._typingSub.unsubscribe(); window._roomSub = stompClient.subscribe(`/topic/room/${room}`, m=>appendMessage(JSON.parse(m.body||'{}'))); window._typingSub = stompClient.subscribe(`/topic/room/${room}/typing`, m=>showTyping(JSON.parse(m.body||'{}'))); }
+        function subscribeRoom(room) {
+          if (!stompClient || !stompClient.connected) return;
+          if (window._roomSub) window._roomSub.unsubscribe();
+          if (window._typingSub) window._typingSub.unsubscribe();
+          window._roomSub = stompClient.subscribe(`/topic/room/${room}`, (m) =>
+            appendMessage(JSON.parse(m.body || "{}"))
+          );
+          window._typingSub = stompClient.subscribe(
+            `/topic/room/${room}/typing`,
+            (m) => showTyping(JSON.parse(m.body || "{}"))
+          );
+        }
 
-  function onRoomClick(){ document.querySelectorAll('.room-item').forEach(el=>el.classList.remove('active')); this.classList.add('active'); const room=this.dataset.room; if(room!==currentRoom){ openRoom(room, this.querySelector('.room-name')?.textContent || room); } }
+        function onRoomClick() {
+          document
+            .querySelectorAll(".room-item")
+            .forEach((el) => el.classList.remove("active"));
+          this.classList.add("active");
+          const room = this.dataset.room;
+          openRoom(room, this.querySelector(".room-name")?.textContent || room);
+        }
 
-  function openRoom(room, label){ currentRoom=room; localStorage.setItem('oneshop.vendor.currentRoom', room); document.getElementById('chatMessages').innerHTML=''; loadHistory(room,50).then(()=>{ subscribeRoom(room); joinCurrent(); updateHeader(label); }); }
+        function openRoom(room, label) {
+          currentRoom = room;
+          localStorage.setItem("oneshop.vendor.currentRoom", room);
+          document.getElementById("chatMessages").innerHTML = "";
+          loadHistory(room, 50).then(() => {
+            subscribeRoom(room);
+            joinCurrent();
+            updateHeader(label);
+          });
+        }
 
-  function joinCurrent(){ if(!stompClient||!stompClient.connected||!currentRoom) return; stompClient.send('/app/chat.join', {}, JSON.stringify({ roomId: currentRoom, userType: (isCskh||isAdmin)?'cskh':'vendor', senderName: vendorName })); }
+        function joinCurrent() {
+          if (!stompClient || !stompClient.connected || !currentRoom) return;
+          stompClient.send(
+            "/app/chat.join",
+            {},
+            JSON.stringify({
+              roomId: currentRoom,
+              userType: isCskh || isAdmin ? "cskh" : "vendor",
+              senderName: vendorName,
+            })
+          );
+        }
 
-  function appendMessage(msg){ const box=document.getElementById('chatMessages'); const isSystem=(msg.sender||'')==='system'; if(isSystem){ const d=document.createElement('div'); d.className='system-message'; d.style.cssText='text-align:center;margin:16px 0;padding:8px 16px;background:var(--vendor-warning);color:#fff;border-radius:16px;font-size:12px;'; d.innerHTML = `<i class="fas fa-info-circle"></i> ${msg.messageContent}`; box.appendChild(d); return; } const mineType=(isCskh||isAdmin)?'cskh':'vendor'; const payloadType=String((msg.senderType||msg.userType||'')).toLowerCase(); const isMine = payloadType? (payloadType===mineType) : (msg.sender===vendorName); const el=document.createElement('div'); el.className='message'+(isMine?' vendor':''); const timeStr=new Date(msg.sentAt||Date.now()).toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit'}); const isImg=((msg.messageType||'').toUpperCase()==='IMAGE'); const contentHtml = isImg? `<a href="${msg.messageContent}" target="_blank"><img src="${msg.messageContent}" style="max-width:240px;border-radius:8px"/></a>` : `<div class="message-content">${escapeHtml(msg.messageContent||'')}</div>`; el.innerHTML = `<div class="message-avatar">${(msg.sender||'?').charAt(0).toUpperCase()}</div><div class="message-bubble">${contentHtml}<div class="message-time">${timeStr}</div></div>`; box.appendChild(el); box.scrollTop = box.scrollHeight; }
+        function appendMessage(msg) {
+          const box = document.getElementById("chatMessages");
+          const isSystem = (msg.sender || "") === "system";
+          if (isSystem) {
+            const d = document.createElement("div");
+            d.className = "system-message";
+            d.style.cssText =
+              "text-align:center;margin:16px 0;padding:8px 16px;background:var(--vendor-warning);color:#fff;border-radius:16px;font-size:12px;";
+            d.innerHTML = `<i class="fas fa-info-circle"></i> ${msg.messageContent}`;
+            box.appendChild(d);
+            return;
+          }
+          const mineType = isCskh || isAdmin ? "cskh" : "vendor";
+          const payloadType = String(
+            msg.senderType || msg.userType || ""
+          ).toLowerCase();
+          const isMine = payloadType
+            ? payloadType === mineType
+            : msg.sender === vendorName;
+          const el = document.createElement("div");
+          el.className = "message" + (isMine ? " vendor" : "");
+          const timeStr = new Date(msg.sentAt || Date.now()).toLocaleTimeString(
+            "vi-VN",
+            { hour: "2-digit", minute: "2-digit" }
+          );
+          const isImg = (msg.messageType || "").toUpperCase() === "IMAGE";
+          const contentHtml = isImg
+            ? `<a href="${msg.messageContent}" target="_blank"><img src="${msg.messageContent}" style="max-width:240px;border-radius:8px"/></a>`
+            : `<div class="message-content">${escapeHtml(
+                msg.messageContent || ""
+              )}</div>`;
+          el.innerHTML = `<div class="message-avatar">${(msg.sender || "?")
+            .charAt(0)
+            .toUpperCase()}</div><div class="message-bubble">${contentHtml}<div class="message-time">${timeStr}</div></div>`;
+          box.appendChild(el);
+          box.scrollTop = box.scrollHeight;
+        }
 
-  function showTyping(t){}
-  function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c])); }
-  function updateHeader(name){ try{ const n=document.querySelector('.customer-details h6'); const a=document.querySelector('.customer-avatar'); if(n) n.textContent=name; if(a) a.textContent=(name||'KH').trim().charAt(0).toUpperCase(); }catch(e){} }
-  function loadHistory(room,limit){ return fetch(`/api/chat/history?roomId=${encodeURIComponent(room)}&limit=${limit||50}`).then(r=>r.ok?r.json():[]).then(items=>{ const box=document.getElementById('chatMessages'); box.innerHTML=''; items.forEach(appendMessage); box.scrollTop = box.scrollHeight; }).catch(()=>{}); }
+        function showTyping(t) {}
+        function escapeHtml(s) {
+          return String(s).replace(
+            /[&<>"']/g,
+            (c) =>
+              ({
+                "&": "&amp;",
+                "<": "&lt;",
+                ">": "&gt;",
+                '"': "&quot;",
+                "'": "&#39;",
+              }[c])
+          );
+        }
+        function updateHeader(name) {
+          try {
+            const n = document.querySelector(".customer-details h6");
+            const a = document.querySelector(".customer-avatar");
+            if (n) n.textContent = name;
+            if (a)
+              a.textContent = (name || "KH").trim().charAt(0).toUpperCase();
+          } catch (e) {}
+        }
+        function loadHistory(room, limit) {
+          return fetch(
+            `/api/chat/history?roomId=${encodeURIComponent(room)}&limit=${
+              limit || 50
+            }`
+          )
+            .then((r) => (r.ok ? r.json() : []))
+            .then((items) => {
+              const box = document.getElementById("chatMessages");
+              box.innerHTML = "";
+              items.forEach(appendMessage);
+              box.scrollTop = box.scrollHeight;
+            })
+            .catch(() => {});
+        }
 
-    // Enter to send
-  (function(){ const input=document.getElementById('messageInput'); if(!input) return; input.addEventListener('keydown', (e)=>{ if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); document.getElementById('chatForm').dispatchEvent(new Event('submit')); } }); })();document.getElementById('chatForm').addEventListener('submit', e=>{ e.preventDefault(); const input=document.getElementById('messageInput'); const text=(input.value||'').trim(); if(text){ if(stompClient&&stompClient.connected&&currentRoom){ stompClient.send('/app/chat.send',{}, JSON.stringify({ roomId: currentRoom, messageContent: text, messageType: 'TEXT', userType: (isCskh||isAdmin)?'cskh':'vendor', senderName: vendorName })); } input.value=''; }});
+        // Enter to send
+        (function () {
+          const input = document.getElementById("messageInput");
+          if (!input) return;
+          input.addEventListener("keydown", (e) => {
+            if (e.key === "Enter" && !e.shiftKey) {
+              e.preventDefault();
+              document
+                .getElementById("chatForm")
+                .dispatchEvent(new Event("submit"));
+            }
+          });
+        })();
+        document.getElementById("chatForm").addEventListener("submit", (e) => {
+          e.preventDefault();
+          const input = document.getElementById("messageInput");
+          const text = (input.value || "").trim();
+          if (text) {
+            if (stompClient && stompClient.connected && currentRoom) {
+              stompClient.send(
+                "/app/chat.send",
+                {},
+                JSON.stringify({
+                  roomId: currentRoom,
+                  messageContent: text,
+                  messageType: "TEXT",
+                  userType: isCskh || isAdmin ? "cskh" : "vendor",
+                  senderName: vendorName,
+                })
+              );
+            }
+            input.value = "";
+          }
+        });
 
-    // Image upload
-  (function(){ const btn=document.getElementById('imageButton'); const file=document.getElementById('imageInput'); if(!btn||!file) return; btn.addEventListener('click',()=>file.click()); file.addEventListener('change', async (ev)=>{ const f=ev.target.files&&ev.target.files[0]; ev.target.value=''; if(!f||!currentRoom) return; const fd=new FormData(); fd.append('file', f); try{ const res = await fetch('/api/chat/uploadImage', { method:'POST', body: fd }); if(!res.ok){ alert('T?i ?nh th?t b?i'); return; } const data = await res.json(); if(!data.success||!data.url){ alert('T?i ?nh th?t b?i'); return; } if(stompClient&&stompClient.connected){ stompClient.send('/app/chat.send',{}, JSON.stringify({ roomId: currentRoom, messageContent: data.url, messageType: 'IMAGE', userType: (isCskh||isAdmin)?'cskh':'vendor', senderName: vendorName })); } } catch(e){ alert('T?i ?nh th?t b?i'); } }); })();// Clear history
-  document.getElementById('clearHistoryBtn').addEventListener('click', async ()=>{ if(!currentRoom){ alert('Chua ch?n ph�ng chat.'); return; } if(!confirm('B?n ch?c mu?n x�a l?ch s??')) return; const res = await fetch(`/api/chat/history/clear?roomId=${encodeURIComponent(currentRoom)}`, { method:'POST', credentials:'include', headers:{'X-Requested-With':'XMLHttpRequest'} }); const ok = res.ok ? (await res.json()).success!==false : false; if(ok){ document.getElementById('chatMessages').innerHTML=''; }
-  });
+        // Image upload
+        (function () {
+          const btn = document.getElementById("imageButton");
+          const file = document.getElementById("imageInput");
+          if (!btn || !file) return;
+          btn.addEventListener("click", () => file.click());
+          file.addEventListener("change", async (ev) => {
+            const f = ev.target.files && ev.target.files[0];
+            ev.target.value = "";
+            if (!f || !currentRoom) return;
+            const fd = new FormData();
+            fd.append("file", f);
+            try {
+              const res = await fetch("/api/chat/uploadImage", {
+                method: "POST",
+                body: fd,
+              });
+              if (!res.ok) {
+                alert("T?i ?nh th?t b?i");
+                return;
+              }
+              const data = await res.json();
+              if (!data.success || !data.url) {
+                alert("T?i ?nh th?t b?i");
+                return;
+              }
+              if (stompClient && stompClient.connected) {
+                stompClient.send(
+                  "/app/chat.send",
+                  {},
+                  JSON.stringify({
+                    roomId: currentRoom,
+                    messageContent: data.url,
+                    messageType: "IMAGE",
+                    userType: isCskh || isAdmin ? "cskh" : "vendor",
+                    senderName: vendorName,
+                  })
+                );
+              }
+            } catch (e) {
+              alert("T?i ?nh th?t b?i");
+            }
+          });
+        })(); // Clear history
+        document
+          .getElementById("clearHistoryBtn")
+          .addEventListener("click", async () => {
+            if (!currentRoom) {
+              alert("Chua ch?n ph�ng chat.");
+              return;
+            }
+            if (!confirm("B?n ch?c mu?n x�a l?ch s??")) return;
+            const res = await fetch(
+              `/api/chat/history/clear?roomId=${encodeURIComponent(
+                currentRoom
+              )}`,
+              {
+                method: "POST",
+                credentials: "include",
+                headers: { "X-Requested-With": "XMLHttpRequest" },
+              }
+            );
+            const ok = res.ok ? (await res.json()).success !== false : false;
+            if (ok) {
+              document.getElementById("chatMessages").innerHTML = "";
+            }
+          });
 
-  addLiaisonPanel();
-  connect();
-})();
-</script>
+        addLiaisonPanel();
+        connect();
+      })();
+    </script>
   </body>
 </html>
-
-
-
-
-
-
-
-

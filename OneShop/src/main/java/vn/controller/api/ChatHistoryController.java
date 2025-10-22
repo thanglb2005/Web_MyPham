@@ -175,11 +175,14 @@ public class ChatHistoryController {
             @RequestParam(value = "limit", required = false) Integer limit,
             HttpSession session
     ) {
+        System.out.println("[API] getHistory roomId=" + roomId + ", limit=" + limit);
         if (roomId == null || roomId.isEmpty()) {
             return Collections.emptyList();
         }
         ensureRoomAccess(session, roomId);
-        return chatHistoryService.getLastMessages(roomId, limit);
+        List<Map<String, Object>> out = chatHistoryService.getLastMessages(roomId, limit);
+        System.out.println("[API] getHistory size=" + (out!=null?out.size():0));
+        return out;
     }
 
     @GetMapping("/api/chat/rooms")
@@ -292,24 +295,30 @@ public class ChatHistoryController {
                     map.put("roomId", roomId);
                     map.put("preview", message.getContent());
                     map.put("sentAt", message.getSentAt());
-                    
-                    // Lấy customerName từ tin nhắn cuối cùng có customerName
-                    String customerName = message.getCustomerName();
-                    System.out.println("=== API ROOMS DEBUG ===");
-                    System.out.println("Room ID: " + roomId);
-                    System.out.println("Latest message customerName: " + customerName);
-                    
-                    if (customerName == null || customerName.isEmpty()) {
-                        // Nếu tin nhắn cuối cùng không có customerName, tìm tin nhắn cuối cùng có customerName
-                        List<String> customerNames = chatMessageRepository.findLatestCustomerName(roomId, PageRequest.of(0, 1));
-                        customerName = customerNames.isEmpty() ? "Khách hàng" : customerNames.get(0);
-                        System.out.println("Found customerName from history: " + customerName);
+
+                    // Ưu tiên ánh xạ tên khách dựa trên roomId khi là user đã đăng nhập: support-<userId>
+                    String customerName = null;
+                    try {
+                        String suffix = roomId.substring("support-".length());
+                        if (suffix.matches("\\d+")) {
+                            Long uid = Long.parseLong(suffix);
+                            userService.getUserById(uid).ifPresent(u -> {
+                                map.put("customerName", u.getName());
+                            });
+                            customerName = (String) map.get("customerName");
+                        }
+                    } catch (Exception ignored) {}
+
+                    // Nếu không xác định được qua roomId (khách vãng lai), fallback theo lịch sử tin nhắn
+                    if (customerName == null || customerName.isBlank()) {
+                        customerName = message.getCustomerName();
+                        if (customerName == null || customerName.isEmpty()) {
+                            List<String> customerNames = chatMessageRepository.findLatestCustomerName(roomId, PageRequest.of(0, 1));
+                            customerName = customerNames.isEmpty() ? "Khách hàng" : customerNames.get(0);
+                        }
+                        map.put("customerName", customerName);
                     }
-                    
-                    System.out.println("Final customerName: " + customerName);
-                    System.out.println("=======================");
-                    
-                    map.put("customerName", customerName);
+
                     map.put("pendingCount", 0);
                     filtered.add(map);
                 }
@@ -334,18 +343,43 @@ public class ChatHistoryController {
             map.put("sentAt", message.getSentAt());
             ChatRoomUtils.extractCustomerId(roomId).ifPresent(id -> map.put("customerId", id));
             ChatRoomUtils.extractGuestKey(roomId).ifPresent(key -> map.put("guestKey", key));
-            try {
-                List<String> names = chatMessageRepository.findLatestCustomerName(
-                        roomId, PageRequest.of(0, 1)
-                );
-                if (names != null && !names.isEmpty()) {
-                    map.put("customerName", names.get(0));
+            
+            // Resolve customer name: ưu tiên từ user table qua customerId, fallback từ message history
+            String customerName = null;
+            Optional<Long> customerIdOpt = ChatRoomUtils.extractCustomerId(roomId);
+            if (customerIdOpt.isPresent()) {
+                Long customerId = customerIdOpt.get();
+                Optional<User> customerUser = userService.getUserById(customerId);
+                if (customerUser.isPresent()) {
+                    customerName = customerUser.get().getName();
                 }
-            } catch (Exception ignored) {
+            }
+            
+            // Fallback to message history if not found via user ID
+            if (customerName == null || customerName.isEmpty()) {
+                try {
+                    List<String> names = chatMessageRepository.findLatestCustomerName(
+                            roomId, PageRequest.of(0, 1)
+                    );
+                    if (names != null && !names.isEmpty()) {
+                        customerName = names.get(0);
+                    }
+                } catch (Exception ignored) {
+                }
+            }
+            
+            if (customerName != null && !customerName.isEmpty()) {
+                map.put("customerName", customerName);
             }
             filtered.add(map);
         }
 
+        try {
+            System.out.println("[API] getRecentRooms -> count=" + filtered.size());
+            for (Map<String, Object> m : filtered) {
+                System.out.println("  roomId=" + m.get("roomId") + ", customerName=" + m.get("customerName") + ", preview=" + m.get("preview"));
+            }
+        } catch (Exception ignored) {}
         return filtered;
     }
 
