@@ -168,23 +168,44 @@
                             <div class="row">
                                 <form class="user-form" th:action="@{/checkout}" method="post">
                                     <div class="form-group">
-                                        <input type="email" name="customerEmail" th:value="${user.email}" class="form-control" placeholder="Email" readonly="readonly" />
+                                        <label for="customerEmail" style="font-weight: 500; color: #333; margin-bottom: 8px; display: block;">Email</label>
+                                        <input type="email" id="customerEmail" name="customerEmail" th:value="${user.email}" class="form-control" placeholder="Email" readonly="readonly" />
                                     </div>
                                     
                                     <div class="form-group">
-                                        <input type="text" name="customerName" th:value="${user.name}" class="form-control" placeholder="Họ tên" required="required" />
+                                        <label for="customerName" style="font-weight: 500; color: #333; margin-bottom: 8px; display: block;">Họ và tên <span style="color: red;">*</span></label>
+                                        <input type="text" id="customerName" name="customerName" th:value="${user.name}" class="form-control" placeholder="Họ tên" required="required" />
                                     </div>
 
                                     <div class="form-group">
-                                        <input type="text" name="address" class="form-control" placeholder="Địa chỉ" required="required" />
-                                    </div>
-                                    
-                                    <div class="form-group">
-                                        <input type="tel" name="phone" class="form-control" placeholder="Số điện thoại" required="required" />
+                                        <label for="phone" style="font-weight: 500; color: #333; margin-bottom: 8px; display: block;">Số điện thoại <span style="color: red;">*</span></label>
+                                        <input type="tel" id="phone" name="phone" class="form-control" placeholder="Số điện thoại (VD: 0912345678)" required="required" pattern="^(0)(3|5|7|8|9)[0-9]{8}$" title="Số điện thoại phải là 10 số và bắt đầu bằng 03, 05, 07, 08 hoặc 09" />
+                                        <small id="phoneError" style="color: red; font-size: 13px; margin-top: 5px; display: none;">Số điện thoại không hợp lệ. Vui lòng nhập số điện thoại Việt Nam (10 số, bắt đầu bằng 03, 05, 07, 08, 09)</small>
                                     </div>
 
                                     <div class="form-group">
-                                        <input type="text" name="note" class="form-control" placeholder="Nội dung đơn hàng" />
+                                        <label for="province" style="font-weight: 500; color: #333; margin-bottom: 8px; display: block;">Tỉnh/Thành phố <span style="color: red;">*</span></label>
+                                        <select id="province" name="province" class="form-control" required="required" style="height: 45px;">
+                                            <option value="">-- Chọn Tỉnh/Thành phố --</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="commune" style="font-weight: 500; color: #333; margin-bottom: 8px; display: block;">Quận/Huyện/Xã/Phường <span style="color: red;">*</span></label>
+                                        <select id="commune" name="commune" class="form-control" required="required" style="height: 45px;" disabled>
+                                            <option value="">-- Chọn Quận/Huyện/Xã/Phường --</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="address" style="font-weight: 500; color: #333; margin-bottom: 8px; display: block;">Địa chỉ cụ thể <span style="color: red;">*</span></label>
+                                        <input type="text" id="address" name="address" class="form-control" placeholder="Số nhà, tên đường..." required="required" />
+                                        <small style="color: #666; font-size: 13px; margin-top: 5px; display: block;">Ví dụ: Số 123, Đường ABC</small>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="note" style="font-weight: 500; color: #333; margin-bottom: 8px; display: block;">Ghi chú đơn hàng</label>
+                                        <textarea id="note" name="note" class="form-control" placeholder="Ghi chú thêm về đơn hàng (nếu có)" rows="3" style="resize: vertical;"></textarea>
                                     </div>
 
 
@@ -356,6 +377,134 @@
                 if (checkedRadio) {
                     checkedRadio.closest('.payment-option').classList.add('selected');
                 }
+            });
+            
+            // Phone number validation
+            document.addEventListener('DOMContentLoaded', function() {
+                const phoneInput = document.getElementById('phone');
+                const phoneError = document.getElementById('phoneError');
+                const vietnamPhonePattern = /^(0)(3|5|7|8|9)[0-9]{8}$/;
+                
+                phoneInput.addEventListener('input', function() {
+                    // Remove non-digit characters
+                    this.value = this.value.replace(/[^0-9]/g, '');
+                    
+                    // Limit to 10 digits
+                    if (this.value.length > 10) {
+                        this.value = this.value.slice(0, 10);
+                    }
+                    
+                    // Validate phone number
+                    if (this.value.length > 0) {
+                        if (vietnamPhonePattern.test(this.value)) {
+                            phoneError.style.display = 'none';
+                            this.style.borderColor = '#28a745';
+                        } else {
+                            phoneError.style.display = 'block';
+                            this.style.borderColor = '#dc3545';
+                        }
+                    } else {
+                        phoneError.style.display = 'none';
+                        this.style.borderColor = '';
+                    }
+                });
+                
+                phoneInput.addEventListener('blur', function() {
+                    if (this.value.length > 0 && !vietnamPhonePattern.test(this.value)) {
+                        phoneError.style.display = 'block';
+                        this.style.borderColor = '#dc3545';
+                    }
+                });
+            });
+            
+            // Address selection - Province and Commune
+            document.addEventListener('DOMContentLoaded', function() {
+                const provinceSelect = document.getElementById('province');
+                const communeSelect = document.getElementById('commune');
+                const form = document.querySelector('.user-form');
+                
+                let allProvinces = [];
+                let allCommunes = [];
+                
+                // Load data from db.json
+                fetch('/db.json')
+                    .then(response => response.json())
+                    .then(data => {
+                        allProvinces = data.province || [];
+                        allCommunes = data.commune || [];
+                        
+                        // Populate province dropdown
+                        allProvinces.forEach(province => {
+                            const option = document.createElement('option');
+                            option.value = province.idProvince;
+                            option.textContent = province.name;
+                            option.dataset.provinceName = province.name;
+                            provinceSelect.appendChild(option);
+                        });
+                    })
+                    .catch(error => {
+                        console.error('Error loading address data:', error);
+                        alert('Không thể tải dữ liệu địa chỉ. Vui lòng thử lại sau.');
+                    });
+                
+                // Handle province change
+                provinceSelect.addEventListener('change', function() {
+                    const selectedProvinceId = this.value;
+                    
+                    // Clear commune dropdown
+                    communeSelect.innerHTML = '<option value="">-- Chọn Quận/Huyện/Xã/Phường --</option>';
+                    communeSelect.disabled = true;
+                    
+                    if (selectedProvinceId) {
+                        // Filter communes by selected province
+                        const filteredCommunes = allCommunes.filter(commune => 
+                            commune.idProvince === selectedProvinceId
+                        );
+                        
+                        // Populate commune dropdown
+                        filteredCommunes.forEach(commune => {
+                            const option = document.createElement('option');
+                            option.value = commune.idCommune;
+                            option.textContent = commune.name;
+                            option.dataset.communeName = commune.name;
+                            communeSelect.appendChild(option);
+                        });
+                        
+                        // Enable commune select
+                        communeSelect.disabled = false;
+                    }
+                });
+                
+                // Handle form submission - replace province and commune IDs with names
+                form.addEventListener('submit', function(e) {
+                    // Get selected province name
+                    const selectedProvinceOption = provinceSelect.options[provinceSelect.selectedIndex];
+                    if (selectedProvinceOption && selectedProvinceOption.value) {
+                        // Create hidden input for province name
+                        const provinceNameInput = document.createElement('input');
+                        provinceNameInput.type = 'hidden';
+                        provinceNameInput.name = 'province';
+                        provinceNameInput.value = selectedProvinceOption.textContent;
+                        form.appendChild(provinceNameInput);
+                        
+                        // Remove the original province select from submission
+                        provinceSelect.removeAttribute('name');
+                    }
+                    
+                    // Get selected commune name
+                    const selectedCommuneOption = communeSelect.options[communeSelect.selectedIndex];
+                    if (selectedCommuneOption && selectedCommuneOption.value) {
+                        // Create hidden input for commune name
+                        const communeNameInput = document.createElement('input');
+                        communeNameInput.type = 'hidden';
+                        communeNameInput.name = 'commune';
+                        communeNameInput.value = selectedCommuneOption.textContent;
+                        form.appendChild(communeNameInput);
+                        
+                        // Remove the original commune select from submission
+                        communeSelect.removeAttribute('name');
+                    }
+                });
             });
             
         </script>

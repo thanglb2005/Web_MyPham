@@ -422,6 +422,8 @@ public class CartController {
                                  @RequestParam("customerEmail") String customerEmail,
                                  @RequestParam("phone") String phone,
                                  @RequestParam("address") String address,
+                                 @RequestParam(value = "province", required = false) String province,
+                                 @RequestParam(value = "commune", required = false) String commune,
                                  @RequestParam(value = "note", required = false) String note,
                                  @RequestParam("paymentMethod") String paymentMethod,
                                  @RequestParam(value = "city", required = false) String city,
@@ -430,6 +432,13 @@ public class CartController {
         User user = (User) request.getSession().getAttribute("user");
         if (user == null) {
             return "redirect:/login";
+        }
+
+        // Validate phone number (Vietnam format: 10 digits, start with 03, 05, 07, 08, 09)
+        String phonePattern = "^(0)(3|5|7|8|9)[0-9]{8}$";
+        if (phone == null || !phone.matches(phonePattern)) {
+            model.addAttribute("error", "Số điện thoại không hợp lệ.");
+            return "redirect:/checkout?error=invalid-phone";
         }
 
         List<CartItemEntity> cartItemEntities = cartService.getSelectedCartItems(user);
@@ -458,11 +467,24 @@ public class CartController {
                     paymentMethodEnum = Order.PaymentMethod.COD;
             }
 
-            // Tạo địa chỉ đầy đủ
-            String fullAddress = address;
-            if (city != null && !city.trim().isEmpty()) {
-                fullAddress = address + ", " + city;
+            // Tạo địa chỉ đầy đủ từ các thông tin: địa chỉ cụ thể, phường/xã, tỉnh/thành phố
+            StringBuilder fullAddressBuilder = new StringBuilder();
+            if (address != null && !address.trim().isEmpty()) {
+                fullAddressBuilder.append(address.trim());
             }
+            if (commune != null && !commune.trim().isEmpty()) {
+                if (fullAddressBuilder.length() > 0) {
+                    fullAddressBuilder.append(", ");
+                }
+                fullAddressBuilder.append(commune.trim());
+            }
+            if (province != null && !province.trim().isEmpty()) {
+                if (fullAddressBuilder.length() > 0) {
+                    fullAddressBuilder.append(", ");
+                }
+                fullAddressBuilder.append(province.trim());
+            }
+            String fullAddress = fullAddressBuilder.toString();
 
             // Convert CartItemEntity to CartItem Map for OrderService
             Map<Long, CartItem> cartMap = convertToCartItemMap(cartItemEntities);
