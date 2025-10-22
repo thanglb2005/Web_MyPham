@@ -24,28 +24,28 @@ public class Order {
     @JoinColumn(name = "user_id")
     private User user;
 
-    @Column(name = "customer_name", nullable = false)
+    @Column(name = "customer_name", nullable = false, columnDefinition = "NVARCHAR(255)")
     private String customerName;
 
-    @Column(name = "customer_email", nullable = false)
+    @Column(name = "customer_email", nullable = false, columnDefinition = "NVARCHAR(255)")
     private String customerEmail;
 
     @Column(name = "customer_phone", nullable = false)
     private String customerPhone;
 
-    @Column(name = "shipping_address", nullable = false)
+    @Column(name = "shipping_address", nullable = false, length = 500, columnDefinition = "NVARCHAR(500)")
     private String shippingAddress;
     
-    @Column(name = "pickup_address")
+    @Column(name = "pickup_address", length = 500, columnDefinition = "NVARCHAR(500)")
     private String pickupAddress;  // Địa chỉ lấy hàng (từ shop/vendor)
     
-    @Column(name = "package_type")
+    @Column(name = "package_type", length = 100, columnDefinition = "NVARCHAR(100)")
     private String packageType;  // Loại hàng: Hàng nhỏ, Hàng dễ vỡ, Thực phẩm, etc.
     
     @Column(name = "weight")
     private Double weight;  // Khối lượng (kg)
 
-    @Column(name = "note", length = 1000)
+    @Column(name = "note", length = 1000, columnDefinition = "NVARCHAR(1000)")
     private String note;
 
     @Enumerated(EnumType.STRING)
@@ -71,7 +71,7 @@ public class Order {
     @Column(name = "cancelled_date")
     private LocalDateTime cancelledDate;
 
-    @Column(name = "cancellation_reason", length = 1000)
+    @Column(name = "cancellation_reason", length = 1000, columnDefinition = "NVARCHAR(MAX)")
     private String cancellationReason;
 
     @Column(name = "tracking_number", length = 100)
@@ -115,6 +115,23 @@ public class Order {
     @Column(name = "momo_request_id")
     private String momoRequestId;
 
+    // Delivery & Express shipping fields
+    @Column(name = "customer_city", length = 100, columnDefinition = "NVARCHAR(100)")
+    private String customerCity;  // Tỉnh/thành của khách hàng
+
+    @Column(name = "shipping_provider_id")
+    private Long shippingProviderId;  // Đơn vị vận chuyển (GHN, GHTK...)
+
+    @Column(name = "is_express", nullable = false)
+    private Boolean isExpress = false;  // Giao hỏa tốc (true) hay thường (false)
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "delivery_type", length = 20, nullable = false)
+    private DeliveryType deliveryType = DeliveryType.STANDARD;  // EXPRESS hoặc STANDARD
+
+    @Column(name = "express_fee")
+    private Double expressFee = 0.0;  // Phí hỏa tốc
+
     public enum OrderStatus {
         PENDING,                // Cho xac nhan
         NEW,                    // Don hang moi
@@ -137,5 +154,10 @@ public class Order {
         PENDING,    // Chờ thanh toán
         PAID,       // Đã thanh toán
         FAILED      // Thanh toán thất bại
+    }
+
+    public enum DeliveryType {
+        EXPRESS,    // Giao hỏa tốc (shipper riêng, cùng tỉnh)
+        STANDARD    // Giao thường (đơn vị vận chuyển)
     }
 }

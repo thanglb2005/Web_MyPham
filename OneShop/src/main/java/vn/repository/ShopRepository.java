@@ -40,5 +40,9 @@ public interface ShopRepository extends JpaRepository<Shop, Long> {
      /* Tìm các shop mà shipper được gán */
     @Query("SELECT s FROM Shop s JOIN s.shippers shipper WHERE shipper = :shipper")
     List<Shop> findShopsByShipper(@Param("shipper") User shipper);
+    
+    /* Đếm số shipper của shop */
+    @Query("SELECT COUNT(u) FROM Shop s JOIN s.shippers u WHERE s.shopId = :shopId")
+    long countShippersByShop(@Param("shopId") Long shopId);
 }
 

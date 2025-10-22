@@ -120,40 +120,38 @@
               th:errors="*{shopDescription}"
             ></div>
           </div>
+          <div class="col-md-6">
+            <label class="form-label" for="city">Tỉnh/Thành phố *</label>
+            <select
+              id="city"
+              class="form-control"
+              th:field="*{city}"
+              required
+            >
+              <option value="">-- Chọn Tỉnh/Thành phố --</option>
+            </select>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label" for="ward">Quận/Huyện/Xã/Phường *</label>
+            <select
+              id="ward"
+              class="form-control"
+              th:field="*{ward}"
+              required
+              disabled
+            >
+              <option value="">-- Chọn Quận/Huyện/Xã/Phường --</option>
+            </select>
+          </div>
           <div class="col-12">
-            <label class="form-label" for="address">Địa chỉ</label>
+            <label class="form-label" for="address">Địa chỉ cụ thể *</label>
             <input
               id="address"
               type="text"
               class="form-control"
               th:field="*{address}"
-            />
-          </div>
-          <div class="col-md-4">
-            <label class="form-label" for="city">Tỉnh/Thành</label>
-            <input
-              id="city"
-              type="text"
-              class="form-control"
-              th:field="*{city}"
-            />
-          </div>
-          <div class="col-md-4">
-            <label class="form-label" for="district">Quận/Huyện</label>
-            <input
-              id="district"
-              type="text"
-              class="form-control"
-              th:field="*{district}"
-            />
-          </div>
-          <div class="col-md-4">
-            <label class="form-label" for="ward">Phường/Xã</label>
-            <input
-              id="ward"
-              type="text"
-              class="form-control"
-              th:field="*{ward}"
+              placeholder="Số nhà, tên đường... (VD: Số 123, Đường Nguyễn Huệ)"
+              required
             />
           </div>
 
@@ -256,6 +254,144 @@
           });
         }
       })();
+      
+      // Phone number validation for Vietnam
+      document.addEventListener('DOMContentLoaded', function() {
+        const phoneInput = document.getElementById('phoneNumber');
+        if (phoneInput) {
+          const vietnamPhonePattern = /^(0)(3|5|7|8|9)[0-9]{8}$/;
+          
+          phoneInput.addEventListener('input', function() {
+            // Remove non-digit characters
+            this.value = this.value.replace(/[^0-9]/g, '');
+            
+            // Limit to 10 digits
+            if (this.value.length > 10) {
+              this.value = this.value.slice(0, 10);
+            }
+            
+            // Visual feedback
+            if (this.value.length > 0) {
+              if (vietnamPhonePattern.test(this.value)) {
+                this.style.borderColor = '#28a745';
+              } else {
+                this.style.borderColor = '#dc3545';
+              }
+            } else {
+              this.style.borderColor = '';
+            }
+          });
+        }
+      });
+      
+      // Address selection - Province and Commune
+      document.addEventListener('DOMContentLoaded', function() {
+        const citySelect = document.getElementById('city');
+        const wardSelect = document.getElementById('ward');
+        const form = document.querySelector('form');
+        
+        // Get current values from Thymeleaf
+        const currentCity = citySelect.value;
+        const currentWard = wardSelect.value;
+        
+        let allProvinces = [];
+        let allCommunes = [];
+        
+        // Load data from db.json
+        fetch('/db.json')
+          .then(response => response.json())
+          .then(data => {
+            allProvinces = data.province || [];
+            allCommunes = data.commune || [];
+            
+            // Populate province dropdown
+            allProvinces.forEach(province => {
+              const option = document.createElement('option');
+              option.value = province.idProvince;
+              option.textContent = province.name;
+              option.dataset.provinceName = province.name;
+              
+              // Select if it matches current value
+              if (currentCity && province.name === currentCity) {
+                option.value = province.idProvince;
+                option.selected = true;
+                // Load communes for this province
+                loadCommunes(province.idProvince);
+              }
+              
+              citySelect.appendChild(option);
+            });
+          })
+          .catch(error => {
+            console.error('Error loading address data:', error);
+            alert('Không thể tải dữ liệu địa chỉ. Vui lòng thử lại sau.');
+          });
+        
+        // Function to load communes
+        function loadCommunes(provinceId) {
+          wardSelect.innerHTML = '<option value="">-- Chọn Quận/Huyện/Xã/Phường --</option>';
+          wardSelect.disabled = true;
+          
+          if (provinceId) {
+            const filteredCommunes = allCommunes.filter(commune => 
+              commune.idProvince === provinceId
+            );
+            
+            filteredCommunes.forEach(commune => {
+              const option = document.createElement('option');
+              option.value = commune.idCommune;
+              option.textContent = commune.name;
+              option.dataset.communeName = commune.name;
+              
+              // Select if it matches current value
+              if (currentWard && commune.name === currentWard) {
+                option.selected = true;
+              }
+              
+              wardSelect.appendChild(option);
+            });
+            
+            wardSelect.disabled = false;
+          }
+        }
+        
+        // Handle province change
+        citySelect.addEventListener('change', function() {
+          const selectedProvinceId = this.value;
+          loadCommunes(selectedProvinceId);
+        });
+        
+        // Handle form submission - replace IDs with names
+        form.addEventListener('submit', function(e) {
+          // Get selected province name
+          const selectedCityOption = citySelect.options[citySelect.selectedIndex];
+          if (selectedCityOption && selectedCityOption.value) {
+            // Create hidden input for province name
+            const cityNameInput = document.createElement('input');
+            cityNameInput.type = 'hidden';
+            cityNameInput.name = 'city';
+            cityNameInput.value = selectedCityOption.textContent;
+            form.appendChild(cityNameInput);
+            
+            // Remove the original select from submission
+            citySelect.removeAttribute('name');
+          }
+          
+          // Get selected commune name
+          const selectedWardOption = wardSelect.options[wardSelect.selectedIndex];
+          if (selectedWardOption && selectedWardOption.value) {
+            // Create hidden input for commune name
+            const wardNameInput = document.createElement('input');
+            wardNameInput.type = 'hidden';
+            wardNameInput.name = 'ward';
+            wardNameInput.value = selectedWardOption.textContent;
+            form.appendChild(wardNameInput);
+            
+            // Remove the original select from submission
+            wardSelect.removeAttribute('name');
+          }
+        });
+      });
     </script>
   </body>
 </html>

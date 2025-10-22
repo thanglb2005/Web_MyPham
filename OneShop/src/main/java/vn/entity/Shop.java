@@ -29,13 +29,13 @@ public class Shop implements Serializable {
     @Column(name = "shop_id")
     private Long shopId;
 
-    @Column(name = "shop_name", nullable = false, unique = true)
+    @Column(name = "shop_name", nullable = false, unique = true, columnDefinition = "NVARCHAR(255)")
     private String shopName;
 
     @Column(name = "shop_slug", unique = true)
     private String shopSlug;
 
-    @Column(name = "shop_description", length = 2000)
+    @Column(name = "shop_description", length = 2000, columnDefinition = "NVARCHAR(2000)")
     private String shopDescription;
 
     @Column(name = "shop_logo")
@@ -51,16 +51,16 @@ public class Shop implements Serializable {
     @Column(name = "phone_number", length = 15)
     private String phoneNumber;
 
-    @Column(name = "address", length = 500)
+    @Column(name = "address", length = 500, columnDefinition = "NVARCHAR(500)")
     private String address;
 
-    @Column(name = "city", length = 100)
+    @Column(name = "city", length = 100, columnDefinition = "NVARCHAR(100)")
     private String city;
 
-    @Column(name = "district", length = 100)
+    @Column(name = "district", length = 100, columnDefinition = "NVARCHAR(100)")
     private String district;
 
-    @Column(name = "ward", length = 100)
+    @Column(name = "ward", length = 100, columnDefinition = "NVARCHAR(100)")
     private String ward;
 
     @Enumerated(EnumType.STRING)
@@ -73,7 +73,7 @@ public class Shop implements Serializable {
     @Column(name = "approved_at")
     private LocalDateTime approvedAt;
 
-    @Column(name = "rejection_reason", length = 500)
+    @Column(name = "rejection_reason", length = 500, columnDefinition = "NVARCHAR(500)")
     private String rejectionReason;
 
     @Column(name = "total_products")
@@ -90,6 +90,12 @@ public class Shop implements Serializable {
 
     @Column(name = "preparation_days")
     private Integer preparationDays = 2;
+
+    @Column(name = "allow_express")
+    private Boolean allowExpress = Boolean.TRUE;  // Cho phép giao hỏa tốc
+
+    @Column(name = "express_radius_km")
+    private Integer expressRadiusKm = 20;  // Bán kính giao hỏa tốc (km)
 
     // Quan hệ Many-to-Many với Shipper (User)
     // Một shop có thể có nhiều shipper, một shipper có thể thuộc nhiều shop

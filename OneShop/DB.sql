@@ -145,6 +145,8 @@ CREATE TABLE dbo.shops (
     -- Cài đặt
     allow_cod BIT DEFAULT 1,
     preparation_days INT DEFAULT 2,
+    allow_express BIT DEFAULT 1,  -- Cho phép giao hỏa tốc
+    express_radius_km INT DEFAULT 20,  -- Bán kính giao hỏa tốc (km) - có thể dùng sau
     
     CONSTRAINT FK_shops_vendor FOREIGN KEY(vendor_id) REFERENCES dbo.[user](user_id)
 );
@@ -155,32 +157,32 @@ INSERT INTO dbo.shops(
     vendor_id, phone_number, address, city, district, ward,
     status, created_at, approved_at,
     total_products, total_orders, total_revenue,
-    allow_cod, preparation_days
+    allow_cod, preparation_days, allow_express, express_radius_km
 )
 VALUES
 -- Shop 1: Vendor An (user_id=5) - ACTIVE
 (N'Mỹ Phẩm An Nguyễn', 'my-pham-an-nguyen',
  N'Chuyên cung cấp mỹ phẩm chính hãng từ Hàn Quốc, Nhật Bản. Cam kết 100% hàng chính hãng.',
  'shop_an_logo.png', 'shop_an_banner.jpg',
- 5, '0901234567', N'123 Nguyễn Huệ', N'TP. Hồ Chí Minh', N'Quận 1', N'Phường Bến Nghé',
+ 5, '0901234567', N'123 Nguyễn Huệ', N'Thành phố Hồ Chí Minh', N'Quận 1', N'Phường Bến Nghé',
  'ACTIVE', '2025-09-10', '2025-09-12',
- 0, 0, 0, 1, 2),
+ 0, 0, 0, 1, 2, 1, 20),
 
 -- Shop 2: Vendor Bình (user_id=6) - ACTIVE
 (N'Cosmetic House Bình', 'cosmetic-house-binh',
  N'Chuyên dược mỹ phẩm cao cấp: La Roche-Posay, Vichy, Eucerin. Uy tín - Chất lượng.',
  'shop_binh_logo.png', 'shop_binh_banner.jpg',
- 6, '0912345678', N'456 Lê Lợi', N'TP. Hồ Chí Minh', N'Quận 1', N'Phường Phạm Ngũ Lão',
+ 6, '0912345678', N'456 Lê Lợi', N'Thành phố Hồ Chí Minh', N'Quận 1', N'Phường Phạm Ngũ Lão',
  'ACTIVE', '2025-09-15', '2025-09-17',
- 0, 0, 0, 1, 1),
+ 0, 0, 0, 1, 1, 1, 15),
 
 -- Shop 3: Vendor Cường (user_id=7) - PENDING (chờ duyệt)
 (N'Shop Mỹ Phẩm Cường', 'shop-my-pham-cuong',
  N'Mỹ phẩm thiên nhiên Việt Nam: Cocoon, Lemonade. Thuần chay - An toàn.',
  'shop_cuong_logo.png', 'shop_cuong_banner.jpg',
- 7, '0923456789', N'789 Trần Hưng Đạo', N'TP. Hồ Chí Minh', N'Quận 1', N'Phường Cầu Kho',
+ 7, '0923456789', N'789 Trần Hưng Đạo', N'Thành phố Hà Nội', N'Quận Ba Đình', N'Phường Ngọc Hà',
  'PENDING', '2025-10-05', NULL,
- 0, 0, 0, 1, 3);
+ 0, 0, 0, 1, 3, 1, 25);
 GO
 
 /* ===============================
@@ -224,6 +226,31 @@ CREATE INDEX IX_favorites_product ON dbo.favorites(product_id);
 GO
 
 /* ===============================
+   TABLE: shipping_providers
+   =============================== */
+CREATE TABLE dbo.shipping_providers (
+    provider_id BIGINT IDENTITY(1,1) PRIMARY KEY,
+    provider_name NVARCHAR(255) NOT NULL,
+    contact_phone NVARCHAR(15),
+    contact_email NVARCHAR(255),
+    description NVARCHAR(1000),
+    website NVARCHAR(255),
+    address NVARCHAR(255),
+    shipping_fees DECIMAL(18,2),
+    delivery_time_range NVARCHAR(255),
+    logo NVARCHAR(255),
+    status BIT DEFAULT 1
+);
+INSERT INTO dbo.shipping_providers (provider_name, contact_phone, contact_email, description, website, address, shipping_fees, delivery_time_range, logo, status)
+VALUES
+(N'Giao Hàng Nhanh', N'1900636677', N'support@ghn.vn', N'Dịch vụ giao hàng nhanh trên toàn quốc', N'https://ghn.vn', N'Hà Nội, Việt Nam', 30000, N'1-3 ngày', N'ghn-logo.png', 1),
+(N'Giao Hàng Tiết Kiệm', N'1900636677', N'support@giaohangtietkiem.vn', N'Dịch vụ giao hàng tiết kiệm toàn quốc', N'https://giaohangtietkiem.vn', N'Hồ Chí Minh, Việt Nam', 25000, N'2-4 ngày', N'ghtk-logo.png', 1),
+(N'J&T Express', N'19001088', N'cskh@jtexpress.vn', N'Dịch vụ chuyển phát nhanh J&T Express', N'https://jtexpress.vn', N'Hồ Chí Minh, Việt Nam', 28000, N'1-3 ngày', N'jt-express-logo.png', 1),
+(N'Viettel Post', N'1900818820', N'cskh@viettelpost.com.vn', N'Dịch vụ chuyển phát Viettel Post', N'https://viettelpost.com.vn', N'Hà Nội, Việt Nam', 27000, N'2-4 ngày', N'viettel-post-logo.png', 1),
+(N'Vietnam Post', N'18006422', N'info@vnpost.vn', N'Bưu điện Việt Nam - Vietnam Post', N'https://www.vnpost.vn', N'Hà Nội, Việt Nam', 26000, N'2-5 ngày', N'vnpost-logo.png', 1);
+GO
+
+/* ===============================
    TABLE: orders
    =============================== */
 CREATE TABLE dbo.orders (
@@ -256,9 +283,18 @@ CREATE TABLE dbo.orders (
     shop_id BIGINT NULL,
     momo_transaction_id NVARCHAR(255) NULL,
     momo_request_id NVARCHAR(255) NULL,
+    
+    -- Delivery & Express shipping fields
+    customer_city NVARCHAR(100) NULL,  -- Tỉnh/thành của khách hàng
+    shipping_provider_id BIGINT NULL,  -- Đơn vị vận chuyển (GHN, GHTK...)
+    is_express BIT NOT NULL DEFAULT 0,  -- Giao hỏa tốc (1) hay thường (0)
+    delivery_type NVARCHAR(20) NOT NULL DEFAULT 'STANDARD' CHECK (delivery_type IN ('EXPRESS', 'STANDARD')),  -- EXPRESS = Hỏa tốc, STANDARD = Thường
+    express_fee DECIMAL(10,2) NOT NULL DEFAULT 0,  -- Phí hỏa tốc
+    
     CONSTRAINT FK_orders_user FOREIGN KEY(user_id) REFERENCES dbo.[user](user_id),
     CONSTRAINT FK_orders_shipper FOREIGN KEY(shipper_id) REFERENCES dbo.[user](user_id),
-    CONSTRAINT FK_orders_shop FOREIGN KEY(shop_id) REFERENCES dbo.shops(shop_id)
+    CONSTRAINT FK_orders_shop FOREIGN KEY(shop_id) REFERENCES dbo.shops(shop_id),
+    CONSTRAINT FK_orders_shipping_provider FOREIGN KEY(shipping_provider_id) REFERENCES dbo.shipping_providers(provider_id)
 );
 
 -- Create indexes for better performance
@@ -268,6 +304,9 @@ CREATE INDEX IX_orders_shop_id ON orders(shop_id);
 CREATE INDEX IX_orders_order_date ON orders(order_date);
 CREATE INDEX IX_orders_payment_status ON orders(payment_status);
 CREATE INDEX IX_orders_payment_method ON orders(payment_method);
+CREATE INDEX IX_orders_customer_city ON orders(customer_city);
+CREATE INDEX IX_orders_delivery_type ON orders(delivery_type);
+CREATE INDEX IX_orders_shipping_provider_id ON orders(shipping_provider_id);
 GO
 
 /* ===============================
@@ -318,31 +357,6 @@ CREATE TABLE dbo.chat_message (
   vendor_name NVARCHAR(255) NULL
 );
 CREATE INDEX ix_chat_message_room_time ON dbo.chat_message(room_id, sent_at DESC);
-GO
-
-/* ===============================
-   TABLE: shipping_providers
-   =============================== */
-CREATE TABLE dbo.shipping_providers (
-    provider_id BIGINT IDENTITY(1,1) PRIMARY KEY,
-    provider_name NVARCHAR(255) NOT NULL,
-    contact_phone NVARCHAR(15),
-    contact_email NVARCHAR(255),
-    description NVARCHAR(1000),
-    website NVARCHAR(255),
-    address NVARCHAR(255),
-    shipping_fees DECIMAL(18,2),
-    delivery_time_range NVARCHAR(255),
-    logo NVARCHAR(255),
-    status BIT DEFAULT 1
-);
-INSERT INTO dbo.shipping_providers (provider_name, contact_phone, contact_email, description, website, address, shipping_fees, delivery_time_range, logo, status)
-VALUES
-(N'Giao Hàng Nhanh', N'1900636677', N'support@ghn.vn', N'Dịch vụ giao hàng nhanh trên toàn quốc', N'https://ghn.vn', N'Hà Nội, Việt Nam', 30000, N'1-3 ngày', N'ghn-logo.png', 1),
-(N'Giao Hàng Tiết Kiệm', N'1900636677', N'support@giaohangtietkiem.vn', N'Dịch vụ giao hàng tiết kiệm toàn quốc', N'https://giaohangtietkiem.vn', N'Hồ Chí Minh, Việt Nam', 25000, N'2-4 ngày', N'ghtk-logo.png', 1),
-(N'J&T Express', N'19001088', N'cskh@jtexpress.vn', N'Dịch vụ chuyển phát nhanh J&T Express', N'https://jtexpress.vn', N'Hồ Chí Minh, Việt Nam', 28000, N'1-3 ngày', N'jt-express-logo.png', 1),
-(N'Viettel Post', N'1900818820', N'cskh@viettelpost.com.vn', N'Dịch vụ chuyển phát Viettel Post', N'https://viettelpost.com.vn', N'Hà Nội, Việt Nam', 27000, N'2-4 ngày', N'viettel-post-logo.png', 1),
-(N'Vietnam Post', N'18006422', N'info@vnpost.vn', N'Bưu điện Việt Nam - Vietnam Post', N'https://www.vnpost.vn', N'Hà Nội, Việt Nam', 26000, N'2-5 ngày', N'vnpost-logo.png', 1);
 GO
 
 /* ===================== INSERT BRANDS ===================== */
@@ -996,7 +1010,7 @@ CREATE TABLE dbo.promotions (
     start_date             DATETIME2 NOT NULL,
     end_date               DATETIME2 NOT NULL,
     is_active              BIT NOT NULL DEFAULT 1,
-    shop_id                BIGINT NOT NULL,
+    shop_id                BIGINT NULL,  -- NULL = voucher hệ thống, NOT NULL = voucher shop
     created_by             BIGINT NOT NULL,
     created_at             DATETIME2 NOT NULL DEFAULT (GETDATE()),
     updated_at             DATETIME2 NOT NULL DEFAULT (GETDATE()),
@@ -1021,9 +1035,6 @@ CREATE INDEX IX_promotions_usage ON dbo.promotions(used_count, usage_limit);
 CREATE INDEX IX_promotions_shop_id ON dbo.promotions(shop_id);
 GO
 
--- Modify promotions table to allow NULL shop_id for platform vouchers
-ALTER TABLE dbo.promotions ALTER COLUMN shop_id BIGINT NULL;
-GO
 
 -- Insert sample promotion data
 INSERT INTO dbo.promotions (
@@ -1204,7 +1215,139 @@ INSERT INTO dbo.promotions (
     4      -- created_by = 4 (Admin)
 ),
 
+-- ═══════ PLATFORM SHIPPING VOUCHERS (Hệ thống) ═══════
+(
+    N'OneShop - Giảm 30k phí ship',
+    N'Giảm 30,000đ phí vận chuyển cho đơn hàng từ 200,000đ',
+    'SHIP30K',
+    'FIXED_AMOUNT',
+    30000.00,
+    200000.00,
+    30000.00,
+    2500,
+    67,
+    '2025-10-01 00:00:00',
+    '2025-12-31 23:59:59',
+    1,
+    NULL,  -- Platform voucher
+    4      -- created_by = 4 (Admin)
+),
+(
+    N'OneShop - Giảm 40% phí ship',
+    N'Giảm 40% phí vận chuyển (tối đa 20k) cho đơn hàng từ 100,000đ',
+    'SHIP40',
+    'PERCENTAGE',
+    40.00,
+    100000.00,
+    20000.00,
+    3000,
+    124,
+    '2025-10-01 00:00:00',
+    '2025-12-31 23:59:59',
+    1,
+    NULL,  -- Platform voucher
+    4      -- created_by = 4 (Admin)
+),
+(
+    N'OneShop - Miễn phí ship nội thành',
+    N'Miễn phí vận chuyển cho đơn hàng từ 250,000đ (áp dụng nội thành)',
+    'FREESHIP250',
+    'FREE_SHIPPING',
+    50000.00,
+    250000.00,
+    50000.00,
+    2000,
+    89,
+    '2025-10-01 00:00:00',
+    '2025-12-31 23:59:59',
+    1,
+    NULL,  -- Platform voucher
+    4      -- created_by = 4 (Admin)
+),
+(
+    N'OneShop - Giảm 15k ship đơn nhỏ',
+    N'Giảm 15,000đ phí ship cho đơn hàng từ 50,000đ',
+    'SHIP15K',
+    'FIXED_AMOUNT',
+    15000.00,
+    50000.00,
+    15000.00,
+    5000,
+    234,
+    '2025-10-01 00:00:00',
+    '2025-12-31 23:59:59',
+    1,
+    NULL,  -- Platform voucher
+    4      -- created_by = 4 (Admin)
+),
+(
+    N'OneShop - Giảm 70% ship cuối tháng',
+    N'Giảm 70% phí ship (tối đa 35k) cho đơn hàng từ 300,000đ vào cuối tháng',
+    'SHIP70-END',
+    'PERCENTAGE',
+    70.00,
+    300000.00,
+    35000.00,
+    1000,
+    43,
+    '2025-10-25 00:00:00',
+    '2025-12-31 23:59:59',
+    1,
+    NULL,  -- Platform voucher
+    4      -- created_by = 4 (Admin)
+),
+(
+    N'OneShop - Miễn phí ship VIP',
+    N'Miễn phí vận chuyển cho khách hàng VIP - Đơn từ 400,000đ',
+    'VIPSHIP',
+    'FREE_SHIPPING',
+    50000.00,
+    400000.00,
+    50000.00,
+    800,
+    21,
+    '2025-10-01 00:00:00',
+    '2025-12-31 23:59:59',
+    1,
+    NULL,  -- Platform voucher
+    4      -- created_by = 4 (Admin)
+),
+(
+    N'OneShop - Giảm 25k ship nhanh',
+    N'Giảm 25,000đ phí ship cho đơn hàng giao nhanh từ 180,000đ',
+    'FASTSHIP25',
+    'FIXED_AMOUNT',
+    25000.00,
+    180000.00,
+    25000.00,
+    1500,
+    56,
+    '2025-10-01 00:00:00',
+    '2025-12-31 23:59:59',
+    1,
+    NULL,  -- Platform voucher
+    4      -- created_by = 4 (Admin)
+),
+(
+    N'OneShop - Giảm 50% ship thứ 2',
+    N'Giảm 50% phí ship (tối đa 25k) vào thứ Hai hàng tuần',
+    'MONDAY50',
+    'PERCENTAGE',
+    50.00,
+    120000.00,
+    25000.00,
+    2000,
+    78,
+    '2025-10-01 00:00:00',
+    '2025-12-31 23:59:59',
+    1,
+    NULL,  -- Platform voucher
+    4      -- created_by = 4 (Admin)
+),
+
 -- ═══════ SHOP VOUCHERS (Shop-specific vouchers) ═══════
+-- Lưu ý: Shop KHÔNG được phát voucher FREE_SHIPPING, chỉ hệ thống mới phát
+
 -- Shop 1 vouchers (Mỹ Phẩm An Nguyễn)
 (
     N'Giảm giá 20% cho đơn hàng từ 500k',
@@ -1223,15 +1366,31 @@ INSERT INTO dbo.promotions (
     4   -- created_by = 4 (Admin)
 ),
 (
-    N'Miễn phí ship cho đơn hàng từ 300k',
-    N'Miễn phí vận chuyển cho đơn hàng từ 300,000đ trở lên',
-    'FREESHIP',
-    'FREE_SHIPPING',
+    N'Giảm 50k cho khách hàng thân thiết',
+    N'Giảm 50,000đ cho đơn hàng từ 300,000đ - Dành cho khách hàng thân thiết',
+    'LOYAL50-AN',
+    'FIXED_AMOUNT',
     50000.00,
     300000.00,
     50000.00,
+    800,
+    15,
+    '2025-01-01 00:00:00',
+    '2025-12-31 23:59:59',
+    1,
+    1,  -- shop_id = 1 (Mỹ Phẩm An Nguyễn)
+    4   -- created_by = 4 (Admin)
+),
+(
+    N'Giảm 15% mua sắm cuối tuần',
+    N'Giảm 15% cho đơn hàng vào Thứ 7 và Chủ nhật',
+    'WEEKEND15-AN',
+    'PERCENTAGE',
+    15.00,
+    200000.00,
+    100000.00,
     500,
-    0,
+    23,
     '2025-01-01 00:00:00',
     '2025-12-31 23:59:59',
     1,
@@ -1267,6 +1426,38 @@ INSERT INTO dbo.promotions (
     50,
     5,
     '2025-11-01 00:00:00',
+    '2025-11-30 23:59:59',
+    1,
+    2,  -- shop_id = 2 (Cosmetic House Bình)
+    4   -- created_by = 4 (Admin)
+),
+(
+    N'Giảm 10% cho khách hàng mới',
+    N'Giảm 10% cho đơn hàng đầu tiên tại cửa hàng',
+    'NEWBIE10-BINH',
+    'PERCENTAGE',
+    10.00,
+    100000.00,
+    50000.00,
+    1000,
+    45,
+    '2025-01-01 00:00:00',
+    '2025-12-31 23:59:59',
+    1,
+    2,  -- shop_id = 2 (Cosmetic House Bình)
+    4   -- created_by = 4 (Admin)
+),
+(
+    N'Giảm 30k đơn hàng nhỏ',
+    N'Giảm 30,000đ cho đơn hàng từ 150,000đ',
+    'SAVE30K-BINH',
+    'FIXED_AMOUNT',
+    30000.00,
+    150000.00,
+    30000.00,
+    600,
+    28,
+    '2025-01-01 00:00:00',
     '2025-12-31 23:59:59',
     1,
     2,  -- shop_id = 2 (Cosmetic House Bình)
@@ -1484,7 +1675,7 @@ GO
 CREATE TABLE dbo.one_xu_transactions (
     transaction_id BIGINT IDENTITY(1,1) PRIMARY KEY,
     user_id BIGINT NOT NULL,
-    transaction_type NVARCHAR(50) NOT NULL CHECK (transaction_type IN ('CHECKIN', 'ORDER_REWARD', 'PURCHASE', 'REFUND')),
+    transaction_type NVARCHAR(50) NOT NULL CHECK (transaction_type IN ('CHECKIN', 'ORDER_REWARD', 'PURCHASE', 'REFUND', 'REVIEW_REWARD')),
     amount DECIMAL(18,2) NOT NULL,
     balance_after DECIMAL(18,2) NOT NULL,
     description NVARCHAR(500),
@@ -1494,6 +1685,13 @@ CREATE TABLE dbo.one_xu_transactions (
     CONSTRAINT FK_xu_trans_order FOREIGN KEY(order_id) REFERENCES dbo.orders(order_id)
 );
 GO
+
+-- Transaction types:
+-- CHECKIN: Check-in hàng ngày
+-- ORDER_REWARD: Thưởng từ đơn hàng
+-- PURCHASE: Mua sắm (sử dụng xu)
+-- REFUND: Hoàn xu
+-- REVIEW_REWARD: Thưởng từ đánh giá sản phẩm lần đầu (300 xu)
 
 /* ===============================
    TABLE: one_xu_weekly_schedule

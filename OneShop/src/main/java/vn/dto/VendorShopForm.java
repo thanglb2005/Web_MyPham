@@ -15,7 +15,7 @@ public class VendorShopForm {
     @Size(max = 2000, message = "Mô tả tối đa 2000 ký tự")
     private String shopDescription;
 
-    @Pattern(regexp = "^$|^[0-9+]{8,15}$", message = "Số điện thoại không hợp lệ")
+    @Pattern(regexp = "^$|^(0)(3|5|7|8|9)[0-9]{8}$", message = "Số điện thoại phải là 10 số và bắt đầu bằng 03, 05, 07, 08 hoặc 09")
     private String phoneNumber;
 
     @Size(max = 500, message = "Địa chỉ tối đa 500 ký tự")

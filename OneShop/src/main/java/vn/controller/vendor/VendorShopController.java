@@ -77,7 +77,7 @@ public class VendorShopController {
         shop.setPhoneNumber(form.getPhoneNumber());
         shop.setAddress(form.getAddress());
         shop.setCity(form.getCity());
-        shop.setDistrict(form.getDistrict());
+        shop.setDistrict(null); // District không sử dụng trong form mới
         shop.setWard(form.getWard());
         shop.setAllowCod(form.getAllowCod());
         shop.setPreparationDays(form.getPreparationDays());
@@ -181,7 +181,7 @@ public class VendorShopController {
         shop.setPhoneNumber(form.getPhoneNumber());
         shop.setAddress(form.getAddress());
         shop.setCity(form.getCity());
-        shop.setDistrict(form.getDistrict());
+        shop.setDistrict(null); // District không sử dụng trong form mới
         shop.setWard(form.getWard());
         shop.setAllowCod(form.getAllowCod());
         shop.setPreparationDays(form.getPreparationDays());

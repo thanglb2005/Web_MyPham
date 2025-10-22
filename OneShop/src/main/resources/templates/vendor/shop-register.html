@@ -121,64 +121,53 @@
               th:errors="*{shopDescription}"
             ></div>
           </div>
-          <div class="col-12">
-            <label class="form-label" for="address">Địa chỉ</label>
-            <input
-              id="address"
-              type="text"
-              class="form-control"
-              th:field="*{address}"
-              placeholder="Ví dụ: 123 Nguyễn Huệ, Quận 1"
-            />
-            <div
-              class="error-text"
-              th:if="${#fields.hasErrors('address')}"
-              th:errors="*{address}"
-            ></div>
-          </div>
-          <div class="col-md-4">
-            <label class="form-label" for="city">Tỉnh/Thành</label>
-            <input
+          <div class="col-md-6">
+            <label class="form-label" for="city">Tỉnh/Thành phố *</label>
+            <select
               id="city"
-              type="text"
               class="form-control"
               th:field="*{city}"
-              placeholder="Ví dụ: TP. Hồ Chí Minh"
-            />
+              required
+            >
+              <option value="">-- Chọn Tỉnh/Thành phố --</option>
+            </select>
             <div
               class="error-text"
               th:if="${#fields.hasErrors('city')}"
               th:errors="*{city}"
             ></div>
           </div>
-          <div class="col-md-4">
-            <label class="form-label" for="district">Quận/Huyện</label>
-            <input
-              id="district"
-              type="text"
-              class="form-control"
-              th:field="*{district}"
-              placeholder="Ví dụ: Quận 1"
-            />
-            <div
-              class="error-text"
-              th:if="${#fields.hasErrors('district')}"
-              th:errors="*{district}"
-            ></div>
-          </div>
-          <div class="col-md-4">
-            <label class="form-label" for="ward">Phường/Xã</label>
-            <input
+          <div class="col-md-6">
+            <label class="form-label" for="ward">Quận/Huyện/Xã/Phường *</label>
+            <select
               id="ward"
-              type="text"
               class="form-control"
               th:field="*{ward}"
-              placeholder="Ví dụ: Phường Bến Nghé"
-            />
+              required
+              disabled
+            >
+              <option value="">-- Chọn Quận/Huyện/Xã/Phường --</option>
+            </select>
             <div
               class="error-text"
               th:if="${#fields.hasErrors('ward')}"
               th:errors="*{ward}"
+            ></div>
+          </div>
+          <div class="col-12">
+            <label class="form-label" for="address">Địa chỉ cụ thể *</label>
+            <input
+              id="address"
+              type="text"
+              class="form-control"
+              th:field="*{address}"
+              placeholder="Số nhà, tên đường... (VD: Số 123, Đường Nguyễn Huệ)"
+              required
+            />
+            <div
+              class="error-text"
+              th:if="${#fields.hasErrors('address')}"
+              th:errors="*{address}"
             ></div>
           </div>
 
@@ -247,5 +236,126 @@
 
     <script th:src="@{/vendor/bootstrap/jquery-3.6.0.min.js}"></script>
     <script th:src="@{/vendor/bootstrap/bootstrap.bundle.min.js}"></script>
+    
+    <script>
+      // Phone number validation for Vietnam
+      document.addEventListener('DOMContentLoaded', function() {
+        const phoneInput = document.getElementById('phoneNumber');
+        if (phoneInput) {
+          const vietnamPhonePattern = /^(0)(3|5|7|8|9)[0-9]{8}$/;
+          
+          phoneInput.addEventListener('input', function() {
+            // Remove non-digit characters
+            this.value = this.value.replace(/[^0-9]/g, '');
+            
+            // Limit to 10 digits
+            if (this.value.length > 10) {
+              this.value = this.value.slice(0, 10);
+            }
+            
+            // Visual feedback
+            if (this.value.length > 0) {
+              if (vietnamPhonePattern.test(this.value)) {
+                this.style.borderColor = '#28a745';
+              } else {
+                this.style.borderColor = '#dc3545';
+              }
+            } else {
+              this.style.borderColor = '';
+            }
+          });
+        }
+      });
+      
+      // Address selection - Province and Commune
+      document.addEventListener('DOMContentLoaded', function() {
+        const citySelect = document.getElementById('city');
+        const wardSelect = document.getElementById('ward');
+        const form = document.querySelector('form');
+        
+        let allProvinces = [];
+        let allCommunes = [];
+        
+        // Load data from db.json
+        fetch('/db.json')
+          .then(response => response.json())
+          .then(data => {
+            allProvinces = data.province || [];
+            allCommunes = data.commune || [];
+            
+            // Populate province dropdown
+            allProvinces.forEach(province => {
+              const option = document.createElement('option');
+              option.value = province.idProvince;
+              option.textContent = province.name;
+              option.dataset.provinceName = province.name;
+              citySelect.appendChild(option);
+            });
+          })
+          .catch(error => {
+            console.error('Error loading address data:', error);
+            alert('Không thể tải dữ liệu địa chỉ. Vui lòng thử lại sau.');
+          });
+        
+        // Handle province change
+        citySelect.addEventListener('change', function() {
+          const selectedProvinceId = this.value;
+          
+          // Clear commune dropdown
+          wardSelect.innerHTML = '<option value="">-- Chọn Quận/Huyện/Xã/Phường --</option>';
+          wardSelect.disabled = true;
+          
+          if (selectedProvinceId) {
+            // Filter communes by selected province
+            const filteredCommunes = allCommunes.filter(commune => 
+              commune.idProvince === selectedProvinceId
+            );
+            
+            // Populate commune dropdown
+            filteredCommunes.forEach(commune => {
+              const option = document.createElement('option');
+              option.value = commune.idCommune;
+              option.textContent = commune.name;
+              option.dataset.communeName = commune.name;
+              wardSelect.appendChild(option);
+            });
+            
+            // Enable commune select
+            wardSelect.disabled = false;
+          }
+        });
+        
+        // Handle form submission - replace IDs with names
+        form.addEventListener('submit', function(e) {
+          // Get selected province name
+          const selectedCityOption = citySelect.options[citySelect.selectedIndex];
+          if (selectedCityOption && selectedCityOption.value) {
+            // Create hidden input for province name
+            const cityNameInput = document.createElement('input');
+            cityNameInput.type = 'hidden';
+            cityNameInput.name = 'city';
+            cityNameInput.value = selectedCityOption.textContent;
+            form.appendChild(cityNameInput);
+            
+            // Remove the original select from submission
+            citySelect.removeAttribute('name');
+          }
+          
+          // Get selected commune name
+          const selectedWardOption = wardSelect.options[wardSelect.selectedIndex];
+          if (selectedWardOption && selectedWardOption.value) {
+            // Create hidden input for commune name
+            const wardNameInput = document.createElement('input');
+            wardNameInput.type = 'hidden';
+            wardNameInput.name = 'ward';
+            wardNameInput.value = selectedWardOption.textContent;
+            form.appendChild(wardNameInput);
+            
+            // Remove the original select from submission
+            wardSelect.removeAttribute('name');
+          }
+        });
+      });
+    </script>
   </body>
 </html>
