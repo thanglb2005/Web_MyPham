@@ -308,7 +308,7 @@
                   </div>
                 </td>
                 <td>
-                  <strong class="text-success" th:text="${#numbers.formatDecimal(order.totalAmount, 0, 'DEFAULT', 0, 'DEFAULT')} + ' đ'">
+                  <strong class="text-success" th:text="${#numbers.formatDecimal(order.finalAmount != null ? order.finalAmount : order.totalAmount, 0, 'DEFAULT', 0, 'DEFAULT')} + ' đ'">
                     0 đ
                   </strong>
                 </td>
@@ -384,7 +384,7 @@
                   </div>
                 </td>
                 <td>
-                  <strong class="text-success" th:text="${#numbers.formatDecimal(order.totalAmount, 0, 'DEFAULT', 0, 'DEFAULT')} + ' đ'">
+                  <strong class="text-success" th:text="${#numbers.formatDecimal(order.finalAmount != null ? order.finalAmount : order.totalAmount, 0, 'DEFAULT', 0, 'DEFAULT')} + ' đ'">
                     0 đ
                   </strong>
                 </td>
@@ -443,7 +443,7 @@
                   </div>
                 </td>
                 <td>
-                  <strong class="text-success" th:text="${#numbers.formatDecimal(order.totalAmount, 0, 'DEFAULT', 0, 'DEFAULT')} + ' đ'">
+                  <strong class="text-success" th:text="${#numbers.formatDecimal(order.finalAmount != null ? order.finalAmount : order.totalAmount, 0, 'DEFAULT', 0, 'DEFAULT')} + ' đ'">
                     0 đ
                   </strong>
                 </td>
