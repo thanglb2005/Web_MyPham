@@ -194,6 +194,7 @@ public class UserVoucherGroup {
             }
             return switch (type) {
                 case PERCENTAGE -> value.stripTrailingZeros().toPlainString() + "% giảm";
+                case PRODUCT_PERCENTAGE -> value.stripTrailingZeros().toPlainString() + "% giảm sản phẩm";
                 case FIXED_AMOUNT -> formatCurrency(value) + " giảm ngay";
                 case FREE_SHIPPING -> "Freeship tới " + formatCurrency(value);
                 case BUY_X_GET_Y -> "Mua X tặng Y";
