@@ -119,7 +119,8 @@ public class OrderServiceImpl implements OrderService {
     @Transactional
     public Order createOrder(User user, String customerName, String customerEmail, String customerPhone,
                              String shippingAddress, String note, Order.PaymentMethod paymentMethod,
-                             Map<Long, CartItem> cartItems, String promotionCode, Double discountAmount) {
+                             Map<Long, CartItem> cartItems, String promotionCode, Double discountAmount, 
+                             Double shippingFee) {
 
         if (cartItems == null || cartItems.isEmpty()) {
             throw new IllegalArgumentException("Cart cannot be empty to create an order.");
@@ -152,17 +153,21 @@ public class OrderServiceImpl implements OrderService {
         // Set original total amount first
         order.setTotalAmount(originalAmount);
         
+        // Set shipping fee
+        order.setShippingFee(shippingFee != null ? shippingFee : 0.0);
+        
         // Áp dụng khuyến mãi nếu có
         if (promotionCode != null && discountAmount != null && discountAmount > 0) {
             order.setDiscountAmount(discountAmount);
-            double finalAmount = Math.max(0, originalAmount - discountAmount);
+            double productAmountAfterDiscount = Math.max(0, originalAmount - discountAmount);
+            double finalAmount = productAmountAfterDiscount + (shippingFee != null ? shippingFee : 0.0);
             order.setFinalAmount(finalAmount);
             order.setNote(note + (note != null && !note.isEmpty() ? "\n" : "") + 
                          "Mã khuyến mãi: " + promotionCode + " - Giảm: " + discountAmount + " VNĐ");
-            System.out.println("Applied discount - Original: " + originalAmount + ", Discount: " + discountAmount + ", Final: " + finalAmount);
         } else {
             order.setDiscountAmount(0.0);
-            order.setFinalAmount(originalAmount);
+            double finalAmount = originalAmount + (shippingFee != null ? shippingFee : 0.0);
+            order.setFinalAmount(finalAmount);
         }
 
         Order savedOrder = orderRepository.save(order);

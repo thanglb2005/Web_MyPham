@@ -103,10 +103,10 @@ public class PayOSController {
                     // Redirect đến checkout success
                     return "redirect:/checkout-success?orderId=" + actualOrderId;
                 } else {
-                    return "redirect:/checkout-error?message=Không tìm thấy đơn hàng";
+                    return "redirect:/checkout-error?message=Khong tim thay don hang";
                 }
             } catch (NumberFormatException e) {
-                return "redirect:/checkout-error?message=Lỗi xử lý thanh toán";
+                return "redirect:/checkout-error?message=Loi xu ly thanh toan";
             }
         } else {
             // Thanh toán thất bại - set order thành CANCELLED
@@ -117,12 +117,11 @@ public class PayOSController {
                     order.setPaymentPaid(false);
                     order.setStatus(Order.OrderStatus.CANCELLED);
                     orderService.updateOrder(order);
-                    System.out.println("Order " + actualOrderId + " marked as CANCELLED due to failed payment");
                 }
             } catch (NumberFormatException e) {
-                System.out.println("Invalid orderId in failed payment: " + actualOrderId);
+                // Invalid orderId format
             }
-            return "redirect:/checkout-error?message=Thanh toán thất bại";
+            return "redirect:/checkout-error?message=Thanh toan that bai";
         }
     }
 
@@ -137,10 +136,6 @@ public class PayOSController {
                                @RequestParam(required = false) String orderCode,
                                HttpServletRequest request) {
         
-        System.out.println("=== PAYOS CANCEL DEBUG ===");
-        System.out.println("PayOS Cancel - Code: " + code + ", Status: " + status + ", OrderCode: " + orderCode);
-        System.out.println("Full URL: " + request.getRequestURL() + "?" + request.getQueryString());
-        System.out.println("==========================");
         
         // Nếu có orderCode, cập nhật trạng thái đơn hàng thành CANCELLED
         if (orderCode != null && !orderCode.isEmpty()) {
@@ -151,28 +146,15 @@ public class PayOSController {
                     order.setPaymentPaid(false);
                     order.setStatus(Order.OrderStatus.CANCELLED);
                     orderService.updateOrder(order);
-                    System.out.println("Order " + orderCode + " marked as CANCELLED from cancel URL");
-                } else {
-                    System.out.println("Order not found: " + orderCode);
                 }
             } catch (NumberFormatException e) {
-                System.out.println("Invalid orderCode in cancel URL: " + orderCode);
+                // Invalid orderCode format
             }
         }
         
-        System.out.println("Redirecting to: /checkout-error?message=Bạn đã hủy thanh toán PayOS");
-        return "redirect:/checkout-error?message=Bạn đã hủy thanh toán PayOS";
+        return "redirect:/checkout-error?message=Ban da huy thanh toan PayOS";
     }
 
-    /**
-     * Test method để kiểm tra PayOS cancel flow
-     */
-    @GetMapping("/test-payos-cancel")
-    public String testPayOSCancel() {
-        System.out.println("=== TEST PAYOS CANCEL ===");
-        System.out.println("Testing PayOS cancel redirect...");
-        return "redirect:/checkout-error?message=Test PayOS Cancel";
-    }
 
 
     /**
@@ -185,12 +167,9 @@ public class PayOSController {
         Map<String, Object> response = new HashMap<>();
         
         try {
-            System.out.println("PayOS Webhook received: " + payload);
-            System.out.println("PayOS Webhook signature: " + signature);
             
             // Xác thực webhook signature theo PayOS docs
             if (!verifyWebhookSignature(payload, signature)) {
-                System.out.println("PayOS Webhook signature verification failed");
                 response.put("success", false);
                 response.put("message", "Invalid signature");
                 return response;
@@ -205,7 +184,6 @@ public class PayOSController {
                 Integer orderCode = (Integer) data.get("orderCode");
                 String status = (String) data.get("status");
                 
-                System.out.println("PayOS Webhook - Order Code: " + orderCode + ", Status: " + status);
                 
                 if (orderCode != null) {
                     // Tìm đơn hàng theo orderCode
@@ -219,17 +197,14 @@ public class PayOSController {
                             order.setStatus(Order.OrderStatus.CONFIRMED);
                             orderService.updateOrder(order);
                             
-                            System.out.println("Order " + orderCode + " marked as PAID");
                         } else if ("CANCELLED".equals(status)) {
                             // Thanh toán bị hủy
                             order.setPaymentPaid(false);
                             order.setStatus(Order.OrderStatus.CANCELLED);
                             orderService.updateOrder(order);
                             
-                            System.out.println("Order " + orderCode + " marked as CANCELLED");
                         }
                     } else {
-                        System.out.println("Order not found: " + orderCode);
                     }
                 }
             }
@@ -238,7 +213,6 @@ public class PayOSController {
             response.put("message", "Webhook processed successfully");
             
         } catch (Exception e) {
-            System.out.println("PayOS Webhook error: " + e.getMessage());
             e.printStackTrace();
             response.put("success", false);
             response.put("message", "Webhook error: " + e.getMessage());
@@ -269,13 +243,10 @@ public class PayOSController {
             byte[] signatureBytes = mac.doFinal(dataString.getBytes("UTF-8"));
             String expectedSignature = bytesToHex(signatureBytes);
             
-            System.out.println("Expected signature: " + expectedSignature);
-            System.out.println("Received signature: " + signature);
             
             return expectedSignature.equals(signature);
             
         } catch (Exception e) {
-            System.out.println("Error verifying webhook signature: " + e.getMessage());
             return false;
         }
     }
@@ -288,7 +259,7 @@ public class PayOSController {
             // Tạo payment data theo PayOS API
             Map<String, Object> paymentData = new HashMap<>();
             paymentData.put("orderCode", order.getOrderId());
-            paymentData.put("amount", (int) order.getFinalAmount().doubleValue()); // PayOS expects amount in VND (final amount after discounts)
+            paymentData.put("amount", (int) order.getFinalAmount().doubleValue()); // PayOS expects amount in VND (final amount including shipping)
             
             // PayOS chỉ cho phép tối đa 25 ký tự cho description
             String description = "Đơn hàng #" + order.getOrderId();
@@ -299,24 +270,18 @@ public class PayOSController {
             paymentData.put("returnUrl", payosReturnUrl);
             paymentData.put("cancelUrl", payosCancelUrl);
             
-            System.out.println("PayOS Payment Data: " + paymentData);
             
             // Gọi PayOS API thực tế để tạo payment link
             String paymentUrl = callPayOSAPI(paymentData);
             
             if (paymentUrl != null && !paymentUrl.isEmpty()) {
-                System.out.println("PayOS Payment URL: " + paymentUrl);
                 return paymentUrl;
             } else {
-                // PayOS API failed - redirect to checkout with error
-                System.out.println("PayOS API failed");
-                return "redirect:/checkout?error=Không thể tạo link thanh toán PayOS";
+                return "redirect:/checkout?error=Khong the tao link thanh toan PayOS";
             }
             
         } catch (Exception e) {
-            e.printStackTrace();
-            System.out.println("PayOS error: " + e.getMessage());
-            return "redirect:/checkout?error=Lỗi tạo thanh toán PayOS: " + e.getMessage();
+            return "redirect:/checkout?error=Loi tao thanh toan PayOS: " + e.getMessage();
         }
     }
     
@@ -338,7 +303,6 @@ public class PayOSController {
             // Tạo JSON payload
             String jsonPayload = new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(paymentData);
             
-            System.out.println("PayOS Request Payload: " + jsonPayload);
             
             // Tạo request với headers theo PayOS docs
             java.net.http.HttpRequest request = java.net.http.HttpRequest.newBuilder()
@@ -353,8 +317,6 @@ public class PayOSController {
             java.net.http.HttpResponse<String> response = client.send(request, 
                 java.net.http.HttpResponse.BodyHandlers.ofString());
             
-            System.out.println("PayOS API Response Status: " + response.statusCode());
-            System.out.println("PayOS API Response Body: " + response.body());
             
             if (response.statusCode() == 200) {
                 // Parse response theo PayOS API format
@@ -370,16 +332,13 @@ public class PayOSController {
                         return (String) data.get("checkoutUrl");
                     }
                 } else {
-                    System.out.println("PayOS API Error: " + responseData.get("desc"));
                 }
             } else {
-                System.out.println("PayOS API HTTP Error: " + response.statusCode());
             }
             
             return null;
             
         } catch (Exception e) {
-            System.out.println("PayOS API call failed: " + e.getMessage());
             e.printStackTrace();
             return null;
         }
@@ -398,7 +357,6 @@ public class PayOSController {
             dataString.append("&orderCode=").append(paymentData.get("orderCode"));
             dataString.append("&returnUrl=").append(paymentData.get("returnUrl"));
             
-            System.out.println("PayOS Signature Data: " + dataString.toString());
             
             // Tạo HMAC_SHA256 signature
             javax.crypto.Mac mac = javax.crypto.Mac.getInstance("HmacSHA256");
@@ -409,12 +367,10 @@ public class PayOSController {
             byte[] signatureBytes = mac.doFinal(dataString.toString().getBytes("UTF-8"));
             String signature = bytesToHex(signatureBytes);
             
-            System.out.println("PayOS Generated Signature: " + signature);
             
             return signature;
             
         } catch (Exception e) {
-            System.out.println("Error creating PayOS signature: " + e.getMessage());
             e.printStackTrace();
             return "";
         }

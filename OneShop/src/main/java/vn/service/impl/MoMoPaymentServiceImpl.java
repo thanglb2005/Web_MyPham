@@ -47,27 +47,17 @@ public class MoMoPaymentServiceImpl implements MoMoPaymentService {
     @Override
     public String createPaymentRequest(Order order, String returnUrl, String notifyUrl) {
         try {
-            // Tạo requestId unique hơn
-            String requestId = "REQ_" + order.getOrderId() + "_" + System.currentTimeMillis();
-            String orderId = order.getOrderId().toString();
+            // Tạo requestId và orderId unique để tránh trùng lặp
+            String timestamp = String.valueOf(System.currentTimeMillis());
+            String requestId = "REQ_" + order.getOrderId() + "_" + timestamp;
+            String orderId = "MOMO_" + order.getOrderId() + "_" + timestamp;
             String orderInfo = "Thanh toan don hang #" + orderId;
             
-            // Debug logging
-            System.out.println("=== MoMo Payment Debug ===");
-            System.out.println("Order ID: " + orderId);
-            System.out.println("Request ID: " + requestId);
-            System.out.println("Order Total Amount (VND): " + order.getTotalAmount());
-            System.out.println("Order Final Amount (VND): " + order.getFinalAmount());
-            
-            // Use finalAmount (after discount) instead of totalAmount
+            // Use finalAmount (already includes shipping fee)
             Double paymentAmount = (order.getFinalAmount() != null && order.getFinalAmount() > 0) 
                 ? order.getFinalAmount() 
                 : order.getTotalAmount();
             String amount = String.valueOf((long) Math.round(paymentAmount)); // Gửi trực tiếp bằng VND
-            System.out.println("MoMo Amount (VND): " + amount);
-            System.out.println("Partner Code: " + partnerCode);
-            System.out.println("Access Key: " + accessKey);
-            System.out.println("========================");
             
             String extraData = "";
 
@@ -84,11 +74,9 @@ public class MoMoPaymentServiceImpl implements MoMoPaymentService {
                     "&requestType=captureWallet";
 
             // Debug raw data và signature
-            System.out.println("Raw Data for Signature: " + rawData);
             
             // Tạo chữ ký
             String signature = createSignature(rawData, secretKey);
-            System.out.println("Generated Signature: " + signature);
 
             // Tạo request body
             Map<String, Object> requestBody = new HashMap<>();
@@ -117,8 +105,6 @@ public class MoMoPaymentServiceImpl implements MoMoPaymentService {
                     (Class<Map<String, Object>>) (Class<?>) Map.class
             );
 
-            System.out.println("MoMo Response Status: " + response.getStatusCode());
-            System.out.println("MoMo Response Body: " + response.getBody());
             
             if (response.getStatusCode() == HttpStatus.OK) {
                 Map<String, Object> responseBody = response.getBody();
@@ -127,10 +113,8 @@ public class MoMoPaymentServiceImpl implements MoMoPaymentService {
                     order.setMomoRequestId(requestId);
                     orderService.updateOrder(order);
                     
-                    System.out.println("Payment URL created successfully: " + responseBody.get("payUrl"));
                     return (String) responseBody.get("payUrl");
                 } else {
-                    System.out.println("MoMo response missing payUrl: " + responseBody);
                 }
             }
 
@@ -149,17 +133,13 @@ public class MoMoPaymentServiceImpl implements MoMoPaymentService {
                 return false;
             }
 
-            // Validate amount matches finalAmount
+            // Validate amount matches finalAmount (already includes shipping fee)
             Double expectedAmount = (order.getFinalAmount() != null && order.getFinalAmount() > 0) 
                 ? order.getFinalAmount() 
                 : order.getTotalAmount();
             
-            System.out.println("=== MoMo Callback Validation ===");
-            System.out.println("Expected Amount: " + expectedAmount);
-            System.out.println("Received Amount: " + amount);
             
             if (amount != null && Math.abs(expectedAmount - amount) > 1.0) {
-                System.out.println("Amount mismatch! Payment rejected.");
                 return false;
             }
 
@@ -173,7 +153,6 @@ public class MoMoPaymentServiceImpl implements MoMoPaymentService {
                 order.setNote(order.getNote() + " | MoMo Transaction ID: " + transId);
                 
                 orderService.updateOrder(order);
-                System.out.println("Payment successful for order #" + orderId);
                 return true;
             } else {
                 // Thanh toán thất bại

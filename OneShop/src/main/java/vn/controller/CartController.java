@@ -427,6 +427,7 @@ public class CartController {
                                  @RequestParam(value = "note", required = false) String note,
                                  @RequestParam("paymentMethod") String paymentMethod,
                                  @RequestParam(value = "city", required = false) String city,
+                                 @RequestParam(value = "shippingFee", required = false, defaultValue = "0") Double shippingFee,
                                  HttpServletRequest request, Model model) {
 
         User user = (User) request.getSession().getAttribute("user");
@@ -451,11 +452,6 @@ public class CartController {
         try {
             // Normalize payment method string to avoid casing/whitespace issues
             String normalizedPaymentMethod = paymentMethod == null ? "" : paymentMethod.trim().toLowerCase();
-            System.out.println("=== PAYMENT METHOD DEBUG ===");
-            System.out.println("Raw paymentMethod param=\"" + paymentMethod + "\"");
-            System.out.println("Normalized paymentMethod=\"" + normalizedPaymentMethod + "\"");
-            System.out.println("Payment method length: " + (paymentMethod != null ? paymentMethod.length() : 0));
-            System.out.println("=============================");
 
             Order.PaymentMethod paymentMethodEnum;
             switch (normalizedPaymentMethod) {
@@ -473,7 +469,6 @@ public class CartController {
                     break;
                 default:
                     // Unknown method -> fail early to avoid accidental COD
-                    System.out.println("Unknown payment method: " + normalizedPaymentMethod);
                     return "redirect:/checkout?error=Invalid payment method";
             }
 
@@ -562,7 +557,8 @@ public class CartController {
                     paymentMethodEnum,
                     cartMap,
                     promotionDescription.isEmpty() ? null : promotionDescription,
-                    totalDiscount
+                    totalDiscount,
+                    shippingFee
                 );
                 System.out.println("Order created successfully with ID: " + order.getOrderId());
 
@@ -620,7 +616,8 @@ public class CartController {
                     paymentMethodEnum,
                     cartMap,
                     promotionDescription.isEmpty() ? null : promotionDescription,
-                    totalDiscount
+                    totalDiscount,
+                    shippingFee
                 );
                 return "redirect:/payment/momo/create?orderId=" + momoOrder.getOrderId();
             } else if (paymentMethodEnum == Order.PaymentMethod.VIETQR) {
@@ -635,7 +632,8 @@ public class CartController {
                     paymentMethodEnum,
                     cartMap,
                     promotionDescription.isEmpty() ? null : promotionDescription,
-                    totalDiscount
+                    totalDiscount,
+                    shippingFee
                 );
                 return "redirect:/vietqr-payment?orderId=" + vietqrOrder.getOrderId();
             } else if (paymentMethodEnum == Order.PaymentMethod.BANK_TRANSFER) {
@@ -650,7 +648,8 @@ public class CartController {
                     paymentMethodEnum,
                     cartMap,
                     promotionDescription.isEmpty() ? null : promotionDescription,
-                    totalDiscount
+                    totalDiscount,
+                    shippingFee
                 );
                 return "redirect:/payos/create-payment?orderId=" + payosOrder.getOrderId();
             }
@@ -735,24 +734,15 @@ public class CartController {
     public String checkoutError(@RequestParam(value = "message", required = false) String message,
                                HttpServletRequest request, Model model) {
 
-        System.out.println("=== CHECKOUT ERROR DEBUG ===");
-        System.out.println("Message: " + message);
-        System.out.println("Full URL: " + request.getRequestURL() + "?" + request.getQueryString());
-        System.out.println("=============================");
-
         User user = (User) request.getSession().getAttribute("user");
         if (user == null) {
-            System.out.println("User not found in session, redirecting to login");
             return "redirect:/login";
         }
 
         String errorMessage = message != null ? message : "Có lỗi xảy ra trong quá trình thanh toán";
-        System.out.println("Setting error message: " + errorMessage);
-        
         model.addAttribute("error", errorMessage);
         model.addAttribute("user", user);
 
-        System.out.println("Returning template: web/checkout-error");
         return "web/checkout-error";
     }
 

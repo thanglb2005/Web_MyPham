@@ -517,6 +517,7 @@
                     fetch(`/api/delivery/check-options?customerCity=${encodeURIComponent(customerCity)}&shopId=${shopId}`)
                         .then(response => response.json())
                         .then(options => {
+                            console.log('Delivery options response:', options);
                             currentDeliveryOptions = options;
                             renderDeliveryOptions(options);
                             
@@ -536,6 +537,7 @@
                 
                 // Function to update total price
                 function updateTotalPrice() {
+                    console.log('Updating total price - currentShippingFee:', currentShippingFee);
                     const shippingFeeRow = document.getElementById('shippingFeeRow');
                     const shippingFeeAmount = document.getElementById('shippingFeeAmount');
                     const shippingMethodText = document.getElementById('shippingMethodText');
@@ -567,6 +569,7 @@
                 
                 // Function to render delivery options
                 function renderDeliveryOptions(options) {
+                    console.log('Rendering delivery options:', options);
                     if (options.sameCity && options.expressAvailable) {
                         // Hiển thị options hỏa tốc
                         deliveryOptionsContainer.innerHTML = `
@@ -1056,6 +1059,13 @@
                         // Remove the original commune select from submission
                         communeSelect.removeAttribute('name');
                     }
+                    
+                    // Add shipping fee to form
+                    const shippingFeeInput = document.createElement('input');
+                    shippingFeeInput.type = 'hidden';
+                    shippingFeeInput.name = 'shippingFee';
+                    shippingFeeInput.value = currentShippingFee;
+                    form.appendChild(shippingFeeInput);
                 });
             });
             
