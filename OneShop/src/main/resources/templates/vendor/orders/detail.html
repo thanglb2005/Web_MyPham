@@ -381,7 +381,7 @@
                     </div>
                     <div class="summary-row" th:if="${discountAmount != null && discountAmount > 0}">
                         <span>Discount</span>
-                        <span th:text="'-' + #numbers.formatDecimal(discountAmount, 0, 'COMMA', 0, 'POINT')} + ' VND'">0</span>
+                        <span th:text="${'-' + #numbers.formatDecimal(discountAmount, 0, 'COMMA', 0, 'POINT') + ' VND'}">0</span>
                     </div>
                     <div class="summary-row total last">
                         <span>Grand total</span>
@@ -397,24 +397,24 @@
                     <h6>Status history</h6>
                     <div class="status-timeline" th:with="statusOrdinal=${order.status != null ? order.status.ordinal() : 0}">
                         <div class="timeline-step"
-                             th:classappend="${statusOrdinal >= 0 ? ' completed' : ''} ${statusOrdinal == 0 ? ' current' : ''}">
+                             th:classappend="${statusOrdinal == 0 ? ' completed current' : (statusOrdinal > 0 ? ' completed' : '')}">
                             <div class="title">Order placed</div>
                             <div class="time" th:text="${order.orderDate != null ? #temporals.format(order.orderDate, 'dd/MM/yyyy HH:mm') : 'Updating'}"></div>
                         </div>
                         <div class="timeline-step"
-                             th:classappend="${statusOrdinal >= 2 ? ' completed' : ''} ${statusOrdinal == 2 ? ' current' : ''}">
+                             th:classappend="${statusOrdinal == 2 ? ' completed current' : (statusOrdinal > 2 ? ' completed' : '')}">
                             <div class="title">Confirmed</div>
                             <div class="time">
                                 <span th:text="${statusOrdinal >= 2 ? 'Completed' : 'Waiting'}"></span>
                             </div>
                         </div>
                         <div class="timeline-step"
-                             th:classappend="${statusOrdinal >= 3 ? ' completed' : ''} ${statusOrdinal == 3 ? ' current' : ''}">
+                             th:classappend="${statusOrdinal == 3 ? ' completed current' : (statusOrdinal > 3 ? ' completed' : '')}">
                             <div class="title">Shipping</div>
                             <div class="time" th:text="${order.shippedDate != null ? #temporals.format(order.shippedDate, 'dd/MM/yyyy HH:mm') : 'Waiting'}"></div>
                         </div>
                         <div class="timeline-step"
-                             th:classappend="${statusOrdinal >= 4 ? ' completed' : ''} ${statusOrdinal == 4 ? ' current' : ''}">
+                             th:classappend="${statusOrdinal == 4 ? ' completed current' : (statusOrdinal > 4 ? ' completed' : '')}">
                             <div class="title">Delivered</div>
                             <div class="time" th:text="${order.deliveredDate != null ? #temporals.format(order.deliveredDate, 'dd/MM/yyyy HH:mm') : 'Waiting'}"></div>
                         </div>

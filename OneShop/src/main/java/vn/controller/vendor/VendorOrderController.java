@@ -7,6 +7,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import vn.entity.Order;
@@ -229,6 +230,7 @@ public class VendorOrderController {
      * Chi tiết đơn hàng
      */
     @GetMapping("/{orderId}")
+    @Transactional(readOnly = true)
     public String orderDetail(@PathVariable Long orderId, HttpSession session, Model model) {
         User vendor = ensureVendor(session);
         if (vendor == null) {
@@ -245,18 +247,20 @@ public class VendorOrderController {
         List<OrderDetail> orderDetails = orderDetailRepository.findByOrderIdWithProductAndShop(orderId);
         if (orderDetails == null) {
             orderDetails = new java.util.ArrayList<>();
+        } else {
+            orderDetails = new java.util.ArrayList<>(orderDetails);
         }
         if (orderDetails.isEmpty() && order.getOrderDetails() != null && !order.getOrderDetails().isEmpty()) {
             orderDetails = new java.util.ArrayList<>(order.getOrderDetails());
-            orderDetails.forEach(detail -> {
-                if (detail.getProduct() != null) {
-                    try {
-                        detail.getProduct().getProductName();
-                        detail.getProduct().getProductImage();
-                    } catch (Exception ignored) {}
-                }
-            });
         }
+        orderDetails.forEach(detail -> {
+            if (detail.getProduct() != null) {
+                try {
+                    detail.getProduct().getProductName();
+                    detail.getProduct().getProductImage();
+                } catch (Exception ignored) {}
+            }
+        });
         double subtotal = orderDetails.stream()
                 .mapToDouble(detail -> {
                     Double lineTotal = detail.getTotalPrice();

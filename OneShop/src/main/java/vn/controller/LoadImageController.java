@@ -1,140 +1,84 @@
 package vn.controller;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-
 import jakarta.servlet.http.HttpServletResponse;
-
-import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.CacheControl;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.MediaTypeFactory;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
+/**
+ * Streaming controller for product/brand images.
+ * Uses Spring's {@link Resource} to avoid loading whole file into memory and
+ * explicitly sets headers (length, cache control) so the browser does not abort the request.
+ */
 @Controller
 public class LoadImageController {
 
     @Value("${upload.images.path}")
     private String pathUploadImage;
 
-    @GetMapping(value = "/loadImage")
+    @GetMapping("/loadImage")
     @ResponseBody
-    public byte[] index(@RequestParam(value = "imageName") String imageName, HttpServletResponse response) {
+    public ResponseEntity<Resource> loadImage(@RequestParam("imageName") String imageName,
+                                              HttpServletResponse response) {
         try {
-        System.out.println("=== LoadImage request for: " + imageName + " ===");
-        System.out.println("Upload path: " + pathUploadImage);
-        System.out.println("File type: " + (imageName.toLowerCase().endsWith(".mp4") ? "VIDEO" : "IMAGE"));
-        
-        // Set content type based on file extension
-        String contentType = "image/jpeg"; // default
-        if (imageName.toLowerCase().endsWith(".png")) {
-            contentType = "image/png";
-        } else if (imageName.toLowerCase().endsWith(".gif")) {
-            contentType = "image/gif";
-        } else if (imageName.toLowerCase().endsWith(".webp")) {
-            contentType = "image/webp";
-        } else if (imageName.toLowerCase().endsWith(".mp4")) {
-            contentType = "video/mp4";
-        } else if (imageName.toLowerCase().endsWith(".webm")) {
-            contentType = "video/webm";
-        } else if (imageName.toLowerCase().endsWith(".avi")) {
-            contentType = "video/avi";
-        } else if (imageName.toLowerCase().endsWith(".mov")) {
-            contentType = "video/quicktime";
-        }
-        response.setContentType(contentType);
-        System.out.println("Content-Type: " + contentType);
-        // Build absolute path to handle working directory issues
-        String workingDir = System.getProperty("user.dir");
-        System.out.println("Working dir: " + workingDir);
+            Path imagePath = resolvePath(imageName);
+            if (imagePath == null || !Files.exists(imagePath) || !Files.isRegularFile(imagePath)) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+            }
 
-        // Candidate locations to look for the image (to be resilient to working dir changes)
-        File[] candidates = new File[] {
-            new File(workingDir + File.separatorChar + pathUploadImage + File.separatorChar + imageName),
-            // Try module root (…/OneShop) if app runs from monorepo root
-            resolveFromModuleRoot(pathUploadImage, imageName),
-            // Explicit monorepo subpath fallback
-            new File(workingDir + File.separator + "DoAn_Web_MyPham" + File.separator + "Web_MyPham" + File.separator + "OneShop" + File.separator + pathUploadImage + File.separator + imageName)
-        };
+            MediaType mediaType = MediaTypeFactory.getMediaType(imagePath.getFileName().toString())
+                    .orElseGet(() -> guessMediaType(imagePath.getFileName().toString()));
 
-        File file = null;
-        for (File cand : candidates) {
-            if (cand != null) {
-                System.out.println("Looking for file at: " + cand.getAbsolutePath());
-                if (cand.exists() && cand.isFile()) {
-                    file = cand;
-                    break;
-                }
-            }
-        }
-        System.out.println("File exists: " + (file != null));
-        
-        // Debug: List all files in detected upload directory (first valid parent)
-        File uploadDir = null;
-        if (file != null) {
-            uploadDir = file.getParentFile();
-        } else {
-            // Fallback to primary configured upload dir under working dir
-            uploadDir = new File(workingDir + File.separatorChar + pathUploadImage);
-        }
-        System.out.println("Upload directory: " + uploadDir.getAbsolutePath());
-        System.out.println("Upload directory exists: " + uploadDir.exists());
-        if (uploadDir.exists() && uploadDir.isDirectory()) {
-            File[] files = uploadDir.listFiles();
-            System.out.println("Files in upload directory:");
-            if (files != null) {
-                for (File f : files) {
-                    System.out.println("  - " + f.getName());
-                }
-            }
-        }
-        
-        InputStream inputStream = null;
-        if (file != null && file.exists()) {
-            try {
-                inputStream = new FileInputStream(file);
-                if (inputStream != null) {
-                    return IOUtils.toByteArray(inputStream);
-                }
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            } finally {
-                if (inputStream != null) {
-                    try {
-                        inputStream.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-        }
-        System.out.println("File not found or could not read");
-        
-        // Return empty byte array instead of null to avoid conversion errors
-        return new byte[0];
-        
-        } catch (Exception e) {
-            System.out.println("ERROR in LoadImageController: " + e.getMessage());
-            e.printStackTrace();
-            return new byte[0];
+            InputStream inputStream = Files.newInputStream(imagePath);
+            InputStreamResource resource = new InputStreamResource(inputStream);
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(mediaType);
+            headers.setCacheControl(CacheControl.maxAge(java.time.Duration.ofDays(30)).cachePublic());
+            headers.setContentLength(Files.size(imagePath));
+
+            return new ResponseEntity<>(resource, headers, HttpStatus.OK);
+        } catch (IOException ex) {
+            ex.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
-    private File resolveFromModuleRoot(String uploadPath, String imageName) {
-        try {
-            // Attempt to locate module root by checking if current working dir ends with monorepo root
-            String workingDir = System.getProperty("user.dir");
-            File moduleRoot = new File(workingDir, "DoAn_Web_MyPham" + File.separator + "Web_MyPham" + File.separator + "OneShop");
-            File candidate = new File(moduleRoot, uploadPath + File.separator + imageName);
-            return candidate;
-        } catch (Exception ignore) {
-            return null;
+    private Path resolvePath(String imageName) throws IOException {
+        Path uploadPath = Paths.get(pathUploadImage);
+        if (!uploadPath.isAbsolute()) {
+            uploadPath = Paths.get(System.getProperty("user.dir")).resolve(uploadPath).normalize();
         }
+        if (!Files.exists(uploadPath)) {
+            Files.createDirectories(uploadPath);
+        }
+        return uploadPath.resolve(imageName).normalize();
+    }
+
+    private MediaType guessMediaType(String filename) {
+        String lower = filename.toLowerCase();
+        if (lower.endsWith(".png")) return MediaType.IMAGE_PNG;
+        if (lower.endsWith(".gif")) return MediaType.IMAGE_GIF;
+        if (lower.endsWith(".webp")) return MediaType.parseMediaType("image/webp");
+        if (lower.endsWith(".mp4")) return MediaType.parseMediaType("video/mp4");
+        if (lower.endsWith(".webm")) return MediaType.parseMediaType("video/webm");
+        if (lower.endsWith(".mov")) return MediaType.parseMediaType("video/quicktime");
+        return MediaType.IMAGE_JPEG;
     }
 }

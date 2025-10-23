@@ -29,7 +29,7 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long> 
     /**
      * Eagerly load product and shop to avoid lazy-loading issues in views
      */
-    @Query("SELECT od FROM OrderDetail od " +
+    @Query("SELECT DISTINCT od FROM OrderDetail od " +
            "LEFT JOIN FETCH od.product p " +
            "LEFT JOIN FETCH p.shop s " +
            "WHERE od.order.orderId = :orderId ORDER BY od.orderDetailId ASC")
