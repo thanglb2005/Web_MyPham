@@ -28,7 +28,7 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(authz -> authz
                 // Static resources - must be first and most specific
-                .requestMatchers("/css/**", "/js/**", "/images/**", "/fonts/**", "/static/**", "/webjars/**", "/upload/**").permitAll()
+                .requestMatchers("/css/**", "/js/**", "/images/**", "/fonts/**", "/static/**", "/webjars/**", "/upload/**", "/brands/**", "/providers/**").permitAll()
                 .requestMatchers("/vendor/bootstrap/**", "/vendor/slickslider/**", "/vendor/venobox/**", "/vendor/niceselect/**", "/vendor/countdown/**").permitAll()
                 // Public pages
                 .requestMatchers("/oauth2/**", "/login/**", "/register/**", "/", "/forgotPassword/**", "/resetPassword/**", "/privacy", "/delete-data", "/delete-data-callback").permitAll()
