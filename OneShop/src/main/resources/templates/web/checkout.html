@@ -885,22 +885,40 @@
                     }
                     const clearBtn = e.target && (e.target.id === 'clearShippingVoucherBtn' ? e.target : e.target.closest && e.target.closest('#clearShippingVoucherBtn'));
                     if (clearBtn) {
-                        selectedShippingVoucher = null;
-                        currentShippingVoucherDiscount = 0;
-                        
-                        // Update voucher display UI
-                        const notAppliedDiv = document.getElementById('shippingVoucherNotApplied');
-                        const appliedDiv = document.getElementById('shippingVoucherApplied');
-                        if (notAppliedDiv) notAppliedDiv.style.display = 'flex';
-                        if (appliedDiv) appliedDiv.style.display = 'none';
-                        
-                        const shippingVoucherRow = document.getElementById('shippingVoucherRow');
-                        const shippingVoucherText = document.getElementById('shippingVoucherText');
-                        const shippingVoucherAmount = document.getElementById('shippingVoucherAmount');
-                        if (shippingVoucherRow) shippingVoucherRow.style.display = 'none';
-                        if (shippingVoucherText) shippingVoucherText.textContent = '';
-                        if (shippingVoucherAmount) shippingVoucherAmount.textContent = '-0 VNĐ';
-                        updateTotalPrice();
+                        // Remove shipping voucher via API
+                        fetch('/cart/remove-shipping-voucher', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded',
+                            }
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                selectedShippingVoucher = null;
+                                currentShippingVoucherDiscount = 0;
+                                
+                                // Update voucher display UI
+                                const notAppliedDiv = document.getElementById('shippingVoucherNotApplied');
+                                const appliedDiv = document.getElementById('shippingVoucherApplied');
+                                if (notAppliedDiv) notAppliedDiv.style.display = 'flex';
+                                if (appliedDiv) appliedDiv.style.display = 'none';
+                                
+                                const shippingVoucherRow = document.getElementById('shippingVoucherRow');
+                                const shippingVoucherText = document.getElementById('shippingVoucherText');
+                                const shippingVoucherAmount = document.getElementById('shippingVoucherAmount');
+                                if (shippingVoucherRow) shippingVoucherRow.style.display = 'none';
+                                if (shippingVoucherText) shippingVoucherText.textContent = '';
+                                if (shippingVoucherAmount) shippingVoucherAmount.textContent = '-0 VNĐ';
+                                updateTotalPrice();
+                            } else {
+                                alert(data.message || 'Có lỗi xảy ra khi bỏ voucher');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error removing shipping voucher:', error);
+                            alert('Có lỗi xảy ra khi bỏ voucher');
+                        });
                     }
                     const applyBtn = e.target && (e.target.id === 'applyShippingVoucherBtn' ? e.target : e.target.closest && e.target.closest('#applyShippingVoucherBtn'));
                     if (applyBtn) {
@@ -911,18 +929,40 @@
                         selectedShippingVoucher = voucher || null;
                         currentShippingVoucherDiscount = computeShippingVoucherDiscount(selectedShippingVoucher);
                         
-                        // Update voucher display UI
-                        const notAppliedDiv = document.getElementById('shippingVoucherNotApplied');
-                        const appliedDiv = document.getElementById('shippingVoucherApplied');
-                        const appliedVoucherCode = document.getElementById('appliedVoucherCode');
-                        const appliedVoucherDiscount = document.getElementById('appliedVoucherDiscount');
-                        
+                        // Apply shipping voucher via API
                         if (selectedShippingVoucher && currentShippingVoucherDiscount > 0) {
-                            // Show applied voucher UI
-                            if (notAppliedDiv) notAppliedDiv.style.display = 'none';
-                            if (appliedDiv) appliedDiv.style.display = 'flex';
-                            if (appliedVoucherCode) appliedVoucherCode.textContent = selectedShippingVoucher.promotionCode;
-                            if (appliedVoucherDiscount) appliedVoucherDiscount.textContent = `-${formatMoney(currentShippingVoucherDiscount)} VNĐ`;
+                            fetch('/cart/apply-shipping-voucher', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/x-www-form-urlencoded',
+                                },
+                                body: `promotionId=${selectedShippingVoucher.promotionId}&shippingFee=${currentShippingFee}`
+                            })
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.success) {
+                                    // Update voucher display UI
+                                    const notAppliedDiv = document.getElementById('shippingVoucherNotApplied');
+                                    const appliedDiv = document.getElementById('shippingVoucherApplied');
+                                    const appliedVoucherCode = document.getElementById('appliedVoucherCode');
+                                    const appliedVoucherDiscount = document.getElementById('appliedVoucherDiscount');
+                                    
+                                    // Show applied voucher UI
+                                    if (notAppliedDiv) notAppliedDiv.style.display = 'none';
+                                    if (appliedDiv) appliedDiv.style.display = 'flex';
+                                    if (appliedVoucherCode) appliedVoucherCode.textContent = selectedShippingVoucher.promotionCode;
+                                    if (appliedVoucherDiscount) appliedVoucherDiscount.textContent = `-${formatMoney(currentShippingVoucherDiscount)} VNĐ`;
+                                    
+                                    updateTotalPrice();
+                                    closeShippingVoucherModal();
+                                } else {
+                                    alert(data.message || 'Có lỗi xảy ra khi áp dụng voucher');
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Error applying shipping voucher:', error);
+                                alert('Có lỗi xảy ra khi áp dụng voucher');
+                            });
                         } else {
                             // Show not applied UI
                             if (notAppliedDiv) notAppliedDiv.style.display = 'flex';

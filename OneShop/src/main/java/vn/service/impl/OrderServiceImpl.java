@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import jakarta.persistence.EntityNotFoundException;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class OrderServiceImpl implements OrderService {
@@ -44,83 +43,18 @@ public class OrderServiceImpl implements OrderService {
     public Order createOrder(User user, String customerName, String customerEmail, String customerPhone,
                              String shippingAddress, String note, Order.PaymentMethod paymentMethod,
                              Map<Long, CartItem> cartItems) {
-
-        if (cartItems == null || cartItems.isEmpty()) {
-            throw new IllegalArgumentException("Cart cannot be empty to create an order.");
-        }
-
-        Order order = new Order();
-        order.setUser(user);
-        order.setCustomerName(customerName);
-        order.setCustomerEmail(customerEmail);
-        order.setCustomerPhone(customerPhone);
-        order.setShippingAddress(shippingAddress);
-        order.setNote(note);
-        order.setPaymentMethod(paymentMethod);
-        order.setStatus(Order.OrderStatus.PENDING);
-        order.setOrderDate(LocalDateTime.now());
-        order.setPaymentPaid(false); // Set payment status to false initially
-
-        // Set shop_id from first product in cart items
-        if (!cartItems.isEmpty()) {
-            CartItem firstItem = cartItems.values().iterator().next();
-            if (firstItem.getProduct() != null && firstItem.getProduct().getShop() != null) {
-                order.setShop(firstItem.getProduct().getShop());
-                System.out.println("Order shop set to: " + firstItem.getProduct().getShop().getShopName());
-            }
-        }
-
-        // Debug logging for order calculation
-        System.out.println("=== Order Calculation Debug ===");
-        double totalAmount = 0;
-        for (CartItem item : cartItems.values()) {
-            double itemTotal = item.getQuantity() * item.getUnitPrice();
-            totalAmount += itemTotal;
-            System.out.println("Order Item: " + item.getName() + 
-                " | Qty: " + item.getQuantity() + 
-                " | Unit Price: " + item.getUnitPrice() + 
-                " | Total: " + itemTotal);
-        }
-        System.out.println("Final Order Total Amount: " + totalAmount);
-        System.out.println("=============================");
-        
-        order.setTotalAmount(totalAmount);
-
-        Order savedOrder = orderRepository.save(order);
-
-        List<OrderDetail> orderDetails = new ArrayList<>();
-        for (CartItem cartItem : cartItems.values()) {
-            try {
-                OrderDetail orderDetail = new OrderDetail();
-                orderDetail.setOrder(savedOrder);
-                
-                // Debug logging
-                System.out.println("Processing cart item: ID=" + cartItem.getId() + ", Name=" + cartItem.getName());
-                
-                orderDetail.setProduct(productRepository.findById(cartItem.getId())
-                        .orElseThrow(() -> new RuntimeException("Product not found: " + cartItem.getId())));
-                orderDetail.setProductName(cartItem.getName());
-                orderDetail.setUnitPrice(cartItem.getUnitPrice());
-                orderDetail.setQuantity(cartItem.getQuantity());
-                orderDetail.setTotalPrice(cartItem.getTotalPrice());
-                orderDetails.add(orderDetail);
-            } catch (Exception e) {
-                System.err.println("Error processing cart item " + cartItem.getId() + ": " + e.getMessage());
-                throw e;
-            }
-        }
-        orderDetailRepository.saveAll(orderDetails);
-
-        savedOrder.setOrderDetails(orderDetails);
-        return savedOrder;
+        // Delegate to the full method with default values
+        return createOrder(user, customerName, customerEmail, customerPhone, shippingAddress, note, 
+                          paymentMethod, cartItems, null, 0.0, 0.0, null, 0.0);
     }
+    
     
     @Override
     @Transactional
     public Order createOrder(User user, String customerName, String customerEmail, String customerPhone,
                              String shippingAddress, String note, Order.PaymentMethod paymentMethod,
                              Map<Long, CartItem> cartItems, String promotionCode, Double discountAmount, 
-                             Double shippingFee) {
+                             Double shippingFee, String shippingVoucherCode, Double shippingVoucherDiscount) {
 
         if (cartItems == null || cartItems.isEmpty()) {
             throw new IllegalArgumentException("Cart cannot be empty to create an order.");
@@ -156,19 +90,32 @@ public class OrderServiceImpl implements OrderService {
         // Set shipping fee
         order.setShippingFee(shippingFee != null ? shippingFee : 0.0);
         
-        // Áp dụng khuyến mãi nếu có
+        // Calculate final amount with all discounts
+        double productAmountAfterDiscount = originalAmount;
+        double finalShippingFee = shippingFee != null ? shippingFee : 0.0;
+        String noteText = note != null ? note : "";
+        
+        // Apply product voucher discount
         if (promotionCode != null && discountAmount != null && discountAmount > 0) {
             order.setDiscountAmount(discountAmount);
-            double productAmountAfterDiscount = Math.max(0, originalAmount - discountAmount);
-            double finalAmount = productAmountAfterDiscount + (shippingFee != null ? shippingFee : 0.0);
-            order.setFinalAmount(finalAmount);
-            order.setNote(note + (note != null && !note.isEmpty() ? "\n" : "") + 
-                         "Mã khuyến mãi: " + promotionCode + " - Giảm: " + discountAmount + " VNĐ");
+            productAmountAfterDiscount = Math.max(0, originalAmount - discountAmount);
+            noteText += (noteText.isEmpty() ? "" : "\n") + 
+                       "Mã khuyến mãi: " + promotionCode + " - Giảm: " + discountAmount + " VNĐ";
         } else {
             order.setDiscountAmount(0.0);
-            double finalAmount = originalAmount + (shippingFee != null ? shippingFee : 0.0);
-            order.setFinalAmount(finalAmount);
         }
+        
+        // Apply shipping voucher discount
+        if (shippingVoucherCode != null && shippingVoucherDiscount != null && shippingVoucherDiscount > 0) {
+            finalShippingFee = Math.max(0, finalShippingFee - shippingVoucherDiscount);
+            noteText += (noteText.isEmpty() ? "" : "\n") + 
+                       "Voucher ship: " + shippingVoucherCode + " - Giảm: " + shippingVoucherDiscount + " VNĐ";
+        }
+        
+        // Calculate final amount
+        double finalAmount = productAmountAfterDiscount + finalShippingFee;
+        order.setFinalAmount(finalAmount);
+        order.setNote(noteText);
 
         Order savedOrder = orderRepository.save(order);
 

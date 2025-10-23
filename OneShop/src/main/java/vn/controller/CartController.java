@@ -3,6 +3,7 @@ package vn.controller;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
+import java.math.BigDecimal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -387,6 +388,8 @@ public class CartController {
         Double oneVoucherDiscount = (Double) request.getSession().getAttribute("oneVoucherDiscount");
         Promotion shopVoucher = (Promotion) request.getSession().getAttribute("shopVoucher");
         Double shopVoucherDiscount = (Double) request.getSession().getAttribute("shopVoucherDiscount");
+        Promotion shippingVoucher = (Promotion) request.getSession().getAttribute("shippingVoucher");
+        Double shippingVoucherDiscount = (Double) request.getSession().getAttribute("shippingVoucherDiscount");
         Integer xuAmount = (Integer) request.getSession().getAttribute("xuAmount");
         Double xuDiscount = (Double) request.getSession().getAttribute("xuDiscount");
         
@@ -396,7 +399,7 @@ public class CartController {
         if (shopVoucherDiscount != null) totalDiscount += shopVoucherDiscount;
         if (xuDiscount != null) totalDiscount += xuDiscount;
         
-        // Calculate final price
+        // Calculate final price (product discount only, shipping will be handled in frontend)
         Double finalPrice = totalPrice - totalDiscount;
         if (finalPrice < 0) finalPrice = 0.0; // Safety check
 
@@ -408,6 +411,8 @@ public class CartController {
         model.addAttribute("oneVoucherDiscount", oneVoucherDiscount != null ? oneVoucherDiscount : 0.0);
         model.addAttribute("shopVoucher", shopVoucher);
         model.addAttribute("shopVoucherDiscount", shopVoucherDiscount != null ? shopVoucherDiscount : 0.0);
+        model.addAttribute("shippingVoucher", shippingVoucher);
+        model.addAttribute("shippingVoucherDiscount", shippingVoucherDiscount != null ? shippingVoucherDiscount : 0.0);
         model.addAttribute("xuAmount", xuAmount != null ? xuAmount : 0);
         model.addAttribute("xuDiscount", xuDiscount != null ? xuDiscount : 0.0);
         model.addAttribute("totalDiscount", totalDiscount);
@@ -519,6 +524,7 @@ public class CartController {
             // Calculate total discount from all sources
             Double oneVoucherDiscount = (Double) request.getSession().getAttribute("oneVoucherDiscount");
             Double shopVoucherDiscount = (Double) request.getSession().getAttribute("shopVoucherDiscount");
+            Double shippingVoucherDiscount = (Double) request.getSession().getAttribute("shippingVoucherDiscount");
             Double xuDiscount = (Double) request.getSession().getAttribute("xuDiscount");
             
             Double totalDiscount = 0.0;
@@ -544,6 +550,10 @@ public class CartController {
             System.out.println("Total discount applied: " + totalDiscount);
             System.out.println("Promotion description: " + promotionDescription);
 
+            // Get shipping voucher info
+            Promotion shippingVoucher = (Promotion) request.getSession().getAttribute("shippingVoucher");
+            String shippingVoucherCode = shippingVoucher != null ? shippingVoucher.getPromotionCode() : null;
+            
             // Chỉ tạo order cho COD
             // MOMO, VIETQR và BANK_TRANSFER sẽ tạo order sau khi thanh toán thành công
             if (paymentMethodEnum == Order.PaymentMethod.COD) {
@@ -558,7 +568,9 @@ public class CartController {
                     cartMap,
                     promotionDescription.isEmpty() ? null : promotionDescription,
                     totalDiscount,
-                    shippingFee
+                    shippingFee,
+                    shippingVoucherCode,
+                    shippingVoucherDiscount
                 );
                 System.out.println("Order created successfully with ID: " + order.getOrderId());
 
@@ -617,7 +629,9 @@ public class CartController {
                     cartMap,
                     promotionDescription.isEmpty() ? null : promotionDescription,
                     totalDiscount,
-                    shippingFee
+                    shippingFee,
+                    shippingVoucherCode,
+                    shippingVoucherDiscount
                 );
                 return "redirect:/payment/momo/create?orderId=" + momoOrder.getOrderId();
             } else if (paymentMethodEnum == Order.PaymentMethod.VIETQR) {
@@ -633,7 +647,9 @@ public class CartController {
                     cartMap,
                     promotionDescription.isEmpty() ? null : promotionDescription,
                     totalDiscount,
-                    shippingFee
+                    shippingFee,
+                    shippingVoucherCode,
+                    shippingVoucherDiscount
                 );
                 return "redirect:/vietqr-payment?orderId=" + vietqrOrder.getOrderId();
             } else if (paymentMethodEnum == Order.PaymentMethod.BANK_TRANSFER) {
@@ -649,7 +665,9 @@ public class CartController {
                     cartMap,
                     promotionDescription.isEmpty() ? null : promotionDescription,
                     totalDiscount,
-                    shippingFee
+                    shippingFee,
+                    shippingVoucherCode,
+                    shippingVoucherDiscount
                 );
                 return "redirect:/payos/create-payment?orderId=" + payosOrder.getOrderId();
             }
@@ -1082,6 +1100,96 @@ public class CartController {
     }
     
     /**
+     * Apply shipping voucher
+     */
+    @PostMapping("/cart/apply-shipping-voucher")
+    @ResponseBody
+    public Map<String, Object> applyShippingVoucher(@RequestParam("promotionId") Long promotionId,
+                                                   @RequestParam("shippingFee") Double shippingFee,
+                                                   HttpServletRequest request) {
+        Map<String, Object> response = new HashMap<>();
+        
+        try {
+            User user = (User) request.getSession().getAttribute("user");
+            if (user == null) {
+                response.put("success", false);
+                response.put("message", "Vui lòng đăng nhập");
+                return response;
+            }
+            
+            // Find promotion
+            Optional<Promotion> promotionOpt = promotionService.getPromotionById(promotionId);
+            if (promotionOpt.isEmpty()) {
+                response.put("success", false);
+                response.put("message", "Voucher không tồn tại");
+                return response;
+            }
+            
+            Promotion promotion = promotionOpt.get();
+            
+            // Calculate discount
+            double discount = 0.0;
+            switch (promotion.getPromotionType()) {
+                case FREE_SHIPPING:
+                    discount = shippingFee;
+                    break;
+                case PERCENTAGE:
+                    discount = (shippingFee * promotion.getDiscountValue().doubleValue()) / 100.0;
+                    if (promotion.getMaximumDiscountAmount() != null && promotion.getMaximumDiscountAmount().compareTo(BigDecimal.ZERO) > 0) {
+                        discount = Math.min(discount, promotion.getMaximumDiscountAmount().doubleValue());
+                    }
+                    break;
+                case FIXED_AMOUNT:
+                    discount = promotion.getDiscountValue().doubleValue();
+                    break;
+                default:
+                    discount = 0.0;
+            }
+            
+            // Cap by shipping fee
+            discount = Math.max(0, Math.min(discount, shippingFee));
+            
+            // Save to session
+            request.getSession().setAttribute("shippingVoucher", promotion);
+            request.getSession().setAttribute("shippingVoucherDiscount", discount);
+            
+            response.put("success", true);
+            response.put("message", "Áp dụng voucher ship thành công");
+            response.put("promotion", promotion);
+            response.put("discountAmount", discount);
+            
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "Có lỗi xảy ra: " + e.getMessage());
+        }
+        
+        return response;
+    }
+    
+    /**
+     * Remove shipping voucher
+     */
+    @PostMapping("/cart/remove-shipping-voucher")
+    @ResponseBody
+    public Map<String, Object> removeShippingVoucher(HttpServletRequest request) {
+        Map<String, Object> response = new HashMap<>();
+        
+        try {
+            request.getSession().removeAttribute("shippingVoucher");
+            request.getSession().removeAttribute("shippingVoucherDiscount");
+            
+            response.put("success", true);
+            response.put("message", "Đã bỏ voucher ship");
+            
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "Có lỗi xảy ra: " + e.getMessage());
+        }
+        
+        return response;
+    }
+
+    /**
      * Get current voucher status from session
      */
     @GetMapping("/cart/voucher-status")
@@ -1115,6 +1223,8 @@ public class CartController {
             Double oneVoucherDiscount = (Double) session.getAttribute("oneVoucherDiscount");
             Promotion shopVoucher = (Promotion) session.getAttribute("shopVoucher");
             Double shopVoucherDiscount = (Double) session.getAttribute("shopVoucherDiscount");
+            Promotion shippingVoucher = (Promotion) session.getAttribute("shippingVoucher");
+            Double shippingVoucherDiscount = (Double) session.getAttribute("shippingVoucherDiscount");
             Integer xuAmount = (Integer) session.getAttribute("xuAmount");
             Double xuDiscount = (Double) session.getAttribute("xuDiscount");
             
@@ -1131,6 +1241,8 @@ public class CartController {
             response.put("oneVoucherDiscount", oneVoucherDiscount != null ? oneVoucherDiscount : 0.0);
             response.put("shopVoucher", shopVoucher != null ? shopVoucher.getPromotionCode() : null);
             response.put("shopVoucherDiscount", shopVoucherDiscount != null ? shopVoucherDiscount : 0.0);
+            response.put("shippingVoucher", shippingVoucher != null ? shippingVoucher.getPromotionCode() : null);
+            response.put("shippingVoucherDiscount", shippingVoucherDiscount != null ? shippingVoucherDiscount : 0.0);
             response.put("xuAmount", xuAmount != null ? xuAmount : 0);
             response.put("xuDiscount", xuDiscount != null ? xuDiscount : 0.0);
             response.put("selectedPrice", selectedPrice);
