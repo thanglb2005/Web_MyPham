@@ -34,8 +34,15 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
     private OAuth2User processOAuth2User(OAuth2UserRequest oAuth2UserRequest, OAuth2User oAuth2User) {
         String email = oAuth2User.getAttribute("email");
         String name = oAuth2User.getAttribute("name");
-        String providerId = oAuth2User.getAttribute("id");
-        String provider = oAuth2UserRequest.getClientRegistration().getRegistrationId(); // "facebook"
+        String provider = oAuth2UserRequest.getClientRegistration().getRegistrationId(); // "facebook" or "google"
+        
+        // Get provider ID based on provider type
+        String providerId;
+        if ("google".equals(provider)) {
+            providerId = oAuth2User.getAttribute("sub"); // Google uses "sub" for user ID
+        } else {
+            providerId = oAuth2User.getAttribute("id"); // Facebook uses "id"
+        }
 
         if (email == null || email.isEmpty()) {
             throw new OAuth2AuthenticationException("Email not found from OAuth2 provider");
