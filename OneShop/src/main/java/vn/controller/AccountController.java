@@ -18,7 +18,7 @@ import vn.service.OneXuService;
 import vn.service.PromotionService;
 
 import java.io.IOException;
-import java.text.SimpleDateFormat;
+// SimpleDateFormat is referenced with fully qualified name later; remove import to avoid warning
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -41,6 +41,9 @@ public class AccountController {
     @Autowired
     private PromotionService promotionService;
 
+    @Autowired
+    private vn.repository.OrderRepository orderRepository;
+
     @GetMapping("/profile")
     public String profile(HttpSession session, Model model) {
         User user = (User) session.getAttribute("user");
@@ -55,20 +58,8 @@ public class AccountController {
         User freshUser = userRepository.findById(user.getUserId()).orElse(user);
         session.setAttribute("user", freshUser);
         
-        // Format register date
-        String formattedDate = "";
-        if (freshUser.getRegisterDate() != null) {
-            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
-            formattedDate = sdf.format(freshUser.getRegisterDate());
-        }
-        
-        // Add user statistics (mock data for now)
-        model.addAttribute("user", freshUser);
-        model.addAttribute("formattedRegisterDate", formattedDate);
-        model.addAttribute("totalOrders", 5); // Mock data
-        model.addAttribute("totalSpent", 2500000); // Mock data
-        model.addAttribute("totalVouchers", 3); // Mock data
-        
+        // Populate real statistics and fields
+        populateProfileModel(model, freshUser);
         return "profile";
     }
 
@@ -178,14 +169,51 @@ public class AccountController {
     private void populateProfileModel(Model model, User user) {
         String formattedDate = "";
         if (user.getRegisterDate() != null) {
-            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+            java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd/MM/yyyy");
             formattedDate = sdf.format(user.getRegisterDate());
         }
         model.addAttribute("user", user);
         model.addAttribute("formattedRegisterDate", formattedDate);
-        model.addAttribute("totalOrders", 5); // Mock data
-        model.addAttribute("totalSpent", 2500000); // Mock data
-        model.addAttribute("totalVouchers", 3); // Mock data
+
+        // Calculate real metrics
+        try {
+            // Total orders (all statuses)
+            long totalOrders = 0;
+            try {
+                java.util.List<vn.entity.Order> orders = orderRepository.findByUserOrderByOrderDateDesc(user);
+                totalOrders = orders != null ? orders.size() : 0;
+            } catch (Exception ignored) {}
+
+            // Total spent (only DELIVERED, using finalAmount if available)
+            double totalSpent = 0.0;
+            try {
+                java.util.List<vn.entity.Order> orders = orderRepository.findByUserOrderByOrderDateDesc(user);
+                if (orders != null) {
+                    for (vn.entity.Order o : orders) {
+                        if (o != null && o.getStatus() == vn.entity.Order.OrderStatus.DELIVERED) {
+                            Double amount = (o.getFinalAmount() != null && o.getFinalAmount() > 0) ? o.getFinalAmount() : o.getTotalAmount();
+                            if (amount != null) totalSpent += amount;
+                        }
+                    }
+                }
+            } catch (Exception ignored) {}
+
+            // Voucher count (active, usable vouchers from system + shops)
+            long totalVouchers = 0;
+            try {
+                java.util.List<vn.entity.Promotion> promos = promotionService.getActivePromotions();
+                totalVouchers = promos != null ? promos.size() : 0;
+            } catch (Exception ignored) {}
+
+            model.addAttribute("totalOrders", totalOrders);
+            model.addAttribute("totalSpent", totalSpent);
+            model.addAttribute("totalVouchers", totalVouchers);
+        } catch (Exception e) {
+            // Fallback safe values
+            model.addAttribute("totalOrders", 0);
+            model.addAttribute("totalSpent", 0);
+            model.addAttribute("totalVouchers", 0);
+        }
     }
 
     @GetMapping("/change-password")

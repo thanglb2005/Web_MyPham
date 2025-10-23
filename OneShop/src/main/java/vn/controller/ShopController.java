@@ -295,26 +295,98 @@ public class ShopController {
     public String showSearch(@RequestParam(value = "productName", required = false) String productName,
                              @RequestParam(value = "keyword", required = false) String keyword,
                              @RequestParam(value = "q", required = false) String q,
+                             @RequestParam(value = "shopId", required = false) Long shopId,
+                             @RequestParam(value = "sort", required = false) Optional<String> sort,
+                             @RequestParam(value = "minPrice", required = false) Optional<Double> minPrice,
+                             @RequestParam(value = "maxPrice", required = false) Optional<Double> maxPrice,
+                             @RequestParam(value = "page", required = false) Optional<Integer> page,
+                             @RequestParam(value = "size", required = false) Optional<Integer> size,
                              Model model, HttpSession session) {
         String kw = (productName != null) ? productName : (keyword != null ? keyword : (q != null ? q : ""));
-        List<Product> results = kw.isEmpty() ? productService.findAll() : productService.searchProduct(kw);
-        model.addAttribute("products", new PageImpl<>(results));
+        String kwTrim = kw != null ? kw.trim() : "";
+
+        // If keyword empty -> redirect to normal products URL without empty param
+        if (kwTrim.isEmpty()) {
+            StringBuilder redirect = new StringBuilder("redirect:/products");
+            java.util.List<String> parts = new java.util.ArrayList<>();
+            if (shopId != null) parts.add("shopId=" + shopId);
+            if (sort != null && sort.isPresent()) parts.add("sort=" + sort.get());
+            if (minPrice != null && minPrice.isPresent()) parts.add("minPrice=" + minPrice.get());
+            if (maxPrice != null && maxPrice.isPresent()) parts.add("maxPrice=" + maxPrice.get());
+            if (page != null && page.isPresent()) parts.add("page=" + page.get());
+            if (size != null && size.isPresent()) parts.add("size=" + size.get());
+            if (!parts.isEmpty()) {
+                redirect.append('?').append(String.join("&", parts));
+            }
+            return redirect.toString();
+        }
+
+        // Base results from keyword
+        List<Product> results = productService.searchProduct(kwTrim);
+
+        // Keep only active products
+        results = results.stream()
+                .filter(p -> Boolean.TRUE.equals(p.getStatus()))
+                .collect(Collectors.toList());
+
+        // Filter by shop if provided
+        if (shopId != null) {
+            final Long sid = shopId;
+            results = results.stream()
+                    .filter(p -> p.getShop() != null && p.getShop().getShopId() != null && p.getShop().getShopId().equals(sid))
+                    .collect(Collectors.toList());
+            model.addAttribute("selectedShopId", shopId);
+        }
+
+        // Apply price filtering if provided
+        if (minPrice != null && (minPrice.isPresent() || (maxPrice != null && maxPrice.isPresent()))) {
+            double min = minPrice.orElse(0.0);
+            double max = maxPrice.orElse(Double.MAX_VALUE);
+            results = results.stream()
+                    .filter(p -> {
+                        try {
+                            double price = effectivePrice(p);
+                            return price >= min && price <= max;
+                        } catch (Exception e) { return false; }
+                    })
+                    .collect(Collectors.toList());
+        }
+
+        // Apply sorting if provided
+        if (sort != null && sort.isPresent()) {
+            results = sortProducts(results, sort.get());
+        }
+
+        // Pagination
+        int currentPage = page != null ? page.orElse(1) : 1;
+        int pageSize = size != null ? size.orElse(12) : 12;
+        Page<Product> productPage = findPaginated(results, PageRequest.of(Math.max(currentPage - 1, 0), pageSize));
+
+        int totalPages = productPage.getTotalPages();
+        if (totalPages > 0) {
+            List<Integer> pageNumbers = IntStream.rangeClosed(1, totalPages).boxed().collect(Collectors.toList());
+            model.addAttribute("pageNumbers", pageNumbers);
+        } else {
+            model.addAttribute("pageNumbers", Collections.emptyList());
+        }
+
+        model.addAttribute("products", productPage);
         try {
-            java.util.Set<Long> ids = results.stream()
+            java.util.Set<Long> ids = productPage.getContent().stream()
                     .map(Product::getProductId)
                     .collect(java.util.stream.Collectors.toSet());
             java.util.Map<Long, Double> avgMap = productService.getAverageRatings(ids);
             model.addAttribute("avgMap", avgMap);
         } catch (Exception ignored) {}
-        model.addAttribute("pageNumbers", List.of(1));
-        model.addAttribute("keyword", kw);
+
+        model.addAttribute("keyword", kwTrim);
         model.addAttribute("selectedCategoryId", null);
-        
+
         // Add cart count for header
         addCartCountToModel(session, model);
         populateSidebar(model, null);
         model.addAttribute("shop", null);
-        
+
         return "web/shop";
     }
 

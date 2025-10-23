@@ -247,7 +247,7 @@
                     <div class="col-md-4 text-end">
                       <div
                         class="order-amount mb-2"
-                        th:text="${order.totalAmount != null ? (#numbers.formatDecimal(order.totalAmount, 0, 'COMMA', 0, 'POINT') + ' VNĐ') : '0 VNĐ'}"
+                        th:text="${(order.finalAmount != null && order.finalAmount > 0) ? (#numbers.formatDecimal(order.finalAmount, 0, 'COMMA', 0, 'POINT') + ' VNĐ') : (order.totalAmount != null ? (#numbers.formatDecimal(order.totalAmount, 0, 'COMMA', 0, 'POINT') + ' VNĐ') : '0 VNĐ')}"
                       ></div>
                       <div class="mb-2">
                         <div th:switch="${order.status.name()}">

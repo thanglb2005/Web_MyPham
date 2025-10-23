@@ -63,6 +63,9 @@ public class VendorRevenueController {
         // Hạn chế theo shopId nếu được chọn và thuộc vendor
         if (shopId != null && shopIds.contains(shopId)) {
             shopIds = java.util.List.of(shopId);
+        } else {
+            // Nếu shopId không hợp lệ so với vendor, bỏ chọn để tránh hiển thị không đúng
+            shopId = null;
         }
 
         // Set current values
@@ -85,8 +88,15 @@ public class VendorRevenueController {
             model.addAttribute("isPositiveGrowth", currentMonthStats.get("isPositiveGrowth"));
 
             // Thống kê theo kỳ được chọn
-            Map<String, Object> periodStats = getSelectedPeriodRevenueStats(shopIds, type, currentYear, currentMonth, currentQuarter,
-                    parseDate(startDate), parseDate(endDate));
+            Map<String, Object> periodStats = getSelectedPeriodRevenueStats(
+                    shopIds,
+                    type,
+                    currentYear,
+                    currentMonth,
+                    currentQuarter,
+                    parseDate(startDate),
+                    parseDate(endDate)
+            );
             model.addAttribute("selectedPeriod", periodStats.get("periodName"));
             model.addAttribute("selectedRevenue", periodStats.get("formattedRevenue"));
             model.addAttribute("selectedOrders", periodStats.get("orderCount"));
@@ -335,8 +345,11 @@ public class VendorRevenueController {
 
                 if (countToday) {
                     orderCount++;
-                    if (order.getTotalAmount() != null) {
-                        revenue += order.getTotalAmount();
+                    Double amt = (order.getFinalAmount() != null && order.getFinalAmount() > 0)
+                            ? order.getFinalAmount()
+                            : order.getTotalAmount();
+                    if (amt != null) {
+                        revenue += amt;
                     }
                 }
             }
@@ -384,7 +397,6 @@ public class VendorRevenueController {
             }
             
             for (Order order : completedOrders) {
-                if (order.getTotalAmount() == null) continue;
                 boolean isCod = order.getPaymentMethod() == Order.PaymentMethod.COD;
                 boolean isOnline = order.getPaymentMethod() != Order.PaymentMethod.COD;
                 LocalDate d = null;
@@ -395,10 +407,16 @@ public class VendorRevenueController {
                 int m = d.getMonthValue();
                 int y = d.getYear();
                 if (y == year && m == month) {
-                    currentMonthRevenue += order.getTotalAmount();
+                    Double amt = (order.getFinalAmount() != null && order.getFinalAmount() > 0)
+                            ? order.getFinalAmount()
+                            : order.getTotalAmount();
+                    if (amt != null) currentMonthRevenue += amt;
                     currentMonthOrders++;
                 } else if (y == prevYear && m == prevMonth) {
-                    previousMonthRevenue += order.getTotalAmount();
+                    Double amt = (order.getFinalAmount() != null && order.getFinalAmount() > 0)
+                            ? order.getFinalAmount()
+                            : order.getTotalAmount();
+                    if (amt != null) previousMonthRevenue += amt;
                 }
             }
             
@@ -443,7 +461,10 @@ public class VendorRevenueController {
             int endMonth = quarter * 3;
             
             for (Order order : completedOrders) {
-                if (order.getTotalAmount() == null) continue;
+                Double amtQuarterCheck = (order.getFinalAmount() != null && order.getFinalAmount() > 0)
+                        ? order.getFinalAmount()
+                        : order.getTotalAmount();
+                if (amtQuarterCheck == null) continue;
                 boolean isCod = order.getPaymentMethod() == Order.PaymentMethod.COD;
                 boolean isOnline = order.getPaymentMethod() != Order.PaymentMethod.COD;
                 LocalDate d = null;
@@ -454,7 +475,7 @@ public class VendorRevenueController {
                 int m = d.getMonthValue();
                 int y = d.getYear();
                 if (y == year && m >= startMonth && m <= endMonth) {
-                    quarterRevenue += order.getTotalAmount();
+                    quarterRevenue += amtQuarterCheck;
                     quarterOrders++;
                 }
             }
@@ -485,7 +506,10 @@ public class VendorRevenueController {
             int yearOrders = 0;
             
             for (Order order : completedOrders) {
-                if (order.getTotalAmount() == null) continue;
+                Double amtYearCheck = (order.getFinalAmount() != null && order.getFinalAmount() > 0)
+                        ? order.getFinalAmount()
+                        : order.getTotalAmount();
+                if (amtYearCheck == null) continue;
                 boolean isCod = order.getPaymentMethod() == Order.PaymentMethod.COD;
                 boolean isOnline = order.getPaymentMethod() != Order.PaymentMethod.COD;
                 LocalDate d = null;
@@ -494,7 +518,7 @@ public class VendorRevenueController {
                 if (d == null) continue;
 
                 if (d.getYear() == year) {
-                    yearRevenue += order.getTotalAmount();
+                    yearRevenue += amtYearCheck;
                     yearOrders++;
                 }
             }
@@ -553,8 +577,9 @@ public class VendorRevenueController {
                         periodName = "Từ " + startTxt + " đến " + endTxt;
                         var filtered = filterOrdersBySettlementDate(getCompletedOrdersByShops(shopIds), start, end);
                         revenue = filtered.stream()
-                                .filter(o -> o.getTotalAmount() != null)
-                                .mapToDouble(Order::getTotalAmount)
+                                .map(o -> (o.getFinalAmount() != null && o.getFinalAmount() > 0) ? o.getFinalAmount() : o.getTotalAmount())
+                                .filter(java.util.Objects::nonNull)
+                                .mapToDouble(Double::doubleValue)
                                 .sum();
                         orderCount = filtered.size();
                     }
@@ -597,8 +622,11 @@ public class VendorRevenueController {
             int cancelledOrders = 0;
             
             for (Order order : allOrders) {
-                if (order.getStatus() == Order.OrderStatus.DELIVERED && order.getTotalAmount() != null) {
-                    totalRevenue += order.getTotalAmount();
+                if (order.getStatus() == Order.OrderStatus.DELIVERED) {
+                    Double amtAll = (order.getFinalAmount() != null && order.getFinalAmount() > 0)
+                            ? order.getFinalAmount()
+                            : order.getTotalAmount();
+                    if (amtAll != null) totalRevenue += amtAll;
                     completedOrders++;
                 } else if (order.getStatus() == Order.OrderStatus.CANCELLED) {
                     cancelledOrders++;
@@ -675,7 +703,6 @@ public class VendorRevenueController {
                     int[] monthOrderData = new int[12];
                     
                     for (Order order : completedOrders) {
-                        if (order.getTotalAmount() == null) continue;
                         boolean isCod = order.getPaymentMethod() == Order.PaymentMethod.COD;
                         boolean isOnline = order.getPaymentMethod() != Order.PaymentMethod.COD;
                         LocalDate d = null;
@@ -683,7 +710,11 @@ public class VendorRevenueController {
                         if (isOnline && Boolean.TRUE.equals(order.getPaymentPaid()) && order.getPaymentDate() != null) d = order.getPaymentDate().toLocalDate();
                         if (d == null) continue;
                         if (d.getYear() == year) {
-                            monthRevenueData[d.getMonthValue() - 1] += order.getTotalAmount();
+                            Double amt = (order.getFinalAmount() != null && order.getFinalAmount() > 0)
+                                    ? order.getFinalAmount()
+                                    : order.getTotalAmount();
+                            if (amt != null)
+                                monthRevenueData[d.getMonthValue() - 1] += amt;
                             monthOrderData[d.getMonthValue() - 1]++;
                         }
                     }
@@ -699,7 +730,6 @@ public class VendorRevenueController {
                     int[] quarterOrderData = new int[4];
                     
                     for (Order order : completedOrders) {
-                        if (order.getTotalAmount() == null) continue;
                         boolean isCod = order.getPaymentMethod() == Order.PaymentMethod.COD;
                         boolean isOnline = order.getPaymentMethod() != Order.PaymentMethod.COD;
                         LocalDate d = null;
@@ -708,7 +738,11 @@ public class VendorRevenueController {
                         if (d == null) continue;
                         if (d.getYear() == year) {
                             int quarterIndex = (d.getMonthValue() - 1) / 3;
-                            quarterRevenueData[quarterIndex] += order.getTotalAmount();
+                            Double amt = (order.getFinalAmount() != null && order.getFinalAmount() > 0)
+                                    ? order.getFinalAmount()
+                                    : order.getTotalAmount();
+                            if (amt != null)
+                                quarterRevenueData[quarterIndex] += amt;
                             quarterOrderData[quarterIndex]++;
                         }
                     }
@@ -747,13 +781,16 @@ public class VendorRevenueController {
                     }
                     
                     for (Order order : completedOrders) {
-                        if (order.getOrderDate() != null && order.getTotalAmount() != null) {
+                        Double amt = (order.getFinalAmount() != null && order.getFinalAmount() > 0)
+                                ? order.getFinalAmount()
+                                : order.getTotalAmount();
+                        if (order.getOrderDate() != null && amt != null) {
                             LocalDate orderDate = order.getOrderDate().toLocalDate();
                             int orderYear = orderDate.getYear();
                             int index = orderYear - minYear;
                             
                             if (index >= 0 && index < numYears) {
-                                yearRevenueData[index] += order.getTotalAmount();
+                                yearRevenueData[index] += amt;
                                 yearOrderData[index]++;
                             }
                         }
