@@ -140,6 +140,10 @@ public class HomeController {
         // Newest products and best-sale products for homepage
         model.addAttribute("productList", newestProducts);
         model.addAttribute("bestSaleProduct20", bestSaleProducts);
+        
+        // Top 20 discounted products
+        List<Product> discountedProducts = productService.getTop20DiscountedProducts();
+        model.addAttribute("discountedProducts", discountedProducts);
 
         // Category counts for suggest slider like greeny-shop
         model.addAttribute("coutnProductByCategory", productService.listCategoryByProductName());

@@ -146,8 +146,7 @@ public class Order {
     public enum PaymentMethod {
         COD,
         MOMO,
-        BANK_TRANSFER,
-        VIETQR
+        BANK_TRANSFER
     }
 
     public enum PaymentStatus {

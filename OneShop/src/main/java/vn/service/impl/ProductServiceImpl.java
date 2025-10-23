@@ -181,5 +181,10 @@ public class ProductServiceImpl implements ProductService {
         }
         return result;
     }
+    
+    @Override
+    public List<Product> getTop20DiscountedProducts() {
+        return productRepository.findTop20ByDiscountGreaterThanOrderByDiscountDesc(0);
+    }
 }
 

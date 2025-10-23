@@ -253,7 +253,6 @@
                             <span th:case="'COD'">COD</span>
                             <span th:case="'MOMO'">MoMo</span>
                             <span th:case="'BANK_TRANSFER'">Chuyển khoản</span>
-                            <span th:case="'VIETQR'">VietQR</span>
                             <span th:case="*">COD</span>
                         </span>
                         <span th:if="${order?.paymentPaid == true}" class="payment-status payment-paid">Đã thanh toán</span>

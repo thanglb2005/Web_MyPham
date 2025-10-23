@@ -22,7 +22,6 @@ import vn.repository.OneXuTransactionRepository;
 import vn.service.CartService;
 import vn.service.OrderService;
 import vn.service.ProductService;
-import vn.service.VietQRService;
 import vn.service.PromotionService;
 import vn.entity.Promotion;
 
@@ -49,8 +48,6 @@ public class CartController {
     @Autowired
     private CartService cartService;
     
-    @Autowired
-    private VietQRService vietQRService;
     
     @Autowired
     private PromotionService promotionService;
@@ -469,9 +466,6 @@ public class CartController {
                 case "bank_transfer":
                     paymentMethodEnum = Order.PaymentMethod.BANK_TRANSFER;
                     break;
-                case "vietqr":
-                    paymentMethodEnum = Order.PaymentMethod.VIETQR;
-                    break;
                 default:
                     // Unknown method -> fail early to avoid accidental COD
                     return "redirect:/checkout?error=Invalid payment method";
@@ -555,7 +549,7 @@ public class CartController {
             String shippingVoucherCode = shippingVoucher != null ? shippingVoucher.getPromotionCode() : null;
             
             // Chỉ tạo order cho COD
-            // MOMO, VIETQR và BANK_TRANSFER sẽ tạo order sau khi thanh toán thành công
+            // MOMO và BANK_TRANSFER sẽ tạo order sau khi thanh toán thành công
             if (paymentMethodEnum == Order.PaymentMethod.COD) {
                 Order order = orderService.createOrder(
                     user,
@@ -634,24 +628,6 @@ public class CartController {
                     shippingVoucherDiscount
                 );
                 return "redirect:/payment/momo/create?orderId=" + momoOrder.getOrderId();
-            } else if (paymentMethodEnum == Order.PaymentMethod.VIETQR) {
-                // Tạo order tạm cho VietQR
-                Order vietqrOrder = orderService.createOrder(
-                    user,
-                    customerName,
-                    customerEmail,
-                    phone,
-                    fullAddress,
-                    note,
-                    paymentMethodEnum,
-                    cartMap,
-                    promotionDescription.isEmpty() ? null : promotionDescription,
-                    totalDiscount,
-                    shippingFee,
-                    shippingVoucherCode,
-                    shippingVoucherDiscount
-                );
-                return "redirect:/vietqr-payment?orderId=" + vietqrOrder.getOrderId();
             } else if (paymentMethodEnum == Order.PaymentMethod.BANK_TRANSFER) {
                 // Tạo order tạm cho PayOS
                 Order payosOrder = orderService.createOrder(
@@ -764,32 +740,6 @@ public class CartController {
         return "web/checkout-error";
     }
 
-    @GetMapping("/vietqr-payment")
-    public String vietqrPayment(@RequestParam("orderId") Long orderId,
-                               HttpServletRequest request, Model model) {
-
-        User user = (User) request.getSession().getAttribute("user");
-        if (user == null) {
-            return "redirect:/login";
-        }
-
-        Order order = orderService.getOrderById(orderId);
-        if (order == null || !order.getUser().getUserId().equals(user.getUserId())) {
-            return "redirect:/products";
-        }
-
-        // Generate VietQR URL for the order
-        String vietqrUrl = vietQRService.generateVietQRUrl(order);
-        String qrCodeImage = vietQRService.generateQRCodeImage(order);
-
-        model.addAttribute("order", order);
-        model.addAttribute("orderId", orderId);
-        model.addAttribute("user", user);
-        model.addAttribute("vietqrUrl", vietqrUrl);
-        model.addAttribute("qrCodeImage", qrCodeImage);
-
-        return "web/vietqr-payment";
-    }
 
     @GetMapping("/checkout-debug")
     public String checkoutDebug(HttpServletRequest request, Model model) {

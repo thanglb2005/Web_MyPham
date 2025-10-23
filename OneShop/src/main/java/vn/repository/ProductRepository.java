@@ -331,5 +331,8 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     @Query(value = "SELECT DISTINCT s.shop_id, s.shop_name FROM shops s ORDER BY s.shop_name", nativeQuery = true)
     List<Object[]> findAllShops();
+    
+    // Get top 20 products with discount
+    List<Product> findTop20ByDiscountGreaterThanOrderByDiscountDesc(Integer discount);
 }
 

@@ -442,7 +442,7 @@ INSERT INTO products(
   quantity, status, category_id, brand_id, shop_id, manufacture_date, expiry_date, favorite
 )
 VALUES
--- ═══════ SON MÔI - SHOP 1 (An Nguyễn) ═══════
+-- ═══════ SON MÔI - SHOP 1 (An Nguyễn) - 10 sản phẩm ═══════
 (N'Son thỏi YSL Rouge Pur Couture #01 tông đỏ tươi rực rỡ, chất son lì sang trọng', 0, '2025-10-08', 1220000,
  'SonYSLDoTuoi.jpg', N'YSL Rouge Pur Couture #01 Đỏ Tươi', 70, 1, 1, 3, 1, '2025-06-01', '2028-06-01', 0),
 
@@ -470,18 +470,18 @@ VALUES
 (N'Son thỏi YSL Rouge Pur Couture The Slim tông đỏ quyến rũ', 5, '2025-10-08', 1250000,
  'sonSYL_Rouge.png', N'YSL Rouge Pur Couture The Slim Đỏ Quyến Rũ', 75, 1, 1, 3, 1, '2025-05-25', '2028-05-25', 0),
 
-(N'Son kem lì YSL Tatouage Couture Matte Stain #13 tông đỏ cam', 5, '2025-10-08', 1180000,
+(N'Son kem lì YSL Tatouage Couture Matte Stain #13 tông đỏ cam', 10, '2025-10-08', 1180000,
  'SonYSLDoCam.jpg', N'YSL Tatouage Couture Matte Stain #13 Đỏ Cam', 70, 1, 1, 3, 1, '2025-06-05', '2028-06-05', 0),
 
--- ═══════ KEM DƯỠNG DA - SHOP 2 (Bình - Dược) & ADMIN ═══════
+-- ═══════ KEM DƯỠNG DA - SHOP 2 (Bình - Dược) - 10 sản phẩm ═══════
 (N'Kem dưỡng Olay Total Effects 7 in One Day Moisturiser SPF30', 5, '2025-10-08', 280000,
- 'KemOlay.png', N'Olay Total Effects 7 in One Day Moisturiser SPF30', 120, 1, 2, 2, NULL, '2025-07-01', '2028-07-01', 0),
+ 'KemOlay.png', N'Olay Total Effects 7 in One Day Moisturiser SPF30', 120, 1, 2, 2, 2, '2025-07-01', '2028-07-01', 0),
 
 (N'Kem dưỡng Sebamed Relief Face Cream 5% Urea dành cho da khô', 0, '2025-10-08', 320000,
  'kemSebamed.png', N'Sebamed Relief Face Cream 5% Urea', 100, 1, 2, 9, 2, '2025-06-15', '2028-06-15', 0),
 
-(N'ZO Skin Health Retinol Skin Brightener 1% cải thiện sắc tố', 5, '2025-10-08', 2500000,
- 'kemZO.jpg', N'ZO Skin Health Retinol Skin Brightener 1%', 60, 1, 2, 4, NULL, '2025-06-01', '2028-06-01', 0),
+(N'ZO Skin Health Retinol Skin Brightener 1% cải thiện sắc tố', 10, '2025-10-08', 2500000,
+ 'kemZO.jpg', N'ZO Skin Health Retinol Skin Brightener 1%', 60, 1, 2, 4, 2, '2025-06-01', '2028-06-01', 0),
 
 (N'Kem dưỡng ẩm Aloins Eaude Cream S chiết xuất nha đam', 0, '2025-10-08', 180000,
  'kemALONIS.png', N'Aloins Eaude Cream S Aloe Extract', 150, 1, 2, 10, 1, '2025-05-20', '2028-05-20', 0),
@@ -501,12 +501,12 @@ VALUES
 (N'Kem phục hồi La Roche-Posay Cicaplast Baume B5 làm dịu da', 0, '2025-10-08', 280000,
  'kemLaRoche.png', N'La Roche-Posay Cicaplast Baume B5', 150, 1, 2, 1, 2, '2025-06-20', '2028-06-20', 0),
 
-(N'Kem dưỡng ZO Skin Health Pigment Control 4% Hydroquinone', 5, '2025-10-08', 3200000,
- 'kemNamZO.png', N'ZO Skin Health Pigment Control Crème 4% Hydroquinone', 50, 1, 2, 4, NULL, '2025-06-15', '2028-06-15', 0),
+(N'Kem dưỡng ZO Skin Health Pigment Control 4% Hydroquinone', 15, '2025-10-08', 3200000,
+ 'kemNamZO.png', N'ZO Skin Health Pigment Control Crème 4% Hydroquinone', 50, 1, 2, 4, 2, '2025-06-15', '2028-06-15', 0),
 
--- ═══════ SERUM - SHOP 2 (Bình) & ADMIN ═══════
+-- ═══════ SERUM - SHOP 1 & 2 - 10 sản phẩm ═══════
 (N'Serum The Ordinary Niacinamide 10% + Zinc 1% kiểm dầu, se lỗ chân lông', 0, '2025-10-07', 250000,
- 'theordinary_niacinamide.jpg', N'The Ordinary Niacinamide 10% + Zinc 1%', 120, 1, 10, 13, NULL, '2025-07-01', '2028-07-01', 0),
+ 'theordinary_niacinamide.jpg', N'The Ordinary Niacinamide 10% + Zinc 1%', 120, 1, 10, 13, 1, '2025-07-01', '2028-07-01', 0),
 
 (N'Serum La Roche-Posay Hyalu B5 phục hồi hàng rào da', 5, '2025-10-07', 1600000,
  'larocheposay_hyalu_b5.jpg', N'La Roche-Posay Hyalu B5 Serum', 80, 1, 10, 1, 2, '2025-06-01', '2028-06-01', 0),
@@ -526,17 +526,17 @@ VALUES
 (N'Serum Klairs Vitamin C 5% dịu nhẹ cho da nhạy cảm', 0, '2025-10-07', 320000,
  'klairs_vitc_drop.jpeg', N'Klairs Freshly Juiced Vitamin C Drop 35ml', 70, 1, 10, 18, 2, '2025-06-15', '2028-06-15', 0),
 
-(N'L''Oréal Revitalift HA 1.5% đa kích thước cấp ẩm sâu', 5, '2025-10-07', 360000,
- 'loreal_revitalift_ha15.jpg', N'L''Oréal Revitalift 1.5% Hyaluronic Acid Serum', 130, 1, 10, 24, NULL, '2025-05-20', '2028-05-20', 0),
+(N'L''Oréal Revitalift HA 1.5% đa kích thước cấp ẩm sâu', 15, '2025-10-07', 360000,
+ 'loreal_revitalift_ha15.jpg', N'L''Oréal Revitalift 1.5% Hyaluronic Acid Serum', 130, 1, 10, 24, 1, '2025-05-20', '2028-05-20', 0),
 
 (N'Paula''s Choice 10% Niacinamide Booster se lỗ chân lông', 0, '2025-10-07', 1790000,
- 'paulaschoice_niacinamide10.jpg', N'Paula''s Choice 10% Niacinamide Booster 20ml', 40, 1, 10, 19, NULL, '2025-03-01', '2028-03-01', 0),
+ 'paulaschoice_niacinamide10.jpg', N'Paula''s Choice 10% Niacinamide Booster 20ml', 40, 1, 10, 19, 1, '2025-03-01', '2028-03-01', 0),
 
-(N'Hada Labo Retinol B3 Serum cải thiện dấu hiệu lão hóa', 10, '2025-10-07', 300000,
+(N'Hada Labo Retinol B3 Serum cải thiện dấu hiệu lão hóa', 20, '2025-10-07', 300000,
  'hadalabo_retinol_b3.jpg', N'Hada Labo Retinol B3 Pro-Aging Serum 30ml', 85, 1, 10, 20, 1, '2025-06-01', '2028-06-01', 0);
 GO
 
-/* ===================== KEM CHỐNG NẮNG - SHOP 1 & 2 & ADMIN ===================== */
+/* ===================== KEM CHỐNG NẮNG - SHOP 1 & 2 - 10 sản phẩm ===================== */
 DECLARE @catKCN int = (SELECT category_id FROM categories WHERE category_name=N'Kem chống nắng');
 
 INSERT INTO products(
@@ -556,13 +556,13 @@ VALUES
  N'vichy_capital_soleil_dry_touch_spf50.png', N'Vichy Capital Soleil Dry Touch SPF50 50ml',
  90, 1, @catKCN, (SELECT brand_id FROM brands WHERE brand_name=N'Vichy'), 2, '2025-05-01', '2028-05-01', 0),
 
-(N'Fixderma Shadow SPF50+ PA+++, chống nắng mạnh', 0, GETDATE(), 260000,
+(N'Fixderma Shadow SPF50+ PA+++, chống nắng mạnh', 5, GETDATE(), 260000,
  N'fixderma_shadow_spf50_cream.png', N'Fixderma Shadow SPF50+ Cream 75g',
- 70, 1, @catKCN, (SELECT brand_id FROM brands WHERE brand_name=N'Fixderma'), NULL, '2025-04-01', '2028-04-01', 0),
+ 70, 1, @catKCN, (SELECT brand_id FROM brands WHERE brand_name=N'Fixderma'), 1, '2025-04-01', '2028-04-01', 0),
 
-(N'L''Oréal UV Defender Invisible Fluid SPF50+ PA++++, thấm nhanh', 0, GETDATE(), 330000,
+(N'L''Oréal UV Defender Invisible Fluid SPF50+ PA++++, thấm nhanh', 10, GETDATE(), 330000,
  N'loreal_uv_defender_invisible_fluid_spf50.png', N'L''Oréal UV Defender Invisible Fluid SPF50+ 50ml',
- 100, 1, @catKCN, (SELECT brand_id FROM brands WHERE brand_name=N'L''Oréal Paris'), NULL, '2025-06-01', '2028-06-01', 0),
+ 100, 1, @catKCN, (SELECT brand_id FROM brands WHERE brand_name=N'L''Oréal Paris'), 1, '2025-06-01', '2028-06-01', 0),
 
 (N'La Roche-Posay Anthelios UVMune 400 Oil Control Fluid SPF50+', 0, GETDATE(), 620000,
  N'larocheposay_uvmune400_oil_control_spf50.png', N'La Roche-Posay Anthelios UVMune 400 Oil Control SPF50+ 50ml',
@@ -576,16 +576,16 @@ VALUES
  N'sac_ngoc_khang_tone_up_spf50.png', N'Sắc Ngọc Khang Tone Up Sun SPF50+ 50g',
  110, 1, @catKCN, (SELECT brand_id FROM brands WHERE brand_name=N'Sắc Ngọc Khang'), 1, '2025-06-01', '2028-06-01', 0),
 
-(N'Sebamed Anti-Redness Light Day Care SPF20', 0, GETDATE(), 420000,
+(N'Sebamed Anti-Redness Light Day Care SPF20', 15, GETDATE(), 420000,
  N'sebamed_anti_redness_day_spf20.png', N'Sebamed Anti-Redness Light Day Care SPF20 50ml',
  50, 1, @catKCN, (SELECT brand_id FROM brands WHERE brand_name=N'Sebamed'), 2, '2025-05-01', '2027-05-01', 0),
 
-(N'Reihaku Hatomugi UV Milky Gel SPF50+ PA++++', 0, GETDATE(), 210000,
+(N'Reihaku Hatomugi UV Milky Gel SPF50+ PA++++', 20, GETDATE(), 210000,
  N'reihaku_hatomugi_uv_milky_gel_spf50.png', N'Reihaku Hatomugi UV Milky Gel SPF50+ 80g',
  140, 1, @catKCN, (SELECT brand_id FROM brands WHERE brand_name=N'Reihaku Hatomugi'), 1, '2025-06-01', '2028-06-01', 0);
 GO
 
-/* ===================== PHẤN PHỦ - SHOP 1 (An) ===================== */
+/* ===================== PHẤN PHỦ - SHOP 1 & 2 - 10 sản phẩm ===================== */
 DECLARE @catPP int = (SELECT category_id FROM categories WHERE category_name=N'Phấn phủ');
 
 INSERT INTO products(
@@ -613,28 +613,28 @@ VALUES
  'eglips-air-fit-8g.png', N'Eglips Air Fit Powder Pact 8g', 
  130, 1, @catPP, (SELECT brand_id FROM brands WHERE brand_name=N'Eglips'), 1, '2025-05-01', '2028-05-01', 0),
 
-(N'Phấn I''m Meme Oil Cut Pact 9.5g', 0, GETDATE(), 210000,
+(N'Phấn I''m Meme Oil Cut Pact 9.5g', 5, GETDATE(), 210000,
  'im-meme-oil-cut-9-5g.png', N'I''m Meme Oil Cut Pact 9.5g', 
  110, 1, @catPP, (SELECT brand_id FROM brands WHERE brand_name=N'I''m Meme'), 1, '2025-06-01', '2028-06-01', 0),
 
-(N'Phấn bột Lemonade Supermatte thuần chay', 0, GETDATE(), 245000,
+(N'Phấn bột Lemonade Supermatte thuần chay', 10, GETDATE(), 245000,
  'lemonade-supermatte-9g.png', N'Lemonade Supermatte No Makeup Loose Powder 9g', 
  100, 1, @catPP, (SELECT brand_id FROM brands WHERE brand_name=N'Lemonade'), 1, '2025-06-01', '2028-06-01', 0),
 
 (N'Phấn bột Silkygirl No-Sebum Mineral Powder', 0, GETDATE(), 120000,
  'silkygirl-no-sebum-5g.png', N'Silkygirl No-Sebum Mineral Powder 5g', 
- 160, 1, @catPP, (SELECT brand_id FROM brands WHERE brand_name=N'Silkygirl'), 1, '2025-04-01', '2028-04-01', 0),
+ 160, 1, @catPP, (SELECT brand_id FROM brands WHERE brand_name=N'Silkygirl'), 2, '2025-04-01', '2028-04-01', 0),
 
 (N'Phấn Silkygirl Let It Glow Tone Up Powder', 0, GETDATE(), 155000,
  'silkygirl-let-it-glow-7g.png', N'Silkygirl Let It Glow Tone Up Powder 7g', 
- 140, 1, @catPP, (SELECT brand_id FROM brands WHERE brand_name=N'Silkygirl'), 1, '2025-05-01', '2028-05-01', 0),
+ 140, 1, @catPP, (SELECT brand_id FROM brands WHERE brand_name=N'Silkygirl'), 2, '2025-05-01', '2028-05-01', 0),
 
-(N'Phấn Too Cool For School Artclass By Rodin', 0, GETDATE(), 320000,
+(N'Phấn Too Cool For School Artclass By Rodin', 15, GETDATE(), 320000,
  'tcfs-artclass-rodin-4g.png', N'Too Cool For School Artclass By Rodin Finish Setting Pact 4g', 
- 90, 1, @catPP, (SELECT brand_id FROM brands WHERE brand_name=N'Too Cool For School'), 1, '2025-06-01', '2028-06-01', 0);
+ 90, 1, @catPP, (SELECT brand_id FROM brands WHERE brand_name=N'Too Cool For School'), 2, '2025-06-01', '2028-06-01', 0);
 GO
 
-/* ===================== TẨY TẾ BÀO CHẾT - ADMIN & SHOP ===================== */
+/* ===================== TẨY TẾ BÀO CHẾT - SHOP 1 & 2 - 10 sản phẩm ===================== */
 DECLARE @catTBC int = (SELECT category_id FROM categories WHERE category_name=N'Tẩy tế bào chết');
 
 INSERT INTO products(
@@ -650,13 +650,13 @@ VALUES
  'eucerin-pro-acne-scrub-100ml.png', N'Eucerin Pro Acne Solution Scrub 100ml', 
  90, 1, @catTBC, (SELECT brand_id FROM brands WHERE brand_name=N'Eucerin'), 2, '2025-06-01', '2028-06-01', 0),
 
-(N'Tẩy da chết Himalaya neem và mơ, ngừa mụn', 0, GETDATE(), 120000,
+(N'Tẩy da chết Himalaya neem và mơ, ngừa mụn', 5, GETDATE(), 120000,
  'himalaya-neem-scrub-100ml.png', N'Himalaya Purifying Neem Scrub 100ml', 
- 150, 1, @catTBC, (SELECT brand_id FROM brands WHERE brand_name=N'Himalaya'), NULL, '2025-06-01', '2028-06-01', 0),
+ 150, 1, @catTBC, (SELECT brand_id FROM brands WHERE brand_name=N'Himalaya'), 1, '2025-06-01', '2028-06-01', 0),
 
-(N'Tẩy tế bào chết hóa học Paula''s Choice BHA 2%', 0, GETDATE(), 380000,
+(N'Tẩy tế bào chết hóa học Paula''s Choice BHA 2%', 10, GETDATE(), 380000,
  'paulaschoice-bha-2-liquid-30ml.png', N'Paula''s Choice 2% BHA Liquid Exfoliant 30ml', 
- 100, 1, @catTBC, (SELECT brand_id FROM brands WHERE brand_name=N'Paula''s Choice'), NULL, '2025-06-01', '2028-06-01', 0),
+ 100, 1, @catTBC, (SELECT brand_id FROM brands WHERE brand_name=N'Paula''s Choice'), 1, '2025-06-01', '2028-06-01', 0),
 
 (N'Gel scrub cà phê Exclusive Cosmetic Nga', 0, GETDATE(), 95000,
  'exclusive-cosmetic-coffee-scrub-100g.png', N'Exclusive Cosmetic Coffee Gel Scrub 100g', 
@@ -678,12 +678,12 @@ VALUES
  'organicshop-soft-face-gommage-coffee-75ml.png', N'Organic Shop Soft Face Gommage Coffee 75ml', 
  90, 1, @catTBC, (SELECT brand_id FROM brands WHERE brand_name=N'Organic Shop'), 1, '2025-06-01', '2028-06-01', 0),
 
-(N'Tẩy tế bào chết toàn thân Organic Shop Body Desserts', 0, GETDATE(), 265000,
+(N'Tẩy tế bào chết toàn thân Organic Shop Body Desserts', 15, GETDATE(), 265000,
  'organicshop-body-desserts-scrub-450ml.png', N'Organic Shop Body Desserts Body Scrub 450ml', 
- 70, 1, @catTBC, (SELECT brand_id FROM brands WHERE brand_name=N'Organic Shop'), 1, '2025-06-01', '2028-06-01', 0);
+ 70, 1, @catTBC, (SELECT brand_id FROM brands WHERE brand_name=N'Organic Shop'), 2, '2025-06-01', '2028-06-01', 0);
 GO
 
-/* ===================== TONER - SHOP 2 (Bình) & ADMIN ===================== */
+/* ===================== TONER - SHOP 1 & 2 - 10 sản phẩm ===================== */
 DECLARE @catToner int = (SELECT category_id FROM categories WHERE category_name=N'Toner');
 
 INSERT INTO products(
@@ -693,7 +693,7 @@ INSERT INTO products(
 VALUES
 (N'Toner Simple dịu nhẹ, không cồn', 0, GETDATE(), 107000,
  N'simple_soothing_toner.png', N'Simple Kind To Skin Soothing Facial Toner 200ml', 
- 120, 1, @catToner, (SELECT brand_id FROM brands WHERE brand_name=N'Simple'), NULL, '2025-07-01', '2027-07-01', 0),
+ 120, 1, @catToner, (SELECT brand_id FROM brands WHERE brand_name=N'Simple'), 1, '2025-07-01', '2027-07-01', 0),
 
 (N'Toner Klairs Supple Preparation cân bằng pH', 0, GETDATE(), 233000,
  N'klairs_supple_toner.png', N'Klairs Supple Preparation Facial Toner 180ml', 
@@ -719,7 +719,7 @@ VALUES
  N'larocheposay_effaclar_toner.png', N'La Roche-Posay Effaclar Clarifying Toner 200ml', 
  80, 1, @catToner, (SELECT brand_id FROM brands WHERE brand_name=N'La Roche-Posay'), 2, '2025-06-01', '2027-06-01', 0),
 
-(N'Toner Vichy Normaderm se khít lỗ chân lông', 5, GETDATE(), 380000,
+(N'Toner Vichy Normaderm se khít lỗ chân lông', 10, GETDATE(), 380000,
  N'vichy_normaderm_toner.png', N'Vichy Normaderm Purifying Pore-Tightening Toner 200ml', 
  90, 1, @catToner, (SELECT brand_id FROM brands WHERE brand_name=N'Vichy'), 2, '2025-05-01', '2027-05-01', 0),
 
@@ -732,7 +732,7 @@ VALUES
  85, 1, @catToner, (SELECT brand_id FROM brands WHERE brand_name=N'Bioderma'), 2, '2025-04-10', '2027-04-10', 0);
 GO
 
-/* ===================== SỮA RỬA MẶT - SHOP 2 & ADMIN ===================== */
+/* ===================== SỮA RỬA MẶT - SHOP 1 & 2 - 10 sản phẩm ===================== */
 DECLARE @catSRM int = (SELECT category_id FROM categories WHERE category_name=N'Sữa rửa mặt');
 
 INSERT INTO products(
@@ -744,13 +744,13 @@ VALUES
  N'cerave_foaming.png', N'CeraVe Foaming Facial Cleanser 236ml', 
  100, 1, @catSRM, (SELECT brand_id FROM brands WHERE brand_name=N'CeraVe'), 2, '2025-05-01', '2028-05-01', 0),
 
-(N'Sữa rửa mặt Simple làm sạch dịu nhẹ', 0, GETDATE(), 91000,
+(N'Sữa rửa mặt Simple làm sạch dịu nhẹ', 5, GETDATE(), 91000,
  N'simple_refreshing_wash.png', N'Simple Kind To Skin Refreshing Facial Wash 150ml', 
- 150, 1, @catSRM, (SELECT brand_id FROM brands WHERE brand_name=N'Simple'), NULL, '2025-06-01', '2027-06-01', 0),
+ 150, 1, @catSRM, (SELECT brand_id FROM brands WHERE brand_name=N'Simple'), 1, '2025-06-01', '2027-06-01', 0),
 
-(N'Sữa rửa mặt The Face Shop chiết xuất nước gạo', 0, GETDATE(), 30000,
+(N'Sữa rửa mặt The Face Shop chiết xuất nước gạo', 10, GETDATE(), 30000,
  N'tfs_rice_water.png', N'The Face Shop Rice Water Bright Cleanser 150ml', 
- 200, 1, @catSRM, (SELECT brand_id FROM brands WHERE brand_name=N'The Face Shop'), NULL, '2025-07-01', '2028-07-01', 0),
+ 200, 1, @catSRM, (SELECT brand_id FROM brands WHERE brand_name=N'The Face Shop'), 1, '2025-07-01', '2028-07-01', 0),
 
 (N'Sữa rửa mặt Anua Heartleaf kiểm soát dầu', 0, GETDATE(), 220000,
  N'anua_heartleaf.png', N'Anua Heartleaf Pore Deep Cleansing Foam 150ml', 
@@ -776,12 +776,12 @@ VALUES
  N'bioderma_sebium.png', N'Bioderma Sébium Gel Moussant 200ml', 
  100, 1, @catSRM, (SELECT brand_id FROM brands WHERE brand_name=N'Bioderma'), 2, '2025-05-15', '2028-05-15', 0),
 
-(N'Sữa rửa mặt La Roche-Posay Effaclar dành cho da dầu', 0, GETDATE(), 350000,
+(N'Sữa rửa mặt La Roche-Posay Effaclar dành cho da dầu', 15, GETDATE(), 350000,
  N'laroche_effaclar.png', N'La Roche-Posay Effaclar Purifying Foaming Gel 200ml', 
  80, 1, @catSRM, (SELECT brand_id FROM brands WHERE brand_name=N'La Roche-Posay'), 2, '2025-06-10', '2028-06-10', 0);
 GO
 
-/* ===================== MẶT NẠ - SHOP 1 & ADMIN ===================== */
+/* ===================== MẶT NẠ - SHOP 1 & 2 - 10 sản phẩm ===================== */
 DECLARE @catMask int = (SELECT category_id FROM categories WHERE category_name=N'Mặt nạ');
 
 INSERT INTO products(
@@ -797,17 +797,17 @@ VALUES
  N'skin1004_centella_clay_stick.png', N'SKIN1004 Mad Centella Poremizing Clay Stick Mask 55g', 
  80, 1, @catMask, (SELECT brand_id FROM brands WHERE brand_name=N'Skin1004'), 2, '2025-06-01', '2028-06-01', 0),
 
-(N'Mask enzyme Image Skincare Vital C', 0, GETDATE(), 873499,
+(N'Mask enzyme Image Skincare Vital C', 5, GETDATE(), 873499,
  N'image_vitalc_enzyme.png', N'Image Skincare Vital C Hydrating Enzyme Masque 57g', 
- 50, 1, @catMask, (SELECT brand_id FROM brands WHERE brand_name=N'Image Skincare'), NULL, '2025-04-01', '2028-04-01', 0),
+ 50, 1, @catMask, (SELECT brand_id FROM brands WHERE brand_name=N'Image Skincare'), 1, '2025-04-01', '2028-04-01', 0),
 
-(N'Mask Colorkey Luminous B3 Brightening', 0, GETDATE(), 15000,
+(N'Mask Colorkey Luminous B3 Brightening', 10, GETDATE(), 15000,
  N'colorkey_b3_mask.png', N'Colorkey Luminous B3 Brightening Facial Mask 30ml', 
- 200, 1, @catMask, (SELECT brand_id FROM brands WHERE brand_name=N'Colorkey'), NULL, '2025-07-01', '2027-07-01', 0),
+ 200, 1, @catMask, (SELECT brand_id FROM brands WHERE brand_name=N'Colorkey'), 1, '2025-07-01', '2027-07-01', 0),
 
 (N'Mask Rwine Placenta Face Mask', 0, GETDATE(), 11000,
  N'rwine_placenta_mask.png', N'Rwine Placenta Face Mask', 
- 150, 1, @catMask, (SELECT brand_id FROM brands WHERE brand_name=N'Rwine'), NULL, '2025-08-01', '2027-08-01', 0),
+ 150, 1, @catMask, (SELECT brand_id FROM brands WHERE brand_name=N'Rwine'), 1, '2025-08-01', '2027-08-01', 0),
 
 (N'Mặt nạ ngủ Laneige Water Sleeping Mask', 0, GETDATE(), 227000,
  N'laneige_water_sleeping_ex.png', N'Laneige Water Sleeping Mask Ex 70ml', 
@@ -815,22 +815,22 @@ VALUES
 
 (N'Mặt nạ giấy Nature Republic chiết xuất cam', 0, GETDATE(), 18000,
  N'nature_orange_sheet.png', N'Nature Republic Real Nature Orange Sheet Mask 23ml', 
- 250, 1, @catMask, (SELECT brand_id FROM brands WHERE brand_name=N'Nature Republic'), NULL, '2025-07-15', '2028-07-15', 0),
+ 250, 1, @catMask, (SELECT brand_id FROM brands WHERE brand_name=N'Nature Republic'), 2, '2025-07-15', '2028-07-15', 0),
 
 (N'Mask buổi sáng Saborino', 0, GETDATE(), 364163,
  N'saborino_morning_mask.png', N'Saborino Morning Facial Mask', 
- 90, 1, @catMask, (SELECT brand_id FROM brands WHERE brand_name=N'Saborino'), NULL, '2025-05-20', '2028-05-20', 0),
+ 90, 1, @catMask, (SELECT brand_id FROM brands WHERE brand_name=N'Saborino'), 2, '2025-05-20', '2028-05-20', 0),
 
 (N'Mặt nạ Caryophy Portulaca giảm mụn', 0, GETDATE(), 22950,
  N'caryophy_portulaca_mask.png', N'Caryophy Portulaca Mask Sheet 3-in-1', 
  180, 1, @catMask, (SELECT brand_id FROM brands WHERE brand_name=N'Caryophy'), 1, '2025-06-25', '2028-06-25', 0),
 
-(N'Mặt nạ Klairs Midnight Blue làm dịu da', 0, GETDATE(), 44000,
+(N'Mặt nạ Klairs Midnight Blue làm dịu da', 15, GETDATE(), 44000,
  N'klairs_midnight_blue.png', N'Klairs Midnight Blue Calming Sheet Mask', 
  140, 1, @catMask, (SELECT brand_id FROM brands WHERE brand_name=N'Klairs'), 2, '2025-06-01', '2028-06-01', 0);
 GO
 
-/* ===================== NƯỚC HOA - ADMIN (Platform bán chính hãng) ===================== */
+/* ===================== NƯỚC HOA - SHOP 1 & 2 - 10 sản phẩm ===================== */
 DECLARE @catNH int = (SELECT category_id FROM categories WHERE category_name=N'Nước hoa');
 
 INSERT INTO products(
@@ -840,43 +840,43 @@ INSERT INTO products(
 VALUES
 (N'Nước hoa Chanel No.5 huyền thoại', 0, GETDATE(), 2500000,
  N'chanel_no5_edp.png', N'Chanel No.5 Eau de Parfum 50ml', 
- 50, 1, @catNH, (SELECT brand_id FROM brands WHERE brand_name=N'Chanel'), NULL, '2025-06-01', '2028-06-01', 0),
+ 50, 1, @catNH, (SELECT brand_id FROM brands WHERE brand_name=N'Chanel'), 1, '2025-06-01', '2028-06-01', 0),
 
 (N'Nước hoa nam Dior Sauvage cay nồng', 0, GETDATE(), 2500000,
  N'dior_sauvage_edt.png', N'Dior Sauvage Eau de Toilette 60ml', 
- 80, 1, @catNH, (SELECT brand_id FROM brands WHERE brand_name=N'Dior'), NULL, '2025-06-01', '2028-06-01', 0),
+ 80, 1, @catNH, (SELECT brand_id FROM brands WHERE brand_name=N'Dior'), 1, '2025-06-01', '2028-06-01', 0),
 
 (N'Nước hoa nam Versace Eros quyến rũ', 0, GETDATE(), 1200000,
  N'versace_eros_edt.png', N'Versace Eros Eau de Toilette 50ml', 
- 70, 1, @catNH, (SELECT brand_id FROM brands WHERE brand_name=N'Versace'), NULL, '2025-06-01', '2028-06-01', 0),
+ 70, 1, @catNH, (SELECT brand_id FROM brands WHERE brand_name=N'Versace'), 1, '2025-06-01', '2028-06-01', 0),
 
 (N'Nước hoa unisex Calvin Klein CK One', 0, GETDATE(), 800000,
  N'ck_one_edt.png', N'Calvin Klein CK One Eau de Toilette 100ml', 
- 120, 1, @catNH, (SELECT brand_id FROM brands WHERE brand_name=N'Calvin Klein'), NULL, '2025-06-01', '2028-06-01', 0),
+ 120, 1, @catNH, (SELECT brand_id FROM brands WHERE brand_name=N'Calvin Klein'), 1, '2025-06-01', '2028-06-01', 0),
 
 (N'Nước hoa nam Hugo Boss Bottled gỗ ấm', 0, GETDATE(), 1300000,
  N'hugo_boss_bottled_edt.png', N'Hugo Boss Bottled Eau de Toilette 75ml', 
- 90, 1, @catNH, (SELECT brand_id FROM brands WHERE brand_name=N'Hugo Boss'), NULL, '2025-06-01', '2028-06-01', 0),
+ 90, 1, @catNH, (SELECT brand_id FROM brands WHERE brand_name=N'Hugo Boss'), 1, '2025-06-01', '2028-06-01', 0),
 
-(N'Nước hoa nam Lacoste L.12.12 Blanc thể thao', 0, GETDATE(), 1000000,
+(N'Nước hoa nam Lacoste L.12.12 Blanc thể thao', 5, GETDATE(), 1000000,
  N'lacoste_l1212_blanc_edt.png', N'Lacoste L.12.12 Blanc Eau de Toilette 75ml', 
- 100, 1, @catNH, (SELECT brand_id FROM brands WHERE brand_name=N'Lacoste'), NULL, '2025-06-01', '2028-06-01', 0),
+ 100, 1, @catNH, (SELECT brand_id FROM brands WHERE brand_name=N'Lacoste'), 2, '2025-06-01', '2028-06-01', 0),
 
-(N'Nước hoa nam Montblanc Legend gỗ sang trọng', 0, GETDATE(), 1200000,
+(N'Nước hoa nam Montblanc Legend gỗ sang trọng', 10, GETDATE(), 1200000,
  N'montblanc_legend_edt.png', N'Montblanc Legend Eau de Toilette 50ml', 
- 85, 1, @catNH, (SELECT brand_id FROM brands WHERE brand_name=N'Montblanc'), NULL, '2025-06-01', '2028-06-01', 0),
+ 85, 1, @catNH, (SELECT brand_id FROM brands WHERE brand_name=N'Montblanc'), 2, '2025-06-01', '2028-06-01', 0),
 
 (N'Nước hoa nam Burberry Brit cổ điển', 0, GETDATE(), 1100000,
  N'burberry_brit_edt.png', N'Burberry Brit Eau de Toilette 50ml', 
- 75, 1, @catNH, (SELECT brand_id FROM brands WHERE brand_name=N'Burberry'), NULL, '2025-06-01', '2028-06-01', 0),
+ 75, 1, @catNH, (SELECT brand_id FROM brands WHERE brand_name=N'Burberry'), 2, '2025-06-01', '2028-06-01', 0),
 
 (N'Nước hoa nam Tommy Hilfiger Tommy trẻ trung', 0, GETDATE(), 1300000,
  N'tommy_hilfiger_tommy_edt.png', N'Tommy Hilfiger Tommy Eau de Toilette 100ml', 
- 110, 1, @catNH, (SELECT brand_id FROM brands WHERE brand_name=N'Tommy Hilfiger'), NULL, '2025-06-01', '2028-06-01', 0),
+ 110, 1, @catNH, (SELECT brand_id FROM brands WHERE brand_name=N'Tommy Hilfiger'), 2, '2025-06-01', '2028-06-01', 0),
 
-(N'Nước hoa nữ Chanel Coco Mademoiselle quyến rũ', 0, GETDATE(), 4400000,
+(N'Nước hoa nữ Chanel Coco Mademoiselle quyến rũ', 15, GETDATE(), 4400000,
  N'chanel_coco_mademoiselle_edp.png', N'Chanel Coco Mademoiselle Eau de Parfum 50ml', 
- 60, 1, @catNH, (SELECT brand_id FROM brands WHERE brand_name=N'Chanel'), NULL, '2025-06-01', '2028-06-01', 0);
+ 60, 1, @catNH, (SELECT brand_id FROM brands WHERE brand_name=N'Chanel'), 2, '2025-06-01', '2028-06-01', 0);
 GO
 
 /* =====================================================================

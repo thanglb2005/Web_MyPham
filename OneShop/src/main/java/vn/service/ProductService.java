@@ -67,5 +67,8 @@ public interface ProductService {
 
     // Rating average map for product ids
     java.util.Map<Long, Double> getAverageRatings(java.util.Collection<Long> productIds);
+    
+    // Get top 20 products with discount
+    List<Product> getTop20DiscountedProducts();
 }
 
