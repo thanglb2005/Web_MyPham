@@ -1374,6 +1374,15 @@
             popup.style.display = "flex";
             loadReadConversations(); // Load read conversations
             loadConversations();
+            
+            // Restore conversation if there's a pending one
+            if (window.pendingConversation) {
+              setTimeout(() => {
+                console.log('Restoring pending conversation...');
+                restoreConversation(window.pendingConversation);
+                window.pendingConversation = null; // Clear after restore
+              }, 1000); // Wait for conversations to load
+            }
           } else {
             popup.style.display = "none";
             // Clear current conversation when closing popup
@@ -1902,18 +1911,17 @@
               if (timeDiff < 24 * 60 * 60 * 1000) {
                 console.log('Restoring chat state:', state);
                 
-                // Restore popup state
-                if (state.popupOpen) {
-                  console.log('Opening popup...');
-                  toggleChatPopup();
-                }
+                // DON'T auto-open popup - let user click to open
+                // if (state.popupOpen) {
+                //   console.log('Opening popup...');
+                //   toggleChatPopup();
+                // }
                 
-                // Restore conversation if exists
+                // Store conversation data for when user opens chat
                 if (state.conversation) {
-                  setTimeout(() => {
-                    console.log('Attempting to restore conversation after popup opened...');
-                    restoreConversation(state.conversation);
-                  }, 1000); // Wait longer for conversations to load
+                  console.log('Storing conversation data for manual open...');
+                  // Store in a separate variable for manual restoration
+                  window.pendingConversation = state.conversation;
                 }
               } else {
                 console.log('State too old, clearing...');
@@ -2022,11 +2030,11 @@
             removePreview.addEventListener('click', clearImagePreview);
           }
           
-          // Restore chat state after page load
-          setTimeout(() => {
-            console.log('Attempting to restore chat state...');
-            restoreChatState();
-          }, 2000); // Increase delay to ensure conversations are loaded
+          // DON'T auto-restore chat state - let user click to open
+          // setTimeout(() => {
+          //   console.log('Attempting to restore chat state...');
+          //   restoreChatState();
+          // }, 2000); // Increase delay to ensure conversations are loaded
           
           // Add debug commands to window for manual testing
           window.debugChat = {
@@ -2046,7 +2054,7 @@
             },
             testRestore: () => {
               console.log('Testing restore manually...');
-              restoreChatState();
+              // restoreChatState(); // Commented out - no auto restore
             },
             testLoadHistory: (roomId) => {
               console.log('Testing load history for room:', roomId);
