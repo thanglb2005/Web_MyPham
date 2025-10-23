@@ -281,6 +281,7 @@ public class PromotionServiceImpl implements PromotionService {
         double discount = 0.0;
         switch (promotion.getPromotionType()) {
             case PERCENTAGE:
+            case PRODUCT_PERCENTAGE:
                 discount = orderAmount * (promotion.getDiscountValue().doubleValue() / 100);
                 break;
             case FIXED_AMOUNT:
@@ -592,6 +593,7 @@ public class PromotionServiceImpl implements PromotionService {
         double discount = 0.0;
         switch (promotion.getPromotionType()) {
             case PERCENTAGE:
+            case PRODUCT_PERCENTAGE:
                 discount = orderAmount * (promotion.getDiscountValue().doubleValue() / 100);
                 break;
             case FIXED_AMOUNT:

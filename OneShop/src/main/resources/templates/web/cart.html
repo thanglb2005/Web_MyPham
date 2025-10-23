@@ -1491,8 +1491,14 @@
                         console.log('Session data from API:', sessionData);
                         const selectedItems = document.querySelectorAll('.item-checkbox:checked').length;
                         
-                        // Calculate original amount by summing all selected items
+                        // Use backend data for original amount calculation
                         let original = 0;
+                        if (sessionData.selectedPrice) {
+                            original = sessionData.selectedPrice;
+                        } else if (voucherData && voucherData.originalAmount) {
+                            original = voucherData.originalAmount;
+                        } else {
+                            // Fallback: calculate from DOM
                         document.querySelectorAll('.item-checkbox:checked').forEach(checkbox => {
                             const productRow = checkbox.closest('.product-item');
                             if (productRow) {
@@ -1513,10 +1519,6 @@
                                 }
                             }
                         });
-                        
-                        // Fallback to voucherData if calculation fails
-                        if (original === 0 && voucherData && voucherData.originalAmount) {
-                            original = voucherData.originalAmount;
                         }
                         
                         let footerHTML = `<div style="font-size: 14px; color: #333;">`;

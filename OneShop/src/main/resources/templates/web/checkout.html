@@ -22,6 +22,24 @@
     <link rel="stylesheet" href="css/checkout.css" />
 </head>
 <body>
+
+    <!-- Shipping voucher modal -->
+    <div id="shippingVoucherModal" class="modal-backdrop">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div style="font-weight:700; color:#333;"><i class="fas fa-ticket-alt" style="color:#e74c3c"></i> Chọn voucher vận chuyển</div>
+                <button type="button" id="closeShippingVoucherModal" style="background:none;border:none;font-size:18px;cursor:pointer">✕</button>
+            </div>
+            <div class="modal-body">
+                <div id="shippingVoucherList"></div>
+            </div>
+            <div class="modal-actions">
+                <button type="button" id="applyShippingVoucherBtn" class="btn-inline" style="padding:10px 16px; border-radius:6px; font-size:14px;">
+                    Áp dụng
+                </button>
+            </div>
+        </div>
+    </div>
     
     <!--************************************
 			Header Start
@@ -36,9 +54,11 @@
         <div class="container">
             <div class="row">
                 
+
                 <!-- 1. THÔNG TIN NHẬN HÀNG (ĐẦU TIÊN) -->
                 <div class="col-lg-12" th:if="${totalCartItems!=0}">
                     <div class="account-card">
+
                         <div class="account-title">
                             <h4>1. Thông tin nhận hàng</h4>
                         </div>
@@ -202,6 +222,7 @@
                                             <span>Tạm tính</span>
                                             <span th:text="${#numbers.formatDecimal(totalPrice, 0, 'DEFAULT', 0, 'DEFAULT')} + ' VNĐ'">0 VNĐ</span>
                                         </li>
+
                                         
                                         <!-- Shipping Fee -->
                                         <li id="shippingFeeRow" style="display: none;">
@@ -218,18 +239,21 @@
                                         <!-- OneShop Voucher Discount -->
                                         <li th:if="${oneVoucherDiscount != null && oneVoucherDiscount > 0}">
                                             <span>OneShop Voucher <small th:text="'(' + ${oneVoucher?.promotionCode} + ')'"></small></span>
+
                                             <span style="color: #3ed407cc; font-weight: 600;" th:text="'-' + ${#numbers.formatDecimal(oneVoucherDiscount, 0, 'DEFAULT', 0, 'DEFAULT')} + ' VNĐ'">0 VNĐ</span>
                                         </li>
                                         
                                         <!-- Shop Voucher Discount -->
                                         <li th:if="${shopVoucherDiscount != null && shopVoucherDiscount > 0}">
                                             <span>Shop Voucher <small th:text="'(' + ${shopVoucher?.promotionCode} + ')'"></small></span>
+
                                             <span style="color: #3ed407cc; font-weight: 600;" th:text="'-' + ${#numbers.formatDecimal(shopVoucherDiscount, 0, 'DEFAULT', 0, 'DEFAULT')} + ' VNĐ'">0 VNĐ</span>
                                         </li>
                                         
                                         <!-- OneXu Discount -->
                                         <li th:if="${xuDiscount != null && xuDiscount > 0}">
                                             <span>One Xu <small th:text="'(' + ${xuAmount} + ' xu)'"></small></span>
+
                                             <span style="color: #3ed407cc; font-weight: 600;" th:text="'-' + ${#numbers.formatDecimal(xuDiscount, 0, 'DEFAULT', 0, 'DEFAULT')} + ' VNĐ'">0 VNĐ</span>
                                         </li>
                                         
@@ -239,6 +263,7 @@
                                                 Tổng thanh toán
                                                 <small style="font-size: 11px; color: #999; font-weight: normal;">(Incl. VAT)</small>
                                             </span>
+
                                             <span style="color: #33a3cc; font-weight: 700; font-size: 26px;" id="finalTotalAmount" th:text="${#numbers.formatDecimal(finalPrice, 0, 'DEFAULT', 0, 'DEFAULT')} + ' VNĐ'">0 VNĐ</span>
                                         </li>
                                     </ul>
@@ -248,43 +273,53 @@
                     </div>
                 </div>
 
+
                 <!-- 4. PHƯƠNG THỨC THANH TOÁN -->
                 <div class="col-lg-12" th:if="${totalCartItems!=0}">
                     <div class="account-card mb-0">
                         <div class="account-title">
+
                             <h4>4. Chọn phương thức thanh toán</h4>
                         </div>
                         <div class="account-content">
-                            <div class="payment-methods">
+                                        <div class="payment-methods">
+
                                 <div class="payment-option" data-payment="cod">
                                     <input type="radio" id="cod" value="cod" name="paymentMethod" form="checkoutForm" checked>
-                                    <i class="fas fa-money-bill-wave"></i>
+                                                    <i class="fas fa-money-bill-wave"></i>
+
                                     <span>Thanh toán khi nhận hàng (COD)</span>
-                                </div>
+                                                    </div>
+
                                 <div class="payment-option" data-payment="bank_transfer">
                                     <input type="radio" id="bank_transfer" value="bank_transfer" name="paymentMethod" form="checkoutForm">
-                                    <i class="fas fa-university"></i>
+                                                    <i class="fas fa-university"></i>
                                     <span>Chuyển khoản ngân hàng</span>
-                                </div>
+                                                    </div>
+
                                 <div class="payment-option" data-payment="momo">
                                     <input type="radio" id="momo" value="momo" name="paymentMethod" form="checkoutForm">
-                                    <i class="fas fa-mobile-alt"></i>
+                                                    <i class="fas fa-mobile-alt"></i>
+
                                     <span>Thanh toán với MoMo</span>
-                                </div>
+                                                    </div>
+
                                 <div class="payment-option" data-payment="vietqr">
                                     <input type="radio" id="vietqr" value="vietqr" name="paymentMethod" form="checkoutForm">
-                                    <i class="fas fa-qrcode"></i>
+                                                    <i class="fas fa-qrcode"></i>
+
                                     <span>Chuyển khoản MB Bank</span>
-                                </div>
-                            </div>
+                                                    </div>
+                                            </div>
+
                             
                             <div class="checkout-proced" style="margin-top: 30px;">
                                 <button type="submit" form="checkoutForm" class="btn btn-inline">
                                     <i class="fas fa-shopping-bag"></i>
                                     <span>Đặt hàng </span>
                                 </button>
-                            </div>
-                        </div>
+                                        </div>
+                                    </div>
                     </div>
                 </div>
             </div>
@@ -382,8 +417,10 @@
             document.addEventListener('DOMContentLoaded', function() {
                 const paymentOptions = document.querySelectorAll('.payment-option');
                 
+
                 // Handle click on payment option div
-                paymentOptions.forEach(option => {
+                        paymentOptions.forEach(option => {
+
                     option.addEventListener('click', function() {
                         // Remove selected class from all options
                         paymentOptions.forEach(opt => opt.classList.remove('selected'));
@@ -406,6 +443,7 @@
                 }
             });
             
+
             // Phone number validation
             document.addEventListener('DOMContentLoaded', function() {
                 const phoneInput = document.getElementById('phone');
@@ -557,7 +595,41 @@
                                     </label>
                                 </div>
                             </div>
-                            ${renderVouchersSection(options.shippingVouchers)}
+                            <div style="margin-top: 10px;">
+                                <!-- Voucher chưa áp -->
+                                <div id="shippingVoucherNotApplied" style="display: flex; align-items: center; gap: 8px;">
+                                    <button type="button" id="openShippingVoucherBtn" style="
+                                        display: inline-flex;
+                                        align-items: center;
+                                        gap: 8px;
+                                        padding: 12px 20px;
+                                        background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+                                        color: white;
+                                        border: none;
+                                        border-radius: 25px;
+                                        font-size: 14px;
+                                        font-weight: 600;
+                                        cursor: pointer;
+                                        transition: all 0.3s ease;
+                                        box-shadow: 0 2px 8px rgba(255, 107, 107, 0.3);
+                                        text-decoration: none;
+                                    " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 15px rgba(255, 107, 107, 0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(255, 107, 107, 0.3)'">
+                                        <i class="fas fa-ticket-alt" style="font-size: 16px;"></i>
+                                        <span>Áp voucher vận chuyển</span>
+                                    </button>
+                                </div>
+                                
+                                <!-- Voucher đã áp -->
+                                <div id="shippingVoucherApplied" style="display: none; align-items: center; gap: 8px; padding: 12px; background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 8px;">
+                                    <i class="fas fa-ticket-alt" style="color: #28a745; font-size: 16px;"></i>
+                                    <span style="font-size: 14px; color: #333;">Voucher ship:</span>
+                                    <span id="appliedVoucherCode" style="background: #e8f5e8; padding: 4px 8px; border-radius: 4px; font-size: 12px; color: #28a745; font-weight: 500;"></span>
+                                    <span id="appliedVoucherDiscount" style="color: #28a745; font-size: 12px; font-weight: 500;"></span>
+                                    <button type="button" id="clearShippingVoucherBtn" style="background: none; border: none; color: #dc3545; cursor: pointer; font-size: 14px; padding: 4px; margin-left: auto;" title="Bỏ voucher">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            </div>
                         `;
                         // Set initial shipping fee (express)
                         currentShippingFee = options.expressFee || 0;
@@ -578,7 +650,41 @@
                                     </label>
                                 </div>
                             </div>
-                            ${renderVouchersSection(options.shippingVouchers)}
+                            <div style="margin-top: 10px;">
+                                <!-- Voucher chưa áp -->
+                                <div id="shippingVoucherNotApplied" style="display: flex; align-items: center; gap: 8px;">
+                                    <button type="button" id="openShippingVoucherBtn" style="
+                                        display: inline-flex;
+                                        align-items: center;
+                                        gap: 8px;
+                                        padding: 12px 20px;
+                                        background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+                                        color: white;
+                                        border: none;
+                                        border-radius: 25px;
+                                        font-size: 14px;
+                                        font-weight: 600;
+                                        cursor: pointer;
+                                        transition: all 0.3s ease;
+                                        box-shadow: 0 2px 8px rgba(255, 107, 107, 0.3);
+                                        text-decoration: none;
+                                    " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 15px rgba(255, 107, 107, 0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(255, 107, 107, 0.3)'">
+                                        <i class="fas fa-ticket-alt" style="font-size: 16px;"></i>
+                                        <span>Áp voucher vận chuyển</span>
+                                    </button>
+                                </div>
+                                
+                                <!-- Voucher đã áp -->
+                                <div id="shippingVoucherApplied" style="display: none; align-items: center; gap: 8px; padding: 12px; background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 8px;">
+                                    <i class="fas fa-ticket-alt" style="color: #28a745; font-size: 16px;"></i>
+                                    <span style="font-size: 14px; color: #333;">Voucher ship:</span>
+                                    <span id="appliedVoucherCode" style="background: #e8f5e8; padding: 4px 8px; border-radius: 4px; font-size: 12px; color: #28a745; font-weight: 500;"></span>
+                                    <span id="appliedVoucherDiscount" style="color: #28a745; font-size: 12px; font-weight: 500;"></span>
+                                    <button type="button" id="clearShippingVoucherBtn" style="background: none; border: none; color: #dc3545; cursor: pointer; font-size: 14px; padding: 4px; margin-left: auto;" title="Bỏ voucher">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            </div>
                         `;
                         // Set initial shipping fee (standard)
                         currentShippingFee = options.standardFee || 0;
@@ -606,7 +712,7 @@
                     return new Intl.NumberFormat('vi-VN').format(amount || 0);
                 }
                 
-                // Render voucher section
+                // Render voucher section (legacy inline list - kept for reference, using modal instead)
                 function renderVouchersSection(vouchers) {
                     if (!vouchers || vouchers.length === 0) {
                         return '';
@@ -697,6 +803,148 @@
                         });
                     });
                 }
+
+                // ========= Shipping voucher modal =========
+                let selectedShippingVoucher = null;
+
+                function openShippingVoucherModal(vouchers) {
+                    if (!vouchers || vouchers.length === 0) return;
+                    const modal = document.getElementById('shippingVoucherModal');
+                    const list = document.getElementById('shippingVoucherList');
+                    list.innerHTML = '';
+                    vouchers.forEach(voucher => {
+                        const discountText = getDiscountText(voucher);
+                        const minOrderText = voucher.minimumOrderAmount > 0 
+                            ? `Đơn tối thiểu: ${formatMoney(voucher.minimumOrderAmount)} VNĐ` : '';
+                        const item = document.createElement('div');
+                        item.className = 'voucher-item';
+                        item.style.marginBottom = '10px';
+                        item.style.padding = '12px';
+                        item.style.border = '1px solid #e0e0e0';
+                        item.style.borderRadius = '8px';
+                        item.style.cursor = 'pointer';
+                        item.innerHTML = `
+                            <div style="display:flex;align-items:center;gap:10px;">
+                                <input type="radio" name="modalShippingVoucher" value="${voucher.promotionId}">
+                                <div style="flex:1;">
+                                    <div style="font-weight:700;color:#e74c3c;">${voucher.promotionCode}</div>
+                                    <div style="font-size:14px;">${voucher.promotionName || ''}</div>
+                                    <div style="font-size:12px;color:#888;">${discountText}${minOrderText ? ` • ${minOrderText}` : ''}</div>
+                                </div>
+                            </div>`;
+                        item.addEventListener('click', (e) => {
+                            const radio = item.querySelector('input[type="radio"]');
+                            if (e.target !== radio) {
+                                radio.checked = true;
+                            }
+                        });
+                        list.appendChild(item);
+                    });
+                    modal.style.display = 'flex';
+                }
+
+                function closeShippingVoucherModal() {
+                    const modal = document.getElementById('shippingVoucherModal');
+                    modal.style.display = 'none';
+                }
+
+                function computeShippingVoucherDiscount(voucher) {
+                    if (!voucher) return 0;
+                    // Check minimum order amount against base total
+                    if (voucher.minimumOrderAmount && baseTotalPrice < voucher.minimumOrderAmount) return 0;
+                    let discount = 0;
+                    switch (voucher.promotionType) {
+                        case 'FREE_SHIPPING':
+                            discount = currentShippingFee;
+                            break;
+                        case 'PERCENTAGE':
+                            discount = (currentShippingFee * (voucher.discountValue || 0)) / 100.0;
+                            if (voucher.maximumDiscountAmount && voucher.maximumDiscountAmount > 0) {
+                                discount = Math.min(discount, voucher.maximumDiscountAmount);
+                            }
+                            break;
+                        case 'FIXED_AMOUNT':
+                            discount = voucher.discountValue || 0;
+                            break;
+                        default:
+                            discount = 0;
+                    }
+                    // Cap by current shipping fee
+                    discount = Math.max(0, Math.min(discount, currentShippingFee));
+                    return discount;
+                }
+
+                // Bind buttons after delivery options are rendered
+                document.addEventListener('click', function(e) {
+                    const openBtn = e.target && (e.target.id === 'openShippingVoucherBtn' ? e.target : e.target.closest && e.target.closest('#openShippingVoucherBtn'));
+                    if (openBtn) {
+                        openShippingVoucherModal((currentDeliveryOptions && currentDeliveryOptions.shippingVouchers) || []);
+                    }
+                    const clearBtn = e.target && (e.target.id === 'clearShippingVoucherBtn' ? e.target : e.target.closest && e.target.closest('#clearShippingVoucherBtn'));
+                    if (clearBtn) {
+                        selectedShippingVoucher = null;
+                        currentShippingVoucherDiscount = 0;
+                        
+                        // Update voucher display UI
+                        const notAppliedDiv = document.getElementById('shippingVoucherNotApplied');
+                        const appliedDiv = document.getElementById('shippingVoucherApplied');
+                        if (notAppliedDiv) notAppliedDiv.style.display = 'flex';
+                        if (appliedDiv) appliedDiv.style.display = 'none';
+                        
+                        const shippingVoucherRow = document.getElementById('shippingVoucherRow');
+                        const shippingVoucherText = document.getElementById('shippingVoucherText');
+                        const shippingVoucherAmount = document.getElementById('shippingVoucherAmount');
+                        if (shippingVoucherRow) shippingVoucherRow.style.display = 'none';
+                        if (shippingVoucherText) shippingVoucherText.textContent = '';
+                        if (shippingVoucherAmount) shippingVoucherAmount.textContent = '-0 VNĐ';
+                        updateTotalPrice();
+                    }
+                    const applyBtn = e.target && (e.target.id === 'applyShippingVoucherBtn' ? e.target : e.target.closest && e.target.closest('#applyShippingVoucherBtn'));
+                    if (applyBtn) {
+                        const selected = document.querySelector('input[name="modalShippingVoucher"]:checked');
+                        if (!selected) { closeShippingVoucherModal(); return; }
+                        const id = selected.value;
+                        const voucher = (currentDeliveryOptions && currentDeliveryOptions.shippingVouchers || []).find(v => String(v.promotionId) === String(id));
+                        selectedShippingVoucher = voucher || null;
+                        currentShippingVoucherDiscount = computeShippingVoucherDiscount(selectedShippingVoucher);
+                        
+                        // Update voucher display UI
+                        const notAppliedDiv = document.getElementById('shippingVoucherNotApplied');
+                        const appliedDiv = document.getElementById('shippingVoucherApplied');
+                        const appliedVoucherCode = document.getElementById('appliedVoucherCode');
+                        const appliedVoucherDiscount = document.getElementById('appliedVoucherDiscount');
+                        
+                        if (selectedShippingVoucher && currentShippingVoucherDiscount > 0) {
+                            // Show applied voucher UI
+                            if (notAppliedDiv) notAppliedDiv.style.display = 'none';
+                            if (appliedDiv) appliedDiv.style.display = 'flex';
+                            if (appliedVoucherCode) appliedVoucherCode.textContent = selectedShippingVoucher.promotionCode;
+                            if (appliedVoucherDiscount) appliedVoucherDiscount.textContent = `-${formatMoney(currentShippingVoucherDiscount)} VNĐ`;
+                        } else {
+                            // Show not applied UI
+                            if (notAppliedDiv) notAppliedDiv.style.display = 'flex';
+                            if (appliedDiv) appliedDiv.style.display = 'none';
+                        }
+                        
+                        // Update summary row
+                        const shippingVoucherRow = document.getElementById('shippingVoucherRow');
+                        const shippingVoucherText = document.getElementById('shippingVoucherText');
+                        const shippingVoucherAmount = document.getElementById('shippingVoucherAmount');
+                        if (selectedShippingVoucher && currentShippingVoucherDiscount > 0) {
+                            if (shippingVoucherRow) shippingVoucherRow.style.display = '';
+                            if (shippingVoucherText) shippingVoucherText.textContent = ` (${selectedShippingVoucher.promotionCode})`;
+                            if (shippingVoucherAmount) shippingVoucherAmount.textContent = `-${formatMoney(currentShippingVoucherDiscount)} VNĐ`;
+                        } else {
+                            if (shippingVoucherRow) shippingVoucherRow.style.display = 'none';
+                        }
+                        updateTotalPrice();
+                        closeShippingVoucherModal();
+                    }
+                    const closeBtn = e.target && (e.target.id === 'closeShippingVoucherModal' ? e.target : e.target.closest && e.target.closest('#closeShippingVoucherModal'));
+                    if (closeBtn) {
+                        closeShippingVoucherModal();
+                    }
+                });
                 
                 // Get discount text based on voucher type
                 function getDiscountText(voucher) {
@@ -824,6 +1072,7 @@
             
             .payment-option {
                 position: relative;
+
                 display: flex;
                 align-items: center;
                 padding: 16px 20px;
@@ -842,6 +1091,7 @@
                 cursor: pointer;
             }
             
+
             .payment-option:hover {
                 border-color: #119744;
                 background-color: #f9fff9;
@@ -969,16 +1219,19 @@
                 background: white;
             }
             
+
             .delivery-option-item .delivery-label:hover {
                 border-color: #119744;
                 background-color: #f8f9fa;
             }
             
+
             .delivery-option-item input[type="radio"]:checked + .delivery-label {
                 border-color: #119744;
                 background-color: #e8f5e8;
             }
             
+
             .delivery-option-item .delivery-label i {
                 font-size: 24px;
                 margin-right: 15px;
@@ -986,10 +1239,12 @@
                 text-align: center;
             }
             
+
             .delivery-option-item .delivery-label div {
                 flex: 1;
             }
             
+
             .delivery-option-item .delivery-label strong {
                 display: block;
                 color: #333;
@@ -997,11 +1252,13 @@
                 margin-bottom: 5px;
             }
             
+
             .delivery-option-item .delivery-label small {
                 color: #666;
                 font-size: 14px;
             }
             
+
             /* Voucher styles */
             .voucher-item {
                 transition: all 0.3s ease;
@@ -1022,6 +1279,34 @@
                 background-color: #ffebeb !important;
                 box-shadow: 0 2px 8px rgba(231, 76, 60, 0.2);
             }
+            /* Shipping voucher modal */
+            .modal-backdrop {
+                position: fixed;
+                inset: 0;
+                background: rgba(0,0,0,0.4);
+                display: none;
+                align-items: center;
+                justify-content: center;
+                z-index: 1000;
+            }
+            .modal-card {
+                background: #fff;
+                width: 520px;
+                max-width: 92vw;
+                border-radius: 10px;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+                overflow: hidden;
+            }
+            .modal-header {
+                padding: 14px 18px;
+                border-bottom: 1px solid #eee;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+            }
+            .modal-body { padding: 16px 18px; max-height: 60vh; overflow: auto; }
+            .modal-actions { padding: 12px 18px; border-top: 1px solid #eee; text-align: right; }
         </style>
     </body>
+
 </html>

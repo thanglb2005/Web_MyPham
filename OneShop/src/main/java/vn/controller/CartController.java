@@ -449,8 +449,16 @@ public class CartController {
         }
 
         try {
+            // Normalize payment method string to avoid casing/whitespace issues
+            String normalizedPaymentMethod = paymentMethod == null ? "" : paymentMethod.trim().toLowerCase();
+            System.out.println("=== PAYMENT METHOD DEBUG ===");
+            System.out.println("Raw paymentMethod param=\"" + paymentMethod + "\"");
+            System.out.println("Normalized paymentMethod=\"" + normalizedPaymentMethod + "\"");
+            System.out.println("Payment method length: " + (paymentMethod != null ? paymentMethod.length() : 0));
+            System.out.println("=============================");
+
             Order.PaymentMethod paymentMethodEnum;
-            switch (paymentMethod.toLowerCase()) {
+            switch (normalizedPaymentMethod) {
                 case "cod":
                     paymentMethodEnum = Order.PaymentMethod.COD;
                     break;
@@ -464,7 +472,9 @@ public class CartController {
                     paymentMethodEnum = Order.PaymentMethod.VIETQR;
                     break;
                 default:
-                    paymentMethodEnum = Order.PaymentMethod.COD;
+                    // Unknown method -> fail early to avoid accidental COD
+                    System.out.println("Unknown payment method: " + normalizedPaymentMethod);
+                    return "redirect:/checkout?error=Invalid payment method";
             }
 
             // Tạo địa chỉ đầy đủ từ các thông tin: địa chỉ cụ thể, phường/xã, tỉnh/thành phố
@@ -539,9 +549,9 @@ public class CartController {
             System.out.println("Total discount applied: " + totalDiscount);
             System.out.println("Promotion description: " + promotionDescription);
 
-            // Chỉ tạo order cho COD và BANK_TRANSFER
-            // MOMO và VIETQR sẽ tạo order sau khi thanh toán thành công
-            if (paymentMethodEnum == Order.PaymentMethod.COD || paymentMethodEnum == Order.PaymentMethod.BANK_TRANSFER) {
+            // Chỉ tạo order cho COD
+            // MOMO, VIETQR và BANK_TRANSFER sẽ tạo order sau khi thanh toán thành công
+            if (paymentMethodEnum == Order.PaymentMethod.COD) {
                 Order order = orderService.createOrder(
                     user,
                     customerName,
@@ -584,7 +594,7 @@ public class CartController {
                     System.out.println("Deducted " + xuAmount + " xu. New balance: " + newBalance + ". Transaction saved.");
                 }
                 
-                // Clear cart after successful order
+                // Clear cart after successful COD order
                 cartService.clearCart(user);
                 
                 // Clear voucher and xu session data
@@ -597,7 +607,6 @@ public class CartController {
 
                 model.addAttribute("message", "Đặt hàng thành công! Mã đơn hàng: #" + order.getOrderId());
                 model.addAttribute("orderId", order.getOrderId());
-
                 return "redirect:/order-success?orderId=" + order.getOrderId();
             } else if (paymentMethodEnum == Order.PaymentMethod.MOMO) {
                 // Tạo order tạm cho MoMo
@@ -629,6 +638,21 @@ public class CartController {
                     totalDiscount
                 );
                 return "redirect:/vietqr-payment?orderId=" + vietqrOrder.getOrderId();
+            } else if (paymentMethodEnum == Order.PaymentMethod.BANK_TRANSFER) {
+                // Tạo order tạm cho PayOS
+                Order payosOrder = orderService.createOrder(
+                    user,
+                    customerName,
+                    customerEmail,
+                    phone,
+                    fullAddress,
+                    note,
+                    paymentMethodEnum,
+                    cartMap,
+                    promotionDescription.isEmpty() ? null : promotionDescription,
+                    totalDiscount
+                );
+                return "redirect:/payos/create-payment?orderId=" + payosOrder.getOrderId();
             }
             
             // Fallback - không nên xảy ra
@@ -680,6 +704,56 @@ public class CartController {
         model.addAttribute("user", user);
 
         return "web/order-success";
+    }
+
+    @GetMapping("/checkout-success")
+    public String checkoutSuccess(@RequestParam("orderId") Long orderId,
+                                 HttpServletRequest request, Model model) {
+
+        User user = (User) request.getSession().getAttribute("user");
+        if (user == null) {
+            return "redirect:/login";
+        }
+
+        Order order = orderService.getOrderById(orderId);
+        if (order == null || !order.getUser().getUserId().equals(user.getUserId())) {
+            return "redirect:/products";
+        }
+
+        // Load order details with product information to avoid lazy loading issues
+        List<OrderDetail> orderDetails = orderDetailRepository.findByOrderIdWithProductAndShop(orderId);
+        order.setOrderDetails(orderDetails);
+
+        model.addAttribute("order", order);
+        model.addAttribute("orderId", orderId);
+        model.addAttribute("user", user);
+
+        return "web/checkout-success";
+    }
+
+    @GetMapping("/checkout-error")
+    public String checkoutError(@RequestParam(value = "message", required = false) String message,
+                               HttpServletRequest request, Model model) {
+
+        System.out.println("=== CHECKOUT ERROR DEBUG ===");
+        System.out.println("Message: " + message);
+        System.out.println("Full URL: " + request.getRequestURL() + "?" + request.getQueryString());
+        System.out.println("=============================");
+
+        User user = (User) request.getSession().getAttribute("user");
+        if (user == null) {
+            System.out.println("User not found in session, redirecting to login");
+            return "redirect:/login";
+        }
+
+        String errorMessage = message != null ? message : "Có lỗi xảy ra trong quá trình thanh toán";
+        System.out.println("Setting error message: " + errorMessage);
+        
+        model.addAttribute("error", errorMessage);
+        model.addAttribute("user", user);
+
+        System.out.println("Returning template: web/checkout-error");
+        return "web/checkout-error";
     }
 
     @GetMapping("/vietqr-payment")
@@ -1034,10 +1108,18 @@ public class CartController {
                 response.put("oneVoucherDiscount", 0.0);
                 response.put("shopVoucher", null);
                 response.put("shopVoucherDiscount", 0.0);
+                response.put("selectedPrice", 0.0);
                 return response;
             }
             
             System.out.println("Session ID: " + session.getId());
+            
+            // Get current user and calculate selected price
+            User user = (User) session.getAttribute("user");
+            Double selectedPrice = 0.0;
+            if (user != null) {
+                selectedPrice = cartService.getSelectedCartTotalPrice(user);
+            }
             
             Promotion oneVoucher = (Promotion) session.getAttribute("oneVoucher");
             Double oneVoucherDiscount = (Double) session.getAttribute("oneVoucherDiscount");
@@ -1052,6 +1134,7 @@ public class CartController {
             System.out.println("ShopVoucherDiscount: " + shopVoucherDiscount);
             System.out.println("XuAmount: " + xuAmount);
             System.out.println("XuDiscount: " + xuDiscount);
+            System.out.println("SelectedPrice: " + selectedPrice);
             
             // Return only essential data to avoid serialization issues
             response.put("oneVoucher", oneVoucher != null ? oneVoucher.getPromotionCode() : null);
@@ -1060,6 +1143,7 @@ public class CartController {
             response.put("shopVoucherDiscount", shopVoucherDiscount != null ? shopVoucherDiscount : 0.0);
             response.put("xuAmount", xuAmount != null ? xuAmount : 0);
             response.put("xuDiscount", xuDiscount != null ? xuDiscount : 0.0);
+            response.put("selectedPrice", selectedPrice);
             
         } catch (Exception e) {
             System.out.println("Error in getVoucherStatus: " + e.getMessage());
@@ -1070,6 +1154,7 @@ public class CartController {
             response.put("shopVoucherDiscount", 0.0);
             response.put("xuAmount", 0);
             response.put("xuDiscount", 0.0);
+            response.put("selectedPrice", 0.0);
         }
         
         return response;
@@ -1176,6 +1261,7 @@ public class CartController {
         
         switch (promotion.getPromotionType()) {
             case PERCENTAGE:
+            case PRODUCT_PERCENTAGE:
                 discountAmount = totalAmount * (promotion.getDiscountValue().doubleValue() / 100.0);
                 break;
             case FIXED_AMOUNT:

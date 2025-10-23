@@ -198,7 +198,7 @@ public interface PromotionRepository extends JpaRepository<Promotion, Long> {
     // Find shipping vouchers: system vouchers (shop_id = NULL) + shop vouchers
     @Query("SELECT p FROM Promotion p WHERE " +
            "(p.shop.shopId = :shopId OR p.shop IS NULL) AND " +
-           "p.promotionType IN ('FREE_SHIPPING', 'FIXED_AMOUNT', 'PERCENTAGE') AND " +
+           "p.promotionType = 'FREE_SHIPPING' AND " +
            "p.isActive = true AND " +
            "p.startDate <= :now AND " +
            "p.endDate >= :now AND " +

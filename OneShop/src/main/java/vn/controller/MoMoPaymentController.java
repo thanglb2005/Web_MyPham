@@ -174,8 +174,10 @@ public class MoMoPaymentController {
                 model.addAttribute("order", order);
                 return "web/checkout-success";
             } else {
-                // Thanh toán thất bại - xóa order tạm và giữ nguyên cart
-                orderService.deleteOrder(orderIdLong);
+                // Thanh toán thất bại - set order thành CANCELLED
+                order.setPaymentPaid(false);
+                order.setStatus(Order.OrderStatus.CANCELLED);
+                orderService.updateOrder(order);
                 model.addAttribute("error", "Thanh toán thất bại! Giỏ hàng của bạn vẫn được giữ nguyên.");
                 return "web/checkout-error";
             }
