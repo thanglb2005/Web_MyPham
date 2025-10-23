@@ -377,15 +377,28 @@
 
     function createMonthlyChart(monthlyStats) {
 
-      var monthlyLabels = (monthlyStats && monthlyStats.length > 0) 
-        ? monthlyStats.map(function(stat) { return 'Tháng ' + stat.month + '/' + stat.year; }) 
-        : ['Không có dữ liệu'];
-      var monthlyTotalOrders = (monthlyStats && monthlyStats.length > 0) 
-        ? monthlyStats.map(function(stat) { return stat.totalOrders; }) 
-        : [0];
-      var monthlyDeliveredOrders = (monthlyStats && monthlyStats.length > 0) 
-        ? monthlyStats.map(function(stat) { return stat.deliveredOrders; }) 
-        : [0];
+      // Tạo labels cho 12 tháng
+      var monthlyLabels = ['Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6', 
+                          'Tháng 7', 'Tháng 8', 'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12'];
+      
+      // Khởi tạo arrays với 12 phần tử = 0
+      var monthlyTotalOrders = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+      var monthlyDeliveredOrders = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+      
+      // Cập nhật dữ liệu thực tế từ API
+      if (monthlyStats && monthlyStats.length > 0) {
+        monthlyStats.forEach(function(stat) {
+          var monthIndex = stat.month - 1; // Chuyển từ 1-12 thành 0-11
+          if (monthIndex >= 0 && monthIndex < 12) {
+            monthlyTotalOrders[monthIndex] = stat.totalOrders || 0;
+            monthlyDeliveredOrders[monthIndex] = stat.deliveredOrders || 0;
+          }
+        });
+      }
+
+      // Debug: Log dữ liệu để kiểm tra
+      console.log('monthlyTotalOrders:', monthlyTotalOrders);
+      console.log('monthlyDeliveredOrders:', monthlyDeliveredOrders);
 
       var monthlyCtx = document.getElementById('monthlyChart');
       if (!monthlyCtx) {
@@ -456,6 +469,7 @@
               },
               x: {
                 ticks: {
+                  stepSize: 1,
                   font: {
                     size: 12
                   }

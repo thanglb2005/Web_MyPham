@@ -337,9 +337,35 @@
               </tbody>
               <tfoot>
                 <tr>
-                  <td colspan="4" class="text-end"><strong>Tổng cộng:</strong></td>
+                  <td colspan="4" class="text-end">
+                    <strong>Tổng tiền hàng:</strong>
+                  </td>
                   <td class="text-end">
-                    <strong class="text-success" th:text="${#numbers.formatDecimal(order.totalAmount, 0, 'COMMA', 0, 'POINT') + ' đ'}">850,000 đ</strong>
+                    <strong th:text="${#numbers.formatDecimal(order.totalAmount, 0, 'COMMA', 0, 'POINT') + ' đ'}">300,000 đ</strong>
+                  </td>
+                </tr>
+                <tr>
+                  <td colspan="4" class="text-end">
+                    <span class="text-danger">Giảm giá:</span>
+                  </td>
+                  <td class="text-end">
+                    <span class="text-danger" th:text="${order.discountAmount != null and order.discountAmount > 0 ? '- ' + #numbers.formatDecimal(order.discountAmount, 0, 'COMMA', 0, 'POINT') + ' đ' : '0 đ'}">0 đ</span>
+                  </td>
+                </tr>
+                <tr>
+                  <td colspan="4" class="text-end">
+                    <span>Phí vận chuyển:</span>
+                  </td>
+                  <td class="text-end">
+                    <span th:text="${order.shippingFee != null and order.shippingFee > 0 ? #numbers.formatDecimal(order.shippingFee, 0, 'COMMA', 0, 'POINT') + ' đ' : '0 đ'}">0 đ</span>
+                  </td>
+                </tr>
+                <tr>
+                  <td colspan="4" class="text-end">
+                    <strong class="text-success">Tổng cộng:</strong>
+                  </td>
+                  <td class="text-end">
+                    <strong class="text-success" th:text="${#numbers.formatDecimal(order.finalAmount != null ? order.finalAmount : order.totalAmount, 0, 'COMMA', 0, 'POINT') + ' đ'}">300,000 đ</strong>
                   </td>
                 </tr>
               </tfoot>
@@ -423,8 +449,8 @@
             <div class="info-label">Tổng tiền:</div>
             <div class="info-value">
               <strong class="text-success" style="font-size: 1.25rem;" 
-                      th:text="${#numbers.formatDecimal(order.totalAmount, 0, 'COMMA', 0, 'POINT') + ' đ'}">
-                850,000 đ
+                      th:text="${#numbers.formatDecimal(order.finalAmount != null ? order.finalAmount : order.totalAmount, 0, 'COMMA', 0, 'POINT') + ' đ'}">
+                300,000 đ
               </strong>
             </div>
           </div>
