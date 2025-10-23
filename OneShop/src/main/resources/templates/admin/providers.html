@@ -1,0 +1,1120 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản Lý Nhà Vận Chuyển - OneShop Admin</title>
+    
+    <!-- CSS Libraries -->
+    <link rel="stylesheet" href="/assets/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/assets/css/atlantis.min.css">
+    <link rel="stylesheet" href="/fonts/fontawesome/fontawesome.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="/assets/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/assets/css/atlantis.css">
+    <link rel="stylesheet" href="/assets/css/demo.css">
+    <link rel="stylesheet" href="/assets/css/fonts.min.css">
+    <link rel="stylesheet" href="/assets/css/atlantis.min.css">
+    <link rel="stylesheet" href="/css/admin-fonts.css">
+    
+    <style>
+        /* Fixed Sidebar */
+        .sidebar {
+            position: fixed !important;
+            top: 60px;
+            left: 0;
+            bottom: 0;
+            z-index: 1028;
+            width: 250px;
+            background: white !important;
+            border-right: 1px solid #e9ecef;
+            margin: 0;
+            padding: 0;
+        }
+        
+        /* Main Content Adjustment */
+        .main-panel {
+            margin-top: 60px !important;
+            margin-left: 250px !important;
+            padding: 0;
+            margin-right: 0;
+        }
+        
+        .content {
+            padding: 0;
+            margin: 0;
+            position: relative;
+            top: 0;
+        }
+        
+        .page-inner {
+            padding: 20px;
+            margin: 0;
+        }
+        
+        .page-header {
+            padding: 15px 20px;
+            margin: 0;
+            background: white;
+            border-bottom: 1px solid #e9ecef;
+            position: relative;
+            top: 0;
+        }
+        
+        .page-title {
+            color: #333;
+            font-size: 1.8rem;
+            margin: 0;
+            font-weight: 600;
+        }
+        
+        /* Action Bar Styling */
+        .action-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.05);
+        }
+        
+        /* Search Form */
+        .search-form {
+            display: flex;
+            align-items: center;
+        }
+        
+        .search-box {
+            position: relative;
+        }
+        
+        .search-box i {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6c757d;
+        }
+        
+        .search-box input {
+            padding-left: 35px;
+            border-radius: 30px;
+            width: 250px;
+            border: 1px solid #e9ecef;
+            height: 38px;
+            box-shadow: none;
+            transition: all 0.3s;
+        }
+        
+        .search-box input:focus {
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+            border-color: #80bdff;
+            outline: none;
+        }
+        
+        /* Table Styles */
+        .table-container {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.05);
+        }
+        
+        .card {
+            border: none;
+            box-shadow: none;
+            margin-bottom: 0;
+        }
+        
+        .table {
+            margin-bottom: 0;
+        }
+        
+        .table th {
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+            color: #495057;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        .table td {
+            vertical-align: middle;
+            color: #495057;
+            font-size: 14px;
+            border-top: 1px solid #e9ecef;
+        }
+        
+        /* Provider Image Thumbnail */
+        .provider-image {
+            width: 60px;
+            height: 60px;
+            object-fit: contain;
+            border-radius: 4px;
+            background-color: #f8f9fa;
+            box-shadow: 0 0 3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .provider-image-placeholder {
+            width: 60px;
+            height: 60px;
+            border-radius: 4px;
+            background-color: #f8f9fa;
+            color: #6c757d;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            box-shadow: 0 0 3px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Provider Logo Preview in Modal */
+        .provider-logo-preview {
+            width: 120px;
+            height: 120px;
+            border-radius: 8px;
+            background-color: #f8f9fa;
+            color: #6c757d;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin: 0 auto;
+            border: 2px solid #e9ecef;
+        }
+        
+        .provider-logo-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            border-radius: 6px;
+        }
+        
+        .provider-logo-preview.empty {
+            background-color: #f8f9fa;
+            color: #6c757d;
+        }
+        
+        .provider-logo-preview.empty i {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+        
+        .provider-logo-preview.empty span {
+            font-size: 12px;
+            text-align: center;
+        }
+        
+        /* Info Items in Modal */
+        .info-item {
+            margin-bottom: 15px;
+            padding: 8px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .info-item:last-child {
+            border-bottom: none;
+        }
+        
+        .info-label {
+            font-weight: 600;
+            color: #495057;
+            font-size: 14px;
+            margin-bottom: 5px;
+            display: block;
+        }
+        
+        .info-value {
+            color: #6c757d;
+            font-size: 14px;
+            word-break: break-word;
+        }
+        
+        .info-description {
+            color: #6c757d;
+            font-size: 14px;
+            line-height: 1.5;
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            border-left: 3px solid #007bff;
+        }
+        
+        /* Status Badge */
+        .badge-active {
+            background-color: #2ecc71;
+            color: white;
+            font-weight: 500;
+            padding: 6px 12px;
+        }
+        
+        .badge-inactive {
+            background-color: #e74c3c;
+            color: white;
+            font-weight: 500;
+            padding: 6px 12px;
+        }
+        
+        /* Action Buttons */
+        .btn-action-group .btn {
+            padding: 0.3rem 0.5rem;
+            margin-right: 5px;
+            border-radius: 4px;
+            font-size: 12px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-action-group .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        
+        .btn-action-group .btn-info {
+            background-color: #17a2b8;
+            border-color: #17a2b8;
+        }
+        
+        .btn-action-group .btn-warning {
+            background-color: #ffc107;
+            border-color: #ffc107;
+            color: #212529;
+        }
+        
+        .btn-action-group .btn-secondary {
+            background-color: #6c757d;
+            border-color: #6c757d;
+        }
+        
+        .btn-action-group .btn-danger {
+            background-color: #dc3545;
+            border-color: #dc3545;
+        }
+        
+        /* Pagination */
+        .pagination-container {
+            margin-top: 20px;
+            padding: 15px 0;
+            border-top: 1px solid #e9ecef;
+        }
+        
+        .pagination-info {
+            font-size: 14px;
+            color: #6c757d;
+        }
+        
+        .pagination-sm .page-link {
+            padding: 0.375rem 0.75rem;
+            font-size: 0.875rem;
+            line-height: 1.5;
+            border-radius: 50%;
+            margin: 0 2px;
+            min-width: 38px;
+            height: 38px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #dee2e6;
+            color: #495057;
+            text-decoration: none;
+        }
+        
+        .pagination-sm .page-link:hover {
+            background-color: #e9ecef;
+            border-color: #adb5bd;
+        }
+        
+        .pagination-sm .page-item.active .page-link {
+            background-color: #007bff;
+            border-color: #007bff;
+            color: white;
+        }
+        
+        .pagination-sm .page-item.disabled .page-link {
+            color: #6c757d;
+            background-color: #fff;
+            border-color: #dee2e6;
+            cursor: not-allowed;
+        }
+        
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #6c757d;
+        }
+        
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            opacity: 0.5;
+        }
+        
+        /* Alert Messages */
+        .alert-container {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            z-index: 9999;
+            min-width: 300px;
+        }
+        
+        .brand-alert {
+            margin-bottom: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            animation: slideIn 0.5s forwards;
+            display: none;
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        .sortable-header {
+            cursor: pointer;
+        }
+        
+        .sortable-header i {
+            margin-left: 5px;
+            opacity: 0.5;
+        }
+        
+        /* Align text in cells */
+        .table td:nth-child(1),
+        .table th:nth-child(1) {
+            text-align: center;
+        } /* ID */
+        .table td:nth-child(2),
+        .table th:nth-child(2) {
+            text-align: center;
+        } /* Image */
+        .table td:nth-child(3),
+        .table th:nth-child(3) {
+            text-align: left;
+        } /* Provider Name */
+        .table td:nth-child(4),
+        .table th:nth-child(4) {
+            text-align: left;
+        } /* Description */
+        .table td:nth-child(5),
+        .table th:nth-child(5) {
+            text-align: center;
+        } /* Shipping Fee */
+        .table td:nth-child(6),
+        .table th:nth-child(6) {
+            text-align: center;
+        } /* Delivery Time */
+        .table td:nth-child(7),
+        .table th:nth-child(7) {
+            text-align: center;
+        } /* Status */
+    </style>
+</head>
+<body>
+    <div class="wrapper">
+        <!-- Header -->
+        <th:block th:replace="~{admin/fragments/header :: header}"></th:block>
+        
+        <!-- Navbar -->
+        <th:block th:replace="~{admin/fragments/navbar :: navbar}"></th:block>
+        
+        <div class="main-panel">
+            <div class="content">
+                <!-- Page Header -->
+                <div class="page-header">
+                    <h2 class="page-title">Quản Lý Nhà Vận Chuyển</h2>
+                </div>
+                
+                <div class="page-inner">
+                    <!-- Alert Messages Container -->
+                    <div class="alert-container">
+                        <div th:if="${param.success}" class="alert alert-success brand-alert" role="alert">
+                            <i class="fas fa-check-circle mr-2"></i>
+                            <span th:if="${param.success == 'added'}">Thêm nhà vận chuyển thành công!</span>
+                            <span th:if="${param.success == 'updated'}">Cập nhật nhà vận chuyển thành công!</span>
+                            <span th:if="${param.success == 'deleted'}">Xóa nhà vận chuyển thành công!</span>
+                            <span th:if="${param.success == 'toggled'}">Thay đổi trạng thái thành công!</span>
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        
+                        <div th:if="${param.error}" class="alert alert-danger brand-alert" role="alert">
+                            <i class="fas fa-exclamation-circle mr-2"></i>
+                            <span th:if="${param.error == 'validation'}">Dữ liệu không hợp lệ!</span>
+                            <span th:if="${param.error == 'duplicate'}">Tên nhà vận chuyển đã tồn tại!</span>
+                            <span th:if="${param.error == 'upload'}">Lỗi upload hình ảnh!</span>
+                            <span th:if="${param.error == 'notfound'}">Không tìm thấy nhà vận chuyển!</span>
+                            <span th:if="${param.error == 'constraint'}">Không thể xóa nhà vận chuyển vì đang được sử dụng trong đơn hàng!</span>
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Content Section -->
+                    <div class="content-section">
+                        <!-- Action Bar -->
+                        <div class="action-bar">
+                            <div class="d-flex align-items-center">
+                                <!-- Search Form -->
+                                <form method="get" class="search-form mr-3">
+                                    <input type="hidden" name="page" value="0">
+                                    <input type="hidden" name="size" th:value="${pageSize}">
+                                    <input type="hidden" name="sortBy" th:value="${sortBy}">
+                                    <input type="hidden" name="sortDir" th:value="${sortDir}">
+                                    <div class="search-box">
+                                        <i class="fas fa-search"></i>
+                                        <input 
+                                            type="text" 
+                                            name="search" 
+                                            class="form-control" 
+                                            placeholder="Tìm kiếm theo tên..."
+                                            th:value="${search}"
+                                        >
+                                    </div>
+                                </form>
+                                
+                                <!-- Page Size Selector -->
+                                <form method="get" class="d-flex align-items-center ml-2">
+                                    <input type="hidden" name="page" value="0">
+                                    <input type="hidden" name="sortBy" th:value="${sortBy}">
+                                    <input type="hidden" name="sortDir" th:value="${sortDir}">
+                                    <input type="hidden" name="search" th:value="${search}">
+                                    <label for="pageSize" class="mb-0 mr-2">Hiển thị:</label>
+                                    <select name="size" id="pageSize" class="form-control form-control-sm" onchange="this.form.submit()">
+                                        <option value="5" th:selected="${pageSize == 5}">5 dòng</option>
+                                        <option value="10" th:selected="${pageSize == 10}">10 dòng</option>
+                                        <option value="20" th:selected="${pageSize == 20}">20 dòng</option>
+                                        <option value="50" th:selected="${pageSize == 50}">50 dòng</option>
+                                    </select>
+                                </form>
+                            </div>
+                            
+                            <!-- Add Provider Button -->
+                            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addProviderModal">
+                                <i class="fas fa-plus"></i>
+                                Thêm nhà vận chuyển mới
+                            </button>
+                        </div>
+                        
+                        <!-- Providers Table -->
+                        <div class="table-container">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-truck"></i>
+                                        Danh sách nhà vận chuyển
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+
+                                    <div class="table-responsive">
+                                        <table class="table table-hover table-striped">
+                                            <thead>
+                                                <tr>
+                                                    <th class="sortable-header" onclick="sortTable('providerId')">
+                                                        ID
+                                                        <i th:if="${sortBy == 'providerId' && sortDir == 'asc'}" class="fas fa-sort-up"></i>
+                                                        <i th:if="${sortBy == 'providerId' && sortDir == 'desc'}" class="fas fa-sort-down"></i>
+                                                        <i th:if="${sortBy != 'providerId'}" class="fas fa-sort"></i>
+                                                    </th>
+                                                    <th>Hình ảnh</th>
+                                                    <th class="sortable-header" onclick="sortTable('providerName')">
+                                                        Tên nhà vận chuyển
+                                                        <i th:if="${sortBy == 'providerName' && sortDir == 'asc'}" class="fas fa-sort-up"></i>
+                                                        <i th:if="${sortBy == 'providerName' && sortDir == 'desc'}" class="fas fa-sort-down"></i>
+                                                        <i th:if="${sortBy != 'providerName'}" class="fas fa-sort"></i>
+                                                    </th>
+                                                    <th>Mô tả</th>
+                                                    <th>Phí vận chuyển</th>
+                                                    <th>Thời gian giao</th>
+                                                    <th>Trạng thái</th>
+                                                    <th>Thao tác</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <!-- Display providers if exists -->
+                                                <tr th:if="${providers != null && !providers.empty}" th:each="provider : ${providers}">
+                                                    <td th:text="${provider.providerId}"></td>
+                                                    <td>
+                                                        <img th:if="${provider.logo != null}" th:src="@{'/providers/' + ${provider.logo}}" class="provider-image" alt="Provider Image">
+                                                        <div th:if="${provider.logo == null}" class="provider-image-placeholder">
+                                                            <i class="fas fa-truck"></i>
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <span th:text="${provider.providerName}" class="font-weight-bold"></span>
+                                                    </td>
+                                                    <td th:text="${provider.description != null ? #strings.abbreviate(provider.description, 30) : 'N/A'}"></td>
+                                                    <td th:text="${provider.shippingFees != null ? #numbers.formatDecimal(provider.shippingFees, 0, 'COMMA', 0, 'POINT') + ' ₫' : 'N/A'}"></td>
+                                                    <td th:text="${provider.deliveryTimeRange}"></td>
+                                                    <td>
+                                                        <span th:if="${provider.status}" class="badge badge-active">Hoạt động</span>
+                                                        <span th:unless="${provider.status}" class="badge badge-inactive">Tạm dừng</span>
+                                                    </td>
+                                                    <td>
+                                                        <div class="btn-action-group">
+                                                            <button type="button" class="btn btn-info btn-sm view-provider" th:data-id="${provider.providerId}" title="Xem">
+                                                                <i class="fas fa-eye"></i>
+                                                            </button>
+                                                            <button type="button" class="btn btn-warning btn-sm edit-provider" th:data-id="${provider.providerId}" title="Sửa">
+                                                                <i class="fas fa-edit"></i>
+                                                            </button>
+                                                            <button type="button" class="btn btn-secondary btn-sm toggle-status" th:data-id="${provider.providerId}" title="Thay đổi trạng thái">
+                                                                <i th:if="${provider.status}" class="fas fa-pause"></i>
+                                                                <i th:unless="${provider.status}" class="fas fa-play"></i>
+                                                            </button>
+                                                            <button type="button" class="btn btn-danger btn-sm delete-provider" th:data-id="${provider.providerId}" title="Xóa">
+                                                                <i class="fas fa-trash"></i>
+                                                            </button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                                
+                                                <!-- No data message -->
+                                                <tr th:if="${providers == null || providers.empty}">
+                                                    <td colspan="8" class="empty-state">
+                                                        <i class="fas fa-truck"></i>
+                                                        <p>Chưa có nhà vận chuyển nào</p>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                    <!-- Pagination -->
+                                    <div th:if="${totalPages > 1}" class="pagination-container">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div class="pagination-info">
+                                                <span class="text-muted">
+                                                    Hiển thị <span th:text="${pageSize}">10</span> / <span th:text="${totalItems}">0</span> nhà vận chuyển
+                                                </span>
+                                            </div>
+                                            <nav>
+                                                <ul class="pagination pagination-sm mb-0">
+                                                    <!-- First Page -->
+                                                    <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+                                                        <a class="page-link" th:href="@{/admin/providers(page=0, size=${pageSize}, sortBy=${sortBy}, sortDir=${sortDir}, search=${search})}">
+                                                            ««
+                                                        </a>
+                                                    </li>
+                                                    
+                                                    <!-- Previous Page -->
+                                                    <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+                                                        <a class="page-link" th:href="@{/admin/providers(page=${currentPage - 1}, size=${pageSize}, sortBy=${sortBy}, sortDir=${sortDir}, search=${search})}">
+                                                            «
+                                                        </a>
+                                                    </li>
+                                                    
+                                                    <!-- Page Numbers -->
+                                                    <li th:each="pageNum : ${#numbers.sequence(0, totalPages - 1)}" 
+                                                        class="page-item" 
+                                                        th:classappend="${pageNum == currentPage} ? 'active'">
+                                                        <a class="page-link" 
+                                                           th:href="@{/admin/providers(page=${pageNum}, size=${pageSize}, sortBy=${sortBy}, sortDir=${sortDir}, search=${search})}"
+                                                           th:text="${pageNum + 1}"></a>
+                                                    </li>
+                                                    
+                                                    <!-- Next Page -->
+                                                    <li class="page-item" th:classappend="${currentPage == totalPages - 1} ? 'disabled'">
+                                                        <a class="page-link" th:href="@{/admin/providers(page=${currentPage + 1}, size=${pageSize}, sortBy=${sortBy}, sortDir=${sortDir}, search=${search})}">
+                                                            »
+                                                        </a>
+                                                    </li>
+                                                    
+                                                    <!-- Last Page -->
+                                                    <li class="page-item" th:classappend="${currentPage == totalPages - 1} ? 'disabled'">
+                                                        <a class="page-link" th:href="@{/admin/providers(page=${totalPages - 1}, size=${pageSize}, sortBy=${sortBy}, sortDir=${sortDir}, search=${search})}">
+                                                            »»
+                                                        </a>
+                                                    </li>
+                                                </ul>
+                                            </nav>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Provider Modal -->
+    <div class="modal fade" id="addProviderModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-plus"></i>
+                        Thêm nhà vận chuyển mới
+                    </h5>
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <form th:action="@{/admin/addProvider}" method="post" enctype="multipart/form-data">
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label">Tên nhà vận chuyển *</label>
+                                    <input type="text" class="form-control" name="providerName" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label">Phí vận chuyển (VNĐ)</label>
+                                    <input type="number" class="form-control" name="shippingFees" step="0.01">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label">Thời gian giao hàng</label>
+                                    <input type="text" class="form-control" name="deliveryTimeRange" placeholder="VD: 1-3 ngày">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label">Số điện thoại</label>
+                                    <input type="tel" class="form-control" name="contactPhone">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label">Email</label>
+                                    <input type="email" class="form-control" name="contactEmail">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label">Website</label>
+                                    <input type="url" class="form-control" name="website" placeholder="https://example.com">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Địa chỉ</label>
+                            <textarea class="form-control" name="address" rows="2"></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Mô tả</label>
+                            <textarea class="form-control" name="description" rows="3"></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Hình ảnh</label>
+                            <input type="file" class="form-control" name="imageFile" accept="image/*">
+                            <small class="form-text text-muted">Kích thước tối đa: 5MB</small>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy</button>
+                        <button type="submit" class="btn btn-primary">Thêm nhà vận chuyển</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Provider Modal -->
+    <div class="modal fade" id="editProviderModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-edit"></i>
+                        Chỉnh sửa nhà vận chuyển
+                    </h5>
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <form th:action="@{/admin/updateProvider}" method="post" enctype="multipart/form-data">
+                    <div class="modal-body">
+                        <input type="hidden" name="providerId" id="editProviderId">
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label">Tên nhà vận chuyển *</label>
+                                    <input type="text" class="form-control" name="providerName" id="editProviderName" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label">Phí vận chuyển (VNĐ)</label>
+                                    <input type="number" class="form-control" name="shippingFees" id="editShippingFees" step="0.01">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label">Thời gian giao hàng</label>
+                                    <input type="text" class="form-control" name="deliveryTimeRange" id="editDeliveryTimeRange">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label">Số điện thoại</label>
+                                    <input type="tel" class="form-control" name="contactPhone" id="editContactPhone">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label">Email</label>
+                                    <input type="email" class="form-control" name="contactEmail" id="editContactEmail">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label">Website</label>
+                                    <input type="url" class="form-control" name="website" id="editWebsite">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Địa chỉ</label>
+                            <textarea class="form-control" name="address" id="editAddress" rows="2"></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Mô tả</label>
+                            <textarea class="form-control" name="description" id="editDescription" rows="3"></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Trạng thái</label>
+                            <select class="form-control" name="status" id="editStatus">
+                                <option value="true">Hoạt động</option>
+                                <option value="false">Tạm dừng</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Hình ảnh</label>
+                            <div id="editImagePreview" class="image-preview empty">
+                                <i class="fas fa-truck"></i>
+                                <span>Chưa có hình ảnh</span>
+                            </div>
+                            <input type="file" class="form-control mt-2" name="imageFile" accept="image/*">
+                            <small class="form-text text-muted">Để trống nếu không muốn thay đổi hình ảnh</small>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy</button>
+                        <button type="submit" class="btn btn-primary">Cập nhật</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- View Provider Modal -->
+    <div class="modal fade" id="viewProviderModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-eye"></i>
+                        Chi tiết nhà vận chuyển
+                    </h5>
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-3 text-center">
+                            <div id="viewImagePreview" class="provider-logo-preview">
+                                <i class="fas fa-truck"></i>
+                                <span>Không có logo</span>
+                            </div>
+                        </div>
+                        <div class="col-md-9">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="info-item">
+                                        <label class="info-label">ID:</label>
+                                        <span id="viewProviderId" class="info-value"></span>
+                                    </div>
+                                    <div class="info-item">
+                                        <label class="info-label">Tên nhà vận chuyển:</label>
+                                        <span id="viewProviderName" class="info-value"></span>
+                                    </div>
+                                    <div class="info-item">
+                                        <label class="info-label">Phí vận chuyển:</label>
+                                        <span id="viewBasePrice" class="info-value"></span>
+                                    </div>
+                                    <div class="info-item">
+                                        <label class="info-label">Thời gian giao:</label>
+                                        <span id="viewDeliveryTime" class="info-value"></span>
+                                    </div>
+                                    <div class="info-item">
+                                        <label class="info-label">Số điện thoại:</label>
+                                        <span id="viewPhoneNumber" class="info-value"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="info-item">
+                                        <label class="info-label">Email:</label>
+                                        <span id="viewEmail" class="info-value"></span>
+                                    </div>
+                                    <div class="info-item">
+                                        <label class="info-label">Website:</label>
+                                        <span id="viewWebsite" class="info-value"></span>
+                                    </div>
+                                    <div class="info-item">
+                                        <label class="info-label">Địa chỉ:</label>
+                                        <span id="viewAddress" class="info-value"></span>
+                                    </div>
+                                    <div class="info-item">
+                                        <label class="info-label">Trạng thái:</label>
+                                        <span id="viewStatus" class="info-value"></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row mt-3">
+                                <div class="col-md-12">
+                                    <div class="info-item">
+                                        <label class="info-label">Mô tả:</label>
+                                        <div id="viewDescription" class="info-description"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Provider Modal -->
+    <div class="modal fade" id="deleteProviderModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        Xác nhận xóa
+                    </h5>
+                    <button type="button" class="close text-white" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p>Bạn có chắc chắn muốn xóa nhà vận chuyển <strong id="deleteProviderName"></strong>?</p>
+                    <p class="text-danger"><small>Hành động này không thể hoàn tác!</small></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy</button>
+                    <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Xóa</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/assets/js/core/jquery.3.2.1.min.js"></script>
+    <script src="/assets/js/core/popper.min.js"></script>
+    <script src="/assets/js/core/bootstrap.min.js"></script>
+    <script src="/assets/js/atlantis.min.js"></script>
+    
+    <script>
+        // Function to sort table
+        function sortTable(sortBy) {
+            const url = new URL(window.location);
+            const currentSortBy = url.searchParams.get('sortBy') || 'providerId';
+            const currentSortDir = url.searchParams.get('sortDir') || 'asc';
+            
+            let newSortDir = 'asc';
+            if (currentSortBy === sortBy && currentSortDir === 'asc') {
+                newSortDir = 'desc';
+            }
+            
+            url.searchParams.set('sortBy', sortBy);
+            url.searchParams.set('sortDir', newSortDir);
+            url.searchParams.set('page', '0'); // Reset to first page
+            
+            window.location.href = url.toString();
+        }
+        
+        $(document).ready(function() {
+            console.log('Provider management page loaded');
+            
+            // Test delete button click
+            $(document).on('click', '.delete-provider', function(e) {
+                console.log('DELETE BUTTON CLICKED!');
+                alert('Delete button clicked!');
+            });
+            
+            // Edit provider - Use event delegation
+            $(document).on('click', '.edit-provider', function(e) {
+                e.preventDefault();
+                const providerId = $(this).data('id');
+                console.log('Edit provider clicked:', providerId);
+                
+                // Fetch provider data
+                $.get(`/admin/getProviderData/${providerId}`)
+                    .done(function(provider) {
+                        console.log('Provider data loaded:', provider);
+                        $('#editProviderId').val(provider.providerId);
+                        $('#editProviderName').val(provider.providerName);
+                        $('#editShippingFees').val(provider.shippingFees);
+                        $('#editDeliveryTimeRange').val(provider.deliveryTimeRange);
+                        $('#editContactPhone').val(provider.contactPhone);
+                        $('#editContactEmail').val(provider.contactEmail);
+                        $('#editWebsite').val(provider.website);
+                        $('#editAddress').val(provider.address);
+                        $('#editDescription').val(provider.description);
+                        $('#editStatus').val(provider.status.toString());
+                        
+                        // Show current image
+                        const imagePreview = $('#editImagePreview');
+                        if (provider.logo) {
+                            imagePreview.html(`<img src="/providers/${provider.logo}" alt="Provider Image" class="image-preview">`);
+                            imagePreview.removeClass('empty');
+                        } else {
+                            imagePreview.html(`<i class="fas fa-truck"></i><span>Chưa có hình ảnh</span>`);
+                            imagePreview.addClass('empty');
+                        }
+                        
+                        // Show modal
+                        $('#editProviderModal').modal('show');
+                    })
+                    .fail(function(xhr, status, error) {
+                        console.error('Error loading provider data:', error);
+                        alert('Lỗi khi tải dữ liệu nhà vận chuyển!');
+                    });
+            });
+            
+            // View provider - Use event delegation
+            $(document).on('click', '.view-provider', function(e) {
+                e.preventDefault();
+                const providerId = $(this).data('id');
+                console.log('View provider clicked:', providerId);
+                
+                // Fetch provider data
+                $.get(`/admin/getProviderData/${providerId}`)
+                    .done(function(provider) {
+                        console.log('Provider data loaded:', provider);
+                        $('#viewProviderId').text(provider.providerId);
+                        $('#viewProviderName').text(provider.providerName);
+                        $('#viewBasePrice').text(provider.shippingFees ? provider.shippingFees.toLocaleString() + ' ₫' : 'N/A');
+                        $('#viewDeliveryTime').text(provider.deliveryTimeRange || 'N/A');
+                        $('#viewPhoneNumber').text(provider.contactPhone || 'N/A');
+                        $('#viewEmail').text(provider.contactEmail || 'N/A');
+                        $('#viewWebsite').text(provider.website || 'N/A');
+                        $('#viewAddress').text(provider.address || 'N/A');
+                        $('#viewStatus').html(provider.status ? 
+                            '<span class="badge badge-success">Hoạt động</span>' : 
+                            '<span class="badge badge-danger">Tạm dừng</span>');
+                        $('#viewDescription').text(provider.description || 'Không có mô tả');
+                        
+                        // Show logo
+                        const imagePreview = $('#viewImagePreview');
+                        if (provider.logo) {
+                            imagePreview.html(`<img src="/providers/${provider.logo}" alt="Provider Logo">`);
+                            imagePreview.removeClass('empty');
+                        } else {
+                            imagePreview.html(`<i class="fas fa-truck"></i><span>Không có logo</span>`);
+                            imagePreview.addClass('empty');
+                        }
+                        
+                        // Show modal
+                        $('#viewProviderModal').modal('show');
+                    })
+                    .fail(function(xhr, status, error) {
+                        console.error('Error loading provider data:', error);
+                        alert('Lỗi khi tải dữ liệu nhà vận chuyển!');
+                    });
+            });
+            
+            // Delete provider - Use event delegation
+            $(document).on('click', '.delete-provider', function(e) {
+                e.preventDefault();
+                const providerId = $(this).data('id');
+                console.log('Delete provider clicked:', providerId);
+                
+                // Store provider ID for later use
+                $('#deleteProviderModal').data('provider-id', providerId);
+                
+                // Fetch provider data for confirmation
+                $.get(`/admin/getProviderData/${providerId}`)
+                    .done(function(provider) {
+                        console.log('Provider data loaded for deletion:', provider);
+                        $('#deleteProviderName').text(provider.providerName);
+                        
+                        // Show modal
+                        $('#deleteProviderModal').modal('show');
+                    })
+                    .fail(function(xhr, status, error) {
+                        console.error('Error loading provider data:', error);
+                        alert('Lỗi khi tải dữ liệu nhà vận chuyển!');
+                    });
+            });
+            
+            // Confirm delete button
+            $(document).on('click', '#confirmDeleteBtn', function(e) {
+                e.preventDefault();
+                const providerId = $('#deleteProviderModal').data('provider-id');
+                console.log('=== DELETE DEBUG ===');
+                console.log('Confirm delete clicked for provider:', providerId);
+                console.log('Modal data:', $('#deleteProviderModal').data());
+                
+                if (providerId) {
+                    console.log('Redirecting to:', `/admin/deleteProvider/${providerId}`);
+                    // Redirect to delete URL
+                    window.location.href = `/admin/deleteProvider/${providerId}`;
+                } else {
+                    console.error('Provider ID not found!');
+                    alert('Lỗi: Không tìm thấy ID nhà vận chuyển!');
+                }
+            });
+            
+            // Toggle status - Use event delegation
+            $(document).on('click', '.toggle-status', function(e) {
+                e.preventDefault();
+                const providerId = $(this).data('id');
+                console.log('Toggle status clicked:', providerId);
+                
+                if (confirm('Bạn có chắc chắn muốn thay đổi trạng thái nhà vận chuyển này?')) {
+                    window.location.href = `/admin/toggleProviderStatus/${providerId}`;
+                }
+            });
+        });
+    </script>
+</body>
+</html>
