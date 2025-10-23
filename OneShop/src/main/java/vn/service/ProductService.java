@@ -18,6 +18,12 @@ public interface ProductService {
     
     void deleteById(Long id);
     
+    /**
+     * Soft delete a product by marking it inactive instead of physical deletion.
+     * Returns true if the product exists and was updated.
+     */
+    boolean softDelete(Long id);
+    
     List<Product> findByStatus(Boolean status);
     
     Page<Product> findByProductNameContainingIgnoreCase(String productName, Pageable pageable);

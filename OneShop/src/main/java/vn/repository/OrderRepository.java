@@ -236,7 +236,8 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
                                                   @Param("shopIds") List<Long> shopIds);
 
     // ===== Revenue by shop (DELIVERED) =====
-    @Query("SELECT COALESCE(SUM(o.totalAmount), 0) FROM Order o WHERE o.status = 'DELIVERED' AND o.shop.shopId = :shopId")
+    @Query("SELECT COALESCE(SUM(CASE WHEN o.finalAmount IS NOT NULL AND o.finalAmount > 0 THEN o.finalAmount ELSE o.totalAmount END), 0) " +
+           "FROM Order o WHERE o.status = 'DELIVERED' AND o.shop.shopId = :shopId")
     Double sumDeliveredRevenueByShopId(@Param("shopId") Long shopId);
 
     /**

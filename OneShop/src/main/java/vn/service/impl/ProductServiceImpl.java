@@ -41,6 +41,17 @@ public class ProductServiceImpl implements ProductService {
     public void deleteById(Long id) {
         productRepository.deleteById(id);
     }
+
+    @Override
+    public boolean softDelete(Long id) {
+        return productRepository.findById(id).map(p -> {
+            // Mark product as inactive/unavailable
+            p.setStatus(false);
+            p.setQuantity(0);
+            productRepository.save(p);
+            return true;
+        }).orElse(false);
+    }
     
     @Override
     public List<Product> findByStatus(Boolean status) {

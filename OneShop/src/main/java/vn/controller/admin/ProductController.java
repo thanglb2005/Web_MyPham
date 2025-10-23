@@ -271,9 +271,19 @@ public class ProductController {
         if (user == null) {
             return "redirect:/login";
         }
-        
-        productService.deleteById(id);
-        return "redirect:/admin/products?success=true&action=delete";
+        try {
+            productService.deleteById(id);
+            return "redirect:/admin/products?success=true&action=delete";
+        } catch (org.springframework.dao.DataIntegrityViolationException e) {
+            // FK constraint violation (e.g., referenced by order_details)
+            boolean soft = productService.softDelete(id);
+            String msg = soft
+                    ? "Sản phẩm đang được dùng trong đơn hàng, đã chuyển sang trạng thái ngừng kinh doanh."
+                    : "Không thể xóa sản phẩm vì đang được tham chiếu.";
+            return "redirect:/admin/products?warning=true&message=" + java.net.URLEncoder.encode(msg, java.nio.charset.StandardCharsets.UTF_8);
+        } catch (Exception e) {
+            return "redirect:/admin/products?error=true&action=delete";
+        }
     }
 
     @InitBinder
