@@ -131,8 +131,11 @@
                                         <div style="display: flex; gap: 20px;">
                                             <!-- Column: Unit Price -->
                                             <div style="width: 150px; text-align: right;">
-                                                <div style="color: #757575; font-size: 12px; text-decoration: line-through;" th:text="${#numbers.formatDecimal(item.unitPrice * 1.2, 0, 'DEFAULT', 0, 'DEFAULT')} + 'đ'"></div>
-                                                <div style="color: #33a3cc; font-size: 16px; font-weight: 500;" th:text="${#numbers.formatDecimal(item.unitPrice, 0, 'DEFAULT', 0, 'DEFAULT')} + 'đ'"></div>
+                                                <div th:if="${item.discount != null and item.discount > 0}" 
+                                                     style="color: #757575; font-size: 12px; text-decoration: line-through;" 
+                                                     th:text="${#numbers.formatDecimal(item.unitPrice, 0, 'DEFAULT', 0, 'DEFAULT')} + 'đ'"></div>
+                                                <div style="color: #33a3cc; font-size: 16px; font-weight: 500;" 
+                                                     th:text="${#numbers.formatDecimal(item.discount != null and item.discount > 0 ? item.unitPrice * (1 - item.discount/100.0) : item.unitPrice, 0, 'DEFAULT', 0, 'DEFAULT')} + 'đ'"></div>
                                             </div>
                                             
                                             <!-- Column: Quantity -->
@@ -1191,8 +1194,6 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    alert('Áp dụng shop voucher thành công!');
-                    
                     // Update shop voucher section specifically
                     updateCartWithShopVoucher(data);
                     
@@ -1380,7 +1381,6 @@
                 }
                 
                 if (data.success) {
-                    alert(data.message);
                     $('#voucherModal').modal('hide');
                     // Update cart totals display without full reload
                     updateCartWithVoucher(data);
@@ -1603,7 +1603,6 @@
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        alert(data.message);
                         location.reload();
                     } else {
                         alert(data.message);

@@ -92,7 +92,13 @@ public class CartServiceImpl implements CartService {
     public Double getCartTotalPrice(User user) {
         List<CartItemEntity> cartItems = getCartItems(user);
         return cartItems.stream()
-                .mapToDouble(CartItemEntity::getTotalPrice)
+                .mapToDouble(item -> {
+                    // Calculate discounted price
+                    double unitPrice = item.getUnitPrice();
+                    int discount = item.getProduct().getDiscount() != null ? item.getProduct().getDiscount() : 0;
+                    double discountedPrice = unitPrice * (1.0 - (discount / 100.0));
+                    return discountedPrice * item.getQuantity();
+                })
                 .sum();
     }
     
@@ -143,7 +149,13 @@ public class CartServiceImpl implements CartService {
     public Double getSelectedCartTotalPrice(User user) {
         List<CartItemEntity> selectedItems = getSelectedCartItems(user);
         return selectedItems.stream()
-                .mapToDouble(CartItemEntity::getTotalPrice)
+                .mapToDouble(item -> {
+                    // Calculate discounted price
+                    double unitPrice = item.getUnitPrice();
+                    int discount = item.getProduct().getDiscount() != null ? item.getProduct().getDiscount() : 0;
+                    double discountedPrice = unitPrice * (1.0 - (discount / 100.0));
+                    return discountedPrice * item.getQuantity();
+                })
                 .sum();
     }
     
@@ -169,6 +181,7 @@ public class CartServiceImpl implements CartService {
             cartItem.setId(entity.getProduct().getProductId());
             cartItem.setName(entity.getProduct().getProductName());
             cartItem.setUnitPrice(entity.getUnitPrice());
+            cartItem.setDiscount(entity.getProduct().getDiscount());
             cartItem.setQuantity(entity.getQuantity());
             cartItem.setTotalPrice(entity.getTotalPrice());
             cartItem.setProduct(entity.getProduct());
@@ -180,6 +193,9 @@ public class CartServiceImpl implements CartService {
             cartItem.setCategoryName(entity.getProduct().getCategory() != null ? 
                 entity.getProduct().getCategory().getCategoryName() : "");
             cartItem.setImageUrl(entity.getProduct().getProductImage());
+            
+            // Recalculate total price using discounted price
+            cartItem.updateTotalPrice();
             
             // Group by shop
             cartItemsByShop.computeIfAbsent(shop, k -> new ArrayList<>()).add(cartItem);

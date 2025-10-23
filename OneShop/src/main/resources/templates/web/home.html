@@ -14,6 +14,7 @@
     <link rel="stylesheet" href="/vendor/bootstrap/bootstrap.min.css" />
     <link rel="stylesheet" href="/css/main.css" />
     <link rel="stylesheet" href="/css/index.css" />
+    <link rel="stylesheet" href="/css/search-autocomplete.css" />
   </head>
   <body>
     <header th:replace="~{/web/fragments/header :: header}"></header>
@@ -512,7 +513,7 @@
                       >
                     </h6>
                     <h6 class="product-price">
-                      <del
+                      <del th:if="${item.discount > 0}"
                         >[[${#numbers.formatDecimal(item.price, 1, 'DEFAULT', 0,
                         'DEFAULT')}]] đ</del
                       >
@@ -616,7 +617,7 @@
                       >
                     </h6>
                     <h6 class="product-price">
-                      <del
+                      <del th:if="${item.discount > 0}"
                         >[[${#numbers.formatDecimal(item.price, 1, 'DEFAULT', 0,
                         'DEFAULT')}]] đ</del
                       >
@@ -724,7 +725,7 @@
                       >
                     </h6>
                     <h6 class="product-price">
-                      <del
+                      <del th:if="${item.discount > 0}"
                         >[[${#numbers.formatDecimal(item.price, 1, 'DEFAULT', 0,
                         'DEFAULT')}]] đ</del
                       >
@@ -1412,6 +1413,49 @@
     </script>
     =======
     <script src="/js/favorite.js"></script>
-    >>>>>>> Stashed changes
+    <script src="/js/search-autocomplete.js"></script>
+    
+    <!-- Inline autocomplete for homepage -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('=== HOMEPAGE AUTOCOMPLETE ===');
+        
+        setTimeout(function() {
+            const form = document.querySelector('.header-form');
+            const input = form ? form.querySelector('input[name="productName"]') : null;
+            
+            if (form && input) {
+                console.log('✅ Homepage autocomplete setup...');
+                
+                const dropdown = document.createElement('div');
+                dropdown.className = 'search-autocomplete';
+                dropdown.style.cssText = 'position:absolute;top:100%;left:0;right:0;background:white;border:1px solid #ccc;z-index:1000;padding:10px;box-shadow:0 4px 20px rgba(0,0,0,0.15);display:none;';
+                form.style.position = 'relative';
+                form.appendChild(dropdown);
+                
+                fetch('/api/search/autocomplete')
+                    .then(r => r.json())
+                    .then(data => {
+                        dropdown.innerHTML = `
+                            <div style="padding:5px; border-bottom:1px solid #eee; cursor:pointer;">🔍 ${data.suggestions[0]}</div>
+                            <div style="padding:5px; border-bottom:1px solid #eee; cursor:pointer;">🔍 ${data.suggestions[1]}</div>
+                            <div style="padding:5px; border-bottom:1px solid #eee; cursor:pointer;">📦 ${data.products[0].productName}</div>
+                            <div style="padding:5px; color:#ff6600;">💰 ${data.products[0].finalPrice.toLocaleString()} đ</div>
+                        `;
+                        
+                        input.addEventListener('focus', function() {
+                            dropdown.style.display = 'block';
+                        });
+                        
+                        input.addEventListener('blur', function() {
+                            setTimeout(() => dropdown.style.display = 'none', 200);
+                        });
+                        
+                        console.log('✅ Homepage autocomplete ready!');
+                    });
+            }
+        }, 1000);
+    });
+    </script>
   </body>
 </html>

@@ -213,6 +213,9 @@
                       <i class="icofont-star" th:classappend="${avg} >= 5 ? ' active' : ''"></i>
                     </div>
                     <h6 class="product-price">
+                      <del th:if="${item.discount > 0}">
+                        [[${#numbers.formatDecimal(item.price, 1, 'DEFAULT', 0, 'DEFAULT')}]] đ
+                      </del>
                       <span>
                         [[${#numbers.formatDecimal(item.price * (1 -
                         item.discount/100.0), 1, 'DEFAULT', 0, 'DEFAULT')}]] đ

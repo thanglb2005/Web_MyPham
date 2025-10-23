@@ -34,9 +34,9 @@ public class CartByShopDTO {
         this.cartItems = cartItems;
         this.totalItems = cartItems.size();
         
-        // Calculate totals
+        // Calculate totals using discounted prices
         this.totalPrice = cartItems.stream()
-                .mapToDouble(item -> item.getQuantity() * item.getUnitPrice())
+                .mapToDouble(item -> item.getTotalPrice())
                 .sum();
         
         // Calculate selected totals
@@ -46,7 +46,7 @@ public class CartByShopDTO {
         
         this.selectedPrice = cartItems.stream()
                 .filter(item -> item.getSelected() != null && item.getSelected())
-                .mapToDouble(item -> item.getQuantity() * item.getUnitPrice())
+                .mapToDouble(item -> item.getTotalPrice())
                 .sum();
         
         // Check if shop is selected (all items selected)
