@@ -20,9 +20,9 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long> 
 
     /**
      * Find order details with product information by order ID
-     * Returns: [orderDetailId, productName, quantity, unitPrice, totalPrice, productImage, shopName]
+     * Returns: [orderDetailId, productName, quantity, unitPrice, totalPrice, productImage, shopName, discount]
      */
-    @Query("SELECT od.orderDetailId, od.product.productName, od.quantity, od.unitPrice, od.totalPrice, od.product.productImage, od.product.shop.shopName " +
+    @Query("SELECT od.orderDetailId, od.product.productName, od.quantity, od.unitPrice, od.totalPrice, od.product.productImage, od.product.shop.shopName, od.product.discount " +
            "FROM OrderDetail od WHERE od.order.orderId = :orderId ORDER BY od.orderDetailId ASC")
     List<Object[]> findOrderDetailsByOrderId(@Param("orderId") Long orderId);
 

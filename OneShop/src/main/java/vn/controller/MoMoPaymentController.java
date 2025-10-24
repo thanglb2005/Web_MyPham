@@ -103,7 +103,24 @@ public class MoMoPaymentController {
                 return "web/checkout-error";
             }
 
-            Long orderIdLong = Long.parseLong(orderId);
+            // Extract original order ID from MoMo order ID format: "MOMO_123_timestamp"
+            Long orderIdLong;
+            try {
+                if (orderId.startsWith("MOMO_")) {
+                    String[] parts = orderId.split("_");
+                    if (parts.length >= 2) {
+                        orderIdLong = Long.parseLong(parts[1]);
+                    } else {
+                        orderIdLong = Long.parseLong(orderId);
+                    }
+                } else {
+                    orderIdLong = Long.parseLong(orderId);
+                }
+            } catch (NumberFormatException e) {
+                model.addAttribute("error", "Order ID không hợp lệ: " + orderId);
+                return "web/checkout-error";
+            }
+
             Order order = orderService.getOrderById(orderIdLong);
             
             if (order == null) {
@@ -202,7 +219,23 @@ public class MoMoPaymentController {
                 return "ERROR: Missing parameters";
             }
 
-            Long orderIdLong = Long.parseLong(orderId);
+            // Extract original order ID from MoMo order ID format: "MOMO_123_timestamp"
+            Long orderIdLong;
+            try {
+                if (orderId.startsWith("MOMO_")) {
+                    String[] parts = orderId.split("_");
+                    if (parts.length >= 2) {
+                        orderIdLong = Long.parseLong(parts[1]);
+                    } else {
+                        orderIdLong = Long.parseLong(orderId);
+                    }
+                } else {
+                    orderIdLong = Long.parseLong(orderId);
+                }
+            } catch (NumberFormatException e) {
+                return "ERROR: Invalid orderId format: " + orderId;
+            }
+
             Double amountDouble = Double.parseDouble(amount); // Giữ nguyên VND
             
             boolean success = moMoPaymentService.processPaymentCallback(orderIdLong, resultCode, transId, amountDouble);
@@ -215,8 +248,14 @@ public class MoMoPaymentController {
                 }
                 return "SUCCESS";
             } else {
-                // Thanh toán thất bại - xóa order tạm
-                orderService.deleteOrder(orderIdLong);
+                // Thanh toán thất bại - set order thành CANCELLED
+                Order order = orderService.getOrderById(orderIdLong);
+                if (order != null) {
+                    order.setPaymentPaid(false);
+                    order.setStatus(Order.OrderStatus.CANCELLED);
+                    order.setNote(order.getNote() + " | MoMo Payment Failed - Code: " + resultCode);
+                    orderService.updateOrder(order);
+                }
                 return "FAILED";
             }
 

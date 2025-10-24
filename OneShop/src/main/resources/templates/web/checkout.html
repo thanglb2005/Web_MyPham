@@ -187,7 +187,15 @@
                                             </td>
                                             <!-- Unit Price -->
                                             <td style="padding: 20px; text-align: right; border-bottom: 1px solid #f0f0f0;">
-                                                <span style="font-size: 16px; font-weight: 600; color: #33a3cc;" th:text="${#numbers.formatDecimal(item.unitPrice, 0, 'DEFAULT', 0, 'DEFAULT')} + ' ₫'">0 ₫</span>
+                                                <div th:if="${item.discount != null and item.discount > 0}">
+                                                    <div style="color: #757575; font-size: 12px; text-decoration: line-through; margin-bottom: 2px;" 
+                                                         th:text="${#numbers.formatDecimal(item.unitPrice, 0, 'DEFAULT', 0, 'DEFAULT')} + ' ₫'"></div>
+                                                    <div style="font-size: 16px; font-weight: 600; color: #33a3cc;" 
+                                                         th:text="${#numbers.formatDecimal(item.unitPrice * (1 - item.discount/100.0), 0, 'DEFAULT', 0, 'DEFAULT')} + ' ₫'"></div>
+                                                </div>
+                                                <div th:unless="${item.discount != null and item.discount > 0}">
+                                                    <span style="font-size: 16px; font-weight: 600; color: #33a3cc;" th:text="${#numbers.formatDecimal(item.unitPrice, 0, 'DEFAULT', 0, 'DEFAULT')} + ' ₫'">0 ₫</span>
+                                                </div>
                                                 <small style="color: #999; font-size: 12px;">/kg</small>
                                             </td>
                                             <!-- Category -->

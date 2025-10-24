@@ -347,7 +347,12 @@ public class CartController {
         Collection<CartItem> cartItems = cartMap.values();
         Integer totalItems = cartMap.size();
         Double totalPrice = cartMap.values().stream()
-                .mapToDouble(item -> item.getQuantity() * item.getUnitPrice())
+                .mapToDouble(item -> {
+                    double unitPrice = item.getUnitPrice();
+                    int discount = item.getDiscount() != null ? item.getDiscount() : 0;
+                    double discountedPrice = unitPrice * (1.0 - (discount / 100.0));
+                    return item.getQuantity() * discountedPrice;
+                })
                 .sum();
 
         model.addAttribute("cartItems", cartItems);
@@ -377,7 +382,12 @@ public class CartController {
         Collection<CartItem> cartItems = cartMap.values();
         Integer totalItems = cartMap.size();
         Double totalPrice = cartMap.values().stream()
-                .mapToDouble(item -> item.getQuantity() * item.getUnitPrice())
+                .mapToDouble(item -> {
+                    double unitPrice = item.getUnitPrice();
+                    int discount = item.getDiscount() != null ? item.getDiscount() : 0;
+                    double discountedPrice = unitPrice * (1.0 - (discount / 100.0));
+                    return item.getQuantity() * discountedPrice;
+                })
                 .sum();
 
         // Get voucher and xu data from session
@@ -390,13 +400,14 @@ public class CartController {
         Integer xuAmount = (Integer) request.getSession().getAttribute("xuAmount");
         Double xuDiscount = (Double) request.getSession().getAttribute("xuDiscount");
         
-        // Calculate total discount
+        // Calculate total discount (only voucher discounts, product discount already applied in totalPrice)
         Double totalDiscount = 0.0;
         if (oneVoucherDiscount != null) totalDiscount += oneVoucherDiscount;
         if (shopVoucherDiscount != null) totalDiscount += shopVoucherDiscount;
         if (xuDiscount != null) totalDiscount += xuDiscount;
         
-        // Calculate final price (product discount only, shipping will be handled in frontend)
+        // Calculate final price (totalPrice already includes product discount, now subtract voucher discounts)
+        // Note: Shipping fee will be added in frontend, so finalPrice here is just product price
         Double finalPrice = totalPrice - totalDiscount;
         if (finalPrice < 0) finalPrice = 0.0; // Safety check
 
@@ -498,11 +509,16 @@ public class CartController {
             System.out.println("=== Cart Items Debug ===");
             double totalCartPrice = 0;
             for (CartItem item : cartMap.values()) {
-                double itemTotal = item.getQuantity() * item.getUnitPrice();
+                double unitPrice = item.getUnitPrice();
+                int discount = item.getDiscount() != null ? item.getDiscount() : 0;
+                double discountedPrice = unitPrice * (1.0 - (discount / 100.0));
+                double itemTotal = item.getQuantity() * discountedPrice;
                 totalCartPrice += itemTotal;
                 System.out.println("Item: " + item.getName() + 
                     " | Qty: " + item.getQuantity() + 
-                    " | Unit Price: " + item.getUnitPrice() + 
+                    " | Unit Price: " + unitPrice + 
+                    " | Discount: " + discount + "%" +
+                    " | Discounted Price: " + discountedPrice +
                     " | Total: " + itemTotal);
             }
             System.out.println("Total Cart Price: " + totalCartPrice);
@@ -541,13 +557,10 @@ public class CartController {
                 promotionDescription += "OneXu: " + (xuAmount != null ? xuAmount : 0) + " xu";
             }
             
-            System.out.println("Total discount applied: " + totalDiscount);
-            System.out.println("Promotion description: " + promotionDescription);
-
             // Get shipping voucher info
             Promotion shippingVoucher = (Promotion) request.getSession().getAttribute("shippingVoucher");
             String shippingVoucherCode = shippingVoucher != null ? shippingVoucher.getPromotionCode() : null;
-            
+
             // Chỉ tạo order cho COD
             // MOMO và BANK_TRANSFER sẽ tạo order sau khi thanh toán thành công
             if (paymentMethodEnum == Order.PaymentMethod.COD) {
@@ -566,7 +579,6 @@ public class CartController {
                     shippingVoucherCode,
                     shippingVoucherDiscount
                 );
-                System.out.println("Order created successfully with ID: " + order.getOrderId());
 
                 // Deduct xu from user balance if xu was used
                 Integer xuAmount = (Integer) request.getSession().getAttribute("xuAmount");
@@ -757,7 +769,12 @@ public class CartController {
         Collection<CartItem> cartItems = cartMap.values();
         Integer totalItems = cartMap.size();
         Double totalPrice = cartMap.values().stream()
-                .mapToDouble(item -> item.getQuantity() * item.getUnitPrice())
+                .mapToDouble(item -> {
+                    double unitPrice = item.getUnitPrice();
+                    int discount = item.getDiscount() != null ? item.getDiscount() : 0;
+                    double discountedPrice = unitPrice * (1.0 - (discount / 100.0));
+                    return item.getQuantity() * discountedPrice;
+                })
                 .sum();
 
         model.addAttribute("cartItems", cartItems);
@@ -782,6 +799,7 @@ public class CartController {
             cartItem.setQuantity(entity.getQuantity());
             cartItem.setTotalPrice(entity.getTotalPrice());
             cartItem.setProduct(entity.getProduct());
+            cartItem.setDiscount(entity.getProduct().getDiscount()); // Set discount
             
             // Set additional fields to avoid lazy loading issues
             cartItem.setBrandName(entity.getProduct().getBrand() != null ? 
@@ -795,6 +813,7 @@ public class CartController {
         }
         return cartMap;
     }
+    
     
     /**
      * Get available promotions for voucher selection popup
@@ -1138,7 +1157,7 @@ public class CartController {
         
         return response;
     }
-
+    
     /**
      * Get current voucher status from session
      */

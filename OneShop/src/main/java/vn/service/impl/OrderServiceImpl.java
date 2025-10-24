@@ -81,7 +81,12 @@ public class OrderServiceImpl implements OrderService {
         }
 
         double originalAmount = cartItems.values().stream()
-                .mapToDouble(item -> item.getQuantity() * item.getUnitPrice())
+                .mapToDouble(item -> {
+                    double unitPrice = item.getUnitPrice();
+                    int discount = item.getDiscount() != null ? item.getDiscount() : 0;
+                    double discountedPrice = unitPrice * (1.0 - (discount / 100.0));
+                    return item.getQuantity() * discountedPrice;
+                })
                 .sum();
         
         // Set original total amount first
