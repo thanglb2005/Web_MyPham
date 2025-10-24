@@ -183,6 +183,97 @@
       </div>
     </div>
 
+    <!-- Filter Section -->
+    <div class="row mb-4">
+      <div class="col-12">
+        <div class="stat-card">
+          <div class="d-flex align-items-center mb-3">
+            <div class="stat-icon" style="background: rgba(59, 130, 246, 0.1); color: #3b82f6; width: 48px; height: 48px; font-size: 1.5rem;">
+              <i class="fas fa-filter"></i>
+            </div>
+            <div class="ms-3">
+              <h5 class="mb-1">Bộ lọc thống kê</h5>
+              <small class="text-muted">Lọc dữ liệu theo shop và thời gian</small>
+            </div>
+          </div>
+          
+          <form method="get" action="/shipper/statistics" class="row g-3">
+            <!-- Shop Filter -->
+            <div class="col-md-4">
+              <label for="shopId" class="form-label">
+                <i class="fas fa-store me-1"></i>Shop
+              </label>
+              <select class="form-select" id="shopId" name="shopId">
+                <option value="">Tất cả shop</option>
+                <option th:each="shop : ${assignedShops}" 
+                        th:value="${shop.shopId}" 
+                        th:text="${shop.shopName}"
+                        th:selected="${selectedShopId != null && selectedShopId == shop.shopId}">
+                  Shop Name
+                </option>
+              </select>
+            </div>
+            
+            <!-- Year Filter -->
+            <div class="col-md-3">
+              <label for="startDate" class="form-label">
+                <i class="fas fa-calendar-alt me-1"></i>Từ ngày
+              </label>
+              <input type="date" class="form-control" id="startDate" name="startDate" 
+                     th:value="${startDate}">
+            </div>
+            
+            <!-- Month Filter -->
+            <div class="col-md-3">
+              <label for="endDate" class="form-label">
+                <i class="fas fa-calendar me-1"></i>Đến ngày
+              </label>
+              <input type="date" class="form-control" id="endDate" name="endDate" 
+                     th:value="${endDate}">
+            </div>
+            
+            <!-- Filter Buttons -->
+            <div class="col-md-2">
+              <label class="form-label">&nbsp;</label>
+              <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary flex-fill">
+                  <i class="fas fa-search me-1"></i>Lọc
+                </button>
+                <a th:href="@{/shipper/statistics}" class="btn btn-outline-secondary">
+                  <i class="fas fa-times me-1"></i>Xóa
+                </a>
+              </div>
+            </div>
+          </form>
+          
+          <!-- Active Filters Display -->
+          <div th:if="${selectedShop != null or startDate != null or endDate != null}" 
+               class="mt-3 pt-3 border-top">
+            <div class="d-flex align-items-center">
+              <small class="text-muted me-2">Bộ lọc đang áp dụng:</small>
+              <div class="d-flex flex-wrap gap-2">
+                <span th:if="${selectedShop != null}" 
+                      class="badge bg-primary">
+                  <i class="fas fa-store me-1"></i>
+                  <span th:text="${selectedShop.shopName}">Shop</span>
+                </span>
+                <span th:if="${startDate != null}" 
+                      class="badge bg-info">
+                  <i class="fas fa-calendar-alt me-1"></i>
+                  Từ <span th:text="${startDate}">2024-01-01</span>
+                </span>
+                <span th:if="${endDate != null}" 
+                      class="badge bg-success">
+                  <i class="fas fa-calendar me-1"></i>
+                  Đến <span th:text="${endDate}">2024-12-31</span>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Statistics Cards -->
     <div class="row g-4 mb-4">
       <div class="col-md-3">
@@ -236,14 +327,14 @@
               <i class="fas fa-dollar-sign"></i>
             </div>
             <div class="ms-3">
-              <div class="stat-label">Tổng giá trị đã giao</div>
+              <div class="stat-label">Tổng số tiền cuối cùng đã giao</div>
               <div class="stat-value" style="font-size: 1.75rem;" 
-                   th:text="${#numbers.formatDecimal(totalDeliveredAmount, 0, 'DEFAULT', 0, 'DEFAULT')} + ' đ'">
+                   th:text="${#numbers.formatDecimal(totalDeliveredAmount, 0, 'COMMA', 0, 'POINT')} + ' đ'">
                 0 đ
               </div>
             </div>
           </div>
-          <small class="text-muted">Tổng giá trị các đơn hàng đã giao thành công</small>
+          <small class="text-muted">Số tiền cuối cùng đã tính (bao gồm phí ship và giảm giá)</small>
         </div>
       </div>
       <div class="col-md-6">
@@ -302,36 +393,13 @@
               <th class="text-center" style="min-width: 100px;">Tổng đơn</th>
               <th class="text-center" style="min-width: 100px;">Đã giao</th>
               <th class="text-center" style="min-width: 100px;">Tỷ lệ (%)</th>
-              <th class="text-end" style="min-width: 150px;">Tổng giá trị</th>
+              <th class="text-end" style="min-width: 150px;">Số tiền cuối cùng</th>
             </tr>
           </thead>
-          <tbody>
-            <tr th:if="${monthlyStats == null or monthlyStats.isEmpty()}">
-              <td colspan="5" class="text-center text-muted py-4">Chưa có dữ liệu thống kê</td>
-            </tr>
-            <tr th:each="stat : ${monthlyStats}">
-              <td>
-                <strong>
-                  Tháng <span th:text="${stat[1]}">1</span>/<span th:text="${stat[0]}">2024</span>
-                </strong>
-              </td>
-              <td class="text-center">
-                <span class="badge bg-primary" th:text="${stat[2]}">0</span>
-              </td>
-              <td class="text-center">
-                <span class="badge bg-success" th:text="${stat[3]}">0</span>
-              </td>
-              <td class="text-center">
-                <span th:text="${stat[2] > 0 ? #numbers.formatDecimal(stat[3] * 100.0 / stat[2], 1, 1) + '%' : '0.0%'}">
-                  0%
-                </span>
-              </td>
-              <td class="text-end">
-                <strong class="text-success">
-                  <span th:text="${stat[4] != null ? (#numbers.formatDecimal(stat[4], 0, 'COMMA', 0, 'POINT') + ' đ') : '0 đ'}">
-                    0 đ
-                  </span>
-                </strong>
+          <tbody id="monthlyStatsTableBody">
+            <tr>
+              <td colspan="5" class="text-center text-muted py-4">
+                <i class="fas fa-spinner fa-spin me-2"></i>Đang tải dữ liệu...
               </td>
             </tr>
           </tbody>
@@ -353,18 +421,40 @@
         return;
       }
 
+      // Get filter parameters from URL
+      const urlParams = new URLSearchParams(window.location.search);
+      const shopId = urlParams.get('shopId') || '';
+      const startDate = urlParams.get('startDate') || '';
+      const endDate = urlParams.get('endDate') || '';
+      
+      // Build API URLs with filter parameters
+      let monthlyStatsUrl = '/shipper/api/monthly-stats';
+      let statusStatsUrl = '/shipper/api/status-stats';
+      
+      const params = [];
+      if (shopId) params.push('shopId=' + encodeURIComponent(shopId));
+      if (startDate) params.push('startDate=' + encodeURIComponent(startDate));
+      if (endDate) params.push('endDate=' + encodeURIComponent(endDate));
+      
+      if (params.length > 0) {
+        monthlyStatsUrl += '?' + params.join('&');
+        statusStatsUrl += '?' + params.join('&');
+      }
+
       // Fetch data from API
-      fetch('/shipper/api/monthly-stats')
+      fetch(monthlyStatsUrl)
         .then(function(response) { return response.json(); })
         .then(function(result) {
           createMonthlyChart(result.data || []);
+          updateMonthlyStatsTable(result.data || []);
         })
         .catch(function(error) {
           console.error('Error fetching monthly stats:', error);
           createMonthlyChart([]);
+          updateMonthlyStatsTable([]);
         });
 
-      fetch('/shipper/api/status-stats')
+      fetch(statusStatsUrl)
         .then(function(response) { return response.json(); })
         .then(function(result) {
           createStatusChart(result.data || []);
@@ -489,6 +579,48 @@
       } catch (error) {
         console.error('Lỗi tạo biểu đồ tháng:', error);
       }
+    }
+
+    function updateMonthlyStatsTable(monthlyStats) {
+      const tbody = document.getElementById('monthlyStatsTableBody');
+      if (!tbody) {
+        console.error('Monthly stats table body not found!');
+        return;
+      }
+
+      if (!monthlyStats || monthlyStats.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-4">Chưa có dữ liệu thống kê</td></tr>';
+        return;
+      }
+
+      // Sắp xếp theo năm và tháng
+      monthlyStats.sort(function(a, b) {
+        if (a.year !== b.year) {
+          return b.year - a.year; // Năm giảm dần
+        }
+        return b.month - a.month; // Tháng giảm dần
+      });
+
+      let tableHTML = '';
+      monthlyStats.forEach(function(stat) {
+        const totalOrders = stat.totalOrders || 0;
+        const deliveredOrders = stat.deliveredOrders || 0;
+        const totalAmount = stat.totalAmount || 0;
+        const successRate = totalOrders > 0 ? (deliveredOrders * 100.0 / totalOrders) : 0;
+
+        // Format số tiền
+        const formattedAmount = totalAmount.toLocaleString('vi-VN') + ' ₫';
+
+        tableHTML += '<tr>' +
+          '<td><strong>Tháng ' + stat.month + '/' + stat.year + '</strong></td>' +
+          '<td class="text-center"><span class="badge bg-primary">' + totalOrders + '</span></td>' +
+          '<td class="text-center"><span class="badge bg-success">' + deliveredOrders + '</span></td>' +
+          '<td class="text-center">' + successRate.toFixed(1) + '%</td>' +
+          '<td class="text-end"><strong class="text-success">' + formattedAmount + '</strong></td>' +
+          '</tr>';
+      });
+
+      tbody.innerHTML = tableHTML;
     }
 
     function createStatusChart(statusStats) {
