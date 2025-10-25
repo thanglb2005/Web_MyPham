@@ -8,12 +8,18 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import vn.entity.Shop;
 import vn.entity.User;
+import vn.entity.Role;
 import vn.repository.ShopRepository;
 import vn.repository.UserRepository;
+import vn.repository.RoleRepository;
 
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.Date;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Controller quản lý shipper cho shop/admin
@@ -28,6 +34,9 @@ public class ShipperManagementController {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private RoleRepository roleRepository;
 
     /**
      * Hiển thị trang quản lý shipper cho các shop
@@ -98,6 +107,71 @@ public class ShipperManagementController {
         model.addAttribute("unassignedShippers", unassignedShippers);
         
         return "admin/shippers-list";
+    }
+
+    /**
+     * Hiển thị trang thêm shipper mới
+     */
+    @GetMapping("/shippers-list/add")
+    @Transactional
+    public String showAddShipperForm(Model model) {
+        model.addAttribute("pageTitle", "Thêm Shipper mới");
+        return "admin/add-shipper";
+    }
+
+    /**
+     * Xử lý thêm shipper mới
+     */
+    @PostMapping("/add-shipper")
+    @ResponseBody
+    @Transactional
+    public Map<String, Object> addShipper(@RequestParam String name,
+                                          @RequestParam String email,
+                                          @RequestParam String password,
+                                          Model model) {
+        Map<String, Object> response = new HashMap<>();
+        
+        try {
+            // Kiểm tra email đã tồn tại chưa
+            if (userRepository.existsByEmail(email)) {
+                response.put("success", false);
+                response.put("message", "Email này đã được sử dụng!");
+                return response;
+            }
+
+            // Tạo user mới với role SHIPPER
+            User shipper = new User();
+            shipper.setName(name);
+            shipper.setEmail(email);
+            shipper.setPassword(password);
+            shipper.setRegisterDate(new Date());
+            shipper.setStatus(false); // Mặc định chờ duyệt
+            shipper.setAvatar("user.png");
+            shipper.setOneXuBalance(0.0);
+            shipper.setEnabled(true);
+
+            // Gán role SHIPPER
+            Role shipperRole = roleRepository.findByName("ROLE_SHIPPER").orElse(null);
+            if (shipperRole == null) {
+                shipperRole = new Role("ROLE_SHIPPER");
+                roleRepository.save(shipperRole);
+            }
+            shipper.setRoles(Arrays.asList(shipperRole));
+
+            // Lưu shipper
+            userRepository.save(shipper);
+
+            response.put("success", true);
+            response.put("message", "Thêm shipper thành công!");
+            response.put("shipperId", shipper.getUserId());
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.put("success", false);
+            response.put("message", "Có lỗi xảy ra khi thêm shipper: " + e.getMessage());
+        }
+        
+        return response;
     }
 
     /**

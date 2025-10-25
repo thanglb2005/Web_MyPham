@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.io.Serializable;
 import java.util.Collection;
@@ -67,5 +68,6 @@ public class User implements Serializable {
     // Quan hệ Many-to-Many với Shop (cho shipper)
     // Một shipper có thể thuộc nhiều shop, một shop có thể có nhiều shipper
     @ManyToMany(mappedBy = "shippers", fetch = FetchType.LAZY)
+    @JsonIgnore
     private Set<Shop> assignedShops = new HashSet<>();
 }

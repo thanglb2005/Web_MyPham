@@ -279,12 +279,41 @@
                       <div
                         class="d-flex justify-content-end align-items-center gap-2"
                       >
-                        <!-- Các nút hành động chỉ hiển thị khi trạng thái là PENDING -->
+                        <!-- Các nút hành động cho đơn chờ xác nhận -->
                         <div th:if="${order.status.name() == 'PENDING'}">
+                          <!-- Nút chọn shipper cho đơn hỏa tốc (TPHCM) -->
+                          <button 
+                            th:if="${#strings.containsIgnoreCase(order.shippingAddress, 'hồ chí minh') or #strings.containsIgnoreCase(order.shippingAddress, 'ho chi minh') or #strings.containsIgnoreCase(order.shippingAddress, 'tphcm') or #strings.containsIgnoreCase(order.shippingAddress, 'sài gòn') or #strings.containsIgnoreCase(order.shippingAddress, 'quận 1') or #strings.containsIgnoreCase(order.shippingAddress, 'quận 2') or #strings.containsIgnoreCase(order.shippingAddress, 'quận 3') or #strings.containsIgnoreCase(order.shippingAddress, 'quận 4') or #strings.containsIgnoreCase(order.shippingAddress, 'quận 5') or #strings.containsIgnoreCase(order.shippingAddress, 'quận 6') or #strings.containsIgnoreCase(order.shippingAddress, 'quận 7') or #strings.containsIgnoreCase(order.shippingAddress, 'quận 8') or #strings.containsIgnoreCase(order.shippingAddress, 'quận 9') or #strings.containsIgnoreCase(order.shippingAddress, 'quận 10') or #strings.containsIgnoreCase(order.shippingAddress, 'quận 11') or #strings.containsIgnoreCase(order.shippingAddress, 'quận 12') or #strings.containsIgnoreCase(order.shippingAddress, 'thủ đức') or #strings.containsIgnoreCase(order.shippingAddress, 'bình thạnh') or #strings.containsIgnoreCase(order.shippingAddress, 'tân bình') or #strings.containsIgnoreCase(order.shippingAddress, 'tân phú') or #strings.containsIgnoreCase(order.shippingAddress, 'phú nhuận') or #strings.containsIgnoreCase(order.shippingAddress, 'gò vấp') or #strings.containsIgnoreCase(order.shippingAddress, 'bình tân') or #strings.containsIgnoreCase(order.shippingAddress, 'hóc môn') or #strings.containsIgnoreCase(order.shippingAddress, 'củ chi') or #strings.containsIgnoreCase(order.shippingAddress, 'bình chánh') or #strings.containsIgnoreCase(order.shippingAddress, 'nhà bè') or #strings.containsIgnoreCase(order.shippingAddress, 'cần giờ')}"
+                            type="button" 
+                            class="btn btn-sm btn-warning me-1"
+                            th:data-order-id="${order.orderId}"
+                            th:data-shop-id="${order.shop.shopId}"
+                            th:disabled="${order.shipper != null}"
+                          >
+                            <i class="fas fa-motorcycle me-1"></i>
+                            <span th:if="${order.shipper != null}">Đã gán shipper</span>
+                            <span th:if="${order.shipper == null}">Chọn Shipper (Hỏa tốc)</span>
+                          </button>
+                          
+                          <!-- Nút chọn nhà vận chuyển cho đơn đi xa (ngoài TPHCM) -->
+                          <button 
+                            th:if="${!#strings.containsIgnoreCase(order.shippingAddress, 'hồ chí minh') and !#strings.containsIgnoreCase(order.shippingAddress, 'ho chi minh') and !#strings.containsIgnoreCase(order.shippingAddress, 'tphcm') and !#strings.containsIgnoreCase(order.shippingAddress, 'sài gòn') and !#strings.containsIgnoreCase(order.shippingAddress, 'quận 1') and !#strings.containsIgnoreCase(order.shippingAddress, 'quận 2') and !#strings.containsIgnoreCase(order.shippingAddress, 'quận 3') and !#strings.containsIgnoreCase(order.shippingAddress, 'quận 4') and !#strings.containsIgnoreCase(order.shippingAddress, 'quận 5') and !#strings.containsIgnoreCase(order.shippingAddress, 'quận 6') and !#strings.containsIgnoreCase(order.shippingAddress, 'quận 7') and !#strings.containsIgnoreCase(order.shippingAddress, 'quận 8') and !#strings.containsIgnoreCase(order.shippingAddress, 'quận 9') and !#strings.containsIgnoreCase(order.shippingAddress, 'quận 10') and !#strings.containsIgnoreCase(order.shippingAddress, 'quận 11') and !#strings.containsIgnoreCase(order.shippingAddress, 'quận 12') and !#strings.containsIgnoreCase(order.shippingAddress, 'thủ đức') and !#strings.containsIgnoreCase(order.shippingAddress, 'bình thạnh') and !#strings.containsIgnoreCase(order.shippingAddress, 'tân bình') and !#strings.containsIgnoreCase(order.shippingAddress, 'tân phú') and !#strings.containsIgnoreCase(order.shippingAddress, 'phú nhuận') and !#strings.containsIgnoreCase(order.shippingAddress, 'gò vấp') and !#strings.containsIgnoreCase(order.shippingAddress, 'bình tân') and !#strings.containsIgnoreCase(order.shippingAddress, 'hóc môn') and !#strings.containsIgnoreCase(order.shippingAddress, 'củ chi') and !#strings.containsIgnoreCase(order.shippingAddress, 'bình chánh') and !#strings.containsIgnoreCase(order.shippingAddress, 'nhà bè') and !#strings.containsIgnoreCase(order.shippingAddress, 'cần giờ')}"
+                            type="button" 
+                            class="btn btn-sm btn-info me-1"
+                            th:data-order-id="${order.orderId}"
+                            th:disabled="${order.shippingProviderId != null}"
+                          >
+                            <i class="fas fa-truck me-1"></i>
+                            <span th:if="${order.shippingProviderId != null}">Đã chọn nhà vận chuyển</span>
+                            <span th:if="${order.shippingProviderId == null}">Chọn Nhà Vận Chuyển (Đi xa)</span>
+                          </button>
+
+                          <!-- Nút xác nhận - chỉ hiển thị khi đã chọn shipper hoặc nhà vận chuyển -->
                           <form
                             th:action="@{/vendor/orders/confirm}"
                             method="post"
                             class="d-inline"
+                            th:if="${order.shipper != null or order.shippingProviderId != null}"
                           >
                             <input
                               type="hidden"
@@ -298,11 +327,19 @@
                             />
                             <button
                               type="submit"
-                              class="btn btn-sm btn-success"
+                              class="btn btn-sm btn-success me-1"
                             >
                               <i class="fas fa-check me-1"></i>Xác nhận
                             </button>
                           </form>
+
+                          <!-- Thông báo cần chọn shipper/nhà vận chuyển trước -->
+                          <div th:if="${order.shipper == null and order.shippingProviderId == null}" class="text-warning small">
+                            <i class="fas fa-exclamation-triangle me-1"></i>
+                            Vui lòng chọn shipper hoặc nhà vận chuyển trước khi xác nhận
+                          </div>
+
+
                           <form
                             th:action="@{/vendor/orders/cancel}"
                             method="post"
@@ -326,6 +363,36 @@
                               <i class="fas fa-times me-1"></i>Hủy
                             </button>
                           </form>
+                        </div>
+
+                        <!-- Nút chọn shipper/nhà vận chuyển cho đơn đã xác nhận (backup) -->
+                        <div th:if="${order.status.name() == 'CONFIRMED'}">
+                          <!-- Nút chọn shipper cho đơn hỏa tốc (TPHCM) -->
+                          <button 
+                            th:if="${#strings.containsIgnoreCase(order.shippingAddress, 'hồ chí minh') or #strings.containsIgnoreCase(order.shippingAddress, 'ho chi minh') or #strings.containsIgnoreCase(order.shippingAddress, 'tphcm') or #strings.containsIgnoreCase(order.shippingAddress, 'sài gòn') or #strings.containsIgnoreCase(order.shippingAddress, 'quận 1') or #strings.containsIgnoreCase(order.shippingAddress, 'quận 2') or #strings.containsIgnoreCase(order.shippingAddress, 'quận 3') or #strings.containsIgnoreCase(order.shippingAddress, 'quận 4') or #strings.containsIgnoreCase(order.shippingAddress, 'quận 5') or #strings.containsIgnoreCase(order.shippingAddress, 'quận 6') or #strings.containsIgnoreCase(order.shippingAddress, 'quận 7') or #strings.containsIgnoreCase(order.shippingAddress, 'quận 8') or #strings.containsIgnoreCase(order.shippingAddress, 'quận 9') or #strings.containsIgnoreCase(order.shippingAddress, 'quận 10') or #strings.containsIgnoreCase(order.shippingAddress, 'quận 11') or #strings.containsIgnoreCase(order.shippingAddress, 'quận 12') or #strings.containsIgnoreCase(order.shippingAddress, 'thủ đức') or #strings.containsIgnoreCase(order.shippingAddress, 'bình thạnh') or #strings.containsIgnoreCase(order.shippingAddress, 'tân bình') or #strings.containsIgnoreCase(order.shippingAddress, 'tân phú') or #strings.containsIgnoreCase(order.shippingAddress, 'phú nhuận') or #strings.containsIgnoreCase(order.shippingAddress, 'gò vấp') or #strings.containsIgnoreCase(order.shippingAddress, 'bình tân') or #strings.containsIgnoreCase(order.shippingAddress, 'hóc môn') or #strings.containsIgnoreCase(order.shippingAddress, 'củ chi') or #strings.containsIgnoreCase(order.shippingAddress, 'bình chánh') or #strings.containsIgnoreCase(order.shippingAddress, 'nhà bè') or #strings.containsIgnoreCase(order.shippingAddress, 'cần giờ')}"
+                            type="button" 
+                            class="btn btn-sm btn-warning me-1"
+                            th:data-order-id="${order.orderId}"
+                            th:data-shop-id="${order.shop.shopId}"
+                            th:disabled="${order.shipper != null}"
+                          >
+                            <i class="fas fa-motorcycle me-1"></i>
+                            <span th:if="${order.shipper != null}">Đã gán shipper</span>
+                            <span th:if="${order.shipper == null}">Chọn Shipper (Hỏa tốc)</span>
+                          </button>
+                          
+                          <!-- Nút chọn nhà vận chuyển cho đơn đi xa (ngoài TPHCM) -->
+                          <button 
+                            th:if="${!#strings.containsIgnoreCase(order.shippingAddress, 'hồ chí minh') and !#strings.containsIgnoreCase(order.shippingAddress, 'ho chi minh') and !#strings.containsIgnoreCase(order.shippingAddress, 'tphcm') and !#strings.containsIgnoreCase(order.shippingAddress, 'sài gòn') and !#strings.containsIgnoreCase(order.shippingAddress, 'quận 1') and !#strings.containsIgnoreCase(order.shippingAddress, 'quận 2') and !#strings.containsIgnoreCase(order.shippingAddress, 'quận 3') and !#strings.containsIgnoreCase(order.shippingAddress, 'quận 4') and !#strings.containsIgnoreCase(order.shippingAddress, 'quận 5') and !#strings.containsIgnoreCase(order.shippingAddress, 'quận 6') and !#strings.containsIgnoreCase(order.shippingAddress, 'quận 7') and !#strings.containsIgnoreCase(order.shippingAddress, 'quận 8') and !#strings.containsIgnoreCase(order.shippingAddress, 'quận 9') and !#strings.containsIgnoreCase(order.shippingAddress, 'quận 10') and !#strings.containsIgnoreCase(order.shippingAddress, 'quận 11') and !#strings.containsIgnoreCase(order.shippingAddress, 'quận 12') and !#strings.containsIgnoreCase(order.shippingAddress, 'thủ đức') and !#strings.containsIgnoreCase(order.shippingAddress, 'bình thạnh') and !#strings.containsIgnoreCase(order.shippingAddress, 'tân bình') and !#strings.containsIgnoreCase(order.shippingAddress, 'tân phú') and !#strings.containsIgnoreCase(order.shippingAddress, 'phú nhuận') and !#strings.containsIgnoreCase(order.shippingAddress, 'gò vấp') and !#strings.containsIgnoreCase(order.shippingAddress, 'bình tân') and !#strings.containsIgnoreCase(order.shippingAddress, 'hóc môn') and !#strings.containsIgnoreCase(order.shippingAddress, 'củ chi') and !#strings.containsIgnoreCase(order.shippingAddress, 'bình chánh') and !#strings.containsIgnoreCase(order.shippingAddress, 'nhà bè') and !#strings.containsIgnoreCase(order.shippingAddress, 'cần giờ')}"
+                            type="button" 
+                            class="btn btn-sm btn-info me-1"
+                            th:data-order-id="${order.orderId}"
+                            th:disabled="${order.shippingProviderId != null}"
+                          >
+                            <i class="fas fa-truck me-1"></i>
+                            <span th:if="${order.shippingProviderId != null}">Đã chọn nhà vận chuyển</span>
+                            <span th:if="${order.shippingProviderId == null}">Chọn Nhà Vận Chuyển (Đi xa)</span>
+                          </button>
                         </div>
 
                         <!-- Nút Chi tiết -->
@@ -401,5 +468,268 @@
         <h5 class="text-muted">Chưa có đơn hàng nào</h5>
       </div>
     </main>
+
+    <!-- Modal chọn Shipper -->
+    <div class="modal fade" id="shipperModal" tabindex="-1" aria-labelledby="shipperModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="shipperModalLabel">
+              <i class="fas fa-motorcycle me-2"></i>Chọn Shipper cho đơn hỏa tốc
+            </h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <div class="mb-3">
+              <label class="form-label">Danh sách Shipper có sẵn:</label>
+              <select class="form-select" id="shipperSelect">
+                <option value="">-- Chọn Shipper --</option>
+              </select>
+            </div>
+            <div class="alert alert-info">
+              <i class="fas fa-info-circle me-2"></i>
+              <strong>Lưu ý:</strong> Đơn hàng hỏa tốc sẽ được giao trong 2-4 giờ với phí 30,000 VNĐ. Sau khi chọn shipper, bạn có thể xác nhận đơn hàng.
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+            <button type="button" class="btn btn-warning" onclick="assignShipper()">
+              <i class="fas fa-check me-1"></i>Gán Shipper
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal chọn Nhà Vận Chuyển -->
+    <div class="modal fade" id="providerModal" tabindex="-1" aria-labelledby="providerModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="providerModalLabel">
+              <i class="fas fa-truck me-2"></i>Chọn Nhà Vận Chuyển cho đơn đi xa
+            </h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <div class="mb-3">
+              <label class="form-label">Danh sách Nhà Vận Chuyển:</label>
+              <select class="form-select" id="providerSelect">
+                <option value="">-- Chọn Nhà Vận Chuyển --</option>
+              </select>
+            </div>
+            <div class="alert alert-info">
+              <i class="fas fa-info-circle me-2"></i>
+              <strong>Lưu ý:</strong> Đơn hàng đi xa sẽ được giao trong 2-5 ngày tùy theo nhà vận chuyển. Sau khi chọn nhà vận chuyển, bạn có thể xác nhận đơn hàng.
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+            <button type="button" class="btn btn-info" onclick="assignProvider()">
+              <i class="fas fa-check me-1"></i>Chọn Nhà Vận Chuyển
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+      let currentOrderId = null;
+      let currentShopId = null;
+
+
+      // Thêm event listener khi trang load
+      document.addEventListener('DOMContentLoaded', function() {
+        console.log('DOM loaded, adding event listeners...');
+        
+        // Thêm event listener cho tất cả nút chọn shipper và nhà vận chuyển
+        document.addEventListener('click', function(e) {
+          if (e.target.closest('button[data-order-id]')) {
+            const button = e.target.closest('button[data-order-id]');
+            const orderId = button.getAttribute('data-order-id');
+            const shopId = button.getAttribute('data-shop-id');
+            
+            // Kiểm tra nếu có shopId thì là nút shipper
+            if (shopId) {
+              console.log('Shipper button clicked for order:', orderId, 'shop:', shopId);
+              openShipperModal(orderId, shopId);
+            } else {
+              console.log('Provider button clicked for order:', orderId);
+              openProviderModal(orderId);
+            }
+          }
+        });
+      });
+
+      // Mở modal chọn shipper
+      function openShipperModal(orderId, shopId) {
+        console.log('Opening shipper modal for order:', orderId, 'shop:', shopId);
+        currentOrderId = orderId;
+        currentShopId = shopId;
+        
+        // Load danh sách shipper
+        loadShippers(shopId);
+        
+        // Hiển thị modal
+        const modalElement = document.getElementById('shipperModal');
+        if (modalElement) {
+          const modal = new bootstrap.Modal(modalElement);
+          modal.show();
+        } else {
+          console.error('Shipper modal element not found');
+          alert('Không thể mở modal chọn shipper');
+        }
+      }
+
+      // Mở modal chọn nhà vận chuyển
+      function openProviderModal(orderId) {
+        console.log('Opening provider modal for order:', orderId);
+        currentOrderId = orderId;
+        
+        // Load danh sách nhà vận chuyển
+        loadProviders();
+        
+        // Hiển thị modal
+        const modalElement = document.getElementById('providerModal');
+        if (modalElement) {
+          const modal = new bootstrap.Modal(modalElement);
+          modal.show();
+        } else {
+          console.error('Provider modal element not found');
+          alert('Không thể mở modal chọn nhà vận chuyển');
+        }
+      }
+
+      // Load danh sách shipper
+      function loadShippers(shopId) {
+        console.log('Loading shippers for shop:', shopId);
+        fetch(`/vendor/orders/api/shop-shippers/${shopId}`)
+          .then(response => {
+            console.log('Shipper API response:', response);
+            return response.json();
+          })
+          .then(shippers => {
+            console.log('Shippers loaded:', shippers);
+            const select = document.getElementById('shipperSelect');
+            if (select) {
+              select.innerHTML = '<option value="">-- Chọn Shipper --</option>';
+              
+              shippers.forEach(shipper => {
+                const option = document.createElement('option');
+                option.value = shipper.userId;
+                option.textContent = shipper.name + ' (' + shipper.email + ')';
+                select.appendChild(option);
+              });
+            } else {
+              console.error('Shipper select element not found');
+            }
+          })
+          .catch(error => {
+            console.error('Lỗi khi load shippers:', error);
+            alert('Không thể tải danh sách shipper: ' + error.message);
+          });
+      }
+
+      // Load danh sách nhà vận chuyển
+      function loadProviders() {
+        console.log('Loading shipping providers...');
+        fetch('/vendor/orders/api/shipping-providers')
+          .then(response => {
+            console.log('Provider API response:', response);
+            return response.json();
+          })
+          .then(providers => {
+            console.log('Providers loaded:', providers);
+            const select = document.getElementById('providerSelect');
+            if (select) {
+              select.innerHTML = '<option value="">-- Chọn Nhà Vận Chuyển --</option>';
+              
+              providers.forEach(provider => {
+                const option = document.createElement('option');
+                option.value = provider.providerId;
+                option.textContent = provider.providerName + ' - ' + (provider.shippingFees ? provider.shippingFees.toLocaleString() + ' VNĐ' : 'Liên hệ');
+                select.appendChild(option);
+              });
+            } else {
+              console.error('Provider select element not found');
+            }
+          })
+          .catch(error => {
+            console.error('Lỗi khi load providers:', error);
+            alert('Không thể tải danh sách nhà vận chuyển: ' + error.message);
+          });
+      }
+
+      // Gán shipper
+      function assignShipper() {
+        const shipperId = document.getElementById('shipperSelect').value;
+        if (!shipperId) {
+          alert('Vui lòng chọn shipper');
+          return;
+        }
+
+        const formData = new FormData();
+        formData.append('orderId', currentOrderId);
+        formData.append('shipperId', shipperId);
+
+        fetch('/vendor/orders/assign-shipper', {
+          method: 'POST',
+          body: formData
+        })
+        .then(response => response.text())
+        .then(result => {
+          if (result === 'success') {
+            alert('Gán shipper thành công! Bây giờ bạn có thể xác nhận đơn hàng.');
+            location.reload();
+          } else if (result === 'not_hcm') {
+            alert('Đơn hàng này không phải địa chỉ TPHCM');
+          } else if (result === 'shipper_not_assigned') {
+            alert('Shipper này chưa được gán cho shop');
+          } else {
+            alert('Có lỗi xảy ra: ' + result);
+          }
+        })
+        .catch(error => {
+          console.error('Lỗi:', error);
+          alert('Có lỗi kết nối đến server');
+        });
+      }
+
+      // Gán nhà vận chuyển
+      function assignProvider() {
+        const providerId = document.getElementById('providerSelect').value;
+        if (!providerId) {
+          alert('Vui lòng chọn nhà vận chuyển');
+          return;
+        }
+
+        const formData = new FormData();
+        formData.append('orderId', currentOrderId);
+        formData.append('providerId', providerId);
+
+        fetch('/vendor/orders/assign-shipping-provider', {
+          method: 'POST',
+          body: formData
+        })
+        .then(response => response.text())
+        .then(result => {
+          if (result === 'success') {
+            alert('Chọn nhà vận chuyển thành công! Bây giờ bạn có thể xác nhận đơn hàng.');
+            location.reload();
+          } else if (result === 'is_hcm') {
+            alert('Đơn hàng này là địa chỉ TPHCM, vui lòng chọn shipper');
+          } else {
+            alert('Có lỗi xảy ra: ' + result);
+          }
+        })
+        .catch(error => {
+          console.error('Lỗi:', error);
+          alert('Có lỗi kết nối đến server');
+        });
+      }
+    </script>
   </body>
 </html>

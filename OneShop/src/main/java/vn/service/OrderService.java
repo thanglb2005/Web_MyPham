@@ -32,6 +32,8 @@ public interface OrderService {
 
     void updateOrder(Order order);
 
+    Order save(Order order);
+
     void deleteOrder(Long orderId);
 
     // ===== VENDOR ORDER MANAGEMENT METHODS =====
