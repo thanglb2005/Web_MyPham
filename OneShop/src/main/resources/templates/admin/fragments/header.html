@@ -141,7 +141,7 @@
 								<li>
 									<a class="dropdown-item" href="javascript:void(0);">Administrator</a>
 									<div class="dropdown-divider"></div>
-									<a class="dropdown-item" th:href="@{/logout}">Đăng xuất</a>
+									<a class="dropdown-item" href="javascript:void(0);" onclick="jwtAuth.logout()">Đăng xuất</a>
 								</li>
 							</div>
 						</ul>
@@ -151,4 +151,7 @@
 		</nav>
 		<!-- End Navbar -->
 	</div>
+	
+	<!-- JWT Authentication -->
+	<script src="/js/jwt-auth.js"></script>
 </th:block>
