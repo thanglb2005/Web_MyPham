@@ -13,6 +13,7 @@ import vn.entity.Promotion;
 import vn.entity.Shop;
 import vn.entity.User;
 import vn.repository.UserRepository;
+import vn.service.UserService;
 import vn.service.ImageStorageService;
 import vn.service.OneXuService;
 import vn.service.PromotionService;
@@ -31,6 +32,9 @@ public class AccountController {
 
     @Autowired
     private UserRepository userRepository;
+    
+    @Autowired
+    private UserService userService;
 
     @Autowired
     private ImageStorageService imageStorageService;
@@ -232,7 +236,7 @@ public class AccountController {
             return "redirect:/login";
         }
         
-        if (!user.getPassword().equals(oldPassword)) {
+        if (!userService.verifyPassword(oldPassword, user.getPassword())) {
             model.addAttribute("error", "Mật khẩu cũ không đúng!");
             return "changePassword";
         }
@@ -243,7 +247,7 @@ public class AccountController {
         }
         
         user.setPassword(newPassword);
-        userRepository.save(user);
+        userService.save(user);
         session.setAttribute("user", user);
         
         model.addAttribute("success", "Đổi mật khẩu thành công!");

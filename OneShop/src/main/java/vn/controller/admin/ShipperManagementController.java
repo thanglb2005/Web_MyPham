@@ -12,6 +12,7 @@ import vn.entity.Role;
 import vn.repository.ShopRepository;
 import vn.repository.UserRepository;
 import vn.repository.RoleRepository;
+import vn.service.UserService;
 
 import java.util.List;
 import java.util.Set;
@@ -34,7 +35,10 @@ public class ShipperManagementController {
 
     @Autowired
     private UserRepository userRepository;
-
+    
+    @Autowired
+    private UserService userService;
+    
     @Autowired
     private RoleRepository roleRepository;
 
@@ -159,7 +163,7 @@ public class ShipperManagementController {
             shipper.setRoles(Arrays.asList(shipperRole));
 
             // Lưu shipper
-            userRepository.save(shipper);
+            userService.save(shipper);
 
             response.put("success", true);
             response.put("message", "Thêm shipper thành công!");
@@ -293,7 +297,7 @@ public class ShipperManagementController {
                 .orElseThrow(() -> new RuntimeException("Shipper không tồn tại"));
             
             shipper.setStatus(true);
-            userRepository.save(shipper);
+            userService.save(shipper);
             
             return "success";
         } catch (Exception e) {
@@ -314,7 +318,7 @@ public class ShipperManagementController {
                 .orElseThrow(() -> new RuntimeException("Shipper không tồn tại"));
             
             shipper.setStatus(false);
-            userRepository.save(shipper);
+            userService.save(shipper);
             
             return "success";
         } catch (Exception e) {

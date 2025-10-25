@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import vn.entity.User;
 import vn.repository.UserRepository;
+import vn.service.UserService;
 import vn.util.JwtUtil;
 
 import java.util.Base64;
@@ -31,6 +32,9 @@ public class LoginController {
 
     @Autowired
     private UserRepository userRepository;
+    
+    @Autowired
+    private UserService userService;
     
     @Autowired
     private JwtUtil jwtUtil;
@@ -53,9 +57,9 @@ public class LoginController {
         // Pure JWT: This method is now only used as fallback for traditional login
         // Main authentication should be handled via /api/auth/login endpoint
         
-        Optional<User> userOpt = userRepository.findByEmailWithRoles(email);
+        Optional<User> userOpt = userService.findByEmailWithRoles(email);
         
-        if (userOpt.isPresent() && userOpt.get().getPassword().equals(password)) {
+        if (userOpt.isPresent() && userService.verifyPassword(password, userOpt.get().getPassword())) {
             User user = userOpt.get();
             
             // Handle Remember Me cookie (optional for JWT)

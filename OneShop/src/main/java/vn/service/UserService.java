@@ -5,16 +5,15 @@ import java.util.List;
 import java.util.Optional;
 
 public interface UserService {
-    List<User> getAllUsers();
-    Optional<User> getUserById(Long id);
-    User saveUser(User user);
-    void deleteUser(Long id);
-    User findByEmail(String email);
+    User save(User user);
+    List<User> findAll();
+    Optional<User> findByEmail(String email);
+    Optional<User> findByEmailWithRoles(String email);
+    Optional<User> findByIdWithRoles(Long userId);
+    Optional<User> findById(Long userId);
     Optional<User> findByName(String name);
-    List<User> findByStatus(Boolean status);
-    boolean existsByEmail(String email);
-    
-    // Thêm các method cho quản lý khách hàng
-    void toggleUserStatus(Long userId);
     List<User> searchUsers(String keyword);
+    boolean toggleUserStatus(Long userId);
+    boolean verifyPassword(String rawPassword, String encodedPassword);
+    String encodePassword(String rawPassword);
 }

@@ -19,6 +19,7 @@ import vn.dto.JwtRefreshRequest;
 import vn.dto.LoginRequest;
 import vn.entity.User;
 import vn.repository.UserRepository;
+import vn.service.UserService;
 import vn.util.JwtUtil;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -37,7 +38,10 @@ public class JwtAuthController {
 
     @Autowired
     private UserRepository userRepository;
-
+    
+    @Autowired
+    private UserService userService;
+    
     @Autowired
     private JwtUtil jwtUtil;
 
@@ -48,7 +52,7 @@ public class JwtAuthController {
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest, HttpServletRequest request, HttpServletResponse response) {
         try {
             // Find user by email
-            Optional<User> userOpt = userRepository.findByEmailWithRoles(loginRequest.getEmail());
+            Optional<User> userOpt = userService.findByEmailWithRoles(loginRequest.getEmail());
             
             if (userOpt.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
@@ -57,8 +61,8 @@ public class JwtAuthController {
             
             User user = userOpt.get();
             
-            // Validate password (in production, use proper password encoding)
-            if (!user.getPassword().equals(loginRequest.getPassword())) {
+            // Validate password using BCrypt
+            if (!userService.verifyPassword(loginRequest.getPassword(), user.getPassword())) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(Map.of("error", "Invalid email or password"));
             }

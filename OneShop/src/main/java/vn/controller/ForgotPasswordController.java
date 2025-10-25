@@ -9,8 +9,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import vn.entity.User;
 import vn.repository.UserRepository;
-import vn.service.SendMailService;
 import vn.service.UserService;
+import vn.service.SendMailService;
 
 import java.util.Optional;
 
@@ -19,7 +19,7 @@ public class ForgotPasswordController {
 
     @Autowired
     private UserRepository userRepository;
-
+    
     @Autowired
     private UserService userService;
 
@@ -111,11 +111,11 @@ public class ForgotPasswordController {
         }
 
         // Cập nhật mật khẩu mới
-        Optional<User> userOpt = userRepository.findByEmail(resetEmail);
+        Optional<User> userOpt = userService.findByEmail(resetEmail);
         if (userOpt.isPresent()) {
             User user = userOpt.get();
             user.setPassword(password);
-            userService.saveUser(user);
+            userService.save(user);
             
             // Xóa session
             session.removeAttribute("resetOtp");

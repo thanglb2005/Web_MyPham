@@ -43,7 +43,7 @@ public class IndexAdminController {
         }
         
         // Thống kê cơ bản
-        long totalUsers = userService.getAllUsers().size();
+        long totalUsers = userService.findAll().size();
         long totalCategories = categoryService.getAllCategories().size();
         long totalProducts = 0L;
         long totalOrders = 0L;

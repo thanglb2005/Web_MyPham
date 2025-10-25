@@ -44,7 +44,7 @@ public class SupportAssignmentService {
         }
         // create new assignment
         Shop shop = shopService.findById(shopId).orElse(null);
-        User cskh = userService.getUserById(cskhId).orElse(null);
+        User cskh = userService.findById(cskhId).orElse(null);
         if (shop == null || cskh == null) return false;
         ShopSupportAssignment a = new ShopSupportAssignment();
         a.setShop(shop);
