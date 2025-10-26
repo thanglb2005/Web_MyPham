@@ -23,7 +23,6 @@ import java.text.NumberFormat;
 import java.util.Locale;
 
 import java.time.LocalDateTime;
-import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -376,10 +375,7 @@ public class ShipperHomeController {
      * Trang thống kê chi tiết cho shipper
      */
     @GetMapping("/statistics")
-    public String statistics(HttpSession session, Model model,
-                           @RequestParam(required = false) Long shopId,
-                           @RequestParam(required = false) String startDate,
-                           @RequestParam(required = false) String endDate) {
+    public String statistics(HttpSession session, Model model) {
         User shipper = ensureShipper(session);
         if (shipper == null) {
             return "redirect:/login";
@@ -404,23 +400,17 @@ public class ShipperHomeController {
             shopDescription = "Phụ trách giao hàng cho " + assignedShops.size() + " shop";
         }
 
-        // Lấy tất cả đơn hàng của shipper với bộ lọc
-        List<Order> allOrders = getFilteredOrders(shipper, shopId, startDate, endDate);
+        // Lấy tất cả đơn hàng của shipper
+        List<Order> allOrders = orderRepository.findByShipperOrderByOrderDateDesc(shipper);
 
         // Thống kê tổng quan
         long totalOrders = allOrders.size();
-        long shippingOrders = allOrders.stream()
-            .filter(order -> order.getStatus() == Order.OrderStatus.SHIPPING)
-            .count();
-        long deliveredOrders = allOrders.stream()
-            .filter(order -> order.getStatus() == Order.OrderStatus.DELIVERED)
-            .count();
-        long cancelledOrders = allOrders.stream()
-            .filter(order -> order.getStatus() == Order.OrderStatus.CANCELLED)
-            .count();
+        long shippingOrders = orderRepository.countByShipperAndStatus(shipper, Order.OrderStatus.SHIPPING);
+        long deliveredOrders = orderRepository.countByShipperAndStatus(shipper, Order.OrderStatus.DELIVERED);
+        long cancelledOrders = orderRepository.countByShipperAndStatus(shipper, Order.OrderStatus.CANCELLED);
         
-        // Tổng giá trị đơn hàng đã giao với bộ lọc
-        Double totalDeliveredAmount = getFilteredTotalDeliveredAmount(shipper, shopId, startDate, endDate);
+        // Tổng giá trị đơn hàng đã giao
+        Double totalDeliveredAmount = orderRepository.getTotalDeliveredAmountByShipper(shipper);
         if (totalDeliveredAmount == null) {
             totalDeliveredAmount = 0.0;
         }
@@ -428,29 +418,16 @@ public class ShipperHomeController {
         // Tính tỷ lệ giao hàng thành công
         double successRate = totalOrders > 0 ? (deliveredOrders * 100.0 / totalOrders) : 0.0;
 
-        // Thống kê theo tháng với bộ lọc
-        List<Object[]> monthlyStats = getFilteredMonthlyStats(shipper, shopId, startDate, endDate);
+        // Thống kê theo tháng
+        List<Object[]> monthlyStats = orderRepository.getShipperMonthlyStatistics(shipper);
         
-        // Thống kê theo trạng thái với bộ lọc
-        List<Object[]> statusStats = getFilteredStatusStats(shipper, shopId, startDate, endDate);
-
-        // Lấy shop được chọn
-        Shop selectedShop = null;
-        if (shopId != null) {
-            selectedShop = assignedShops.stream()
-                .filter(shop -> shop.getShopId().equals(shopId))
-                .findFirst()
-                .orElse(null);
-        }
+        // Thống kê theo trạng thái
+        List<Object[]> statusStats = orderRepository.getShipperOrderStatsByStatus(shipper);
 
         model.addAttribute("shipper", shipper);
         model.addAttribute("displayName", displayName);
         model.addAttribute("assignedShops", assignedShops);
         model.addAttribute("shopDescription", shopDescription);
-        model.addAttribute("selectedShop", selectedShop);
-        model.addAttribute("selectedShopId", shopId);
-        model.addAttribute("startDate", startDate);
-        model.addAttribute("endDate", endDate);
         model.addAttribute("totalOrders", totalOrders);
         model.addAttribute("shippingOrders", shippingOrders);
         model.addAttribute("deliveredOrders", deliveredOrders);
@@ -469,10 +446,7 @@ public class ShipperHomeController {
      */
     @GetMapping("/api/monthly-stats")
     @ResponseBody
-    public Map<String, Object> getMonthlyStats(HttpSession session,
-                                             @RequestParam(required = false) Long shopId,
-                                             @RequestParam(required = false) String startDate,
-                                             @RequestParam(required = false) String endDate) {
+    public Map<String, Object> getMonthlyStats(HttpSession session) {
         User shipper = ensureShipper(session);
         Map<String, Object> response = new HashMap<>();
         
@@ -481,7 +455,7 @@ public class ShipperHomeController {
             return response;
         }
 
-        List<Object[]> monthlyStats = getFilteredMonthlyStats(shipper, shopId, startDate, endDate);
+        List<Object[]> monthlyStats = orderRepository.getShipperMonthlyStatistics(shipper);
         
         List<Map<String, Object>> formattedStats = monthlyStats.stream()
             .map(stat -> {
@@ -542,10 +516,7 @@ public class ShipperHomeController {
      */
     @GetMapping("/api/status-stats")
     @ResponseBody
-    public Map<String, Object> getStatusStats(HttpSession session,
-                                            @RequestParam(required = false) Long shopId,
-                                            @RequestParam(required = false) String startDate,
-                                            @RequestParam(required = false) String endDate) {
+    public Map<String, Object> getStatusStats(HttpSession session) {
         User shipper = ensureShipper(session);
         Map<String, Object> response = new HashMap<>();
         
@@ -554,7 +525,7 @@ public class ShipperHomeController {
             return response;
         }
 
-        List<Object[]> statusStats = getFilteredStatusStats(shipper, shopId, startDate, endDate);
+        List<Object[]> statusStats = orderRepository.getShipperOrderStatsByStatus(shipper);
         
         List<Map<String, Object>> formattedStats = statusStats.stream()
             .map(stat -> {
@@ -912,143 +883,5 @@ public class ShipperHomeController {
         }
         
         return response;
-    }
-    
-    /**
-     * Lấy danh sách đơn hàng với bộ lọc
-     */
-    private List<Order> getFilteredOrders(User shipper, Long shopId, String startDate, String endDate) {
-        List<Order> allOrders = orderRepository.findByShipperOrderByOrderDateDesc(shipper);
-        
-        return allOrders.stream()
-            .filter(order -> {
-                // Lọc theo shop
-                if (shopId != null && order.getShop() != null) {
-                    if (!order.getShop().getShopId().equals(shopId)) {
-                        return false;
-                    }
-                }
-                
-                // Lọc theo khoảng thời gian
-                if (order.getOrderDate() != null) {
-                    LocalDateTime orderDateTime = order.getOrderDate();
-                    
-                    // Lọc từ ngày bắt đầu
-                    if (startDate != null && !startDate.isEmpty()) {
-                        try {
-                            LocalDate start = LocalDate.parse(startDate);
-                            if (orderDateTime.toLocalDate().isBefore(start)) {
-                                return false;
-                            }
-                        } catch (Exception e) {
-                            // Ignore parsing errors
-                        }
-                    }
-                    
-                    // Lọc đến ngày kết thúc
-                    if (endDate != null && !endDate.isEmpty()) {
-                        try {
-                            LocalDate end = LocalDate.parse(endDate);
-                            if (orderDateTime.toLocalDate().isAfter(end)) {
-                                return false;
-                            }
-                        } catch (Exception e) {
-                            // Ignore parsing errors
-                        }
-                    }
-                }
-                
-                return true;
-            })
-            .collect(Collectors.toList());
-    }
-    
-    /**
-     * Tính tổng số tiền đã giao với bộ lọc
-     */
-    private Double getFilteredTotalDeliveredAmount(User shipper, Long shopId, String startDate, String endDate) {
-        List<Order> filteredOrders = getFilteredOrders(shipper, shopId, startDate, endDate);
-        
-        return filteredOrders.stream()
-            .filter(order -> order.getStatus() == Order.OrderStatus.DELIVERED)
-            .mapToDouble(order -> {
-                if (order.getFinalAmount() != null && order.getFinalAmount() > 0) {
-                    return order.getFinalAmount();
-                } else {
-                    return order.getTotalAmount() != null ? order.getTotalAmount() : 0.0;
-                }
-            })
-            .sum();
-    }
-    
-    /**
-     * Lấy thống kê theo tháng với bộ lọc
-     */
-    private List<Object[]> getFilteredMonthlyStats(User shipper, Long shopId, String startDate, String endDate) {
-        // Lấy tất cả đơn hàng đã được lọc
-        List<Order> filteredOrders = getFilteredOrders(shipper, shopId, startDate, endDate);
-        
-        // Nhóm theo năm/tháng và tính toán thống kê
-        Map<String, Object[]> monthlyStatsMap = new HashMap<>();
-        
-        for (Order order : filteredOrders) {
-            if (order.getOrderDate() != null) {
-                int year = order.getOrderDate().getYear();
-                int month = order.getOrderDate().getMonthValue();
-                String key = year + "-" + month;
-                
-                Object[] stats = monthlyStatsMap.getOrDefault(key, new Object[]{year, month, 0L, 0L, 0.0});
-                
-                // Tăng tổng đơn hàng
-                stats[2] = (Long) stats[2] + 1;
-                
-                // Tăng đơn hàng đã giao và tổng tiền
-                if (order.getStatus() == Order.OrderStatus.DELIVERED) {
-                    stats[3] = (Long) stats[3] + 1;
-                    
-                    double amount = 0.0;
-                    if (order.getFinalAmount() != null && order.getFinalAmount() > 0) {
-                        amount = order.getFinalAmount();
-                    } else if (order.getTotalAmount() != null) {
-                        amount = order.getTotalAmount();
-                    }
-                    stats[4] = (Double) stats[4] + amount;
-                }
-                
-                monthlyStatsMap.put(key, stats);
-            }
-        }
-        
-        // Chuyển đổi thành List và sắp xếp
-        return monthlyStatsMap.values().stream()
-            .sorted((a, b) -> {
-                Integer yearA = (Integer) a[0];
-                Integer monthA = (Integer) a[1];
-                Integer yearB = (Integer) b[0];
-                Integer monthB = (Integer) b[1];
-                
-                if (!yearA.equals(yearB)) {
-                    return yearB.compareTo(yearA); // Năm giảm dần
-                }
-                return monthB.compareTo(monthA); // Tháng giảm dần
-            })
-            .collect(Collectors.toList());
-    }
-    
-    /**
-     * Lấy thống kê theo trạng thái với bộ lọc
-     */
-    private List<Object[]> getFilteredStatusStats(User shipper, Long shopId, String startDate, String endDate) {
-        List<Order> filteredOrders = getFilteredOrders(shipper, shopId, startDate, endDate);
-        
-        Map<Order.OrderStatus, Long> statusCounts = filteredOrders.stream()
-            .collect(Collectors.groupingBy(
-                Order::getStatus,
-                Collectors.counting()
-            ));
-        
-        return statusCounts.entrySet().stream()
-            .map(entry -> new Object[]{entry.getKey(), entry.getValue()})
-            .collect(Collectors.toList());
     }
 }

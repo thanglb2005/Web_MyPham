@@ -105,14 +105,11 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     /**
      * Get shipper monthly statistics
      * Returns: [year, month, totalOrders, deliveredOrders, totalAmount]
-     * Uses finalAmount (includes shipping fee and discounts) if available, otherwise falls back to totalAmount
      */
     @Query("SELECT YEAR(o.orderDate) as year, MONTH(o.orderDate) as month, " +
            "COUNT(o) as totalOrders, " +
            "SUM(CASE WHEN o.status = 'DELIVERED' THEN 1 ELSE 0 END) as deliveredOrders, " +
-           "SUM(CASE WHEN o.status = 'DELIVERED' THEN " +
-           "CASE WHEN o.finalAmount IS NOT NULL AND o.finalAmount > 0 THEN o.finalAmount ELSE o.totalAmount END " +
-           "ELSE 0 END) as totalAmount " +
+           "SUM(CASE WHEN o.status = 'DELIVERED' THEN o.totalAmount ELSE 0 END) as totalAmount " +
            "FROM Order o " +
            "WHERE o.shipper = :shipper " +
            "GROUP BY YEAR(o.orderDate), MONTH(o.orderDate) " +
@@ -141,9 +138,8 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
     /**
      * Get total delivered amount for shipper
-     * Uses finalAmount (includes shipping fee and discounts) if available, otherwise falls back to totalAmount
      */
-    @Query("SELECT COALESCE(SUM(CASE WHEN o.finalAmount IS NOT NULL AND o.finalAmount > 0 THEN o.finalAmount ELSE o.totalAmount END), 0) " +
+    @Query("SELECT COALESCE(SUM(o.totalAmount), 0) " +
            "FROM Order o " +
            "WHERE o.shipper = :shipper AND o.status = 'DELIVERED'")
     Double getTotalDeliveredAmountByShipper(User shipper);
