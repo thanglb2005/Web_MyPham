@@ -315,11 +315,6 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public Order save(Order order) {
-        return orderRepository.save(order);
-    }
-
-    @Override
     public void deleteOrder(Long orderId) {
         orderRepository.deleteById(orderId);
     }

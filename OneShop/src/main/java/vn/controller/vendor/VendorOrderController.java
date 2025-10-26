@@ -12,19 +12,15 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import vn.entity.Order;
 import vn.entity.User;
-import vn.entity.Shop;
-import vn.entity.ShippingProvider;
 import vn.service.OrderService;
 import vn.service.SendMailService;
 import vn.repository.OrderDetailRepository;
-import vn.repository.ShopRepository;
-import vn.repository.ShippingProviderRepository;
-import java.time.LocalDateTime;
 import vn.entity.OrderDetail;
 import java.text.NumberFormat;
 import java.util.Locale;
-import java.util.List;
 import vn.service.ShopService;
+
+import java.util.List;
 
 /**
  * Controller quản lý đơn hàng cho Vendor
@@ -46,12 +42,14 @@ public class VendorOrderController {
     @Autowired
     private OrderDetailRepository orderDetailRepository;
 
-    @Autowired
-    private ShopRepository shopRepository;
-
-    @Autowired
-    private ShippingProviderRepository shippingProviderRepository;
-
+    private static final Order.OrderStatus[] STATUS_TABS = {
+            Order.OrderStatus.PENDING,
+            Order.OrderStatus.CONFIRMED,
+            Order.OrderStatus.SHIPPING,
+            Order.OrderStatus.DELIVERED,
+            Order.OrderStatus.CANCELLED,
+            Order.OrderStatus.RETURNED
+    };
 
     /**
      * Danh sách đơn hàng với tabs theo trạng thái
@@ -479,224 +477,6 @@ public class VendorOrderController {
                 .orElseGet(() -> orderService.findByIdAndShopIdIn(orderId, shopIds).orElse(null));
     }
 
-    /**
-     * Kiểm tra địa chỉ có phải TPHCM không
-     */
-    private boolean isHoChiMinhCity(String address) {
-        if (address == null) return false;
-        String lowerAddress = address.toLowerCase();
-        return lowerAddress.contains("hồ chí minh") || 
-               lowerAddress.contains("ho chi minh") ||
-               lowerAddress.contains("tp.hcm") ||
-               lowerAddress.contains("tphcm") ||
-               lowerAddress.contains("sài gòn") ||
-               lowerAddress.contains("sai gon") ||
-               lowerAddress.contains("quận 1") ||
-               lowerAddress.contains("quận 2") ||
-               lowerAddress.contains("quận 3") ||
-               lowerAddress.contains("quận 4") ||
-               lowerAddress.contains("quận 5") ||
-               lowerAddress.contains("quận 6") ||
-               lowerAddress.contains("quận 7") ||
-               lowerAddress.contains("quận 8") ||
-               lowerAddress.contains("quận 9") ||
-               lowerAddress.contains("quận 10") ||
-               lowerAddress.contains("quận 11") ||
-               lowerAddress.contains("quận 12") ||
-               lowerAddress.contains("thủ đức") ||
-               lowerAddress.contains("bình thạnh") ||
-               lowerAddress.contains("tân bình") ||
-               lowerAddress.contains("tân phú") ||
-               lowerAddress.contains("phú nhuận") ||
-               lowerAddress.contains("gò vấp") ||
-               lowerAddress.contains("bình tân") ||
-               lowerAddress.contains("hóc môn") ||
-               lowerAddress.contains("củ chi") ||
-               lowerAddress.contains("bình chánh") ||
-               lowerAddress.contains("nhà bè") ||
-               lowerAddress.contains("cần giờ");
-    }
-
-    /**
-     * Lấy danh sách shipper của shop
-     */
-    @GetMapping("/api/shop-shippers/{shopId}")
-    @ResponseBody
-    public List<ShipperDTO> getShopShippers(@PathVariable Long shopId, HttpSession session) {
-        User vendor = ensureVendor(session);
-        if (vendor == null) {
-            return List.of();
-        }
-
-        // Kiểm tra shop thuộc về vendor
-        List<Long> vendorShopIds = getShopIdsByVendor(vendor);
-        if (!vendorShopIds.contains(shopId)) {
-            return List.of();
-        }
-
-        try {
-            Shop shop = shopRepository.findById(shopId).orElse(null);
-            if (shop != null) {
-                // Force initialize shippers collection
-                shop.getShippers().size();
-                return shop.getShippers().stream()
-                    .filter(shipper -> shipper.getStatus() != null && shipper.getStatus())
-                    .map(shipper -> new ShipperDTO(shipper.getUserId(), shipper.getName(), shipper.getEmail()))
-                    .collect(java.util.stream.Collectors.toList());
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return List.of();
-    }
-
-    /**
-     * DTO cho shipper để tránh circular reference
-     */
-    public static class ShipperDTO {
-        private Long userId;
-        private String name;
-        private String email;
-
-        public ShipperDTO() {}
-
-        public ShipperDTO(Long userId, String name, String email) {
-            this.userId = userId;
-            this.name = name;
-            this.email = email;
-        }
-
-        public Long getUserId() { return userId; }
-        public void setUserId(Long userId) { this.userId = userId; }
-        public String getName() { return name; }
-        public void setName(String name) { this.name = name; }
-        public String getEmail() { return email; }
-        public void setEmail(String email) { this.email = email; }
-    }
-
-    /**
-     * Lấy danh sách nhà vận chuyển
-     */
-    @GetMapping("/api/shipping-providers")
-    @ResponseBody
-    public List<ShippingProvider> getShippingProviders() {
-        return shippingProviderRepository.findAllActive();
-    }
-
-    /**
-     * Chọn shipper cho đơn hỏa tốc (TPHCM)
-     */
-    @PostMapping("/assign-shipper")
-    @ResponseBody
-    @Transactional
-    public String assignShipper(@RequestParam Long orderId,
-                               @RequestParam Long shipperId,
-                               HttpSession session) {
-        try {
-            User vendor = ensureVendor(session);
-            if (vendor == null) {
-                return "unauthorized";
-            }
-
-            Order order = orderService.findById(orderId).orElse(null);
-            if (order == null) {
-                return "not_found";
-            }
-
-            // Kiểm tra quyền
-            List<Long> vendorShopIds = getShopIdsByVendor(vendor);
-            if (order.getShop() == null || !vendorShopIds.contains(order.getShop().getShopId())) {
-                return "unauthorized";
-            }
-
-            // Kiểm tra địa chỉ có phải TPHCM không
-            if (!isHoChiMinhCity(order.getShippingAddress())) {
-                return "not_hcm";
-            }
-
-            // Kiểm tra shipper có thuộc shop không
-            Shop shop = order.getShop();
-            shop.getShippers().size(); // Force initialize
-            boolean shipperBelongsToShop = shop.getShippers().stream()
-                .anyMatch(shipper -> shipper.getUserId().equals(shipperId));
-
-            if (!shipperBelongsToShop) {
-                return "shipper_not_assigned";
-            }
-
-            // Gán shipper và cập nhật delivery type
-            User shipper = new User();
-            shipper.setUserId(shipperId);
-            order.setShipper(shipper);
-            order.setDeliveryType(Order.DeliveryType.EXPRESS);
-            order.setIsExpress(true);
-            order.setExpressFee(30000.0); // Phí hỏa tốc 30k
-            
-            // Cập nhật trạng thái đơn hàng sang SHIPPING khi đã gán shipper
-            order.setStatus(Order.OrderStatus.SHIPPING);
-            order.setShippedDate(LocalDateTime.now());
-
-            orderService.save(order);
-
-            return "success";
-        } catch (Exception e) {
-            e.printStackTrace();
-            return "error";
-        }
-    }
-
-    /**
-     * Chọn nhà vận chuyển cho đơn đi xa (ngoài TPHCM)
-     */
-    @PostMapping("/assign-shipping-provider")
-    @ResponseBody
-    @Transactional
-    public String assignShippingProvider(@RequestParam Long orderId,
-                                       @RequestParam Long providerId,
-                                       HttpSession session) {
-        try {
-            User vendor = ensureVendor(session);
-            if (vendor == null) {
-                return "unauthorized";
-            }
-
-            Order order = orderService.findById(orderId).orElse(null);
-            if (order == null) {
-                return "not_found";
-            }
-
-            // Kiểm tra quyền
-            List<Long> vendorShopIds = getShopIdsByVendor(vendor);
-            if (order.getShop() == null || !vendorShopIds.contains(order.getShop().getShopId())) {
-                return "unauthorized";
-            }
-
-            // Kiểm tra địa chỉ có phải ngoài TPHCM không
-            if (isHoChiMinhCity(order.getShippingAddress())) {
-                return "is_hcm";
-            }
-
-            // Kiểm tra provider có tồn tại không
-            ShippingProvider provider = shippingProviderRepository.findById(providerId).orElse(null);
-            if (provider == null || !provider.getStatus()) {
-                return "provider_not_found";
-            }
-
-            // Gán nhà vận chuyển và cập nhật delivery type
-            order.setShippingProviderId(providerId);
-            order.setDeliveryType(Order.DeliveryType.STANDARD);
-            order.setIsExpress(false);
-            order.setShippingFee(provider.getShippingFees() != null ? provider.getShippingFees() : 50000.0);
-
-            orderService.save(order);
-
-            return "success";
-        } catch (Exception e) {
-            e.printStackTrace();
-            return "error";
-        }
-    }
-
     private void sendOrderConfirmedEmail(Order order) {
         try {
             String to = order.getCustomerEmail() != null ? order.getCustomerEmail() :
@@ -707,7 +487,7 @@ public class VendorOrderController {
                     ? order.getShop().getShopName() : "OneShop";
             String subject = "Xác nhận đơn hàng #" + order.getOrderId() + " - " + shopName;
 
-            NumberFormat vnd = NumberFormat.getCurrencyInstance(Locale.forLanguageTag("vi-VN"));
+            NumberFormat vnd = NumberFormat.getCurrencyInstance(new Locale("vi", "VN"));
             double total = order.getTotalAmount() != null ? order.getTotalAmount() : 0.0;
             String payment = order.getPaymentMethod() != null ? order.getPaymentMethod().name() : "COD";
 

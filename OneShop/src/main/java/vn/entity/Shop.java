@@ -6,7 +6,6 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -106,7 +105,6 @@ public class Shop implements Serializable {
         joinColumns = @JoinColumn(name = "shop_id"),
         inverseJoinColumns = @JoinColumn(name = "shipper_id")
     )
-    @JsonIgnore
     private Set<User> shippers = new HashSet<>();
 
     public enum ShopStatus {

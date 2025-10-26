@@ -445,11 +445,9 @@
                   </p>
                   <span class="order-status" 
                         th:classappend="${order.status.name() == 'SHIPPING'} ? 'shipping' : 
-                                       (${order.status.name() == 'DELIVERED'} ? 'delivered' : 
-                                       (${order.status.name() == 'CONFIRMED'} ? 'confirmed' : 'pending'))"
+                                       (${order.status.name() == 'DELIVERED'} ? 'delivered' : 'pending')"
                         th:text="${order.status.name() == 'SHIPPING'} ? 'Đang giao' : 
-                                (${order.status.name() == 'DELIVERED'} ? 'Đã giao' : 
-                                (${order.status.name() == 'CONFIRMED'} ? 'Đã xác nhận' : 'Chờ xử lý'))">
+                                (${order.status.name() == 'DELIVERED'} ? 'Đã giao' : 'Chờ xử lý')">
                     Trạng thái
                   </span>
                 </div>
