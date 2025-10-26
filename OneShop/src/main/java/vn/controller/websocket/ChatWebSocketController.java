@@ -63,9 +63,9 @@ public class ChatWebSocketController {
             if (userOpt.isEmpty()) {
                 // Thử tìm bằng email nếu không tìm thấy bằng tên
                 try {
-                    User userByEmail = userService.findByEmail(vendorName);
-                    if (userByEmail != null) {
-                        userOpt = Optional.of(userByEmail);
+                    Optional<User> userByEmailOpt = userService.findByEmail(vendorName);
+                    if (userByEmailOpt.isPresent()) {
+                        userOpt = userByEmailOpt;
                     }
                 } catch (Exception e) {
                     // User not found by email
@@ -420,7 +420,7 @@ public class ChatWebSocketController {
                 if (vendorId != null) {
                     liaisonOpen.put("vendorId", vendorId);
                     try {
-                        User v = userService.getUserById(vendorId).orElse(null);
+                        User v = userService.findById(vendorId).orElse(null);
                         if (v != null) liaisonOpen.put("vendorName", v.getName());
                     } catch (Exception ignored) {}
                 }

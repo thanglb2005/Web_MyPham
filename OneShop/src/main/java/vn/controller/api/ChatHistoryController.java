@@ -243,7 +243,7 @@ public class ChatHistoryController {
                         map.put("sentAt", message.getSentAt());
                         String vendorName = null;
                         try {
-                            User v = userService.getUserById(vendorId).orElse(null);
+                            User v = userService.findById(vendorId).orElse(null);
                             if (v != null) vendorName = v.getName();
                         } catch (Exception ignored) {}
                         String shopName = null;
@@ -302,7 +302,7 @@ public class ChatHistoryController {
                         String suffix = roomId.substring("support-".length());
                         if (suffix.matches("\\d+")) {
                             Long uid = Long.parseLong(suffix);
-                            userService.getUserById(uid).ifPresent(u -> {
+                            userService.findById(uid).ifPresent(u -> {
                                 map.put("customerName", u.getName());
                             });
                             customerName = (String) map.get("customerName");
@@ -349,7 +349,7 @@ public class ChatHistoryController {
             Optional<Long> customerIdOpt = ChatRoomUtils.extractCustomerId(roomId);
             if (customerIdOpt.isPresent()) {
                 Long customerId = customerIdOpt.get();
-                Optional<User> customerUser = userService.getUserById(customerId);
+                Optional<User> customerUser = userService.findById(customerId);
                 if (customerUser.isPresent()) {
                     customerName = customerUser.get().getName();
                 }

@@ -115,7 +115,7 @@
                 </ul>
                 <div class="user-form-divider"><p>hoặc</p></div>
 
-                <form th:action="@{/login}" method="post" class="user-form">
+                <form th:action="@{/login}" method="post" class="user-form" id="loginForm">
                   <!-- error message -->
                   <div th:if="${error}">
                     <div class="alert alert-danger">
@@ -132,6 +132,17 @@
                       >
                     </div>
                   </div>
+                  
+                  <!-- JWT Login Response -->
+                  <div id="jwtLoginResponse" style="display: none;">
+                    <div class="alert alert-success" id="jwtSuccessMessage" style="display: none;">
+                      <strong>Đăng nhập thành công!</strong> <span id="jwtSuccessText"></span>
+                    </div>
+                    <div class="alert alert-danger" id="jwtErrorMessage" style="display: none;">
+                      <strong>Lỗi đăng nhập!</strong> <span id="jwtErrorText"></span>
+                    </div>
+                  </div>
+                  
                   <br />
                   <div class="form-group">
                     <input
@@ -182,7 +193,7 @@
                     </div>
                   </div>
                   <div class="form-button">
-                    <button type="submit">Đăng nhập</button>
+                    <button type="button" id="loginBtn" onclick="handleLogin(event)">Đăng nhập</button>
                     <p>
                       Quên Mật Khẩu?
                       <a th:href="@{/forgotPassword}">Tại đây</a>
@@ -233,5 +244,209 @@
     <script src="/js/venobox.js"></script>
     <script src="/js/slick.js"></script>
     <script src="/js/main.js"></script>
+    
+    <!-- JWT Authentication -->
+    <script src="/js/jwt-auth.js"></script>
+    <script src="/js/jwt-navigation.js"></script>
+    <script>
+      // Enhanced login with JWT support
+      document.addEventListener('DOMContentLoaded', function() {
+        const loginForm = document.getElementById('loginForm');
+        const loginBtn = document.getElementById('loginBtn');
+        const jwtResponse = document.getElementById('jwtLoginResponse');
+        const successMsg = document.getElementById('jwtSuccessMessage');
+        const errorMsg = document.getElementById('jwtErrorMessage');
+        const successText = document.getElementById('jwtSuccessText');
+        const errorText = document.getElementById('jwtErrorText');
+        
+        if (!loginForm) {
+          return;
+        }
+        
+        // Clear any existing JWT tokens to prevent auto-redirect
+        jwtAuth.clearTokens();
+        
+        // Global function for onclick handler
+        window.handleLogin = async function(e) {
+          e.preventDefault();
+          e.stopPropagation();
+          
+          const formData = new FormData(loginForm);
+          const email = formData.get('email');
+          const password = formData.get('password');
+          const rememberMe = formData.get('rememberMe') === 'true';
+          
+          if (!email || !password) {
+            showError('Vui lòng nhập đầy đủ email và mật khẩu');
+            return false;
+          }
+          
+          // Show loading state
+          loginBtn.disabled = true;
+          loginBtn.textContent = 'Đang đăng nhập...';
+          
+          try {
+            // Try JWT login first
+            const jwtResult = await jwtAuth.login(email, password, rememberMe);
+            
+            if (jwtResult.success) {
+              showSuccess('Đăng nhập thành công!');
+              
+              // Store JWT tokens for API calls
+              const userInfo = jwtResult.data.user_info;
+              
+              // Set authentication context and redirect
+              setTimeout(async () => {
+                try {
+                  // Set authentication context for web pages
+                  const authResponse = await fetch('/api/auth/authenticate', {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                      token: jwtResult.data.access_token
+                    })
+                  });
+                  
+                  const authData = await authResponse.json();
+                  
+                  if (authResponse.ok) {
+                    // Use JWT Navigation system for Pure JWT approach
+                    window.jwtNavigation.redirectBasedOnRole(userInfo);
+                  } else {
+                    showError('Lỗi xác thực: ' + (authData.error || 'Unknown error'));
+                  }
+                } catch (error) {
+                  showError('Lỗi xác thực: ' + error.message);
+                }
+              }, 1000);
+              
+            } else {
+              // JWT login failed, fallback to traditional form submission
+              loginForm.submit();
+            }
+            
+          } catch (error) {
+            // Fallback to traditional form submission
+            loginForm.submit();
+          }
+          
+          return false;
+        };
+        
+        loginBtn.addEventListener('click', async function(e) {
+          e.preventDefault();
+          e.stopPropagation();
+          e.stopImmediatePropagation();
+          
+          const formData = new FormData(loginForm);
+          const email = formData.get('email');
+          const password = formData.get('password');
+          const rememberMe = formData.get('rememberMe') === 'true';
+          
+          if (!email || !password) {
+            showError('Vui lòng nhập đầy đủ email và mật khẩu');
+            return;
+          }
+          
+          // Show loading state
+          loginBtn.disabled = true;
+          loginBtn.textContent = 'Đang đăng nhập...';
+          
+          try {
+            // Try JWT login first
+            const jwtResult = await jwtAuth.login(email, password, rememberMe);
+            
+            if (jwtResult.success) {
+              showSuccess('Đăng nhập thành công!');
+              
+              // Store JWT tokens for API calls
+              const userInfo = jwtResult.data.user_info;
+              
+              // Set authentication context and redirect
+              setTimeout(async () => {
+                try {
+                  // Set authentication context for web pages
+                  const authResponse = await fetch('/api/auth/authenticate', {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                      token: jwtResult.data.access_token
+                    })
+                  });
+                  
+                  const authData = await authResponse.json();
+                  
+                  if (authResponse.ok) {
+                    // Use JWT Navigation system for Pure JWT approach
+                    window.jwtNavigation.redirectBasedOnRole(userInfo);
+                  } else {
+                    showError('Lỗi xác thực: ' + (authData.error || 'Unknown error'));
+                  }
+                } catch (error) {
+                  showError('Lỗi xác thực: ' + error.message);
+                }
+              }, 1000);
+              
+            } else {
+              // JWT login failed, fallback to traditional form submission
+              loginForm.submit();
+            }
+            
+          } catch (error) {
+            // Fallback to traditional form submission
+            loginForm.submit();
+          }
+          
+          // Prevent any default behavior
+          return false;
+        });
+        
+        function showSuccess(message) {
+          jwtResponse.style.display = 'block';
+          successMsg.style.display = 'block';
+          errorMsg.style.display = 'none';
+          successText.textContent = message;
+          
+          // Reset button
+          loginBtn.disabled = false;
+          loginBtn.textContent = 'Đăng nhập';
+        }
+        
+        function showError(message) {
+          jwtResponse.style.display = 'block';
+          errorMsg.style.display = 'block';
+          successMsg.style.display = 'none';
+          errorText.textContent = message;
+          
+          // Reset button
+          loginBtn.disabled = false;
+          loginBtn.textContent = 'Đăng nhập';
+        }
+        
+        function redirectBasedOnRole(roles) {
+          // Check if roles is array or string
+          let roleArray = roles;
+          if (typeof roles === 'string') {
+            roleArray = roles.split(',');
+          }
+          
+          if (roleArray.includes('ROLE_ADMIN')) {
+            window.location.href = '/admin/home';
+          } else if (roleArray.includes('ROLE_VENDOR')) {
+            window.location.href = '/vendor/my-shops';
+          } else if (roleArray.includes('ROLE_CSKH')) {
+            window.location.href = '/cskh/chat';
+          } else if (roleArray.includes('ROLE_SHIPPER')) {
+            window.location.href = '/shipper/home';
+          } else {
+            window.location.href = '/';
+          }
+        }
+      });
+    </script>
   </body>
 </html>
