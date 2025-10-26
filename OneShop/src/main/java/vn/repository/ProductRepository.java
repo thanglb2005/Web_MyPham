@@ -30,6 +30,24 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     @Query(value = "SELECT * FROM products WHERE product_name LIKE CONCAT('%', ?1, '%')", nativeQuery = true)
     List<Product> searchProduct(String productName);
     
+    /**
+     * Search products by keyword in name, brand name, or category name for chatbot
+     */
+    @Query(value = """
+        SELECT p.* FROM products p
+        LEFT JOIN brands b ON p.brand_id = b.brand_id
+        LEFT JOIN categories c ON p.category_id = c.category_id
+        WHERE p.status = 1
+        AND (
+            LOWER(p.product_name) LIKE LOWER(CONCAT('%', :keyword, '%'))
+            OR LOWER(b.brand_name) LIKE LOWER(CONCAT('%', :keyword, '%'))
+            OR LOWER(c.category_name) LIKE LOWER(CONCAT('%', :keyword, '%'))
+        )
+        ORDER BY p.product_name
+        OFFSET 0 ROWS FETCH NEXT :limit ROWS ONLY
+        """, nativeQuery = true)
+    List<Product> searchProductsByKeyword(@Param("keyword") String keyword, @Param("limit") int limit);
+    
     // Count quantity by product
     @Query(value = "SELECT c.category_id, c.category_name, COUNT(*) AS SoLuong " +
                    "FROM products p " +

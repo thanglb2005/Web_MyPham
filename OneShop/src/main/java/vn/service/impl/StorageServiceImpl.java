@@ -58,6 +58,11 @@ public class StorageServiceImpl implements StorageService {
     }
 
     @Override
+    public String storeChatImage(MultipartFile file) {
+        return storeImageWithFallback(file, CloudinaryService.CHAT_FOLDER, "chat");
+    }
+
+    @Override
     public boolean deleteImage(String imageUrl) {
         // Try Cloudinary first
         if (cloudinaryService != null && imageUrl != null && imageUrl.contains("cloudinary.com")) {
