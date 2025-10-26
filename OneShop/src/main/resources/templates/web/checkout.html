@@ -115,7 +115,7 @@
                 <div class="col-lg-12" th:if="${totalCartItems!=0}">
                     <div class="account-card">
                         <div class="account-title">
-                            <h4>2. Chọn hình thức giao hàng</h4>
+                            <h4>2. Phương thức giao hàng</h4>
                         </div>
                         <div class="account-content">
                             <!-- Delivery Options Section -->
@@ -516,25 +516,65 @@
                         placeholder.innerHTML = '<p style="text-align: center; padding: 20px;"><i class="fas fa-spinner fa-spin"></i> Đang tải...</p>';
                     }
                     
-                    fetch(`/api/delivery/check-options?customerCity=${encodeURIComponent(customerCity)}&shopId=${shopId}`)
-                        .then(response => response.json())
-                        .then(options => {
-                            console.log('Delivery options response:', options);
-                            currentDeliveryOptions = options;
-                            renderDeliveryOptions(options);
-                            
-                            // Ẩn placeholder
-                            if (placeholder) {
-                                placeholder.style.display = 'none';
-                            }
-                            deliveryOptionsSection.style.display = 'block';
-                        })
-                        .catch(error => {
-                            console.error('Error checking delivery options:', error);
-                            if (placeholder) {
-                                placeholder.innerHTML = '<p style="text-align: center; padding: 20px; color: #e74c3c;"><i class="fas fa-exclamation-circle"></i> Không thể tải hình thức giao hàng</p>';
-                            }
-                        });
+                    // Kiểm tra xem có phải TPHCM không
+                    const isHoChiMinhCity = isHoChiMinhCityAddress(customerCity);
+                    
+                    // Tạo options dựa trên địa chỉ
+                    const options = {
+                        sameCity: isHoChiMinhCity,
+                        expressAvailable: isHoChiMinhCity,
+                        expressFee: isHoChiMinhCity ? 30000 : 0,
+                        standardFee: isHoChiMinhCity ? 30000 : 50000,
+                        expressTime: '4-8 giờ',
+                        standardTime: isHoChiMinhCity ? '1-2 ngày' : '2-5 ngày',
+                        shippingVouchers: [] // TODO: Load shipping vouchers
+                    };
+                    
+                    console.log('Delivery options for', customerCity, ':', options);
+                    currentDeliveryOptions = options;
+                    renderDeliveryOptions(options);
+                    
+                    // Ẩn placeholder
+                    if (placeholder) {
+                        placeholder.style.display = 'none';
+                    }
+                    deliveryOptionsSection.style.display = 'block';
+                }
+                
+                // Function to check if address is Ho Chi Minh City
+                function isHoChiMinhCityAddress(address) {
+                    if (!address) return false;
+                    const lowerAddress = address.toLowerCase();
+                    return lowerAddress.includes('hồ chí minh') || 
+                           lowerAddress.includes('ho chi minh') ||
+                           lowerAddress.includes('tp.hcm') ||
+                           lowerAddress.includes('tphcm') ||
+                           lowerAddress.includes('sài gòn') ||
+                           lowerAddress.includes('sai gon') ||
+                           lowerAddress.includes('quận 1') ||
+                           lowerAddress.includes('quận 2') ||
+                           lowerAddress.includes('quận 3') ||
+                           lowerAddress.includes('quận 4') ||
+                           lowerAddress.includes('quận 5') ||
+                           lowerAddress.includes('quận 6') ||
+                           lowerAddress.includes('quận 7') ||
+                           lowerAddress.includes('quận 8') ||
+                           lowerAddress.includes('quận 9') ||
+                           lowerAddress.includes('quận 10') ||
+                           lowerAddress.includes('quận 11') ||
+                           lowerAddress.includes('quận 12') ||
+                           lowerAddress.includes('thủ đức') ||
+                           lowerAddress.includes('bình thạnh') ||
+                           lowerAddress.includes('tân bình') ||
+                           lowerAddress.includes('tân phú') ||
+                           lowerAddress.includes('phú nhuận') ||
+                           lowerAddress.includes('gò vấp') ||
+                           lowerAddress.includes('bình tân') ||
+                           lowerAddress.includes('hóc môn') ||
+                           lowerAddress.includes('củ chi') ||
+                           lowerAddress.includes('bình chánh') ||
+                           lowerAddress.includes('nhà bè') ||
+                           lowerAddress.includes('cần giờ');
                 }
                 
                 // Function to update total price
@@ -573,7 +613,7 @@
                 function renderDeliveryOptions(options) {
                     console.log('Rendering delivery options:', options);
                     if (options.sameCity && options.expressAvailable) {
-                        // Hiển thị options hỏa tốc
+                        // TPHCM - Hiển thị đơn hỏa tốc (tự động chọn)
                         deliveryOptionsContainer.innerHTML = `
                             <div class="delivery-methods">
                                 <div class="delivery-option-item">
@@ -581,21 +621,10 @@
                                     <label for="express" class="delivery-label">
                                         <i class="fas fa-bolt" style="color: #ff6b6b;"></i>
                                         <div>
-                                            <strong>⚡ Giao hỏa tốc</strong>
-                                            <div><small>Thời gian: ${options.expressTime || '2-4 giờ'}</small></div>
+                                            <strong>⚡ Đơn hỏa tốc</strong>
+                                            <div><small>Thời gian: ${options.expressTime || '4-8 giờ'}</small></div>
                                             <div><small>Phí ship: ${formatMoney(options.expressFee)} VNĐ</small></div>
                                             <div style="color: #ff6b6b;"><small>Shipper riêng giao tận nơi</small></div>
-                                        </div>
-                                    </label>
-                                </div>
-                                <div class="delivery-option-item">
-                                    <input type="radio" id="standard" value="STANDARD" name="deliveryType" data-fee="${options.standardFee}">
-                                    <label for="standard" class="delivery-label">
-                                        <i class="fas fa-shipping-fast" style="color: #119744;"></i>
-                                        <div>
-                                            <strong>📦 Giao tiêu chuẩn</strong>
-                                            <div><small>Thời gian: ${options.standardTime || '1-2 ngày'}</small></div>
-                                            <div><small>Phí ship: ${formatMoney(options.standardFee)} VNĐ</small></div>
                                         </div>
                                     </label>
                                 </div>
@@ -640,17 +669,18 @@
                         currentShippingFee = options.expressFee || 0;
                         selectedDeliveryType = 'EXPRESS';
                     } else {
-                        // Không có hỏa tốc
+                        // Ngoài TPHCM - Hiển thị giao đi xa (tự động chọn)
                         deliveryOptionsContainer.innerHTML = `
                             <div class="delivery-methods">
                                 <div class="delivery-option-item">
                                     <input type="radio" id="standard" value="STANDARD" name="deliveryType" data-fee="${options.standardFee}" checked>
                                     <label for="standard" class="delivery-label">
-                                        <i class="fas fa-shipping-fast" style="color: #119744;"></i>
+                                        <i class="fas fa-truck" style="color: #119744;"></i>
                                         <div>
-                                            <strong>📦 Giao tiêu chuẩn</strong>
-                                            <div><small>Thời gian: ${options.standardTime || '2-3 ngày'}</small></div>
+                                            <strong>🚚 Giao đi xa</strong>
+                                            <div><small>Thời gian: ${options.standardTime || '2-5 ngày'}</small></div>
                                             <div><small>Phí ship: ${formatMoney(options.standardFee)} VNĐ</small></div>
+                                            <div style="color: #119744;"><small>Nhà vận chuyển chuyên nghiệp</small></div>
                                         </div>
                                     </label>
                                 </div>
@@ -811,10 +841,27 @@
 
                 // ========= Shipping voucher modal =========
                 let selectedShippingVoucher = null;
+                let notAppliedDiv = null;
+                let appliedDiv = null;
+                let currentShippingVouchers = [];
 
                 function openShippingVoucherModal(vouchers) {
-                    if (!vouchers || vouchers.length === 0) return;
+                    console.log('openShippingVoucherModal called with:', vouchers);
+                    if (!vouchers || vouchers.length === 0) {
+                        console.log('No vouchers provided');
+                        return;
+                    }
+                    
+                    // Store current vouchers globally
+                    currentShippingVouchers = vouchers;
+                    
                     const modal = document.getElementById('shippingVoucherModal');
+                    console.log('Modal element:', modal);
+                    
+                    // Initialize global variables
+                    notAppliedDiv = document.getElementById('shippingVoucherNotApplied');
+                    appliedDiv = document.getElementById('shippingVoucherApplied');
+                    
                     const list = document.getElementById('shippingVoucherList');
                     list.innerHTML = '';
                     vouchers.forEach(voucher => {
@@ -845,7 +892,9 @@
                         });
                         list.appendChild(item);
                     });
+                    console.log('Showing modal...');
                     modal.style.display = 'flex';
+                    console.log('Modal display style:', modal.style.display);
                 }
 
                 function closeShippingVoucherModal() {
@@ -881,9 +930,34 @@
 
                 // Bind buttons after delivery options are rendered
                 document.addEventListener('click', function(e) {
+                    console.log('Click detected:', e.target);
                     const openBtn = e.target && (e.target.id === 'openShippingVoucherBtn' ? e.target : e.target.closest && e.target.closest('#openShippingVoucherBtn'));
                     if (openBtn) {
-                        openShippingVoucherModal((currentDeliveryOptions && currentDeliveryOptions.shippingVouchers) || []);
+                        console.log('Opening shipping voucher modal...');
+                        // Tạo danh sách voucher mẫu để test
+                        const sampleVouchers = [
+                            {
+                                promotionId: 1,
+                                promotionCode: 'FREESHIP',
+                                promotionName: 'Miễn phí ship',
+                                promotionType: 'FREE_SHIPPING',
+                                discountValue: 0,
+                                minimumOrderAmount: 0,
+                                maximumDiscountAmount: 0,
+                                remainingUsage: 10
+                            },
+                            {
+                                promotionId: 2,
+                                promotionCode: 'SHIP50',
+                                promotionName: 'Giảm 50% phí ship',
+                                promotionType: 'PERCENTAGE',
+                                discountValue: 50,
+                                minimumOrderAmount: 100000,
+                                maximumDiscountAmount: 25000,
+                                remainingUsage: 5
+                            }
+                        ];
+                        openShippingVoucherModal(sampleVouchers);
                     }
                     const clearBtn = e.target && (e.target.id === 'clearShippingVoucherBtn' ? e.target : e.target.closest && e.target.closest('#clearShippingVoucherBtn'));
                     if (clearBtn) {
@@ -901,8 +975,6 @@
                                 currentShippingVoucherDiscount = 0;
                                 
                                 // Update voucher display UI
-                                const notAppliedDiv = document.getElementById('shippingVoucherNotApplied');
-                                const appliedDiv = document.getElementById('shippingVoucherApplied');
                                 if (notAppliedDiv) notAppliedDiv.style.display = 'flex';
                                 if (appliedDiv) appliedDiv.style.display = 'none';
                                 
@@ -927,9 +999,14 @@
                         const selected = document.querySelector('input[name="modalShippingVoucher"]:checked');
                         if (!selected) { closeShippingVoucherModal(); return; }
                         const id = selected.value;
-                        const voucher = (currentDeliveryOptions && currentDeliveryOptions.shippingVouchers || []).find(v => String(v.promotionId) === String(id));
+                        const voucher = currentShippingVouchers.find(v => String(v.promotionId) === String(id));
+                        console.log('Selected voucher ID:', id);
+                        console.log('Found voucher:', voucher);
+                        console.log('Current shipping vouchers:', currentShippingVouchers);
+                        
                         selectedShippingVoucher = voucher || null;
                         currentShippingVoucherDiscount = computeShippingVoucherDiscount(selectedShippingVoucher);
+                        console.log('Computed discount:', currentShippingVoucherDiscount);
                         
                         // Apply shipping voucher via API
                         if (selectedShippingVoucher && currentShippingVoucherDiscount > 0) {
@@ -944,8 +1021,6 @@
                             .then(data => {
                                 if (data.success) {
                                     // Update voucher display UI
-                                    const notAppliedDiv = document.getElementById('shippingVoucherNotApplied');
-                                    const appliedDiv = document.getElementById('shippingVoucherApplied');
                                     const appliedVoucherCode = document.getElementById('appliedVoucherCode');
                                     const appliedVoucherDiscount = document.getElementById('appliedVoucherDiscount');
                                     

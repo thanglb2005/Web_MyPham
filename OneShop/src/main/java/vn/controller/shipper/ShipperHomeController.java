@@ -111,10 +111,9 @@ public class ShipperHomeController {
             }
         }
 
-        // Lấy các đơn hàng được phân công cho shipper này
-        List<Order> assignedOrders = orderRepository.findOrdersByShipper(shipper);
+        // Lấy tất cả đơn hàng được gán cho shipper này (bao gồm cả CONFIRMED)
+        List<Order> allAssignedOrders = orderRepository.findOrdersByShipper(shipper);
         
-<<<<<<< HEAD
         // Debug: Log tất cả đơn hàng được gán
         System.out.println("All assigned orders for shipper: " + allAssignedOrders.size());
         for (Order order : allAssignedOrders) {
@@ -164,14 +163,6 @@ public class ShipperHomeController {
         for (Order order : assignedOrders) {
             System.out.println("Assigned order #" + order.getOrderId() + " - Status: " + order.getStatus());
         }
-=======
-        // Lấy các đơn hàng đang chờ giao (CONFIRMED) mà chưa có shipper
-        // Chỉ lấy đơn hàng từ các shop mà shipper được gán
-        List<Order> availableOrders = orderRepository.findAvailableOrdersForShipper(
-            shipper,
-            Order.OrderStatus.CONFIRMED
-        );
->>>>>>> parent of 7dd478a (đơn hỏa tóc và đơn giao xa)
 
         // Lấy các đơn hàng giao muộn của shipper
         List<Order> overdueOrders = orderService.findOverdueOrdersByShipper(shipper);
@@ -216,10 +207,11 @@ public class ShipperHomeController {
         }
 
         try {
-            // Kiểm tra đơn hàng có tồn tại và chưa được phân công shipper
+            // Kiểm tra đơn hàng có tồn tại và có thể nhận
             Order order = orderService.getOrderById(orderId);
-            if (order != null && order.getShipper() == null && 
-                order.getStatus() == Order.OrderStatus.CONFIRMED) {
+            if (order != null && 
+                (order.getStatus() == Order.OrderStatus.CONFIRMED || order.getStatus() == Order.OrderStatus.SHIPPING) &&
+                (order.getShipper() == null || order.getShipper().getUserId().equals(shipper.getUserId()))) {
                 
                 // Phân công shipper cho đơn hàng
                 orderService.assignShipper(orderId, shipper);
