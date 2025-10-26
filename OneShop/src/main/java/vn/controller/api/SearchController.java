@@ -21,12 +21,12 @@ public class SearchController {
      * Returns suggestions based on search query
      */
     @GetMapping("/autocomplete")
-    public ResponseEntity<List<Map<String, String>>> autocomplete(@RequestParam String q) {
+    public ResponseEntity<List<Map<String, String>>> autocomplete(@RequestParam(required = false, defaultValue = "") String q) {
         List<Map<String, String>> suggestions = new ArrayList<>();
         
         // Simple mock data for now
         // In production, query from database
-        String query = q.toLowerCase();
+        String query = (q != null ? q : "").toLowerCase();
         
         if (query.length() >= 2) {
             // Mock suggestions
