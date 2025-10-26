@@ -180,19 +180,15 @@ public class AIController {
     }
 
     /**
-     * Simple chat endpoint for floating chatbot with conversation history
+     * Simple chat endpoint for floating chatbot
      */
     @PostMapping("/chat")
-    public ResponseEntity<Map<String, Object>> chat(@RequestBody Map<String, Object> request) {
+    public ResponseEntity<Map<String, Object>> chat(@RequestBody Map<String, String> request) {
         Map<String, Object> response = new HashMap<>();
         
         try {
-            String message = request.getOrDefault("message", "").toString();
-            String context = request.getOrDefault("context", "OneShop mỹ phẩm").toString();
-            
-            // Lấy conversation history (có thể null)
-            @SuppressWarnings("unchecked")
-            List<Map<String, String>> history = (List<Map<String, String>>) request.get("history");
+            String message = request.getOrDefault("message", "");
+            String context = request.getOrDefault("context", "");
             
             if (message.trim().isEmpty()) {
                 response.put("status", "error");
@@ -200,7 +196,7 @@ public class AIController {
                 return ResponseEntity.badRequest().body(response);
             }
             
-            CompletableFuture<String> aiResponse = geminiService.generateResponse(message, context, history);
+            CompletableFuture<String> aiResponse = geminiService.generateResponse(message, context);
             String result = aiResponse.get();
             
             response.put("status", "success");
@@ -234,29 +230,29 @@ public class AIController {
                 return ResponseEntity.badRequest().body(response);
             }
             
-            // Extract keyword from query (remove stopwords)
-            String keyword = extractKeywordFromQuery(query);
+            // Search products in database
+            List<Product> products = productRepository.findAll().stream()
+                    .filter(p -> p.getStatus() != null && p.getStatus())
+                    .filter(p -> p.getProductName() != null && 
+                            p.getProductName().toLowerCase().contains(query.toLowerCase()))
+                    .limit(5) // Limit to 5 products
+                    .collect(Collectors.toList());
             
-            // Search products in database using the new method (limit to 10 products for 2 columns x 5 rows)
-            List<Product> products = productRepository.searchProductsByKeyword(keyword, 10);
-            
-            // Convert to response format matching frontend displayProducts() expectation
+            // Convert to response format
             List<Map<String, Object>> productData = products.stream().map(p -> {
                 Map<String, Object> productMap = new HashMap<>();
                 productMap.put("id", p.getProductId());
                 productMap.put("name", p.getProductName());
                 productMap.put("price", p.getPrice());
-                productMap.put("discount", p.getDiscount() != null ? p.getDiscount() : 0);
+                productMap.put("discount", p.getDiscount());
                 productMap.put("image", p.getProductImage());
-                
-                // Add brand and category for display
-                if (p.getBrand() != null) {
-                    productMap.put("brand", p.getBrand().getBrandName());
-                }
+                productMap.put("description", p.getDescription());
                 if (p.getCategory() != null) {
                     productMap.put("category", p.getCategory().getCategoryName());
                 }
-                
+                if (p.getBrand() != null) {
+                    productMap.put("brand", p.getBrand().getBrandName());
+                }
                 return productMap;
             }).collect(Collectors.toList());
             
@@ -273,22 +269,6 @@ public class AIController {
         }
         
         return ResponseEntity.ok(response);
-    }
-    
-    /**
-     * Extract keyword from user query (remove common stopwords)
-     */
-    private String extractKeywordFromQuery(String query) {
-        if (query == null) return "";
-        
-        String processed = query.toLowerCase()
-            .replaceAll("[^\\p{L}\\p{Nd}\\s]", " ")
-            .replaceAll("\\b(tim|tìm|cho|mua|giá|sản|phẩm|có|không|loại|nào|giúp|tư\\s*vấn|xem|show|list|danh|sách)\\b", " ")
-            .replaceAll("\\s+", " ")
-            .trim();
-        
-        // If empty after processing, return the original query
-        return processed.isEmpty() ? query.trim() : processed;
     }
 
     /**

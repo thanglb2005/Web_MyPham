@@ -22,7 +22,6 @@ public class CloudinaryService {
     public static final String BRAND_FOLDER = "oneshop/brands";
     public static final String RATING_FOLDER = "oneshop/ratings";
     public static final String GENERAL_FOLDER = "oneshop/images";
-    public static final String CHAT_FOLDER = "oneshop/chat";
 
     /**
      * Upload image to Cloudinary with default folder

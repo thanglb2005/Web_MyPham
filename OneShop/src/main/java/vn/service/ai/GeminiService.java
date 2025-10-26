@@ -5,7 +5,6 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,54 +33,27 @@ public class GeminiService {
     private final String GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent";
 
     /**
-     * Gửi tin nhắn đến Gemini AI và nhận phản hồi với context lịch sử hội thoại
+     * Gửi tin nhắn đến Gemini AI và nhận phản hồi
      * @param userMessage Tin nhắn từ người dùng
      * @param context Context về sản phẩm mỹ phẩm (optional)
-     * @param conversationHistory Lịch sử hội thoại (optional)
      * @return Phản hồi từ AI
      */
-    public CompletableFuture<String> generateResponse(String userMessage, String context, List<Map<String, String>> conversationHistory) {
+    public CompletableFuture<String> generateResponse(String userMessage, String context) {
         return CompletableFuture.supplyAsync(() -> {
             try {
                 // Tạo prompt với context về OneShop
                 String systemPrompt = buildSystemPrompt(context);
+                String fullPrompt = systemPrompt + "\n\nKhách hàng: " + userMessage;
                 
-                // Xây dựng nội dung hội thoại
-                List<Map<String, Object>> contents = new ArrayList<>();
-                
-                // Thêm system prompt vào đầu
-                Map<String, Object> systemContent = new HashMap<>();
-                Map<String, Object> systemPart = new HashMap<>();
-                systemPart.put("text", systemPrompt);
-                systemContent.put("parts", List.of(systemPart));
-                systemContent.put("role", "user");
-                contents.add(systemContent);
-                
-                // Thêm lịch sử hội thoại
-                if (conversationHistory != null && !conversationHistory.isEmpty()) {
-                    for (Map<String, String> history : conversationHistory) {
-                        if (history.containsKey("role") && history.containsKey("content")) {
-                            Map<String, Object> contentItem = new HashMap<>();
-                            Map<String, Object> part = new HashMap<>();
-                            part.put("text", history.get("content"));
-                            contentItem.put("parts", List.of(part));
-                            contentItem.put("role", history.get("role"));
-                            contents.add(contentItem);
-                        }
-                    }
-                }
-                
-                // Thêm tin nhắn hiện tại
-                Map<String, Object> userContent = new HashMap<>();
-                Map<String, Object> userPart = new HashMap<>();
-                userPart.put("text", userMessage);
-                userContent.put("parts", List.of(userPart));
-                userContent.put("role", "user");
-                contents.add(userContent);
-                
-                // Tạo request body với conversation history
+                // Tạo request body
                 Map<String, Object> requestBody = new HashMap<>();
-                requestBody.put("contents", contents);
+                
+                // Contents array
+                Map<String, Object> content = new HashMap<>();
+                Map<String, Object> part = new HashMap<>();
+                part.put("text", fullPrompt);
+                content.put("parts", List.of(part));
+                requestBody.put("contents", List.of(content));
                 
                 // Generation config
                 Map<String, Object> generationConfig = new HashMap<>();
@@ -209,13 +181,6 @@ public class GeminiService {
      */
     public boolean isApiKeyValid() {
         return apiKey != null && !apiKey.trim().isEmpty() && !apiKey.equals("YOUR_GEMINI_API_KEY_HERE");
-    }
-
-    /**
-     * Overload method for backward compatibility (no conversation history)
-     */
-    public CompletableFuture<String> generateResponse(String userMessage, String context) {
-        return generateResponse(userMessage, context, null);
     }
 
     /**

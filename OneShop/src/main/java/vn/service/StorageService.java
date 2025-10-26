@@ -46,13 +46,6 @@ public interface StorageService {
     String storeGeneralImage(MultipartFile file);
     
     /**
-     * Upload chat image to Cloudinary/Local storage
-     * @param file Chat image file
-     * @return Image URL
-     */
-    String storeChatImage(MultipartFile file);
-    
-    /**
      * Delete image from storage
      * @param imageUrl Image URL to delete
      * @return true if deleted successfully

@@ -1,8 +1,6 @@
 <!DOCTYPE html>
-<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<html lang="" xmlns:th="http://www.thymeleaf.org">
   <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <title></title>
     <link rel="stylesheet" href="/vendor/bootstrap/bootstrap.min.css" />
     <link rel="stylesheet" href="/fonts/fontawesome/fontawesome.min.css" />
@@ -10,17 +8,6 @@
     <script src="/vendor/bootstrap/bootstrap.min.js"></script>
     <script src="/assets/js/plugin/sweetalert/sweetalert.min.js"></script>
     <style>
-      /* Chatbot isolation: container scope + overlay behavior */
-      body.chatbot-open #floatingChatButton,
-      body.chatbot-open .floating-mascot {
-        pointer-events: none;
-        opacity: 0.3;
-      }
-      #ai-chatbot-container .oneshop-chatbot-popup { z-index: 10020; }
-      #ai-chatbot-container #oneshopChatbotButton { z-index: 10015; }
-      #ai-chatbot-container .chatbot-input-area { position: relative; z-index: 10030; }
-      #ai-chatbot-container .send-btn,
-      #ai-chatbot-container #aiChatbotMessageInput { pointer-events: auto; }
       /* Improve visibility of cart count badge */
       .header-part .header-widget {
         position: relative;
@@ -455,6 +442,7 @@
           }
         }
       </style>
+      <script src="/assets/js/plugin/sweetalert/sweetalert.min.js"></script>
       <script th:inline="javascript">
         /*<![CDATA[*/
         document.addEventListener("DOMContentLoaded", function () {
@@ -1243,6 +1231,23 @@
           transition: none !important;
         }
         
+        /* Ensure chat popup doesn't overlap content */
+        .chat-popup {
+          position: fixed;
+          bottom: 100px;
+          right: 20px;
+          width: 800px;
+          height: 600px;
+          background: white;
+          border-radius: 15px;
+          box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+          border: 1px solid #e9ecef;
+          display: flex;
+          flex-direction: column;
+          overflow: hidden;
+          z-index: 1000;
+        }
+        
         /* Prevent content overlap on mobile */
         @media (max-width: 768px) {
           body {
@@ -1256,9 +1261,32 @@
         }
 
         /* Disabled animations */
+
         #floatingChatButton:hover {
           opacity: 0.9;
         }
+
+        .unread-count {
+          position: absolute;
+          top: -5px;
+          right: -5px;
+          background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+          color: white;
+          border-radius: 50%;
+          width: 24px;
+          height: 24px;
+          font-size: 12px;
+          font-weight: 700;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+          /* Remove animations */
+          animation: none !important;
+          transition: none !important;
+        }
+
+        /* Disabled animations */
 
       </style>
 
@@ -1965,16 +1993,8 @@
           return date.toLocaleDateString("vi-VN");
         }
 
-        // Flag to ensure floating chat listeners are bound only once
-        let floatingChatBound = false;
-
         // Initialize when page loads
         document.addEventListener("DOMContentLoaded", function () {
-          if (floatingChatBound) {
-            console.log("Floating chat already initialized");
-            return;
-          }
-          
           console.log("Floating chat button initialized");
           
           // Add event listeners for send button and Enter key
@@ -2009,8 +2029,6 @@
           if (removePreview) {
             removePreview.addEventListener('click', clearImagePreview);
           }
-          
-          floatingChatBound = true;
           
           // DON'T auto-restore chat state - let user click to open
           // setTimeout(() => {
@@ -2055,11 +2073,9 @@
         });
       </script>
 
-    <!-- AI Chatbot Container - Isolated from regular chat -->
-     <div id="ai-chatbot-container">
-     <!-- Floating AI Chatbot Button -->
-     <div id="oneshopChatbotButton" class="oneshop-chatbot-button" onclick="toggleOneshopChatbot()">
-       <div class="chatbot-icon">
+    <!-- Floating AI Chatbot Button -->
+    <div id="oneshopChatbotButton" class="oneshop-chatbot-button" onclick="toggleOneshopChatbot()">
+      <div class="chatbot-icon">
         <div class="chatbot-avatar">
           <div class="robot-face">
             <div class="robot-eyes">
@@ -2082,26 +2098,84 @@
       <div class="chatbot-header">
         <div class="chatbot-title">
           <div class="title-icon">
-            <div class="oneshop-logo-icon">OS</div>
+            <div class="robot-face-small">
+              <div class="robot-eyes">
+                <div class="eye left"></div>
+                <div class="eye right"></div>
+              </div>
+              <div class="robot-mouth"></div>
+            </div>
+            <span class="sparkle-icon">✨</span>
           </div>
           <div class="title-text">
             <h3>Trợ lý AI - OneShop</h3>
           </div>
         </div>
-         <div class="chatbot-controls">
+        <div class="chatbot-controls">
           <button class="control-btn refresh-btn" onclick="refreshChatbot()">
             <i class="fas fa-sync-alt"></i>
+          </button>
+          <button class="control-btn expand-btn" onclick="expandChatbot()">
+            <i class="fas fa-expand"></i>
           </button>
           <button class="control-btn close-btn" onclick="closeOneshopChatbot()">
             <i class="fas fa-times"></i>
           </button>
-         </div>
+        </div>
       </div>
       
       <div class="chatbot-body">
+        <!-- OneShop AI Introduction -->
+        <div class="chatbot-intro">
+          <div class="intro-avatar">
+            <div class="oneshop-robot">
+              <div class="robot-body">
+                <div class="robot-face-large">
+                  <div class="robot-eyes">
+                    <div class="eye left"></div>
+                    <div class="eye right"></div>
+                  </div>
+                  <div class="robot-mouth"></div>
+                </div>
+                <div class="robot-chest">
+                  <div class="oneshop-logo">OS</div>
+                </div>
+                <div class="robot-arm wave"></div>
+              </div>
+              <div class="thinking-bubble">
+                <span></span>
+                <span></span>
+                <span></span>
+              </div>
+            </div>
+          </div>
+          <div class="intro-content">
+            <h2>OneShop AI</h2>
+            <div class="ai-badge">AI</div>
+            <p class="intro-tagline">OneShop AI - Biết tuốt hỗ trợ bạn tìm sản phẩm mỹ phẩm và đặt hàng dễ dàng</p>
+          </div>
+        </div>
+
         <!-- Welcome Message -->
+<<<<<<< HEAD
         <div class="welcome-message-simple">
           <p>Chào bạn! 👋 Mình là trợ lý AI của OneShop. Mình có thể giúp bạn tìm kiếm sản phẩm mỹ phẩm phù hợp.</p>
+=======
+        <div class="welcome-section">
+          <div class="welcome-avatar">
+            <div class="robot-face-small">
+              <div class="robot-eyes">
+                <div class="eye left"></div>
+                <div class="eye right"></div>
+              </div>
+              <div class="robot-mouth"></div>
+            </div>
+          </div>
+          <div class="welcome-message">
+            <p>Chào bạn, mình là trợ lý AI của OneShop! Bạn cần hỗ trợ gì hoặc có thể chọn một trong các chủ đề dưới đây nhé</p>
+            <p class="escalation-note">Trong quá trình tư vấn, nếu chưa hài lòng với câu trả lời của AI, bạn vui lòng chat <strong>Tôi muốn gặp tư vấn viên</strong> để được hỗ trợ.</p>
+          </div>
+>>>>>>> parent of a81f29e (push tạm)
         </div>
 
         <!-- Suggested Topics -->
@@ -2120,42 +2194,56 @@
           </button>
         </div>
 
-        <!-- Chat Messages - Scrollable -->
-        <div class="chat-messages" id="aiChatbotMessages">
+        <!-- Chat Messages -->
+        <div class="chat-messages" id="chatbotMessages">
           <!-- Messages will be added here dynamically -->
         </div>
 
-        <!-- Input Area - Fixed -->
+        <!-- Input Area -->
         <div class="chatbot-input-area">
           <div class="input-label">Bạn cần hỗ trợ gì?</div>
           <!-- Image Preview -->
-          <div id="aiChatbotImagePreview" class="image-preview" style="display: none; margin-bottom: 10px;">
-            <img id="aiChatbotPreviewImg" src="" alt="Preview" style="max-width: 100%; max-height: 200px; border-radius: 8px;">
+          <div id="chatbotImagePreview" class="image-preview" style="display: none; margin-bottom: 10px;">
+            <img id="chatbotPreviewImg" src="" alt="Preview" style="max-width: 100%; max-height: 200px; border-radius: 8px;">
             <button class="remove-image-btn" onclick="removeImagePreview()">
               <i class="fas fa-times"></i>
             </button>
           </div>
           <div class="input-group">
+<<<<<<< HEAD
             <button type="button" class="upload-btn" id="aiChatbotUploadBtn" title="Gửi hình ảnh">
+=======
+            <button class="upload-btn" id="chatbotUploadBtn" title="Gửi hình ảnh">
+>>>>>>> parent of a81f29e (push tạm)
               <i class="fas fa-image"></i>
-              <input type="file" id="aiChatbotImageInput" accept="image/*" style="display: none;">
+              <input type="file" id="chatbotImageInput" accept="image/*" style="display: none;" onchange="handleImageUpload(event)">
             </button>
+<<<<<<< HEAD
             <input type="text" id="aiChatbotMessageInput" placeholder="Nhập tin nhắn..." class="chatbot-input">
             <button type="button" class="send-btn" id="aiChatbotSendBtn">
+=======
+            <input type="text" id="chatbotMessageInput" placeholder="Nhập tin nhắn..." class="chatbot-input">
+            <button class="send-btn" id="chatbotSendBtn" onclick="sendChatbotMessage()">
+>>>>>>> parent of a81f29e (push tạm)
               <i class="fas fa-paper-plane"></i>
             </button>
           </div>
         </div>
 
+<<<<<<< HEAD
         <!-- Footer with Disclaimer - Sticky -->
         <div class="chatbot-footer">
           <div class="disclaimer">
             <small>Thông tin chỉ mang tính tham khảo, được tư vấn bởi Trí Tuệ Nhân Tạo</small>
           </div>
+=======
+        <!-- Disclaimer -->
+        <div class="disclaimer">
+          <small>Thông tin được AI hỗ trợ chỉ mang tính chất tham khảo</small>
+>>>>>>> parent of a81f29e (push tạm)
         </div>
       </div>
     </div>
-    </div> <!-- End ai-chatbot-container -->
 
     <style>
       /* OneShop Chatbot Button - Original Orange Style */
@@ -2296,18 +2384,17 @@
         position: fixed;
         bottom: 100px;
         right: 20px;
-        width: 500px;
-        height: 700px;
+        width: 380px;
+        height: 600px;
         background: #fef7f7;
         border-radius: 20px;
         box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
-        z-index: 10020;
+        z-index: 1001;
         display: flex;
         flex-direction: column;
         overflow: hidden;
         animation: slideUp 0.4s ease-out;
         border: 1px solid rgba(255, 107, 157, 0.2);
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       }
 
       @keyframes slideUp {
@@ -2322,13 +2409,13 @@
       }
 
       .chatbot-header {
-        background: #fff;
-        color: #333;
+        background: linear-gradient(135deg, #ff6b9d 0%, #ff8fab 100%);
+        color: white;
         padding: 15px 20px;
         display: flex;
         justify-content: space-between;
         align-items: center;
-        border-bottom: 1px solid #e5e5e5;
+        border-radius: 20px 20px 0 0;
       }
 
       .chatbot-title {
@@ -2343,25 +2430,42 @@
         gap: 5px;
       }
 
-      .oneshop-logo-icon {
-        width: 40px;
-        height: 40px;
-        background: linear-gradient(135deg, #ff6b9d 0%, #ff8fab 100%);
-        color: white;
+      .robot-face-small {
+        width: 25px;
+        height: 25px;
+        background: white;
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-weight: bold;
-        font-size: 16px;
+        position: relative;
+      }
+
+      .robot-face-small .robot-eyes {
+        top: 6px;
+        gap: 6px;
+      }
+
+      .robot-face-small .eye {
+        width: 4px;
+        height: 4px;
+      }
+
+      .robot-face-small .robot-mouth {
+        bottom: 6px;
+        width: 8px;
+        height: 4px;
+      }
+
+      .sparkle-icon {
+        font-size: 14px;
+        animation: sparkle 2s infinite;
       }
 
       .title-text h3 {
         margin: 0;
-        font-size: 18px;
+        font-size: 16px;
         font-weight: 600;
-        color: #333;
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       }
 
       .chatbot-controls {
@@ -2370,24 +2474,23 @@
       }
 
       .control-btn {
-        width: 36px;
-        height: 36px;
-        background: transparent;
-        border: 1px solid #e5e5e5;
+        width: 32px;
+        height: 32px;
+        background: rgba(255, 255, 255, 0.2);
+        border: none;
         border-radius: 50%;
-        color: #666;
+        color: white;
         cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: center;
         transition: all 0.3s ease;
-        font-size: 14px;
+        font-size: 12px;
       }
 
       .control-btn:hover {
-        background: #f8f9fa;
-        border-color: #ccc;
-        transform: scale(1.05);
+        background: rgba(255, 255, 255, 0.3);
+        transform: scale(1.1);
       }
 
       .chatbot-body {
@@ -2395,53 +2498,8 @@
         display: flex;
         flex-direction: column;
         overflow: hidden;
-        padding: 0;
-        background: #fff;
-      }
-      
-      .welcome-message-simple {
-        padding: 15px 20px;
-        background: #f8f9fa;
-        border-bottom: 1px solid #e5e5e5;
-      }
-      
-      .welcome-message-simple p {
-        margin: 0;
-        font-size: 14px;
-        color: #333;
-        line-height: 1.5;
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      }
-      
-      /* Suggested Topics */
-      .suggested-topics {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 10px;
-        padding: 10px 20px;
-        border-bottom: 1px solid #e5e5e5;
-        flex-shrink: 0;
-      }
-
-      .topic-btn {
-        background: white;
-        border: 1px solid #e0e0e0;
-        border-radius: 8px;
-        padding: 10px 12px;
-        font-size: 13px;
-        color: #333;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        text-align: center;
-        line-height: 1.4;
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      }
-
-      .topic-btn:hover {
-        background: #e0e0e0;
-        border-color: #ccc;
-        transform: translateY(-1px);
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        padding: 20px;
+        background: #fef7f7;
       }
 
       /* Chatbot Introduction */
@@ -2622,28 +2680,54 @@
         font-style: italic;
       }
 
-      /* Chat Messages - Scrollable - Scoped to AI Chatbot */
-      #ai-chatbot-container .chat-messages {
-        flex: 1;
-        overflow-y: auto;
-        padding: 15px 20px;
-        background: #fff;
-        /* Reserve space for input + footer */
-        padding-bottom: 140px;
+      /* Suggested Topics */
+      .suggested-topics {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-bottom: 20px;
       }
 
-      #ai-chatbot-container .chat-message {
+      .topic-btn {
+        background: white;
+        border: 1px solid rgba(255, 107, 157, 0.3);
+        border-radius: 12px;
+        padding: 12px 8px;
+        font-size: 12px;
+        color: #333;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-align: center;
+        line-height: 1.3;
+      }
+
+      .topic-btn:hover {
+        background: linear-gradient(135deg, #ff6b9d 0%, #ff8fab 100%);
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(255, 107, 157, 0.3);
+      }
+
+      /* Chat Messages */
+      .chat-messages {
+        flex: 1;
+        overflow-y: auto;
+        margin-bottom: 15px;
+        padding-right: 5px;
+      }
+
+      .chat-message {
         display: flex;
         gap: 10px;
         margin-bottom: 15px;
         align-items: flex-start;
       }
 
-      #ai-chatbot-container .chat-message.user {
+      .chat-message.user {
         flex-direction: row-reverse;
       }
 
-      #ai-chatbot-container .message-avatar {
+      .message-avatar {
         width: 30px;
         height: 30px;
         border-radius: 50%;
@@ -2653,117 +2737,100 @@
         flex-shrink: 0;
       }
 
-      #ai-chatbot-container .message-avatar.ai {
+      .message-avatar.ai {
         background: linear-gradient(135deg, #ff6b9d 0%, #ff8fab 100%);
         color: white;
         font-size: 12px;
       }
 
-      #ai-chatbot-container .message-avatar.user {
+      .message-avatar.user {
         background: #e0e0e0;
         color: #666;
         font-size: 12px;
       }
 
-      #ai-chatbot-container .message-bubble {
+      .message-bubble {
         max-width: 80%;
         padding: 12px 15px;
         border-radius: 15px;
         font-size: 14px;
         line-height: 1.4;
         word-wrap: break-word;
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       }
 
-      #ai-chatbot-container .message-bubble.ai {
+      .message-bubble.ai {
         background: white;
         color: #333;
         border: 1px solid rgba(255, 107, 157, 0.2);
         box-shadow: 0 2px 8px rgba(255, 107, 157, 0.1);
       }
 
-      #ai-chatbot-container .message-bubble.user {
+      .message-bubble.user {
         background: linear-gradient(135deg, #ff6b9d 0%, #ff8fab 100%);
         color: white;
       }
 
-      /* Input Area - Fixed */
+      /* Input Area */
       .chatbot-input-area {
-        background: #fff;
-        border-top: 1px solid #e5e5e5;
-        padding: 10px 15px 8px;
-        flex-shrink: 0;
-        position: relative;
-        z-index: 3;
-        pointer-events: auto;
+        background: white;
+        border-radius: 15px;
+        padding: 14px;
+        box-shadow: 0 4px 15px rgba(255, 107, 157, 0.1);
       }
 
       .input-label {
-        font-size: 10px;
-        color: #999;
-        margin-bottom: 4px;
-        font-weight: normal;
+        font-size: 11px;
+        color: #666;
+        margin-bottom: 6px;
+        font-weight: 500;
       }
 
-      /* Scoped to chatbot AI popup to avoid conflicts with regular chat */
-      #ai-chatbot-container .input-group {
+      .input-group {
         display: flex;
         align-items: center;
-        gap: 6px;
-        position: relative;
-        z-index: 3;
-        pointer-events: auto;
+        gap: 8px;
       }
 
-      /* Scoped to chatbot AI to avoid conflicts */
-      #ai-chatbot-container .chatbot-input {
+      .chatbot-input {
         flex: 1;
-        padding: 8px 12px;
-        border: 1px solid #e5e5e5;
-        min-height: 36px;
-        border-radius: 20px;
-        font-size: 13px;
+        padding: 11px 14px;
+        border: 1px solid rgba(255, 107, 157, 0.3);
+        min-height: 44px;
+        border-radius: 25px;
+        font-size: 14px;
         outline: none;
         transition: all 0.3s ease;
-        background: #f8f9fa;
-        position: relative;
-        z-index: 3;
-        pointer-events: auto;
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: #fef7f7;
       }
 
-      #ai-chatbot-container .chatbot-input:focus {
+      .chatbot-input:focus {
         border-color: #ff6b9d;
-        box-shadow: 0 0 0 2px rgba(255, 107, 157, 0.1);
-        background: #fff;
+        box-shadow: 0 0 0 3px rgba(255, 107, 157, 0.1);
+        background: white;
       }
 
-      /* Scoped to chatbot AI to avoid conflicts */
-      #ai-chatbot-container .upload-btn {
-        width: 36px;
-        height: 36px;
-        background: #f8f9fa;
-        border: 1px solid #e5e5e5;
+      .upload-btn {
+        width: 42px;
+        height: 42px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
         border-radius: 50%;
-        color: #666;
+        color: white;
         cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: center;
         transition: all 0.3s ease;
-        font-size: 13px;
+        font-size: 16px;
         flex-shrink: 0;
-        position: relative;
-        z-index: 4;
-        pointer-events: auto;
       }
 
-      #ai-chatbot-container .upload-btn:hover {
-        background: #e8e8e8;
-        border-color: #ccc;
+      .upload-btn:hover {
+        transform: scale(1.05);
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
       }
 
-      #ai-chatbot-container .image-preview {
+      .image-preview {
         position: relative;
         background: #f8fafc;
         padding: 10px;
@@ -2771,7 +2838,7 @@
         border: 1px solid #e5e7eb;
       }
 
-      #ai-chatbot-container .remove-image-btn {
+      .remove-image-btn {
         position: absolute;
         top: 5px;
         right: 5px;
@@ -2788,14 +2855,14 @@
         font-size: 12px;
       }
 
-      #ai-chatbot-container .remove-image-btn:hover {
+      .remove-image-btn:hover {
         background: #ff6b7d;
       }
 
-      #ai-chatbot-container .send-btn {
-        width: 36px;
-        height: 36px;
-        background: #ff6b9d;
+      .send-btn {
+        width: 42px;
+        height: 42px;
+        background: linear-gradient(135deg, #ff6b9d 0%, #ff8fab 100%);
         border: none;
         border-radius: 50%;
         color: white;
@@ -2804,54 +2871,31 @@
         align-items: center;
         justify-content: center;
         transition: all 0.3s ease;
-        font-size: 14px;
+        font-size: 15px;
         flex-shrink: 0;
-        position: relative;
-        z-index: 4;
-        pointer-events: auto;
       }
 
-      #ai-chatbot-container .send-btn:hover {
-        background: #ff8fab;
+      .send-btn:hover {
         transform: scale(1.05);
+        box-shadow: 0 4px 15px rgba(255, 107, 157, 0.4);
       }
 
-      #ai-chatbot-container .send-btn:disabled {
+      .send-btn:disabled {
         opacity: 0.6;
         cursor: not-allowed;
         transform: none;
       }
 
-      /* Footer with Disclaimer - Sticky */
-      .chatbot-footer {
-        background: #fff;
-        border-top: 1px solid #e5e5e5;
-        flex-shrink: 0;
-        position: relative;
-        z-index: 1;
-      }
-
-      /* Hide floating buttons when chatbot is open */
-      body.oneshop-chatbot-popup-open #floatingChatButton,
-      body.oneshop-chatbot-popup-open #oneshopChatbotButton {
-        display: none !important;
-      }
-
+      /* Disclaimer */
       .disclaimer {
-        margin: 6px 15px;
-        padding: 6px 12px;
-        background: #f8f9fb;
-        border-radius: 6px;
         text-align: center;
+        margin-top: 10px;
       }
 
       .disclaimer small {
-        color: #64748b;
-        font-size: 10px;
+        color: #999;
+        font-size: 11px;
         font-style: italic;
-        line-height: 1.3;
-        display: block;
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       }
 
       /* Typing Indicator */
@@ -2909,6 +2953,7 @@
 
       .products-grid {
         display: grid;
+<<<<<<< HEAD
         grid-template-columns: repeat(2, 1fr);
         gap: 10px;
       }
@@ -2919,6 +2964,10 @@
           grid-template-columns: repeat(2, 1fr);
           gap: 8px;
         }
+=======
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        gap: 12px;
+>>>>>>> parent of a81f29e (push tạm)
       }
 
       .product-card {
@@ -2937,7 +2986,11 @@
       .product-image {
         position: relative;
         width: 100%;
+<<<<<<< HEAD
         padding-top: 100%; /* Tăng tỷ lệ ảnh để ảnh gần vuông hơn */
+=======
+        padding-top: 75%;
+>>>>>>> parent of a81f29e (push tạm)
         overflow: hidden;
       }
 
@@ -2963,18 +3016,17 @@
       }
 
       .product-info {
-        padding: 12px;
+        padding: 10px;
       }
 
       .product-name {
-        font-size: 14px;
+        font-size: 13px;
         font-weight: 600;
         color: #333;
-        margin: 0 0 6px 0;
+        margin: 0 0 4px 0;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
-        line-height: 1.3;
       }
 
       .product-brand, .product-category {
@@ -2988,7 +3040,6 @@
         align-items: center;
         gap: 8px;
         margin: 8px 0;
-        flex-wrap: wrap;
       }
 
       .old-price {
@@ -2998,7 +3049,7 @@
       }
 
       .current-price {
-        font-size: 15px;
+        font-size: 14px;
         font-weight: bold;
         color: #ff6b9d;
       }
@@ -3056,8 +3107,8 @@
       /* Responsive */
       @media (max-width: 768px) {
         .oneshop-chatbot-popup {
-          width: 400px;
-          height: 600px;
+          width: 320px;
+          height: 500px;
           right: 10px;
           bottom: 80px;
         }
@@ -3092,38 +3143,26 @@
 
     <script>
       // OneShop Chatbot Functions - Bitu Style
-      // Global state object - single source of truth
-      window.chatbotState = {
-        open: false,
-        imageBase64: null,
-        inputBound: false,
-        isTyping: false,
-        history: []
-      };
-
-      // Initialize popup (safe no-op to prevent missing ref errors)
-      function initializeChatbotPopup() {
-        // Reserved for future size/position logic
-      }
+      let chatbotOpen = false;
+      let isTyping = false;
 
       function toggleOneshopChatbot() {
         const popup = document.getElementById('floatingChatbotPopup');
         const button = document.getElementById('oneshopChatbotButton');
-        const isHidden = getComputedStyle(popup).display === 'none';
-        const open = isHidden;
-
-        popup.style.display = open ? 'flex' : 'none';
-        button.style.transform = open ? 'scale(0.9)' : 'scale(1)';
-        window.chatbotState.open = open;
-
-        document.body.classList.toggle('oneshop-chatbot-popup-open', open);
-        document.body.classList.toggle('chatbot-open', open);
-
-        if (open) {
+        
+        if (chatbotOpen) {
+          popup.style.display = 'none';
+          button.style.transform = 'scale(1)';
+          chatbotOpen = false;
+        } else {
+          popup.style.display = 'flex';
+          button.style.transform = 'scale(0.9)';
+          chatbotOpen = true;
           hideChatbotBadge();
+          
+          // Focus input
           setTimeout(() => {
-            const inp = document.getElementById('aiChatbotMessageInput');
-            if (inp) inp.focus();
+            document.getElementById('chatbotMessageInput').focus();
           }, 400);
         }
       }
@@ -3134,16 +3173,12 @@
         
         popup.style.display = 'none';
         button.style.transform = 'scale(1)';
-        window.chatbotState.open = false;
-        
-        // Remove class to show floating buttons again
-        document.body.classList.remove('oneshop-chatbot-popup-open');
-        document.body.classList.remove('chatbot-open');
+        chatbotOpen = false;
       }
 
       function refreshChatbot() {
         // Clear messages and reset
-        const messagesContainer = document.getElementById('aiChatbotMessages');
+        const messagesContainer = document.getElementById('chatbotMessages');
         messagesContainer.innerHTML = '';
         
         // Show intro and welcome sections again
@@ -3165,10 +3200,32 @@
         showWelcomeMessage();
       }
 
+<<<<<<< HEAD
       // Expose functions globally IMMEDIATELY (before DOMContentLoaded)
       window.toggleOneshopChatbot = toggleOneshopChatbot;
       window.closeOneshopChatbot = closeOneshopChatbot;
       window.refreshChatbot = refreshChatbot;
+=======
+      function expandChatbot() {
+        const popup = document.getElementById('floatingChatbotPopup');
+        if (popup.style.width === '420px') {
+          popup.style.width = '500px';
+          popup.style.height = '700px';
+        } else {
+          popup.style.width = '420px';
+          popup.style.height = '600px';
+        }
+      }
+
+      // Set initial popup size
+      function initializeChatbotPopup() {
+        const popup = document.getElementById('floatingChatbotPopup');
+        if (popup) {
+          popup.style.width = '420px';
+          popup.style.height = '600px';
+        }
+      }
+>>>>>>> parent of a81f29e (push tạm)
 
       function hideIntroAndWelcome() {
         const introSection = document.querySelector('.chatbot-intro');
@@ -3185,13 +3242,13 @@
           suggestedTopics.style.display = 'none';
         }
       }
-      
+
       function sendChatbotMessage() {
-        const input = document.getElementById('aiChatbotMessageInput');
-        const sendBtn = document.getElementById('aiChatbotSendBtn');
+        const input = document.getElementById('chatbotMessageInput');
+        const sendBtn = document.getElementById('chatbotSendBtn');
         const message = input.value.trim();
         
-        if (!message || window.chatbotState.isTyping) {
+        if (!message || isTyping) {
           return;
         }
         
@@ -3201,14 +3258,17 @@
         // Disable input and button
         input.disabled = true;
         sendBtn.disabled = true;
-        window.chatbotState.isTyping = true;
+        isTyping = true;
         
         // Add user message
         addChatbotMessage(message, 'user');
         
+<<<<<<< HEAD
         // Thêm vào lịch sử
         window.chatbotState.history.push({ role: 'user', content: message });
         
+=======
+>>>>>>> parent of a81f29e (push tạm)
         // Clear input
         input.value = '';
         
@@ -3224,7 +3284,6 @@
           body: JSON.stringify({
             message: message,
             context: 'OneShop mỹ phẩm'
-            history: window.chatbotState.history
           })
         })
         .then(response => {
@@ -3239,6 +3298,7 @@
           if (data.status === 'success') {
             addChatbotMessage(data.message, 'ai');
             
+<<<<<<< HEAD
             // Thêm phản hồi AI vào lịch sử (chỉ lưu tối đa 10 cặp tin nhắn)
             window.chatbotState.history.push({ role: 'model', content: data.message });
             if (window.chatbotState.history.length > 20) { // Chỉ giữ 20 tin nhắn cuối (10 cặp)
@@ -3246,6 +3306,8 @@
               chatHistory.shift(); // Xóa 2 tin nhắn đầu (user + model)
             }
             
+=======
+>>>>>>> parent of a81f29e (push tạm)
             // Check if message contains product-related keywords and search for products
             const productKeywords = ['sản phẩm', 'kem', 'son', 'mỹ phẩm', 'nước hoa', 'serum', 'tư vấn', 'giới thiệu', 'bạn có', 'có gì'];
             const hasProductKeyword = productKeywords.some(keyword => message.toLowerCase().includes(keyword));
@@ -3285,22 +3347,27 @@
           // Re-enable input and button
           input.disabled = false;
           sendBtn.disabled = false;
-          window.chatbotState.isTyping = false;
+          isTyping = false;
           input.focus();
         });
       }
 
       function sendSuggestedMessage(message) {
-        const input = document.getElementById('aiChatbotMessageInput');
+        const input = document.getElementById('chatbotMessageInput');
         input.value = message;
         sendChatbotMessage();
       }
 
+<<<<<<< HEAD
       // Expose more functions globally IMMEDIATELY
       window.sendSuggestedMessage = sendSuggestedMessage;
 
       function addChatbotMessage(content, type, imageBase64) {
         const messagesContainer = document.getElementById('aiChatbotMessages');
+=======
+      function addChatbotMessage(content, type) {
+        const messagesContainer = document.getElementById('chatbotMessages');
+>>>>>>> parent of a81f29e (push tạm)
         
         const messageDiv = document.createElement('div');
         messageDiv.className = `chat-message ${type}`;
@@ -3312,15 +3379,6 @@
         const bubbleDiv = document.createElement('div');
         bubbleDiv.className = 'message-bubble';
         bubbleDiv.textContent = content;
-        if (imageBase64) {
-          const img = document.createElement('img');
-          img.src = imageBase64;
-          img.style.maxWidth = '200px';
-          img.style.maxHeight = '200px';
-          img.style.borderRadius = '8px';
-          img.style.marginTop = '10px';
-          bubbleDiv.appendChild(img);
-        }
         
         messageDiv.appendChild(avatarDiv);
         messageDiv.appendChild(bubbleDiv);
@@ -3331,7 +3389,7 @@
       }
 
       function displayProducts(products) {
-        const messagesContainer = document.getElementById('aiChatbotMessages');
+        const messagesContainer = document.getElementById('chatbotMessages');
         
         // Create product container
         const productContainer = document.createElement('div');
@@ -3345,6 +3403,7 @@
           const productCard = document.createElement('div');
           productCard.className = 'product-card';
           
+<<<<<<< HEAD
           // Xử lý URL ảnh từ database - sử dụng endpoint /loadImage
           let imageUrl = '/assets/img/examples/product1.jpg'; // Default fallback
           if (product.image) {
@@ -3357,13 +3416,16 @@
             }
           }
             
+=======
+          const imageUrl = product.image ? `/images/${product.image}` : '/images/default-product.png';
+>>>>>>> parent of a81f29e (push tạm)
           const finalPrice = product.discount > 0 
             ? product.price * (100 - product.discount) / 100 
             : product.price;
           
           productCard.innerHTML = `
             <div class="product-image">
-              <img src="${imageUrl}" alt="${product.name}" onerror="this.src='/assets/img/examples/product1.jpg'">
+              <img src="${imageUrl}" alt="${product.name}" onerror="this.src='/images/default-product.png'">
               ${product.discount > 0 ? `<span class="product-discount">-${product.discount}%</span>` : ''}
             </div>
             <div class="product-info">
@@ -3398,7 +3460,7 @@
       }
 
       function showChatbotTypingIndicator() {
-        const messagesContainer = document.getElementById('aiChatbotMessages');
+        const messagesContainer = document.getElementById('chatbotMessages');
         
         // Remove existing typing indicator
         const existingTyping = document.getElementById('chatbotTypingIndicator');
@@ -3442,6 +3504,8 @@
       }
 
       // Image upload handling
+      let currentImageBase64 = null;
+
       function handleImageUpload(event) {
         const file = event.target.files[0];
         if (!file) return;
@@ -3460,12 +3524,12 @@
 
         const reader = new FileReader();
         reader.onload = function(e) {
-          window.chatbotState.imageBase64 = e.target.result;
+          currentImageBase64 = e.target.result;
           
           // Show preview
-          const preview = document.getElementById('aiChatbotImagePreview');
-          const previewImg = document.getElementById('aiChatbotPreviewImg');
-          previewImg.src = window.chatbotState.imageBase64;
+          const preview = document.getElementById('chatbotImagePreview');
+          const previewImg = document.getElementById('chatbotPreviewImg');
+          previewImg.src = currentImageBase64;
           preview.style.display = 'block';
         };
         reader.readAsDataURL(file);
@@ -3475,12 +3539,13 @@
       window.handleImageUpload = handleImageUpload;
 
       function removeImagePreview() {
-        window.chatbotState.imageBase64 = null;
-        const preview = document.getElementById('aiChatbotImagePreview');
+        currentImageBase64 = null;
+        const preview = document.getElementById('chatbotImagePreview');
         preview.style.display = 'none';
-        document.getElementById('aiChatbotImageInput').value = '';
+        document.getElementById('chatbotImageInput').value = '';
       }
 
+<<<<<<< HEAD
       // Expose removeImagePreview IMMEDIATELY
       window.removeImagePreview = removeImagePreview;
 
@@ -3488,18 +3553,29 @@
       window.sendChatbotMessage = sendChatbotMessage;
 
       // Don't wrap sendChatbotMessage - it already has all the logic needed
+=======
+      // Update sendChatbotMessage to handle images
+      const originalSendChatbotMessage = sendChatbotMessage;
+      sendChatbotMessage = function() {
+        if (currentImageBase64) {
+          sendChatbotMessageWithImage();
+        } else {
+          originalSendChatbotMessage();
+        }
+      };
+>>>>>>> parent of a81f29e (push tạm)
 
       function sendChatbotMessageWithImage() {
         const input = document.getElementById('aiChatbotMessageInput');
         const sendBtn = document.getElementById('aiChatbotSendBtn');
         const message = input.value.trim() || 'Phân tích hình ảnh này cho tôi';
         
-        if (window.chatbotState.isTyping) return;
+        if (isTyping) return;
         
         // Disable input and button
         input.disabled = true;
         sendBtn.disabled = true;
-        window.chatbotState.isTyping = true;
+        isTyping = true;
         
         // Hide intro and welcome
         hideIntroAndWelcome();
@@ -3508,23 +3584,23 @@
         showChatbotTypingIndicator();
         
         // Validate image data before sending
-        if (!window.chatbotState.imageBase64) {
+        if (!currentImageBase64) {
           console.error('No image data to send');
           hideChatbotTypingIndicator();
           addChatbotMessage('Vui lòng chọn hình ảnh để gửi.', 'ai');
           input.disabled = false;
           sendBtn.disabled = false;
-          window.chatbotState.isTyping = false;
+          isTyping = false;
           return;
         }
 
         // Prepare request body
         const requestBody = {
           message: message,
-          imageData: window.chatbotState.imageBase64
+          imageData: currentImageBase64
         };
 
-        console.log('Sending image to AI, image size:', window.chatbotState.imageBase64.length);
+        console.log('Sending image to AI, image size:', currentImageBase64.length);
 
         // Call API with image
         fetch('/api/ai/upload-image', {
@@ -3563,7 +3639,7 @@
         })
         .finally(() => {
           // Add user message with image
-          addChatbotMessage(message, 'user', window.chatbotState.imageBase64);
+          addChatbotMessage(message, 'user', currentImageBase64);
           
           // Clear input and image after sending
           input.value = '';
@@ -3571,11 +3647,12 @@
           
           input.disabled = false;
           sendBtn.disabled = false;
-          window.chatbotState.isTyping = false;
+          isTyping = false;
           input.focus();
         });
       }
 
+<<<<<<< HEAD
         // Expose sendChatbotMessageWithImage IMMEDIATELY
       window.sendChatbotMessageWithImage = sendChatbotMessageWithImage;
 
@@ -3585,29 +3662,50 @@
         // Check if already initialized
         if (window.__aiChatbotBound) return;
         window.__aiChatbotBound = true;
+=======
+      // Update addChatbotMessage to handle images
+      const originalAddChatbotMessage = addChatbotMessage;
+      addChatbotMessage = function(content, type, imageBase64) {
+        originalAddChatbotMessage(content, type);
+>>>>>>> parent of a81f29e (push tạm)
         
+        // If image provided, add it to the last message
+        if (imageBase64) {
+          const messagesContainer = document.getElementById('chatbotMessages');
+          const lastMessage = messagesContainer.lastElementChild;
+          if (lastMessage) {
+            const bubble = lastMessage.querySelector('.message-bubble');
+            if (bubble) {
+              const img = document.createElement('img');
+              img.src = imageBase64;
+              img.style.maxWidth = '200px';
+              img.style.maxHeight = '200px';
+              img.style.borderRadius = '8px';
+              img.style.marginTop = '10px';
+              bubble.appendChild(img);
+            }
+          }
+        }
+      };
+
+      // Enter key support
+      document.addEventListener('DOMContentLoaded', function() {
         // Initialize chatbot popup size
         initializeChatbotPopup();
         
-        // Reset possible pre-bound listeners by cloning elements
-        const __idsToReset = ['aiChatbotMessageInput','aiChatbotSendBtn','aiChatbotUploadBtn','aiChatbotImageInput'];
-        __idsToReset.forEach(id => {
-          const el = document.getElementById(id);
-          if (!el || !el.parentNode) return;
-          const fresh = el.cloneNode(true);
-          el.parentNode.replaceChild(fresh, el);
-        });
-
-        // Bind event listeners only once
-        const chatbotInput = document.getElementById('aiChatbotMessageInput');
+        const chatbotInput = document.getElementById('chatbotMessageInput');
         const chatbotBody = document.getElementById('floatingChatbotPopup');
-        const aiChatbotSendBtn = document.getElementById('aiChatbotSendBtn');
-        const uploadBtn = document.getElementById('aiChatbotUploadBtn');
-        const aiImageInput = document.getElementById('aiChatbotImageInput');
-        const chatbotToggleBtn = document.getElementById('oneshopChatbotButton');
-        const refreshBtn = document.querySelector('#floatingChatbotPopup .refresh-btn');
-        const closeBtn = document.querySelector('#floatingChatbotPopup .close-btn');
+        
+        if (chatbotInput) {
+          chatbotInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+              e.preventDefault();
+              sendChatbotMessage();
+            }
+          });
+        }
 
+<<<<<<< HEAD
         // Functions are already exposed globally above (before DOMContentLoaded)
           
           if (chatbotInput) {
@@ -3624,18 +3722,60 @@
               }
             });
           }
+=======
+        // Click on upload button
+        const uploadBtn = document.getElementById('chatbotUploadBtn');
+        if (uploadBtn) {
+          uploadBtn.addEventListener('click', function() {
+            document.getElementById('chatbotImageInput').click();
+          });
+        }
+>>>>>>> parent of a81f29e (push tạm)
 
-          // Click on send button (no onclick in HTML)
-          if (aiChatbotSendBtn) {
-            aiChatbotSendBtn.addEventListener('click', function() {
-              if (window.chatbotState.imageBase64) {
-                sendChatbotMessageWithImage();
+        // Drag and drop functionality
+        if (chatbotBody) {
+          chatbotBody.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            chatbotBody.classList.add('drag-over');
+          });
+
+          chatbotBody.addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            chatbotBody.classList.remove('drag-over');
+          });
+
+          chatbotBody.addEventListener('drop', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            chatbotBody.classList.remove('drag-over');
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+              const file = files[0];
+              if (file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                  currentImageBase64 = event.target.result;
+                  
+                  // Show preview
+                  const preview = document.getElementById('chatbotImagePreview');
+                  const previewImg = document.getElementById('chatbotPreviewImg');
+                  if (preview && previewImg) {
+                    previewImg.src = currentImageBase64;
+                    preview.style.display = 'block';
+                  }
+                };
+                reader.readAsDataURL(file);
               } else {
-                sendChatbotMessage();
+                alert('Vui lòng kéo thả file hình ảnh');
               }
-            });
-          }
+            }
+          });
+        }
 
+<<<<<<< HEAD
           // Click on upload button (no onclick in HTML)
           if (uploadBtn) {
             uploadBtn.addEventListener('click', function() {
@@ -3699,18 +3839,17 @@
           // Only handle paste when chatbot is open
           if (!window.chatbotState.open) return;
             
+=======
+        // Paste from clipboard
+        if (chatbotInput) {
+          chatbotInput.addEventListener('paste', function(e) {
+>>>>>>> parent of a81f29e (push tạm)
             const items = e.clipboardData.items;
-            let hasImage = false;
             
-            // Check if clipboard contains image
             for (let i = 0; i < items.length; i++) {
               if (items[i].type.indexOf('image') !== -1) {
-                hasImage = true;
                 const blob = items[i].getAsFile();
                 
-                if (!blob) continue;
-                
-                // Validate file size (max 5MB)
                 if (blob.size > 5 * 1024 * 1024) {
                   alert('Kích thước hình ảnh quá lớn (tối đa 5MB)');
                   return;
@@ -3718,20 +3857,15 @@
                 
                 const reader = new FileReader();
                 reader.onload = function(event) {
-                  window.chatbotState.imageBase64 = event.target.result;
+                  currentImageBase64 = event.target.result;
                   
                   // Show preview
-                  const preview = document.getElementById('aiChatbotImagePreview');
-                  const previewImg = document.getElementById('aiChatbotPreviewImg');
+                  const preview = document.getElementById('chatbotImagePreview');
+                  const previewImg = document.getElementById('chatbotPreviewImg');
                   if (preview && previewImg) {
-                    previewImg.src = window.chatbotState.imageBase64;
+                    previewImg.src = currentImageBase64;
                     preview.style.display = 'block';
                   }
-                  
-                  // Hide intro when image is pasted
-                  hideIntroAndWelcome();
-                  
-                  console.log('Image pasted from clipboard, size:', window.chatbotState.imageBase64.length);
                 };
                 reader.readAsDataURL(blob);
                 
@@ -3739,13 +3873,9 @@
                 break;
               }
             }
-            
-            // If image was pasted, prevent default text paste
-            if (hasImage) {
-              e.preventDefault();
-            }
           });
         }
+      });
 
       // Hide badge when chat is opened
       document.addEventListener('click', function(e) {
@@ -3766,6 +3896,14 @@
         }
       }
 
+      // Wrap original sendChatbotMessage to hide suggested topics
+      window.sendChatbotMessageOriginal = sendChatbotMessage;
+      window.sendChatbotMessage = function() {
+        hideSuggestedTopics();
+        if (window.sendChatbotMessageOriginal) {
+          window.sendChatbotMessageOriginal();
+        }
+      };
     </script>
     <script>
       // Mở/đóng popup Chatbot AI (định nghĩa global)
@@ -3809,5 +3947,4 @@
     </script>
   </body>
 </html>
-
 
