@@ -19,6 +19,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import vn.entity.User;
 import vn.repository.UserRepository;
+import vn.service.UserService;
+import vn.util.JwtUtil;
 
 import java.util.Base64;
 import java.util.Collection;
@@ -30,39 +32,18 @@ public class LoginController {
 
     @Autowired
     private UserRepository userRepository;
+    
+    @Autowired
+    private UserService userService;
+    
+    @Autowired
+    private JwtUtil jwtUtil;
 
     @GetMapping("/login")
-    public String loginPage(HttpServletRequest request, HttpSession session, Model model) {
-        // Check if user is already logged in via cookie
-        User user = checkRememberMeCookie(request);
-        if (user != null) {
-            session.setAttribute("user", user);
-            
-            // Set Spring Security authentication context and save to session
-            setAuthenticationContext(user, session);
-            
-            // Check user role for routing
-            boolean isAdmin = user.getRoles().stream()
-                .anyMatch(role -> role.getName().equals("ROLE_ADMIN"));
-            boolean isCSKH = user.getRoles().stream()
-                .anyMatch(role -> role.getName().equals("ROLE_CSKH"));
-            boolean isVendor = user.getRoles().stream()
-                .anyMatch(role -> role.getName().equals("ROLE_VENDOR"));
-            boolean isShipper = user.getRoles().stream()
-                .anyMatch(role -> role.getName().equals("ROLE_SHIPPER"));
-            
-            if (isAdmin) {
-                return "redirect:/admin/home";
-            } else if (isVendor) {
-                return "redirect:/vendor/my-shops";
-            } else if (isCSKH) {
-                return "redirect:/cskh/chat";
-            } else if (isShipper) {
-                return "redirect:/shipper/home";
-            } else {
-                return "redirect:/";
-            }
-        }
+    public String loginPage(HttpServletRequest request, Model model) {
+        // Pure JWT: Check if user is already authenticated via JWT
+        // JwtAuthenticationFilter will handle authentication from cookies
+        // No session-based auto-login needed
         
         return "login";
     }
@@ -71,19 +52,17 @@ public class LoginController {
     public String login(@RequestParam String email, 
                        @RequestParam String password,
                        @RequestParam(required = false) Boolean rememberMe,
-                       HttpSession session, 
                        HttpServletResponse response,
                        Model model) {
-        Optional<User> userOpt = userRepository.findByEmailWithRoles(email);
+        // Pure JWT: This method is now only used as fallback for traditional login
+        // Main authentication should be handled via /api/auth/login endpoint
         
-        if (userOpt.isPresent() && userOpt.get().getPassword().equals(password)) {
+        Optional<User> userOpt = userService.findByEmailWithRoles(email);
+        
+        if (userOpt.isPresent() && userService.verifyPassword(password, userOpt.get().getPassword())) {
             User user = userOpt.get();
-            session.setAttribute("user", user);
             
-            // Set Spring Security authentication context and save to session
-            setAuthenticationContext(user, session);
-            
-            // Handle Remember Me cookie
+            // Handle Remember Me cookie (optional for JWT)
             if (rememberMe != null && rememberMe) {
                 createRememberMeCookie(user, response);
             }
@@ -116,9 +95,8 @@ public class LoginController {
     }
 
     @GetMapping("/logout")
-    public String logout(HttpSession session, HttpServletResponse response) {
-        session.removeAttribute("user");
-        
+    public String logout(HttpServletResponse response) {
+        // Hybrid JWT + Session: Clear session
         // Clear Spring Security context
         SecurityContextHolder.clearContext();
         
@@ -128,27 +106,11 @@ public class LoginController {
         return "redirect:/login";
     }
     
-    // Helper method to set Spring Security authentication context
+    // Helper method to set Spring Security authentication context (Pure JWT - not used)
+    // This method is kept for compatibility but not used in Pure JWT approach
     private void setAuthenticationContext(User user, HttpSession session) {
-        // Convert user roles to GrantedAuthority
-        Collection<GrantedAuthority> authorities = user.getRoles().stream()
-                .map(role -> new SimpleGrantedAuthority(role.getName()))
-                .collect(Collectors.toList());
-        
-        // Create authentication token
-        Authentication authentication = new UsernamePasswordAuthenticationToken(
-                user.getEmail(), 
-                user.getPassword(), 
-                authorities
-        );
-        
-        // Create SecurityContext and set authentication
-        SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
-        securityContext.setAuthentication(authentication);
-        SecurityContextHolder.setContext(securityContext);
-        
-        // IMPORTANT: Save SecurityContext to HttpSession so it persists across requests
-        session.setAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY, securityContext);
+        // Pure JWT: Authentication context is set by JwtAuthenticationFilter
+        // No manual session management needed
     }
     
     // Helper methods for Remember Me functionality

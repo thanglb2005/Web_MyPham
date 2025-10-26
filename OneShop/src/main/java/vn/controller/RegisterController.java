@@ -117,7 +117,7 @@ public class RegisterController {
             }
             user.setRoles(Arrays.asList(userRole));
 
-            userService.saveUser(user);
+            userService.save(user);
 
             // Xóa session
             session.removeAttribute("otp");
@@ -134,12 +134,6 @@ public class RegisterController {
 
     // Check email
     public boolean checkEmail(String email) {
-        List<User> list = userService.getAllUsers();
-        for (User c : list) {
-            if (c.getEmail().equalsIgnoreCase(email)) {
-                return false;
-            }
-        }
-        return true;
+        return userService.findByEmail(email).isEmpty();
     }
 }

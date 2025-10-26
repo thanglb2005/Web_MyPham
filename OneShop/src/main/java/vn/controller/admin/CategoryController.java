@@ -1,6 +1,8 @@
 package vn.controller.admin;
 
 import jakarta.servlet.http.HttpSession;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -22,6 +24,7 @@ import java.io.IOException;
 @Controller
 @RequestMapping("/admin")
 public class CategoryController {
+    private static final Logger log = LoggerFactory.getLogger(CategoryController.class);
 
     @Autowired
     private CategoryService categoryService;
@@ -31,22 +34,34 @@ public class CategoryController {
 
     @GetMapping("/categories")
     public String categories(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "categoryId") String sortBy,
-            @RequestParam(defaultValue = "asc") String sortDir,
+            @RequestParam(required = false) String page,
+            @RequestParam(required = false) String size,
+            @RequestParam(required = false) String sortBy,
+            @RequestParam(required = false) String sortDir,
             @RequestParam(required = false) String search,
-            HttpSession session, Model model) {
+            @RequestParam(required = false) String success,
+            @RequestParam(required = false) String action,
+            HttpSession session, Model model) throws Exception {
         User user = (User) session.getAttribute("user");
         if (user == null) {
             return "redirect:/login";
         }
 
-        // Create Pageable object
-        Sort sort = sortDir.equalsIgnoreCase("desc") ? 
-                    Sort.by(sortBy).descending() : 
-                    Sort.by(sortBy).ascending();
-        Pageable pageable = PageRequest.of(page, size, sort);
+        log.info("[ADMIN/CATEGORIES] raw params page={}, size={}, sortBy={}, sortDir={}, search={}", page, size, sortBy, sortDir, search);
+
+        // Normalize parameters and create Pageable object (robust against empty/invalid values)
+        int p = safeParseInt(page, 0);
+        if (p < 0) p = 0;
+        int s = safeParseInt(size, 10);
+        if (s <= 0) s = 10;
+        String sb = (sortBy == null || sortBy.isBlank()) ? "categoryId" : sortBy;
+        String sd = (sortDir == null || sortDir.isBlank()) ? "asc" : sortDir;
+
+        Sort sort = sd.equalsIgnoreCase("desc") ?
+                    Sort.by(sb).descending() :
+                    Sort.by(sb).ascending();
+        Pageable pageable = PageRequest.of(p, s, sort);
+        log.info("[ADMIN/CATEGORIES] normalized page={}, size={}, sortBy={}, sortDir={}", p, s, sb, sd);
         
         // Search or get all categories
         Page<Category> categoryPage;
@@ -55,18 +70,64 @@ public class CategoryController {
         } else {
             categoryPage = categoryService.getAllCategoriesPaged(pageable);
         }
+
+        // If requested page is out of bounds (e.g., after deletion), redirect to last valid page
+        int totalPages = categoryPage.getTotalPages();
+        if (totalPages > 0 && p >= totalPages) {
+            int lastPage = Math.max(0, totalPages - 1);
+            StringBuilder redirect = new StringBuilder("redirect:/admin/categories");
+            redirect.append("?page=").append(lastPage);
+            redirect.append("&size=").append(s);
+            redirect.append("&sortBy=").append(sb);
+            redirect.append("&sortDir=").append(sd);
+            if (search != null && !search.trim().isEmpty()) {
+                redirect.append("&search=").append(search);
+            }
+            if (success != null && !success.isBlank()) {
+                redirect.append("&success=").append(success);
+            }
+            if (action != null && !action.isBlank()) {
+                redirect.append("&action=").append(action);
+            }
+            return redirect.toString();
+        }
         
         model.addAttribute("categoryPage", categoryPage);
         model.addAttribute("categories", categoryPage.getContent());
-        model.addAttribute("currentPage", page);
+        model.addAttribute("currentPage", p);
         model.addAttribute("totalPages", categoryPage.getTotalPages());
         model.addAttribute("totalElements", categoryPage.getTotalElements());
-        model.addAttribute("pageSize", size);
-        model.addAttribute("sortBy", sortBy);
-        model.addAttribute("sortDir", sortDir);
+        model.addAttribute("pageSize", s);
+        model.addAttribute("sortBy", sb);
+        model.addAttribute("sortDir", sd);
         model.addAttribute("search", search);
         
         return "admin/categories";
+    }
+
+    // Debug endpoint to bypass SiteMesh mapping (only /admin/categories is decorated)
+    @GetMapping("/categories-debug")
+    public String categoriesDebug(
+            @RequestParam(required = false) String page,
+            @RequestParam(required = false) String size,
+            @RequestParam(required = false) String sortBy,
+            @RequestParam(required = false) String sortDir,
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) String success,
+            @RequestParam(required = false) String action,
+            HttpSession session, Model model) throws Exception {
+
+        return categories(page, size, sortBy, sortDir, search, success, action, session, model);
+    }
+
+    private int safeParseInt(String value, int defaultVal) {
+        if (value == null) return defaultVal;
+        try {
+            if (value.isBlank()) return defaultVal;
+            return Integer.parseInt(value);
+        } catch (NumberFormatException ex) {
+            return defaultVal;
+        }
     }
 
     @PostMapping("/categories/add")
@@ -165,7 +226,7 @@ public class CategoryController {
         return "redirect:" + redirectUrl.toString();
     }
 
-    @GetMapping("/categories/delete/{id}")
+    @PostMapping("/categories/delete/{id}")
     public String deleteCategory(@PathVariable Long id, 
                                 @RequestParam(defaultValue = "0") int page,
                                 @RequestParam(defaultValue = "10") int size,

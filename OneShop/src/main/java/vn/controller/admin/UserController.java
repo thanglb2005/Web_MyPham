@@ -34,7 +34,7 @@ public class UserController {
             return "redirect:/login";
         }
         
-        List<User> users = userService.getAllUsers();
+        List<User> users = userService.findAll();
         model.addAttribute("users", users);
         model.addAttribute("user", adminUser);
         
@@ -65,7 +65,7 @@ public class UserController {
             return "redirect:/login";
         }
         
-        Optional<User> userOpt = userService.getUserById(userId);
+        Optional<User> userOpt = userService.findById(userId);
         if (userOpt.isEmpty()) {
             return "redirect:/admin/users";
         }
@@ -91,11 +91,11 @@ public class UserController {
         
         if (searchKeyword.isEmpty()) {
             // Nếu keyword rỗng, hiển thị thông báo yêu cầu nhập từ khóa
-            users = userService.getAllUsers(); // Vẫn hiển thị tất cả users
+            users = userService.findAll(); // Vẫn hiển thị tất cả users
             model.addAttribute("showEmptyKeywordMessage", true);
         } else if (searchKeyword.length() < 2) {
             // Nếu keyword quá ngắn
-            users = userService.getAllUsers();
+            users = userService.findAll();
             model.addAttribute("showShortKeywordMessage", true);
         } else {
             // Tìm kiếm bình thường
@@ -135,7 +135,7 @@ public class UserController {
             return "redirect:/login";
         }
         
-        List<User> users = userService.getAllUsers();
+        List<User> users = userService.findAll();
         model.addAttribute("users", users);
         model.addAttribute("user", adminUser);
         

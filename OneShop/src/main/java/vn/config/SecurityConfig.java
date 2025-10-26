@@ -5,8 +5,14 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
+import org.springframework.security.web.firewall.HttpFirewall;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import vn.service.CustomOAuth2UserService;
 
 import java.net.URLEncoder;
@@ -21,6 +27,14 @@ public class SecurityConfig {
 
     @Autowired
     private AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler;
+    
+    @Autowired
+    private JwtAuthenticationFilter jwtAuthenticationFilter;
+    
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder(); 
+    }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -32,6 +46,8 @@ public class SecurityConfig {
                 .requestMatchers("/vendor/bootstrap/**", "/vendor/slickslider/**", "/vendor/venobox/**", "/vendor/niceselect/**", "/vendor/countdown/**").permitAll()
                 // Public pages
                 .requestMatchers("/oauth2/**", "/login/**", "/register/**", "/", "/forgotPassword/**", "/resetPassword/**", "/privacy", "/delete-data", "/delete-data-callback").permitAll()
+                // JWT API endpoints
+                .requestMatchers("/api/auth/**").permitAll()
                 // Role-based access
                 // Allow CSKH and Vendor to access the vendor chat console as well
                 .requestMatchers("/admin/vendor-chat").hasAnyRole("ADMIN", "CSKH", "VENDOR")
@@ -41,6 +57,12 @@ public class SecurityConfig {
                 .requestMatchers("/shipper/**").hasRole("SHIPPER")
                 .anyRequest().permitAll()
             )
+            // Configure session management for JWT + Session hybrid
+            .sessionManagement(session -> session
+                .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
+            )
+            // Add JWT filter before UsernamePasswordAuthenticationFilter
+            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
             .oauth2Login(oauth2 -> oauth2
                 .loginPage("/login")
                 .userInfoEndpoint(userInfo -> userInfo
@@ -62,5 +84,10 @@ public class SecurityConfig {
             .logout(logout -> logout.disable());
 
         return http.build();
+    }
+
+    @Bean
+    public WebSecurityCustomizer webSecurityCustomizer() {
+        return (web) -> web.ignoring().requestMatchers("/assets/**", "/css/**", "/js/**", "/images/**", "/fonts/**", "/vendor/**");
     }
 }

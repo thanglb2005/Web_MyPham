@@ -44,15 +44,15 @@ CREATE TABLE dbo.[user] (
 -- 9 user (đã thêm shipper và CSKH)
 INSERT INTO dbo.[user](avatar, email, name, password, register_date, status)
 VALUES 
-('user.png','chi@gmail.com',N'Trần Thảo Chi','123456','2025-09-04',1),
-('user.png','dong@gmail.com',N'Trần Hữu Đồng','123456','2025-09-04',1),
-('user.png','user@gmail.com',N'User Demo','123456','2025-09-04',1),
-('user.png','admin@mypham.com',N'Admin Mỹ Phẩm','123456','2025-09-04',1),
-('user.png','vendor@mypham.com',N'Nguyễn Văn An','123456','2025-10-07',1),
-('user.png','vendor1@mypham.com',N'Trần Thị Bình','123456','2025-10-07',1),
-('user.png','vendor2@mypham.com',N'Lê Quốc Cường','123456','2025-10-07',1),
-('user.png','shipper@mypham.com',N'Phạm Văn Giao','123456','2025-10-08',1),
-('user.png','cskh@mypham.com',N'Nguyễn Thị Linh - CSKH','123456','2025-10-10',1);
+('user.png','chi@gmail.com',N'Trần Thảo Chi','$2a$10$ayifKZuAybB3F.RGIEs89O8zLicZhK9hiS4ut9dDaGz6RQLd.8Ly6','2025-09-04',1),
+('user.png','dong@gmail.com',N'Trần Hữu Đồng','$2a$10$ayifKZuAybB3F.RGIEs89O8zLicZhK9hiS4ut9dDaGz6RQLd.8Ly6','2025-09-04',1),
+('user.png','user@gmail.com',N'User Demo','$2a$10$ayifKZuAybB3F.RGIEs89O8zLicZhK9hiS4ut9dDaGz6RQLd.8Ly6','2025-09-04',1),
+('user.png','admin@mypham.com',N'Admin Mỹ Phẩm','$2a$10$ayifKZuAybB3F.RGIEs89O8zLicZhK9hiS4ut9dDaGz6RQLd.8Ly6','2025-09-04',1),
+('user.png','vendor@mypham.com',N'Nguyễn Văn An','$2a$10$ayifKZuAybB3F.RGIEs89O8zLicZhK9hiS4ut9dDaGz6RQLd.8Ly6','2025-10-07',1),
+('user.png','vendor1@mypham.com',N'Trần Thị Bình','$2a$10$ayifKZuAybB3F.RGIEs89O8zLicZhK9hiS4ut9dDaGz6RQLd.8Ly6','2025-10-07',1),
+('user.png','vendor2@mypham.com',N'Lê Quốc Cường','$2a$10$ayifKZuAybB3F.RGIEs89O8zLicZhK9hiS4ut9dDaGz6RQLd.8Ly6','2025-10-07',1),
+('user.png','shipper@mypham.com',N'Phạm Văn Giao','$2a$10$ayifKZuAybB3F.RGIEs89O8zLicZhK9hiS4ut9dDaGz6RQLd.8Ly6','2025-10-08',1),
+('user.png','cskh@mypham.com',N'Nguyễn Thị Linh - CSKH','$2a$10$ayifKZuAybB3F.RGIEs89O8zLicZhK9hiS4ut9dDaGz6RQLd.8Ly6','2025-10-10',1);
 GO
 
 /* ===============================

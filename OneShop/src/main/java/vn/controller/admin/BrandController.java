@@ -20,7 +20,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.Principal;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -47,6 +46,8 @@ public class BrandController {
             @RequestParam(name = "search", required = false) String search,
             @RequestParam(name = "sortBy", defaultValue = "brandId") String sortBy,
             @RequestParam(name = "sortDir", defaultValue = "asc") String sortDir,
+            @RequestParam(name = "success", required = false) String success,
+            @RequestParam(name = "error", required = false) String error,
             Principal principal
     ) {
         Sort sort = Sort.by(sortDir.equals("asc") ? Sort.Direction.ASC : Sort.Direction.DESC, sortBy);
@@ -59,9 +60,29 @@ public class BrandController {
             brandPage = brandService.findAll(pageable);
         }
         
+        int totalPages = brandPage.getTotalPages();
+        if (totalPages > 0 && page >= totalPages) {
+            int lastPage = Math.max(0, totalPages - 1);
+            StringBuilder redirect = new StringBuilder("redirect:/admin/brands");
+            redirect.append("?page=").append(lastPage);
+            redirect.append("&size=").append(size);
+            redirect.append("&sortBy=").append(sortBy);
+            redirect.append("&sortDir=").append(sortDir);
+            if (search != null && !search.trim().isEmpty()) {
+                redirect.append("&search=").append(search);
+            }
+            if (success != null && !success.isBlank()) {
+                redirect.append("&success=").append(success);
+            }
+            if (error != null && !error.isBlank()) {
+                redirect.append("&error=").append(error);
+            }
+            return redirect.toString();
+        }
+
         model.addAttribute("brands", brandPage.getContent());
         model.addAttribute("currentPage", page);
-        model.addAttribute("totalPages", brandPage.getTotalPages());
+        model.addAttribute("totalPages", totalPages);
         model.addAttribute("totalItems", brandPage.getTotalElements());
         model.addAttribute("pageSize", size);
         model.addAttribute("sortBy", sortBy);
