@@ -507,6 +507,15 @@ public class VendorOrderController {
             }
             
             orderService.updateOrderStatus(orderId, Order.OrderStatus.RETURNED);
+            
+            // Lưu thông tin return vào database
+            Order returnedOrder = orderService.getOrderById(orderId);
+            if (returnedOrder != null) {
+                returnedOrder.setCancellationReason("Return approved: " + returnReason + ". Refund amount: " + refundAmount + " VND");
+                returnedOrder.setCancelledDate(LocalDateTime.now());
+                orderService.updateOrder(returnedOrder);
+            }
+            
             redirectAttributes.addFlashAttribute("success", "Đã duyệt hoàn tiền cho đơn hàng #" + orderId);
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Lỗi duyệt hoàn tiền: " + e.getMessage());
