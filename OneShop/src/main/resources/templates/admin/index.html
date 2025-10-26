@@ -561,6 +561,34 @@
                 </div>
               </div>
             </div>
+            
+            <!-- Second Row - Blog Stats -->
+            <div class="row mt-3">
+              <div class="col-md-6 col-lg-3">
+                <div class="card card-stats card-success">
+                  <div class="card-body">
+                    <div class="row">
+                      <div class="col-5">
+                        <div class="icon-big text-center">
+                          <i class="flaticon-edit card-stats-icon"></i>
+                        </div>
+                      </div>
+                      <div class="col-7 col-stats">
+                        <div class="numbers">
+                          <p class="card-stats-title">Tổng Blog Posts</p>
+                          <h4
+                            class="card-stats-number"
+                            th:text="${totalBlogs}"
+                          >
+                            0
+                          </h4>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
 
             <!-- Welcome Section -->
             <div class="row">
@@ -603,6 +631,10 @@
                               <li>
                                 <i class="flaticon-check text-success"></i> Quản
                                 lý người dùng
+                              </li>
+                              <li>
+                                <i class="flaticon-check text-success"></i> Quản
+                                lý blog & tin tức
                               </li>
                             </ul>
                           </div>

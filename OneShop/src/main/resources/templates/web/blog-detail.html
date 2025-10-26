@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${post.title} + ' - Blog OneShop'">Blog Detail - OneShop</title>
+    <meta name="description" th:content="${post.metaDescription ?: post.excerpt}">
+    
+    <!-- CSS -->
+    <link rel="stylesheet" th:href="@{/fonts/flaticon/flaticon.css}" />
+    <link rel="stylesheet" th:href="@{/fonts/icofont/icofont.min.css}" />
+    <link rel="stylesheet" th:href="@{/fonts/fontawesome/fontawesome.min.css}" />
+    <link rel="stylesheet" th:href="@{/vendor/bootstrap/bootstrap.min.css}" />
+    <link rel="stylesheet" th:href="@{/css/main.css}" />
+    
+    <style>
+        .blog-detail-hero {
+            background: #f8f9fa;
+            color: #2c3e50;
+            padding: 60px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .blog-content {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 40px;
+            margin-bottom: 32px;
+        }
+        
+        .blog-meta {
+            color: #6c757d;
+            font-size: 14px;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .blog-title {
+            font-size: 32px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            line-height: 1.3;
+            color: #2c3e50;
+        }
+        
+        .blog-excerpt {
+            font-size: 16px;
+            color: #6c757d;
+            line-height: 1.6;
+            margin-bottom: 24px;
+            font-style: italic;
+        }
+        
+        .blog-featured-image {
+            width: 100%;
+            height: 400px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-bottom: 32px;
+        }
+        
+        .blog-body {
+            font-size: 16px;
+            line-height: 1.7;
+            color: #495057;
+        }
+        
+        .blog-body h1, .blog-body h2, .blog-body h3, .blog-body h4, .blog-body h5, .blog-body h6 {
+            margin-top: 24px;
+            margin-bottom: 12px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .blog-body p {
+            margin-bottom: 16px;
+        }
+        
+        .blog-body img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 6px;
+            margin: 16px 0;
+        }
+        
+        .blog-tags {
+            margin: 24px 0;
+            padding: 16px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            border: 1px solid #e9ecef;
+        }
+        
+        .blog-tag {
+            display: inline-block;
+            background: #e9ecef;
+            color: #495057;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            margin-right: 8px;
+            margin-bottom: 8px;
+            text-decoration: none;
+        }
+        
+        .blog-tag:hover {
+            background: #dee2e6;
+            color: #495057;
+            text-decoration: none;
+        }
+        
+        .sidebar-card {
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            margin-bottom: 24px;
+            background: white;
+        }
+        
+        .sidebar-card-header {
+            background: #f8f9fa;
+            padding: 16px 20px;
+            border-bottom: 1px solid #e9ecef;
+            font-weight: 600;
+            font-size: 16px;
+            color: #495057;
+        }
+        
+        .related-post {
+            display: flex;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .related-post:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        
+        .related-post img {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 6px;
+            margin-right: 15px;
+        }
+        
+        .related-post-content h6 {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 5px;
+            line-height: 1.4;
+        }
+        
+        .related-post-content small {
+            color: #666;
+        }
+        
+        .comment-section {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            margin-top: 30px;
+        }
+        
+        .comment-form {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+        
+        .comment-item {
+            border-bottom: 1px solid #f0f0f0;
+            padding: 20px 0;
+        }
+        
+        .comment-item:last-child {
+            border-bottom: none;
+        }
+        
+        .comment-author {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        
+        .comment-date {
+            color: #666;
+            font-size: 12px;
+            margin-bottom: 10px;
+        }
+        
+        .comment-content {
+            color: #555;
+            line-height: 1.6;
+        }
+        
+        .reply-btn {
+            background: none;
+            border: none;
+            color: #667eea;
+            font-size: 12px;
+            cursor: pointer;
+            padding: 0;
+        }
+        
+        .reply-form {
+            margin-top: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header th:replace="~{/web/fragments/header :: header}"></header>
+    
+    
+    <!-- Blog Content -->
+    <section style="padding: 40px 0; background: #f8f9fa;">
+        <div class="container">
+            <div class="row justify-content-center">
+                <!-- Main Content -->
+                <div class="col-12">
+                    <article class="blog-content">
+                        <!-- Blog Meta -->
+                        <div class="blog-meta">
+                            <i class="fas fa-calendar-alt" style="margin-right: 5px;"></i>
+                            <span th:text="${post.publishedAt != null ? #temporals.format(post.publishedAt, 'dd/MM/yyyy') : 'Chưa xuất bản'}">01/01/2024</span>
+                            <span style="margin: 0 15px;">•</span>
+                            <i class="fas fa-user" style="margin-right: 5px;"></i>
+                            <span th:text="${post.author != null ? post.author.name : 'Ẩn danh'}">Tác giả</span>
+                            <span style="margin: 0 15px;">•</span>
+                            <i class="fas fa-eye" style="margin-right: 5px;"></i>
+                            <span th:text="${post.viewCount != null ? post.viewCount : 0}">0</span> lượt xem
+                            <span style="margin: 0 15px;">•</span>
+                            <i class="fas fa-folder" style="margin-right: 5px;"></i>
+                            <a th:if="${post.category != null}"
+                               th:href="@{'/blogs/category/' + ${post.category.categorySlug}}"
+                               style="color: #667eea; text-decoration: none;"
+                               th:text="${post.category.categoryName}">Danh mục</a>
+                            <span th:unless="${post.category != null}" style="color: #6c757d;">Không có danh mục</span>
+                        </div>
+                        
+                        <!-- Blog Title -->
+                        <h1 class="blog-title" th:text="${post.title}">Tiêu đề bài viết</h1>
+                        
+                        <!-- Blog Excerpt -->
+                        <div class="blog-excerpt" th:if="${post.excerpt}" th:text="${post.excerpt}">
+                            Mô tả ngắn về bài viết...
+                        </div>
+                        
+                        <!-- Featured Image -->
+                        <img th:if="${post.featuredImage}"
+                             th:src="${post.featuredImage.startsWith('http') ? post.featuredImage : (post.featuredImage.startsWith('/') ? post.featuredImage : '/upload/images/blog/' + post.featuredImage)}"
+                             th:alt="${post.title}"
+                             class="blog-featured-image"
+                             onerror="this.style.display='none'">
+                        
+                        <!-- Blog Content -->
+                        <div class="blog-body" th:utext="${post.content}">
+                            Nội dung bài viết...
+                        </div>
+                        
+                        <!-- Blog Tags -->
+                        <div class="blog-tags" th:if="${post.tags != null and !post.tags.empty}">
+                            <h6 style="margin-bottom: 15px; color: #333;">
+                                <i class="fas fa-tags" style="margin-right: 8px;"></i>
+                                Tags:
+                            </h6>
+                            <a th:each="tag : ${post.tags}" 
+                               th:href="@{'/blogs/tag/' + ${tag.tagSlug}}"
+                               class="blog-tag"
+                               th:text="${tag.tagName}">tag</a>
+                        </div>
+                    </article>
+                    
+                    <!-- Comments Section -->
+                    <div class="comment-section">
+                        <h4 style="margin-bottom: 30px;">
+                            <i class="fas fa-comments" style="margin-right: 8px; color: #667eea;"></i>
+                            Bình luận (<span th:text="${comments != null ? comments.size() : 0}">0</span>)
+                        </h4>
+                        
+                        <!-- Comment Form -->
+                        <div class="comment-form">
+                            <h6 style="margin-bottom: 15px;">Viết bình luận</h6>
+                            <form th:action="@{'/blogs/' + ${post.slug} + '/comment'}" method="post">
+                                <div class="form-group">
+                                    <textarea name="content" class="form-control" rows="4" 
+                                              placeholder="Viết bình luận của bạn..." required></textarea>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <input type="text" name="authorName" class="form-control" 
+                                               placeholder="Tên của bạn" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <input type="email" name="authorEmail" class="form-control" 
+                                               placeholder="Email của bạn" required>
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-primary" style="margin-top: 15px;">
+                                    <i class="fas fa-paper-plane" style="margin-right: 5px;"></i>
+                                    Gửi bình luận
+                                </button>
+                            </form>
+                        </div>
+                        
+                        <!-- Comments List -->
+                        <div th:if="${comments != null and !comments.empty}">
+                            <div th:each="comment : ${comments}" class="comment-item">
+                                <div class="comment-author" th:text="${comment.authorName}">Tên người dùng</div>
+                                <div class="comment-date" th:text="${#temporals.format(comment.createdAt, 'dd/MM/yyyy HH:mm')}">01/01/2024 10:00</div>
+                                <div class="comment-content" th:text="${comment.content}">Nội dung bình luận...</div>
+                                <button class="reply-btn" th:onclick="'showReplyForm(' + ${comment.commentId} + ')'">
+                                    <i class="fas fa-reply" style="margin-right: 3px;"></i>
+                                    Trả lời
+                                </button>
+                                
+                                <!-- Reply Form (Hidden by default) -->
+                                <div th:id="'reply-form-' + ${comment.commentId}" class="reply-form">
+                                    <form th:action="@{'/blogs/' + ${post.slug} + '/comment'}" method="post">
+                                        <input type="hidden" name="parentCommentId" th:value="${comment.commentId}">
+                                        <div class="form-group">
+                                            <textarea name="content" class="form-control" rows="3" 
+                                                      placeholder="Viết trả lời..." required></textarea>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <input type="text" name="authorName" class="form-control" 
+                                                       placeholder="Tên của bạn" required>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <input type="email" name="authorEmail" class="form-control" 
+                                                       placeholder="Email của bạn" required>
+                                            </div>
+                                        </div>
+                                        <button type="submit" class="btn btn-sm btn-primary" style="margin-top: 10px;">
+                                            <i class="fas fa-paper-plane" style="margin-right: 3px;"></i>
+                                            Gửi trả lời
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-secondary" style="margin-top: 10px; margin-left: 10px;"
+                                                th:onclick="'hideReplyForm(' + ${comment.commentId} + ')'">
+                                            Hủy
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- No Comments -->
+                        <div th:unless="${comments != null and !comments.empty}" class="text-center" style="padding: 40px;">
+                            <i class="fas fa-comment-slash" style="font-size: 48px; color: #ddd; margin-bottom: 15px;"></i>
+                            <p style="color: #666;">Chưa có bình luận nào. Hãy là người đầu tiên bình luận!</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Footer -->
+    <footer th:replace="~{/web/fragments/footer :: footer}"></footer>
+    
+    <!-- Scripts -->
+    <script th:src="@{/vendor/bootstrap/jquery-1.12.4.min.js}"></script>
+    <script th:src="@{/vendor/bootstrap/popper.min.js}"></script>
+    <script th:src="@{/vendor/bootstrap/bootstrap.min.js}"></script>
+    <script th:src="@{/js/main.js}"></script>
+    
+    <script>
+        function showReplyForm(commentId) {
+            document.getElementById('reply-form-' + commentId).style.display = 'block';
+        }
+        
+        function hideReplyForm(commentId) {
+            document.getElementById('reply-form-' + commentId).style.display = 'none';
+        }
+    </script>
+</body>
+</html>

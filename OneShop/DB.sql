@@ -1755,3 +1755,168 @@ CREATE TABLE dbo.comment_media (
 
 -- Chỉ mục gợi ý để truy vấn nhanh theo comment
 CREATE INDEX IX_comment_media_comment ON dbo.comment_media(comment_id);
+GO
+
+/* ===============================
+   BLOG SYSTEM TABLES
+   =============================== */
+
+-- 1. Bảng Blog Categories
+CREATE TABLE dbo.blog_categories (
+    category_id BIGINT IDENTITY(1,1) PRIMARY KEY,
+    category_name NVARCHAR(100) NOT NULL,
+    category_slug NVARCHAR(100) NOT NULL UNIQUE,
+    description NVARCHAR(500),
+    image_url NVARCHAR(255),
+    is_active BIT DEFAULT 1,
+    created_at DATETIME2 DEFAULT GETDATE(),
+    updated_at DATETIME2 DEFAULT GETDATE()
+);
+GO
+
+-- 2. Bảng Blog Posts
+CREATE TABLE dbo.blog_posts (
+    post_id BIGINT IDENTITY(1,1) PRIMARY KEY,
+    title NVARCHAR(255) NOT NULL,
+    slug NVARCHAR(255) NOT NULL UNIQUE,
+    excerpt NVARCHAR(500),
+    content NTEXT NOT NULL,
+    featured_image NVARCHAR(255),
+    category_id BIGINT,
+    author_id BIGINT, -- Liên kết với bảng [user]
+    status NVARCHAR(20) DEFAULT 'draft', -- draft, published, archived
+    is_featured BIT DEFAULT 0,
+    view_count INT DEFAULT 0,
+    meta_title NVARCHAR(255),
+    meta_description NVARCHAR(500),
+    published_at DATETIME2,
+    created_at DATETIME2 DEFAULT GETDATE(),
+    updated_at DATETIME2 DEFAULT GETDATE(),
+    
+    FOREIGN KEY (category_id) REFERENCES dbo.blog_categories(category_id),
+    FOREIGN KEY (author_id) REFERENCES dbo.[user](user_id)
+);
+GO
+
+-- 3. Bảng Blog Tags
+CREATE TABLE dbo.blog_tags (
+    tag_id BIGINT IDENTITY(1,1) PRIMARY KEY,
+    tag_name NVARCHAR(50) NOT NULL UNIQUE,
+    tag_slug NVARCHAR(50) NOT NULL UNIQUE,
+    created_at DATETIME2 DEFAULT GETDATE()
+);
+GO
+
+-- 4. Bảng liên kết Blog Posts và Tags (Many-to-Many)
+CREATE TABLE dbo.blog_post_tags (
+    post_id BIGINT,
+    tag_id BIGINT,
+    PRIMARY KEY (post_id, tag_id),
+    FOREIGN KEY (post_id) REFERENCES dbo.blog_posts(post_id) ON DELETE CASCADE,
+    FOREIGN KEY (tag_id) REFERENCES dbo.blog_tags(tag_id) ON DELETE CASCADE
+);
+GO
+
+-- 5. Bảng Blog Comments
+CREATE TABLE dbo.blog_comments (
+    comment_id BIGINT IDENTITY(1,1) PRIMARY KEY,
+    post_id BIGINT NOT NULL,
+    user_id BIGINT,
+    parent_comment_id BIGINT, -- Để hỗ trợ reply comments
+    author_name NVARCHAR(100),
+    author_email NVARCHAR(100),
+    content NTEXT NOT NULL,
+    is_approved BIT DEFAULT 0,
+    created_at DATETIME2 DEFAULT GETDATE(),
+    updated_at DATETIME2 DEFAULT GETDATE(),
+    
+    FOREIGN KEY (post_id) REFERENCES dbo.blog_posts(post_id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES dbo.[user](user_id),
+    FOREIGN KEY (parent_comment_id) REFERENCES dbo.blog_comments(comment_id)
+);
+GO
+
+-- 6. Bảng Blog Views (để track lượt xem chi tiết)
+CREATE TABLE dbo.blog_views (
+    view_id BIGINT IDENTITY(1,1) PRIMARY KEY,
+    post_id BIGINT NOT NULL,
+    ip_address NVARCHAR(45),
+    user_agent NVARCHAR(500),
+    viewed_at DATETIME2 DEFAULT GETDATE(),
+    
+    FOREIGN KEY (post_id) REFERENCES dbo.blog_posts(post_id) ON DELETE CASCADE
+);
+GO
+
+-- Insert sample data cho blog system
+INSERT INTO dbo.blog_categories (category_name, category_slug, description) VALUES
+(N'Skincare Tips', 'skincare-tips', N'Mẹo chăm sóc da và skincare'),
+(N'Product Reviews', 'product-reviews', N'Đánh giá sản phẩm mỹ phẩm'),
+(N'Beauty Tutorials', 'beauty-tutorials', N'Hướng dẫn làm đẹp'),
+(N'Industry News', 'industry-news', N'Tin tức ngành mỹ phẩm'),
+(N'Makeup Tips', 'makeup-tips', N'Mẹo trang điểm');
+GO
+
+INSERT INTO dbo.blog_tags (tag_name, tag_slug) VALUES
+('skincare', 'skincare'),
+('makeup', 'makeup'),
+('review', 'review'),
+('tutorial', 'tutorial'),
+('tips', 'tips'),
+(N'mỹ phẩm', 'my-pham'),
+(N'da mặt', 'da-mat'),
+(N'chống nắng', 'chong-nang');
+GO
+
+-- Sample blog post
+INSERT INTO dbo.blog_posts (title, slug, excerpt, content, featured_image, category_id, author_id, status, is_featured, published_at) VALUES
+(N'10 Bước Skincare Cơ Bản Cho Người Mới Bắt Đầu', '10-buoc-skincare-co-ban-cho-nguoi-moi-bat-dau', 
+N'Khám phá quy trình skincare 10 bước cơ bản giúp bạn có làn da khỏe mạnh và rạng rỡ từ những ngày đầu tiên.',
+N'<div class="relative basis-auto flex-col -mb-(--composer-overlap-px) [--composer-overlap-px:28px] grow flex overflow-hidden"><div class="relative h-full"><div class="flex h-full flex-col overflow-y-auto thread-xl:pt-(--header-height) [scrollbar-gutter:stable_both-edges]"><div class="flex flex-col text-sm thread-xl:pt-header-height pb-25"><article class="text-token-text-primary w-full focus:outline-none [--shadow-height:45px] has-data-writing-block:pointer-events-none has-data-writing-block:-mt-(--shadow-height) has-data-writing-block:pt-(--shadow-height) [&amp;:has([data-writing-block])&gt;*]:pointer-events-auto [content-visibility:auto] supports-[content-visibility:auto]:[contain-intrinsic-size:auto_100lvh] scroll-mt-[calc(var(--header-height)+min(200px,max(70px,20svh)))]" tabindex="-1" dir="auto" data-turn-id="request-WEB:fe57cf57-986e-48df-89fc-c957bbd24e14-5" data-testid="conversation-turn-12" data-scroll-anchor="true" data-turn="assistant"><div class="text-base my-auto mx-auto pb-10 [--thread-content-margin:--spacing(4)] thread-sm:[--thread-content-margin:--spacing(6)] thread-lg:[--thread-content-margin:--spacing(16)] px-(--thread-content-margin)"><div class="[--thread-content-max-width:40rem] thread-lg:[--thread-content-max-width:48rem] mx-auto max-w-(--thread-content-max-width) flex-1 group/turn-messages focus-visible:outline-hidden relative flex w-full min-w-0 flex-col agent-turn" tabindex="-1"><div class="flex max-w-full flex-col grow"><div data-message-author-role="assistant" data-message-id="3ba205d6-1084-457c-a294-276d8403a99a" dir="auto" class="min-h-8 text-message relative flex w-full flex-col items-end gap-2 text-start break-words whitespace-normal [.text-message+&amp;]:mt-1" data-message-model-slug="gpt-5"><div class="flex w-full flex-col gap-1 empty:hidden first:pt-[1px]"><div class="markdown prose dark:prose-invert w-full break-words light markdown-new-styling"><p data-start="53" data-end="346"><strong data-start="53" data-end="75"><span style="font-size: 14px;">Bước 1: Tẩy trang:</span></strong><span style="font-size: 14px;"> dù có trang điểm hay không thì cũng nên tẩy trang mỗi ngày để loại bỏ bụi bẩn, dầu thừa và kem chống nắng còn sót lại. Người da dầu nên chọn nước tẩy trang micellar, còn da khô hoặc da nhạy cảm nên dùng dầu hoặc sữa tẩy trang để làm sạch nhẹ nhàng mà không gây khô da.</span></p><p data-start="348" data-end="569"><strong data-start="348" data-end="368"><span style="font-size: 14px;">Bước 2: Rửa mặt:</span></strong><span style="font-size: 14px;"> sau khi tẩy trang, dùng sữa rửa mặt phù hợp để làm sạch sâu và giúp da thông thoáng hơn. Nên rửa mặt bằng nước mát và massage nhẹ nhàng trong khoảng 30 giây đến 1 phút, sau đó lau khô bằng khăn mềm.</span></p><p data-start="571" data-end="818"><strong data-start="571" data-end="599"><span style="font-size: 14px;">Bước 3: Tẩy tế bào chết:</span></strong><span style="font-size: 14px;"> giúp loại bỏ lớp da sừng già cỗi, làm sáng da và giúp các bước dưỡng sau thấm tốt hơn. Chỉ nên tẩy tế bào chết 1 đến 2 lần mỗi tuần, chọn sản phẩm phù hợp như dạng hạt cho da thường hoặc dạng AHA, BHA cho da dầu mụn.</span></p><p data-start="820" data-end="1007"><strong data-start="820" data-end="838"><span style="font-size: 14px;">Bước 4: Toner:</span></strong><span style="font-size: 14px;"> giúp cân bằng độ pH, làm sạch sâu và se khít lỗ chân lông. Sau khi rửa mặt, dùng bông tẩy trang thấm toner lau nhẹ khắp mặt hoặc đổ vài giọt ra tay rồi vỗ nhẹ lên da.</span></p><p data-start="1009" data-end="1224"><strong data-start="1009" data-end="1027"><span style="font-size: 14px;">Bước 5: Serum:</span></strong><span style="font-size: 14px;"> là tinh chất chứa nhiều dưỡng chất cô đặc giúp cải thiện vấn đề cụ thể của da. Da khô nên chọn serum hyaluronic acid, da xỉn màu nên chọn vitamin C, còn da mụn thì nên dùng niacinamide hoặc BHA.</span></p><p data-start="1226" data-end="1446"><strong data-start="1226" data-end="1251"><span style="font-size: 14px;">Bước 6: Kem dưỡng ẩm:</span></strong><span style="font-size: 14px;"> giúp khóa ẩm và duy trì độ mềm mịn cho da. Da dầu nên dùng dạng gel hoặc lotion nhẹ, còn da khô nên chọn dạng cream có độ dưỡng cao hơn. Dưỡng ẩm đều đặn mỗi sáng và tối giúp da luôn căng mịn.</span></p><p data-start="1448" data-end="1625"><strong data-start="1448" data-end="1468"><span style="font-size: 14px;">Bước 7: Kem mắt:</span></strong><span style="font-size: 14px;"> vùng da quanh mắt rất mỏng nên dễ xuất hiện nếp nhăn và quầng thâm. Dùng một lượng nhỏ kem mắt chấm quanh bọng mắt rồi massage nhẹ để dưỡng chất thấm đều.</span></p><p data-start="1627" data-end="1859"><strong data-start="1627" data-end="1654"><span style="font-size: 14px;">Bước 8: Kem chống nắng:</span></strong><span style="font-size: 14px;"> là bước quan trọng nhất vào buổi sáng để bảo vệ da khỏi tia UV. Chọn kem chống nắng có chỉ số SPF 30 trở lên và thoa trước khi ra ngoài 15 đến 20 phút. Nếu ở ngoài trời lâu, nên bôi lại sau 2 đến 3 giờ.</span></p><p data-start="1861" data-end="2058"><strong data-start="1861" data-end="1880"><span style="font-size: 14px;">Bước 9: Mặt nạ:</span></strong><span style="font-size: 14px;"> giúp cung cấp thêm dưỡng chất và thư giãn cho da sau một ngày dài. Nên đắp mặt nạ 1 đến 2 lần mỗi tuần, có thể chọn mặt nạ giấy cấp ẩm hoặc mặt nạ rửa làm sạch tùy nhu cầu da.</span></p><p data-start="2060" data-end="2259"><strong data-start="2060" data-end="2083"><span style="font-size: 14px;">Bước 10: Dưỡng môi:</span></strong><span style="font-size: 14px;"> môi cũng cần được chăm sóc để không bị khô và nứt. Dùng son dưỡng hằng ngày, đặc biệt là buổi tối trước khi ngủ, và tẩy tế bào chết môi mỗi tuần một lần để môi luôn mềm mại.</span></p><p data-start="2261" data-end="2481" data-is-last-node="" data-is-only-node=""><strong data-start="2261" data-end="2274"><span style="font-size: 14px;">Kết luận:</span></strong><span style="font-size: 14px;"> skincare không cần cầu kỳ, quan trọng là duy trì đều đặn và chọn sản phẩm phù hợp với loại da. Khi da được làm sạch, dưỡng ẩm và bảo vệ đúng cách, bạn sẽ thấy làn da khỏe và sáng mịn tự nhiên hơn từng ngày.</span></p></div></div></div></div></div></div></article></div></div></div></div>',
+'https://res.cloudinary.com/dgzgii981/image/upload/v1761509750/blogs/skincare-la-gi.jpg',
+1, 1, 'PUBLISHED', 1, GETDATE());
+GO
+
+-- Add tags to the sample post
+INSERT INTO dbo.blog_post_tags (post_id, tag_id) VALUES (1, 1), (1, 5), (1, 7);
+GO
+
+-- Thêm thêm bài viết mẫu
+INSERT INTO dbo.blog_posts (title, slug, excerpt, content, featured_image, category_id, author_id, status, is_featured, published_at) VALUES
+(N'Review Kem Chống Nắng La Roche-Posay Anthelios', 'review-kem-chong-nang-la-roche-posay-anthelios',
+N'Đánh giá chi tiết kem chống nắng La Roche-Posay Anthelios - sản phẩm được nhiều chuyên gia da liễu khuyên dùng.',
+N'<p><p data-start="15" data-end="430"></p><div aria-hidden="true" data-edge="true" class="pointer-events-none h-px w-px"></div><p></p><article class="text-token-text-primary w-full focus:outline-none [--shadow-height:45px] has-data-writing-block:pointer-events-none has-data-writing-block:-mt-(--shadow-height) has-data-writing-block:pt-(--shadow-height) [&amp;:has([data-writing-block])&gt;*]:pointer-events-auto [content-visibility:auto] supports-[content-visibility:auto]:[contain-intrinsic-size:auto_100lvh] scroll-mt-[calc(var(--header-height)+min(200px,max(70px,20svh)))]" tabindex="-1" dir="auto" data-turn-id="request-WEB:fe57cf57-986e-48df-89fc-c957bbd24e14-1" data-testid="conversation-turn-4" data-scroll-anchor="true" data-turn="assistant"><div class="text-base my-auto mx-auto pb-10 [--thread-content-margin:--spacing(4)] thread-sm:[--thread-content-margin:--spacing(6)] thread-lg:[--thread-content-margin:--spacing(16)] px-(--thread-content-margin)"><div class="[--thread-content-max-width:40rem] thread-lg:[--thread-content-max-width:48rem] mx-auto max-w-(--thread-content-max-width) flex-1 group/turn-messages focus-visible:outline-hidden relative flex w-full min-w-0 flex-col agent-turn" tabindex="-1"><div class="flex max-w-full flex-col grow"><div data-message-author-role="assistant" data-message-id="b42875c8-5b7e-4ec9-97ea-95220c086174" dir="auto" class="min-h-8 text-message relative flex w-full flex-col items-end gap-2 text-start break-words whitespace-normal [.text-message+&amp;]:mt-1" data-message-model-slug="gpt-5"><div class="flex w-full flex-col gap-1 empty:hidden first:pt-[1px]"><div class="markdown prose dark:prose-invert w-full break-words light markdown-new-styling"><p data-start="61" data-end="306"></p><div aria-hidden="true" data-edge="true" class="pointer-events-none h-px w-px"></div><p></p><article class="text-token-text-primary w-full focus:outline-none [--shadow-height:45px] has-data-writing-block:pointer-events-none has-data-writing-block:-mt-(--shadow-height) has-data-writing-block:pt-(--shadow-height) [&amp;:has([data-writing-block])&gt;*]:pointer-events-auto [content-visibility:auto] supports-[content-visibility:auto]:[contain-intrinsic-size:auto_100lvh] scroll-mt-[calc(var(--header-height)+min(200px,max(70px,20svh)))]" tabindex="-1" dir="auto" data-turn-id="request-WEB:fe57cf57-986e-48df-89fc-c957bbd24e14-1" data-testid="conversation-turn-4" data-scroll-anchor="true" data-turn="assistant"><div class="text-base my-auto mx-auto pb-10 [--thread-content-margin:--spacing(4)] thread-sm:[--thread-content-margin:--spacing(6)] thread-lg:[--thread-content-margin:--spacing(16)] px-(--thread-content-margin)"><div class="[--thread-content-max-width:40rem] thread-lg:[--thread-content-max-width:48rem] mx-auto max-w-(--thread-content-max-width) flex-1 group/turn-messages focus-visible:outline-hidden relative flex w-full min-w-0 flex-col agent-turn" tabindex="-1"><div class="flex max-w-full flex-col grow"><div data-message-author-role="assistant" data-message-id="b42875c8-5b7e-4ec9-97ea-95220c086174" dir="auto" class="min-h-8 text-message relative flex w-full flex-col items-end gap-2 text-start break-words whitespace-normal [.text-message+&amp;]:mt-1" data-message-model-slug="gpt-5"><div class="flex w-full flex-col gap-1 empty:hidden first:pt-[1px]"><div class="markdown prose dark:prose-invert w-full break-words light markdown-new-styling"><p data-start="61" data-end="306"><span style="color: inherit; font-size: 1.35rem;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><b>La Roche Posay Anthelios</b> là dòng kem chống nắng nổi tiếng đến từ Pháp, được nhiều bác sĩ da liễu khuyên dùng nhờ khả năng bảo vệ da mạnh mẽ và độ lành tính cao. Đây là sản phẩm phù hợp cho mọi loại da, đặc biệt là da nhạy cảm và da dễ kích ứng</p>
+<p data-start="308" data-end="673">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Về thành phần và công nghệ, Anthelios sử dụng hệ thống màng lọc tiên tiến giúp bảo vệ da toàn diện khỏi tia UVA và UVB. Một số phiên bản mới được bổ sung thêm chất chống oxy hóa như vitamin E và niacinamide nhằm giảm thiểu tác hại từ tia cực tím và ô nhiễm môi trường. Công nghệ độc quyền Cell Ox Shield giúp da được bảo vệ kép cả bên ngoài và bên trong tế bào da</p><p data-start="675" data-end="1061">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Về kết cấu và cảm nhận khi sử dụng, kem có dạng lỏng nhẹ, dễ tán, thấm nhanh và không để lại vệt trắng. Khi thoa lên da tạo cảm giác mỏng nhẹ như không, phù hợp với khí hậu nóng ẩm của Việt Nam. Một điểm cộng là có thể dùng làm lớp lót trang điểm, giúp lớp nền bền màu hơn. Tuy nhiên với những bạn có làn da rất khô nên dùng thêm kem dưỡng trước khi thoa vì sản phẩm có thể hơi nhẹ ẩm</p><p data-start="1063" data-end="1394">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Về ưu điểm, kem chống nắng La Roche Posay Anthelios có khả năng chống nắng cao, phổ rộng, bảo vệ tốt ngay cả khi tiếp xúc ánh nắng lâu. Sản phẩm không gây bí da, không gây mụn, và được kiểm nghiệm an toàn cho da nhạy cảm. Thương hiệu La Roche Posay vốn nổi tiếng trong giới dược mỹ phẩm, nên chất lượng và độ an toàn được đảm bảo</p><p data-start="1396" data-end="1734">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Về nhược điểm, mức giá của sản phẩm khá cao so với nhiều loại kem chống nắng khác trên thị trường. Với làn da dầu, một số người dùng có thể cảm thấy hơi bóng nhẹ sau vài giờ sử dụng. Ngoài ra, trên thị trường có nhiều phiên bản khác nhau như Invisible Fluid, Oil Control, hoặc Mineral nên cần chọn đúng loại phù hợp với loại da của mình</p><p data-start="1736" data-end="2137">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Về lời khuyên sử dụng, với khí hậu nhiệt đới ẩm của Việt Nam, người có da dầu nên chọn phiên bản Oil Control để hạn chế bóng nhờn, còn da khô có thể chọn bản Melt In Milk để có thêm độ dưỡng. Nên thoa kem chống nắng khoảng 15 đến 20 phút trước khi ra nắng và bôi lại sau mỗi 2 đến 3 tiếng nếu hoạt động ngoài trời. Khi mua cần chọn nơi uy tín như nhà thuốc hoặc cửa hàng chính hãng để tránh hàng giả</p><p data-start="2139" data-end="2421" data-is-last-node="" data-is-only-node="">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b><i>Tổng kết lại, La Roche Posay Anthelios là một trong những kem chống nắng tốt và an toàn nhất hiện nay, đáp ứng được cả tiêu chí bảo vệ, thẩm mỹ và an toàn cho da. Dù giá thành cao hơn so với nhiều sản phẩm khác nhưng chất lượng và độ tin cậy hoàn toàn xứng đáng để đầu tư cho làn da</i></b></p></div></div></div></div><div class="z-0 flex min-h-[46px] justify-start"></div><div class="mt-3 w-full empty:hidden"><div class="text-center"></div></div></div></div></article></div></div></div></div><div class="z-0 flex min-h-[46px] justify-start"></div><div class="mt-3 w-full empty:hidden"><div class="text-center"></div></div></div></div></article><article class="text-token-text-primary w-full focus:outline-none [--shadow-height:45px] has-data-writing-block:pointer-events-none has-data-writing-block:-mt-(--shadow-height) has-data-writing-block:pt-(--shadow-height) [&amp;:has([data-writing-block])&gt;*]:pointer-events-auto [content-visibility:auto] supports-[content-visibility:auto]:[contain-intrinsic-size:auto_100lvh] scroll-mt-[calc(var(--header-height)+min(200px,max(70px,20svh)))]" tabindex="-1" dir="auto" data-turn-id="request-WEB:fe57cf57-986e-48df-89fc-c957bbd24e14-1" data-testid="conversation-turn-4" data-scroll-anchor="true" data-turn="assistant"><div class="text-base my-auto mx-auto pb-10 [--thread-content-margin:--spacing(4)] thread-sm:[--thread-content-margin:--spacing(6)] thread-lg:[--thread-content-margin:--spacing(16)] px-(--thread-content-margin)"><div class="[--thread-content-max-width:40rem] thread-lg:[--thread-content-max-width:48rem] mx-auto max-w-(--thread-content-max-width) flex-1 group/turn-messages focus-visible:outline-hidden relative flex w-full min-w-0 flex-col agent-turn" tabindex="-1"><div class="z-0 flex min-h-[46px] justify-start"></div><div class="mt-3 w-full empty:hidden"><div class="text-center"></div></div></div></div></article><div aria-hidden="true" data-edge="true" class="pointer-events-none h-px w-px"></div></p>',
+'https://res.cloudinary.com/dgzgii981/image/upload/v1761509651/blogs/sunscreen-review.jpg',
+2, 1, 'PUBLISHED', 0, GETDATE()),
+
+(N'Hướng Dẫn Trang Điểm Cơ Bản Cho Người Mới', 'huong-dan-trang-diem-co-ban-cho-nguoi-moi',
+N'Bài viết hướng dẫn từng bước trang điểm cơ bản cho những người mới bắt đầu học makeup.',
+N'<p data-start="0" data-end="43">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Trang điểm giúp gương mặt trở nên tươi tắn, rạng rỡ và tự tin hơn trong giao tiếp hằng ngày. Đối với người mới bắt đầu, việc nắm vững các bước cơ bản sẽ giúp việc trang điểm trở nên dễ dàng và tự nhiên hơn. Dưới đây là hướng dẫn chi tiết từng bước</p><p data-start="296" data-end="572"><b><span style="font-size: 16px;">Bước 1 Chuẩn bị da trước khi trang điểm: </span></b><span style="font-size: 16px;">Làm sạch da bằng sữa rửa mặt phù hợp để loại bỏ bụi bẩn và dầu thừa. Sau đó dùng nước hoa hồng để cân bằng độ pH và thoa kem dưỡng ẩm để da được mềm mịn. Nếu trang điểm ban ngày, nên thoa thêm kem chống nắng để bảo vệ da khỏi tia UV</span></p>
+<p data-start="574" data-end="797"><b><span style="font-size: 16px;">Bước 2 Dùng kem lót:</span></b>&nbsp;Kem lót giúp làm mịn bề mặt da, se khít lỗ chân lông và giúp lớp nền lâu trôi hơn. Chọn loại kem lót phù hợp với loại da, ví dụ da dầu nên chọn kem lót kiềm dầu, còn da khô nên chọn loại có độ ẩm cao</p>
+<p data-start="799" data-end="1034"><b><span style="font-size: 16px;">Bước 3 Đánh nền:</span></b>&nbsp;Sử dụng kem nền hoặc cushion để tạo lớp nền đều màu. Nên chọn tông màu gần với màu da thật của mình. Có thể dùng cọ hoặc mút trang điểm để tán đều khắp mặt, đặc biệt là vùng mũi và cằm để tránh bị mốc hoặc loang màu</p>
+<p data-start="1036" data-end="1213"><b><span style="font-size: 16px;">Bước 4 Che khuyết điểm: </span></b>Dùng kem che khuyết điểm cho vùng quầng thâm mắt, mụn hoặc vết thâm. Nên chấm nhẹ và tán đều bằng đầu ngón tay hoặc cọ nhỏ để lớp che phủ tự nhiên hơn</p>
+<p data-start="1215" data-end="1386"><b><span style="font-size: 16px;">Bước 5 Phủ phấn: </span></b>Dùng phấn phủ để cố định lớp nền và giảm độ bóng nhờn. Có thể dùng phấn nén hoặc phấn bột tùy theo sở thích. Phủ một lớp mỏng để giữ vẻ tự nhiên cho da</p>
+<p data-start="1388" data-end="1560"><b><span style="font-size: 16px;">Bước 6 Kẻ chân mày: </span></b>Chân mày giúp định hình khuôn mặt. Dùng chì hoặc bột kẻ mày để tô theo dáng tự nhiên, không nên vẽ quá đậm. Cuối cùng chải lại bằng cọ để màu đều hơn</p><p data-start="1562" data-end="1788"><b><span style="font-size: 16px;">Bước 7 Trang điểm mắt: </span></b>Dùng màu mắt nhẹ nhàng như nâu, cam đất hoặc hồng nhạt cho người mới bắt đầu. Kẻ viền mắt bằng chì hoặc eyeliner sát chân mi để tạo chiều sâu cho mắt. Cuối cùng chuốt mascara để làm mi cong và dày hơn</p>
+<p data-start="1790" data-end="1961"><b><span style="font-size: 16px;">Bước 8 Má hồng: </span></b>Dùng cọ tán nhẹ má hồng lên gò má theo hướng từ trong ra ngoài để gương mặt trông tươi tắn. Màu má hồng phổ biến cho người mới là hồng đào hoặc cam nhạt</p>
+<p data-start="1963" data-end="2134"><b>Bước 9 Son môi: </b>Chọn màu son phù hợp với tông da và phong cách, ví dụ son hồng nhạt, đỏ cam hoặc nude tự nhiên. Trước khi đánh son nên dưỡng môi để tránh khô và nứt môi</p>
+<p data-start="2136" data-end="2313"><b><span style="font-size: 16px;">Bước 10 Hoàn thiện: </span></b>Kiểm tra lại toàn bộ gương mặt để chỉnh sửa nếu có vùng nào chưa đều. Có thể dùng xịt khóa makeup để giúp lớp trang điểm bền hơn và giữ được suốt ngày dài</p><p data-start="2136" data-end="2313">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b><span style="font-size: 16px;">Kết luận</span></b></p><p data-start="2315" data-end="2555" data-is-last-node="" data-is-only-node="">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Trang điểm cơ bản không quá khó, chỉ cần luyện tập vài lần sẽ quen tay và biết cách chọn sản phẩm phù hợp với làn da của mình. Quan trọng nhất là giữ da sạch và dưỡng ẩm đầy đủ mỗi ngày để lớp trang điểm luôn mịn màng và tự nhiên</p>',
+'https://res.cloudinary.com/dgzgii981/image/upload/v1761509673/blogs/makeup-tutorial.jpg',
+3, 1, 'PUBLISHED', 0, GETDATE());
+GO
+
+-- Add tags to additional posts
+INSERT INTO dbo.blog_post_tags (post_id, tag_id) VALUES 
+(2, 2), (2, 3), (2, 8), -- Review post
+(3, 2), (3, 4), (3, 5); -- Tutorial post
+GO
+
+-- Create indexes for better performance
+CREATE INDEX IX_blog_posts_status ON dbo.blog_posts(status);
+CREATE INDEX IX_blog_posts_published_at ON dbo.blog_posts(published_at);
+CREATE INDEX IX_blog_posts_category_id ON dbo.blog_posts(category_id);
+CREATE INDEX IX_blog_posts_slug ON dbo.blog_posts(slug);
+CREATE INDEX IX_blog_comments_post_id ON dbo.blog_comments(post_id);
+CREATE INDEX IX_blog_views_post_id ON dbo.blog_views(post_id);
+GO
+

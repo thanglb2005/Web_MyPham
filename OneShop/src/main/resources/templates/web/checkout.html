@@ -20,6 +20,10 @@
     <link rel="stylesheet" href="vendor/bootstrap/bootstrap.min.css" />
     <link rel="stylesheet" href="css/main.css" />
     <link rel="stylesheet" href="css/checkout.css" />
+    
+    <!-- Goong Maps CSS & JS -->
+    <link href="https://cdn.jsdelivr.net/npm/@goongmaps/goong-js@1.0.9/dist/goong-js.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/@goongmaps/goong-js@1.0.9/dist/goong-js.js"></script>
 </head>
 <body>
 
@@ -97,7 +101,25 @@
 
                                     <div class="form-group">
                                         <label for="address" style="font-weight: 500; color: #333; margin-bottom: 8px; display: block;">Địa chỉ cụ thể <span style="color: red;">*</span></label>
-                                        <input type="text" id="address" name="address" class="form-control" placeholder="Số nhà, tên đường..." required="required" />
+                                        <div style="position: relative;">
+                                            <input type="text" id="address" name="address" class="form-control" placeholder="Số nhà, tên đường..." required="required" style="padding-right: 50px;" />
+                                            <button type="button" id="openMapBtn" style="
+                                                position: absolute;
+                                                right: 8px;
+                                                top: 50%;
+                                                transform: translateY(-50%);
+                                                background: none;
+                                                border: none;
+                                                color: #33a3cc;
+                                                font-size: 18px;
+                                                cursor: pointer;
+                                                padding: 5px;
+                                                border-radius: 4px;
+                                                transition: all 0.3s ease;
+                                            " onmouseover="this.style.background='#f0f7fa'; this.style.color='#2a8bb8';" onmouseout="this.style.background='none'; this.style.color='#33a3cc';" title="Chọn vị trí trên bản đồ">
+                                                <i class="fas fa-map-marker-alt"></i>
+                                            </button>
+                                        </div>
                                         <small style="color: #666; font-size: 13px; margin-top: 5px; display: block;">Ví dụ: Số 123, Đường ABC</small>
                                     </div>
 
@@ -390,6 +412,163 @@
             </div>
         </div>
     </section>
+    
+    <!-- Map Modal for Address Selection -->
+    <div id="mapModal" style="
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+    ">
+        <div style="
+            background: white;
+            width: 90%;
+            max-width: 1000px;
+            height: 80%;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        ">
+            <!-- Modal Header -->
+            <div style="
+                padding: 20px 24px;
+                border-bottom: 1px solid #e0e0e0;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                background: #f8f9fa;
+            ">
+                <h4 style="margin: 0; color: #333; font-size: 18px; font-weight: 600;">
+                    <i class="fas fa-map-marker-alt" style="color: #33a3cc; margin-right: 8px;"></i>
+                    Chọn vị trí giao hàng
+                </h4>
+                <button type="button" id="closeMapModal" style="
+                    background: none;
+                    border: none;
+                    font-size: 24px;
+                    color: #999;
+                    cursor: pointer;
+                    padding: 5px;
+                    border-radius: 4px;
+                    transition: all 0.3s ease;
+                " onmouseover="this.style.background='#f0f0f0'; this.style.color='#666';" onmouseout="this.style.background='none'; this.style.color='#999';">
+                    ×
+                </button>
+            </div>
+            
+            <!-- Modal Body -->
+            <div style="flex: 1; display: flex; flex-direction: column; padding: 20px;">
+                <!-- Search Bar -->
+                <div style="margin-bottom: 15px;">
+                    <div style="position: relative;">
+                        <input type="text" id="mapSearchInput" placeholder="Tìm kiếm địa điểm..." style="
+                            width: 100%;
+                            padding: 12px 45px 12px 15px;
+                            border: 2px solid #e0e0e0;
+                            border-radius: 8px;
+                            font-size: 14px;
+                            outline: none;
+                            transition: border-color 0.3s ease;
+                        " onfocus="this.style.borderColor='#33a3cc';" onblur="this.style.borderColor='#e0e0e0';">
+                        <button type="button" onclick="searchPlace()" style="
+                            position: absolute;
+                            right: 8px;
+                            top: 50%;
+                            transform: translateY(-50%);
+                            background: #33a3cc;
+                            color: white;
+                            border: none;
+                            padding: 8px 12px;
+                            border-radius: 6px;
+                            cursor: pointer;
+                            font-size: 14px;
+                            transition: background 0.3s ease;
+                        " onmouseover="this.style.background='#2a8bb8';" onmouseout="this.style.background='#33a3cc';">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Map Container -->
+                <div style="flex: 1; border: 2px solid #e0e0e0; border-radius: 8px; overflow: hidden;">
+                    <div id="checkoutMap" style="width: 100%; height: 100%;"></div>
+                </div>
+                
+                <!-- Address Info -->
+                <div style="margin-top: 15px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+                    <div style="display: flex; align-items: center; margin-bottom: 10px;">
+                        <i class="fas fa-info-circle" style="color: #33a3cc; margin-right: 8px;"></i>
+                        <span style="font-weight: 600; color: #333;">Địa chỉ đã chọn:</span>
+                    </div>
+                    <input type="text" id="selectedAddress" readonly style="
+                        width: 100%;
+                        padding: 10px;
+                        border: 1px solid #ddd;
+                        border-radius: 6px;
+                        background: white;
+                        font-size: 14px;
+                        color: #333;
+                    ">
+                    <div style="margin-top: 10px; display: flex; gap: 10px;">
+                        <input type="hidden" id="latitude">
+                        <input type="hidden" id="longitude">
+                        <input type="text" id="specificAddress" placeholder="Số nhà, tên đường cụ thể..." style="
+                            flex: 1;
+                            padding: 10px;
+                            border: 1px solid #ddd;
+                            border-radius: 6px;
+                            font-size: 14px;
+                        ">
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Modal Footer -->
+            <div style="
+                padding: 20px 24px;
+                border-top: 1px solid #e0e0e0;
+                display: flex;
+                justify-content: flex-end;
+                gap: 12px;
+                background: #f8f9fa;
+            ">
+                <button type="button" id="cancelLocationBtn" style="
+                    padding: 10px 20px;
+                    border: 1px solid #ddd;
+                    background: white;
+                    color: #666;
+                    border-radius: 6px;
+                    cursor: pointer;
+                    font-size: 14px;
+                    transition: all 0.3s ease;
+                " onmouseover="this.style.background='#f5f5f5';" onmouseout="this.style.background='white';">
+                    Hủy
+                </button>
+                <button type="button" id="confirmLocationBtn" style="
+                    padding: 10px 20px;
+                    border: none;
+                    background: #33a3cc;
+                    color: white;
+                    border-radius: 6px;
+                    cursor: pointer;
+                    font-size: 14px;
+                    font-weight: 600;
+                    transition: all 0.3s ease;
+                " onmouseover="this.style.background='#2a8bb8';" onmouseout="this.style.background='#33a3cc';">
+                    <i class="fas fa-check" style="margin-right: 5px;"></i>
+                    Xác nhận
+                </button>
+            </div>
+        </div>
+    </div>
     
     <!--************************************
 			Footer Start
@@ -1363,6 +1542,240 @@
             .modal-body { padding: 16px 18px; max-height: 60vh; overflow: auto; }
             .modal-actions { padding: 12px 18px; border-top: 1px solid #eee; text-align: right; }
         </style>
+        
+        <!-- Goong Maps JavaScript -->
+        <script>
+            // Goong Maps Configuration
+            // API keys từ shoe_shop_web-main (tạm thời)
+            goongjs.accessToken = '4pXmjW7ligFfpjNVlkIx7pvbzKHU3KCkhFRZKRR2'; // Map tiles key
+            const GOONG_API_KEY = 'xaYvtvHWHGQswPol8J4GZX1LFRcC5pCsJmCfOcOU'; // API key for geocoding (không dùng nữa vì đã chuyển sang backend)
+            
+            let map;
+            let marker;
+            
+            // Initialize map when modal opens
+            function initMap() {
+                console.log('🗺️ Initializing Goong Map...');
+                
+                // Get selected province and commune
+                const selectedProvince = document.getElementById('province').value;
+                const selectedCommune = document.getElementById('commune').value;
+                
+                // Default center (Ho Chi Minh City)
+                let center = [106.6297, 10.8231]; // [lng, lat]
+                
+                // If province and commune are selected, try to geocode
+                if (selectedProvince && selectedCommune) {
+                    const provinceName = document.getElementById('province').options[document.getElementById('province').selectedIndex].textContent;
+                    const communeName = document.getElementById('commune').options[document.getElementById('commune').selectedIndex].textContent;
+                    const address = communeName + ', ' + provinceName + ', Vietnam';
+                    geocodeAddress(address, (result) => {
+                        if (result) {
+                            center = [result.lng, result.lat];
+                        }
+                        createMap(center);
+                    });
+                } else {
+                    createMap(center);
+                }
+            }
+            
+            function createMap(center) {
+                try {
+                    // Initialize map
+                    map = new goongjs.Map({
+                        container: 'checkoutMap',
+                        style: 'https://tiles.goong.io/assets/goong_map_web.json',
+                        center: center,
+                        zoom: 15,
+                        attributionControl: false
+                    });
+                    
+                    // Create marker
+                    marker = new goongjs.Marker({
+                        draggable: true,
+                        color: '#33a3cc'
+                    });
+                    
+                    marker.setLngLat(center).addTo(map);
+                    
+                    // Handle map click
+                    map.on('click', (e) => {
+                        const lng = e.lngLat.lng;
+                        const lat = e.lngLat.lat;
+                        updateMarkerPosition([lng, lat]);
+                        reverseGeocode(lat, lng);
+                    });
+                    
+                    // Handle marker drag
+                    marker.on('dragend', () => {
+                        const lngLat = marker.getLngLat();
+                        reverseGeocode(lngLat.lat, lngLat.lng);
+                    });
+                    
+                    // Initial reverse geocode
+                    reverseGeocode(center[1], center[0]);
+                    
+                    console.log('✅ Goong Map initialized successfully!');
+                    
+                } catch (error) {
+                    console.error('❌ Error initializing Goong Map:', error);
+                    alert('Không thể khởi tạo bản đồ. Vui lòng thử lại sau.');
+                }
+            }
+            
+            function updateMarkerPosition(position) {
+                marker.setLngLat(position);
+                map.setCenter(position);
+            }
+            
+            function reverseGeocode(lat, lng) {
+                console.log('📍 Reverse geocoding:', lat, lng);
+                
+                fetch(`/api/goong/reverse-geocode?lat=${lat}&lng=${lng}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log('Geocoding data:', data);
+                        if (data.success) {
+                            updateAddressInfo(data.formatted_address, lat, lng);
+                        } else {
+                            console.error('Reverse geocoding error:', data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Geocoding error:', error);
+                    });
+            }
+            
+            function updateAddressInfo(address, lat, lng) {
+                document.getElementById('selectedAddress').value = address;
+                document.getElementById('latitude').value = lat;
+                document.getElementById('longitude').value = lng;
+            }
+            
+            function geocodeAddress(address, callback) {
+                fetch(`/api/goong/geocode?address=${encodeURIComponent(address)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            callback({ lat: data.lat, lng: data.lng });
+                        } else {
+                            console.error('Geocoding error:', data.message);
+                            callback(null);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Geocoding error:', error);
+                        callback(null);
+                    });
+            }
+            
+            // Search functionality
+            function searchPlace() {
+                const query = document.getElementById('mapSearchInput').value;
+                if (!query) return;
+                
+                console.log('🔍 Searching for:', query);
+                
+                fetch(`/api/goong/search-places?input=${encodeURIComponent(query)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success && data.predictions && data.predictions.length > 0) {
+                            getPlaceDetail(data.predictions[0].place_id);
+                        } else {
+                            alert('Không tìm thấy địa điểm!');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Search error:', error);
+                        alert('Lỗi tìm kiếm địa điểm!');
+                    });
+            }
+            
+            function getPlaceDetail(placeId) {
+                fetch(`/api/goong/place-detail?placeId=${placeId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            const position = [data.lng, data.lat];
+                            
+                            updateMarkerPosition(position);
+                            updateAddressInfo(data.formatted_address, data.lat, data.lng);
+                            map.flyTo({
+                                center: position,
+                                zoom: 16
+                            });
+                        } else {
+                            console.error('Place detail error:', data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Place detail error:', error);
+                    });
+            }
+            
+            // Modal event handlers
+            document.getElementById('openMapBtn').addEventListener('click', () => {
+                document.getElementById('mapModal').style.display = 'flex';
+                // Initialize map after a short delay to ensure modal is visible
+                setTimeout(() => {
+                    if (typeof goongjs !== 'undefined') {
+                        initMap();
+                    } else {
+                        alert('Goong Maps API chưa được tải. Vui lòng thử lại sau.');
+                    }
+                }, 100);
+            });
+            
+            document.getElementById('closeMapModal').addEventListener('click', () => {
+                document.getElementById('mapModal').style.display = 'none';
+            });
+            
+            document.getElementById('cancelLocationBtn').addEventListener('click', () => {
+                document.getElementById('mapModal').style.display = 'none';
+            });
+            
+            document.getElementById('confirmLocationBtn').addEventListener('click', () => {
+                const selectedAddress = document.getElementById('selectedAddress').value;
+                const specificAddress = document.getElementById('specificAddress').value;
+                const lat = document.getElementById('latitude').value;
+                const lng = document.getElementById('longitude').value;
+                
+                if (selectedAddress) {
+                    // Combine specific address with selected address
+                    let finalAddress = selectedAddress;
+                    if (specificAddress.trim()) {
+                        finalAddress = specificAddress.trim() + ', ' + selectedAddress;
+                    }
+                    
+                    // Update the main address input
+                    document.getElementById('address').value = finalAddress;
+                    
+                    // Close modal
+                    document.getElementById('mapModal').style.display = 'none';
+                    
+                    // Show success message
+                    alert('Đã cập nhật địa chỉ thành công!');
+                } else {
+                    alert('Vui lòng chọn một vị trí trên bản đồ.');
+                }
+            });
+            
+            // Search input event
+            document.getElementById('mapSearchInput').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    searchPlace();
+                }
+            });
+            
+            // Close modal when clicking outside
+            document.getElementById('mapModal').addEventListener('click', (e) => {
+                if (e.target.id === 'mapModal') {
+                    document.getElementById('mapModal').style.display = 'none';
+                }
+            });
+        </script>
     </body>
 
 </html>

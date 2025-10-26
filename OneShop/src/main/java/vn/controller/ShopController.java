@@ -41,6 +41,9 @@ public class ShopController {
     @Autowired
     private ShopService shopService;
     
+    @Autowired
+    private vn.service.BrandService brandService;
+    
     private void addCartCountToModel(HttpSession session, Model model) {
         User user = (User) session.getAttribute("user");
         if (user != null) {
@@ -58,6 +61,7 @@ public class ShopController {
                            @RequestParam(value = "page") Optional<Integer> page,
                            @RequestParam(value = "size") Optional<Integer> size,
                            @RequestParam(value = "categoryId") Optional<Long> categoryId,
+                           @RequestParam(value = "brandId") Optional<Long> brandId,
                            @RequestParam(value = "sort", required = false) Optional<String> sort,
                            @RequestParam(value = "minPrice", required = false) Optional<Double> minPrice,
                            @RequestParam(value = "maxPrice", required = false) Optional<Double> maxPrice,
@@ -87,6 +91,16 @@ public class ShopController {
             model.addAttribute("selectedCategoryId", selectedCategoryId);
         } else {
             model.addAttribute("selectedCategoryId", null);
+        }
+
+        // Apply brand filtering if provided
+        if (isActive && brandId.isPresent()) {
+            filteredProducts = filteredProducts.stream()
+                    .filter(p -> p.getBrand() != null && p.getBrand().getBrandId().equals(brandId.get()))
+                    .collect(Collectors.toList());
+            model.addAttribute("selectedBrandId", brandId.get());
+        } else {
+            model.addAttribute("selectedBrandId", null);
         }
 
         // Apply price filtering if provided
@@ -146,6 +160,7 @@ public class ShopController {
     public String shop(Model model, Pageable pageable, @RequestParam("page") Optional<Integer> page,
             @RequestParam("size") Optional<Integer> size, 
             @RequestParam(value = "shopId", required = false) Long shopId,
+            @RequestParam(value = "brandId", required = false) Long brandId,
             @RequestParam(value = "sort", required = false) Optional<String> sort,
             @RequestParam(value = "minPrice", required = false) Optional<Double> minPrice,
             @RequestParam(value = "maxPrice", required = false) Optional<Double> maxPrice,
@@ -171,6 +186,13 @@ public class ShopController {
                     .filter(p -> Boolean.TRUE.equals(p.getStatus()))
                     .collect(Collectors.toList());
             model.addAttribute("selectedShopId", null);
+        }
+
+        // Apply brand filtering if provided
+        if (brandId != null) {
+            allProducts = allProducts.stream()
+                    .filter(p -> p.getBrand() != null && p.getBrand().getBrandId().equals(brandId))
+                    .collect(Collectors.toList());
         }
 
         // Apply price filtering if provided
@@ -215,6 +237,7 @@ public class ShopController {
             model.addAttribute("shop", null);
         }
         model.addAttribute("selectedCategoryId", null);
+        model.addAttribute("selectedBrandId", brandId);
         
         // Add cart count for header
         addCartCountToModel(session, model);
@@ -469,6 +492,36 @@ public class ShopController {
                 .filter(shop -> shop.getStatus() == Shop.ShopStatus.ACTIVE)
                 .collect(Collectors.toList());
         model.addAttribute("shopList", activeShops);
+        
+        // Add brand list for filtering with product count
+        List<vn.entity.Brand> allBrands = brandService.findAll().stream()
+                .filter(brand -> brand.getStatus() == true)
+                .collect(Collectors.toList());
+        
+        // Create brand list with product count
+        List<java.util.Map<String, Object>> brandList = new java.util.ArrayList<>();
+        for (vn.entity.Brand brand : allBrands) {
+            long productCount = productService.findAll().stream()
+                    .filter(p -> p.getBrand() != null && p.getBrand().getBrandId().equals(brand.getBrandId()) && Boolean.TRUE.equals(p.getStatus()))
+                    .count();
+            
+            if (productCount > 0) { // Only show brands that have products
+                java.util.Map<String, Object> brandInfo = new java.util.HashMap<>();
+                brandInfo.put("brandId", brand.getBrandId());
+                brandInfo.put("brandName", brand.getBrandName());
+                brandInfo.put("productCount", (int) productCount);
+                brandList.add(brandInfo);
+            }
+        }
+        
+        // Sort brand list alphabetically by brand name
+        brandList.sort((b1, b2) -> {
+            String name1 = (String) b1.get("brandName");
+            String name2 = (String) b2.get("brandName");
+            return name1.compareToIgnoreCase(name2);
+        });
+        
+        model.addAttribute("brandList", brandList);
 
         if (scopedProducts != null) {
             java.util.Map<Long, Object[]> stats = new java.util.LinkedHashMap<>();

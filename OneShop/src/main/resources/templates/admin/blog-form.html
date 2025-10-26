@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${post.postId != null ? 'Sửa bài viết' : 'Viết bài mới'}">Viết bài mới - Admin</title>
+    <link rel="stylesheet" href="/assets/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="/assets/css/atlantis.min.css" />
+    <link rel="stylesheet" href="/assets/css/atlantis.css" />
+    <link rel="stylesheet" href="/assets/css/demo.css" />
+    <link rel="stylesheet" href="/assets/css/fonts.min.css" />
+    <link rel="stylesheet" href="/fonts/fontawesome/fontawesome.min.css" />
+    <!-- Summernote (Bootstrap 4) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/summernote/0.8.20/summernote-bs4.min.css" integrity="sha512-6n3oA2ACrhS0PZiyR4x1d8q4mZ2YqQwiL+7st+f1Z4oG7NbhjH5zK3k5z2/0r3Gq0gF0L6CU2q2+2s3wXlV4yQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    
+    <style>
+        /* Keep layout identical to other admin forms */
+        .sidebar { position: fixed !important; top: 60px; left: 0; bottom: 0; z-index: 1028; width: 250px; background: #fff !important; border-right: 1px solid #e9ecef; margin: 0; padding: 0; }
+        .main-panel { margin-top: 60px !important; margin-left: 250px !important; padding: 0 !important; margin-right: 0 !important; }
+        .content { padding: 0 !important; margin: 0 !important; position: relative !important; top: 0 !important; }
+        .page-inner { padding: 20px; margin: 0; }
+        .page-header { display: none !important; }
+        .page-title { color: #333; font-size: 1.8rem; margin: 0; font-weight: 600; }
+        .page-subtitle { color: #6c757d; font-size: 0.9rem; }
+        
+        /* Navbar collapse styles */
+        .sidebar_minimize .sidebar .sidebar-wrapper .nav-item.submenu .nav-collapse,
+        .sidebar_minimize .sidebar .sidebar-wrapper .nav-item.active .nav-collapse {
+            display: none;
+        }
+        
+        .sidebar_minimize .sidebar:hover .sidebar-wrapper .nav-item.submenu .nav-collapse,
+        .sidebar_minimize .sidebar:hover .sidebar-wrapper .nav-item.active .nav-collapse {
+            display: block !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+        }
+        
+        .form-container {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 8px;
+        }
+        
+        .form-control, .form-select {
+            border: 1px solid #ced4da;
+            border-radius: 6px;
+            padding: 10px 12px;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: #80bdff;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .preview-image {
+            max-width: 200px;
+            max-height: 150px;
+            border-radius: 6px;
+            margin-top: 10px;
+        }
+        
+        .tag-checkbox {
+            margin-right: 15px;
+            margin-bottom: 10px;
+        }
+        
+        .tag-checkbox input[type="checkbox"] {
+            margin-right: 5px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Admin Header -->
+    <th:block th:replace="~{admin/fragments/header :: header}"></th:block>
+    
+    <!-- Admin Navbar -->
+    <th:block th:replace="~{admin/fragments/navbar :: navbar}"></th:block>
+    
+    <div class="main-panel">
+        <div class="content">
+            <!-- Page Header -->
+            <div class="page-header">
+                <h4 class="page-title" th:text="${post.postId != null ? 'Sửa bài viết' : 'Viết bài mới'}">Viết bài mới</h4>
+                <ul class="breadcrumbs">
+                    <li class="nav-home">
+                        <a href="/admin/home">
+                            <i class="flaticon-home"></i>
+                        </a>
+                    </li>
+                    <li class="separator">
+                        <i class="flaticon-right-arrow"></i>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/admin/blog">Blog Management</a>
+                    </li>
+                    <li class="separator">
+                        <i class="flaticon-right-arrow"></i>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" th:text="${post.postId != null ? 'Sửa bài viết' : 'Viết bài mới'}">Viết bài mới</a>
+                    </li>
+                </ul>
+            </div>
+            
+            <div class="page-inner">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <h3>
+                            <i class="flaticon-edit"></i> 
+                            <span th:text="${post.postId != null ? 'Sửa bài viết' : 'Viết bài mới'}">Viết bài mới</span>
+                        </h3>
+                    </div>
+                    <div class="col-md-6 text-end">
+                        <a href="/admin/blog" class="btn btn-outline-secondary">
+                            <i class="flaticon-arrow-left"></i> Quay lại
+                        </a>
+                    </div>
+                </div>
+    
+                <!-- Main Content -->
+        <!-- Flash Messages -->
+        <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle"></i> <span th:text="${success}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        
+        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-circle"></i> <span th:text="${error}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        
+        <!-- Blog Form -->
+        <div class="form-container">
+            <form th:action="${post.postId != null ? '/admin/blog/edit/' + post.postId : '/admin/blog/create'}" 
+                  method="post" enctype="multipart/form-data">
+                
+                <div class="row">
+                    <!-- Left Column -->
+                    <div class="col-lg-8">
+                        <!-- Title -->
+                        <div class="form-group">
+                            <label for="title" class="form-label">Tiêu đề bài viết <span class="text-danger">*</span></label>
+                            <input type="text" id="title" name="title" class="form-control" 
+                                   th:value="${post.title}" required>
+                        </div>
+                        
+                        <!-- Slug -->
+                        <div class="form-group">
+                            <label for="slug" class="form-label">URL Slug <span class="text-danger">*</span></label>
+                            <input type="text" id="slug" name="slug" class="form-control" 
+                                   th:value="${post.slug}" required>
+                            <small class="form-text text-muted">URL sẽ là: /blogs/[slug]</small>
+                        </div>
+                        
+                        <!-- Excerpt -->
+                        <div class="form-group">
+                            <label for="excerpt" class="form-label">Mô tả ngắn</label>
+                            <textarea id="excerpt" name="excerpt" class="form-control" rows="3" 
+                                      th:text="${post.excerpt}"></textarea>
+                        </div>
+                        
+                        <!-- Content -->
+                        <div class="form-group">
+                            <label for="content" class="form-label">Nội dung bài viết <span class="text-danger">*</span></label>
+                            <!-- Fallback inline editor (ẩn mặc định, chỉ hiện khi không tải được Summernote) -->
+                            <div id="contentEditorWrapper" style="display:none;">
+                                <div class="btn-toolbar mb-2" role="toolbar" aria-label="Editor toolbar">
+                                    <div class="btn-group me-2" role="group" aria-label="Format group">
+                                        <button type="button" class="btn btn-sm btn-light" id="btnBold"><strong>B</strong></button>
+                                        <button type="button" class="btn btn-sm btn-light" id="btnItalic"><strong>I</strong></button>
+                                    </div>
+                                    <div class="btn-group me-2" role="group" aria-label="Font size group">
+                                        <select id="fontSizeSelect" class="form-select form-select-sm" style="width:auto;">
+                                            <option value="">Size</option>
+                                            <option value="12px">12px</option>
+                                            <option value="14px">14px</option>
+                                            <option value="16px">16px</option>
+                                            <option value="18px">18px</option>
+                                            <option value="20px">20px</option>
+                                            <option value="24px">24px</option>
+                                            <option value="28px">28px</option>
+                                            <option value="32px">32px</option>
+                                        </select>
+                                    </div>
+                                    <div class="btn-group me-2" role="group" aria-label="Indent group">
+                                        <button type="button" class="btn btn-sm btn-light" id="btnOutdent" title="Thụt trái"><i class="fas fa-angle-left"></i></button>
+                                        <button type="button" class="btn btn-sm btn-light" id="btnIndent" title="Thụt phải"><i class="fas fa-angle-right"></i></button>
+                                    </div>
+                                    <div class="btn-group" role="group" aria-label="Insert group">
+                                        <label class="btn btn-sm btn-light mb-0" for="editorImageInput"><i class="fas fa-image"></i></label>
+                                        <input type="file" id="editorImageInput" accept="image/*" style="display:none" />
+                                    </div>
+                                </div>
+                                <div id="contentEditor" class="form-control" style="min-height:420px; white-space: pre-wrap;" contenteditable="true"></div>
+                            </div>
+                            <textarea id="content" name="content" class="form-control" rows="15" 
+                                      th:text="${post.content}" required></textarea>
+                        </div>
+                        
+                        <!-- Featured Image -->
+                        <div class="form-group">
+                            <label class="form-label">Ảnh bìa</label>
+                            <div class="row g-2">
+                                <div class="col-md-8">
+                                    <input type="text" id="featuredImage" name="featuredImage" class="form-control" 
+                                           th:value="${post.featuredImage}" placeholder="/upload/images/blog/example.jpg">
+                                    <small class="form-text text-muted">Đường dẫn ảnh hoặc URL</small>
+                                </div>
+                                <div class="col-md-4">
+                                    <input type="file" class="form-control" name="featuredImageFile" accept="image/*">
+                                    <small class="form-text text-muted">Tải ảnh từ máy (tối đa 5MB)</small>
+                                </div>
+                            </div>
+                            <div class="mt-2">
+                                <img id="featuredPreview"
+                                     class="preview-image"
+                                     th:src="${post.featuredImage != null ? (post.featuredImage.startsWith('http') ? post.featuredImage : (post.featuredImage.startsWith('/') ? post.featuredImage : '/upload/images/blog/' + post.featuredImage)) : ''}"
+                                     th:style="${post.featuredImage == null} ? 'display:none' : ''"
+                                     th:alt="${post.title}">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Right Column -->
+                    <div class="col-lg-4">
+                        <!-- Publish Settings -->
+                        <div class="card mb-3">
+                            <div class="card-header">
+                                <h6 class="mb-0"><i class="fas fa-cog"></i> Cài đặt xuất bản</h6>
+                            </div>
+                            <div class="card-body">
+                                <!-- Status -->
+                                <div class="form-group">
+                                    <label for="status" class="form-label">Trạng thái</label>
+                                    <select id="status" name="status" class="form-select">
+                                        <option value="DRAFT" th:selected="${post.status?.name() == 'DRAFT'}">Bản nháp</option>
+                                        <option value="PUBLISHED" th:selected="${post.status?.name() == 'PUBLISHED'}">Đã xuất bản</option>
+                                        <option value="ARCHIVED" th:selected="${post.status?.name() == 'ARCHIVED'}">Lưu trữ</option>
+                                    </select>
+                                </div>
+                                
+                                <!-- Featured -->
+                                <div class="form-group">
+                                    <div class="form-check">
+                                        <input type="checkbox" id="isFeatured" name="isFeatured" class="form-check-input" 
+                                               th:checked="${post.isFeatured}">
+                                        <label for="isFeatured" class="form-check-label">
+                                            <i class="fas fa-star"></i> Bài viết nổi bật
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Category -->
+                        <div class="card mb-3">
+                            <div class="card-header">
+                                <h6 class="mb-0"><i class="fas fa-folder"></i> Danh mục</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="form-group">
+                                    <label for="category" class="form-label">Chọn danh mục</label>
+                                    <select id="category" name="category" class="form-select">
+                                        <option value="">-- Chọn danh mục --</option>
+                                        <option th:each="category : ${categories}" 
+                                                th:value="${category.categoryId}" 
+                                                th:text="${category.categoryName}"
+                                                th:selected="${post.category?.categoryId == category.categoryId}">
+                                        </option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Tags -->
+                        <div class="card mb-3">
+                            <div class="card-header">
+                                <h6 class="mb-0"><i class="fas fa-tags"></i> Tags</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="form-group">
+                                    <div th:each="tag : ${tags}" class="tag-checkbox">
+                                        <input type="checkbox" th:id="'tag_' + ${tag.tagId}" 
+                                               th:name="tagIds" th:value="${tag.tagId}"
+                                               th:checked="${post.tags != null and post.tags.contains(tag)}">
+                                        <label th:for="'tag_' + ${tag.tagId}" th:text="${tag.tagName}">Tag</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- SEO Settings -->
+                        <div class="card mb-3">
+                            <div class="card-header">
+                                <h6 class="mb-0"><i class="fas fa-search"></i> SEO</h6>
+                            </div>
+                            <div class="card-body">
+                                <!-- Meta Title -->
+                                <div class="form-group">
+                                    <label for="metaTitle" class="form-label">Meta Title</label>
+                                    <input type="text" id="metaTitle" name="metaTitle" class="form-control" 
+                                           th:value="${post.metaTitle}">
+                                </div>
+                                
+                                <!-- Meta Description -->
+                                <div class="form-group">
+                                    <label for="metaDescription" class="form-label">Meta Description</label>
+                                    <textarea id="metaDescription" name="metaDescription" class="form-control" rows="3" 
+                                              th:text="${post.metaDescription}"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Action Buttons -->
+                <div class="row">
+                    <div class="col-12">
+                        <div class="btn-group">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> 
+                                <span th:text="${post.postId != null ? 'Cập nhật' : 'Tạo bài viết'}">Tạo bài viết</span>
+                            </button>
+                            <a href="/admin/blog" class="btn btn-outline-secondary">
+                                <i class="fas fa-times"></i> Hủy
+                            </a>
+                            <button type="button" class="btn btn-outline-info" onclick="previewPost()">
+                                <i class="fas fa-eye"></i> Xem trước
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Scripts -->
+    <script src="/assets/js/core/jquery.3.2.1.min.js"></script>
+    <script src="/assets/js/core/popper.min.js"></script>
+    <script src="/assets/js/core/bootstrap.min.js"></script>
+    <script src="/assets/js/atlantis.min.js"></script>
+    <!-- Summernote (Bootstrap 4) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/summernote/0.8.20/summernote-bs4.min.js" integrity="sha512-xrjHEk5aokP72p8guz2ftVCN+0YF9C2R4QJ04MbmLEuVTsYtcvzaGXzF0c/J0xS/8cLK+0kqH6q3GkLCyQy5xA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    
+    <script th:inline="javascript">
+        $(document).ready(function() {
+            // Auto-dismiss alerts
+            setTimeout(function() {
+                $('.alert').fadeOut('slow');
+            }, 5000);
+            
+            // Initialize tooltips
+            $('[data-toggle="tooltip"]').tooltip();
+            
+            // Initialize popovers
+            $('[data-toggle="popover"]').popover();
+
+            // Summernote init (chỉ hiển thị 3 nút: B, I, Ảnh). Nếu CDN lỗi → dùng fallback editor.
+            try {
+                $('#content').summernote({
+                    placeholder: 'Nhập nội dung bài viết...'
+                    , height: 420
+                    , dialogsInBody: true
+                    , fontSizes: ['12','14','16','18','20','24','28','32']
+                    , toolbar: [
+                        ['font', ['bold', 'italic', 'fontsize']]
+                        , ['custom', ['outdentBtn','indentBtn']]
+                        , ['insert', ['picture']]
+                    ]
+                    , buttons: {
+                        indentBtn: function (context) {
+                            var ui = $.summernote.ui;
+                            return ui.button({
+                                contents: '<i class="fas fa-angle-right"></i>',
+                                tooltip: 'Thụt phải',
+                                click: function () { document.execCommand('indent'); }
+                            }).render();
+                        },
+                        outdentBtn: function (context) {
+                            var ui = $.summernote.ui;
+                            return ui.button({
+                                contents: '<i class="fas fa-angle-left"></i>',
+                                tooltip: 'Thụt trái',
+                                click: function () { document.execCommand('outdent'); }
+                            }).render();
+                        }
+                    }
+                    , callbacks: {
+                        onImageUpload: function(files) {
+                            if (!files || !files.length) return;
+                            const data = new FormData();
+                            data.append('file', files[0]);
+                            $.ajax({
+                                url: '/admin/blog/upload-image',
+                                type: 'POST',
+                                data: data,
+                                processData: false,
+                                contentType: false,
+                                success: function(resp) {
+                                    if (resp && resp.url) {
+                                        $('#content').summernote('insertImage', resp.url);
+                                    }
+                                },
+                                error: function() {
+                                    alert('Tải ảnh lên thất bại');
+                                }
+                            });
+                        },
+                        onChange: function(contents, $editable) {
+                            updateCharCount();
+                        }
+                    }
+                });
+                // cập nhật lần đầu
+                updateCharCount();
+            } catch (e) {
+                // Fallback: contenteditable + 3 nút B/I/Ảnh
+                $('#content').hide();
+                const wrapper = document.getElementById('contentEditorWrapper');
+                const editor = document.getElementById('contentEditor');
+                const hidden = document.getElementById('content');
+                if (wrapper && editor && hidden) {
+                    wrapper.style.display = '';
+                    // load existing html into editor
+                    editor.innerHTML = hidden.value || '';
+                    // Track selection to restore when clicking controls outside editor
+                    let lastRange = null;
+                    function captureRange() {
+                        const sel = window.getSelection();
+                        if (sel && sel.rangeCount > 0) {
+                            lastRange = sel.getRangeAt(0);
+                        }
+                    }
+                    function focusEditorRestore() {
+                        editor.focus();
+                        const sel = window.getSelection();
+                        if (lastRange) {
+                            sel.removeAllRanges();
+                            sel.addRange(lastRange);
+                        }
+                    }
+                    editor.addEventListener('mouseup', captureRange);
+                    editor.addEventListener('keyup', function(e){ captureRange(); cleanupResidualFormattingIfEmpty(); });
+                    editor.addEventListener('mouseleave', captureRange);
+                    editor.addEventListener('keydown', function(e){
+                        if (e.key === 'Tab') {
+                            e.preventDefault();
+                            focusEditorRestore();
+                            const spaces = '\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0'; // 10 non-breaking spaces
+                            document.execCommand('insertHTML', false, spaces);
+                            captureRange();
+                        }
+                    });
+                    // Bold / Italic
+                    document.getElementById('btnBold').addEventListener('click', function(){ focusEditorRestore(); document.execCommand('bold'); captureRange(); });
+                    document.getElementById('btnItalic').addEventListener('click', function(){ focusEditorRestore(); document.execCommand('italic'); captureRange(); });
+                    // Font size dropdown
+                    const sizeSelect = document.getElementById('fontSizeSelect');
+                    sizeSelect.addEventListener('change', function(){
+                        const val = this.value;
+                        if (!val) return;
+                        focusEditorRestore();
+                        applyFontSizePx(val);
+                        captureRange();
+                        this.value = '';
+                    });
+                    // Indent/Outdent
+                    document.getElementById('btnIndent').addEventListener('click', function(){ focusEditorRestore(); document.execCommand('indent'); captureRange(); });
+                    document.getElementById('btnOutdent').addEventListener('click', function(){ focusEditorRestore(); document.execCommand('outdent'); captureRange(); });
+                    // Insert image via Cloudinary upload
+                    const imgInput = document.getElementById('editorImageInput');
+                    imgInput.addEventListener('change', function(){
+                        const f = this.files && this.files[0];
+                        if (!f) return;
+                        const data = new FormData();
+                        data.append('file', f);
+                        fetch('/admin/blog/upload-image', { method: 'POST', body: data })
+                          .then(r => r.json())
+                          .then(resp => { if (resp && resp.url) { document.execCommand('insertImage', false, resp.url); } })
+                          .catch(() => alert('Tải ảnh lên thất bại'));
+                    });
+                    // Sync back to textarea on submit
+                    $('form').on('submit', function(){ hidden.value = editor.innerHTML; });
+                }
+            }
+            
+            // Form validation
+            $('form').on('submit', function(e) {
+                const title = $('#title').val().trim();
+                const content = $('#content').val().trim();
+                
+                if (!title) {
+                    e.preventDefault();
+                    alert('Vui lòng nhập tiêu đề bài viết');
+                    $('#title').focus();
+                    return false;
+                }
+                
+                if (!content) {
+                    e.preventDefault();
+                    alert('Vui lòng nhập nội dung bài viết');
+                    $('#content').focus();
+                    return false;
+                }
+            });
+        });
+        
+        // Auto-generate slug from title
+        document.getElementById('title').addEventListener('input', function() {
+            const title = this.value;
+            const slug = title
+                .toLowerCase()
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '') // Remove diacritics
+                .replace(/[^a-z0-9\s-]/g, '') // Remove special characters
+                .replace(/\s+/g, '-') // Replace spaces with hyphens
+                .replace(/-+/g, '-') // Replace multiple hyphens with single
+                .trim();
+            
+            document.getElementById('slug').value = slug;
+        });
+        
+        // Preview function
+        function previewPost() {
+            const title = document.getElementById('title').value;
+            const content = document.getElementById('content').value;
+            
+            if (!title || !content) {
+                alert('Vui lòng nhập tiêu đề và nội dung để xem trước');
+                return;
+            }
+            
+            // Open preview in new window
+            const previewWindow = window.open('', '_blank');
+            previewWindow.document.write(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Xem trước: ${title}</title>
+                    <link rel="stylesheet" href="/assets/css/bootstrap.min.css">
+                    <style>
+                        body { padding: 20px; }
+                        .preview-header { border-bottom: 1px solid #eee; padding-bottom: 20px; margin-bottom: 20px; }
+                    </style>
+                </head>
+                <body>
+                    <div class="preview-header">
+                        <h1>${title}</h1>
+                        <p class="text-muted">Xem trước bài viết</p>
+                    </div>
+                    <div class="content">
+                        ${content.replace(/\n/g, '<br>')}
+                    </div>
+                </body>
+                </html>
+            `);
+        }
+        
+        // Word count for content (ignore HTML tags, images, spaces)
+        function updateCharCount() {
+            let text = '';
+            if (window.jQuery && $('#content').next('.note-editor').length) {
+                try {
+                    const html = $('#content').summernote('code');
+                    const tmp = document.createElement('div');
+                    tmp.innerHTML = html || '';
+                    // Remove scripts/styles just in case
+                    tmp.querySelectorAll('script,style').forEach(n => n.remove());
+                    text = tmp.textContent || tmp.innerText || '';
+                } catch(e) {
+                    text = document.getElementById('content').value || '';
+                }
+            } else {
+                const fallbackEditor = document.getElementById('contentEditor');
+                if (fallbackEditor) {
+                    text = fallbackEditor.innerText || fallbackEditor.textContent || '';
+                } else {
+                    text = document.getElementById('content').value || '';
+                }
+            }
+            // Normalize nbsp to spaces and trim
+            text = text.replace(/\u00A0/g, ' ').trim();
+            // Count words (non-empty tokens)
+            const wordCount = text ? text.split(/\s+/).filter(Boolean).length : 0;
+            const charCountEl = document.getElementById('charCount');
+            if (charCountEl) {
+                charCountEl.textContent = wordCount + ' từ';
+            }
+        }
+        
+        // Add character count display
+        document.addEventListener('DOMContentLoaded', function() {
+            const contentTextarea = document.getElementById('content');
+            const charCountDiv = document.createElement('div');
+            charCountDiv.id = 'charCount';
+            charCountDiv.className = 'text-muted small mt-1';
+            charCountDiv.textContent = '0 từ';
+            contentTextarea.parentNode.appendChild(charCountDiv);
+
+            // Summernote changes handled in callbacks; also observe fallback editor changes
+            const fallbackEditor = document.getElementById('contentEditor');
+            if (fallbackEditor) {
+                fallbackEditor.addEventListener('input', updateCharCount);
+                        fallbackEditor.addEventListener('input', cleanupResidualFormattingIfEmpty);
+                // Also update when clicking toolbar actions (bold, italic, size, indent, outdent, tab)
+                ['click','keyup','mouseup'].forEach(evt => fallbackEditor.addEventListener(evt, updateCharCount));
+            }
+
+            // Featured image instant preview
+            const fileInput = document.querySelector('input[name="featuredImageFile"]');
+            const urlInput = document.getElementById('featuredImage');
+            const previewImg = document.getElementById('featuredPreview');
+
+            if (fileInput && previewImg) {
+                fileInput.addEventListener('change', function () {
+                    const file = this.files && this.files[0];
+                    if (!file) return;
+                    const objectUrl = URL.createObjectURL(file);
+                    previewImg.src = objectUrl;
+                    previewImg.style.display = '';
+                });
+            }
+
+            if (urlInput && previewImg) {
+                urlInput.addEventListener('input', function () {
+                    const val = this.value.trim();
+                    if (!val) {
+                        previewImg.style.display = 'none';
+                        return;
+                    }
+                    // Best-effort: show as-is for external URL or absolute path, else prefix upload folder
+                    previewImg.src = val.startsWith('http') ? val : (val.startsWith('/') ? val : '/upload/images/blog/' + val);
+                    previewImg.style.display = '';
+                });
+            }
+        });
+
+        // Đảm bảo Bootstrap collapse hoạt động cho menu
+        $(document).ready(function () {
+            // Khởi tạo collapse cho menu
+            $('[data-toggle="collapse"]').on("click", function (e) {
+                e.preventDefault();
+                var target = $(this).attr("href");
+                $(target).collapse("toggle");
+            });
+
+            // Thêm class active cho menu item được click
+            $('.nav-item a[data-toggle="collapse"]').on("click", function () {
+                $(".nav-item").removeClass("active");
+                $(this).closest(".nav-item").addClass("active");
+            });
+
+            // Đảm bảo menu mở đúng khi trang load
+            $(".collapse").on("show.bs.collapse", function () {
+                $(this).siblings(".nav-item").addClass("active");
+            });
+        });
+    </script>
+
+    <script>
+        function cleanupResidualFormattingIfEmpty() {
+            const editor = document.getElementById('contentEditor');
+            if (!editor) return;
+            // If content becomes empty (only <br> or whitespace), reset to plain paragraph with normal size
+            const text = (editor.innerText || '').trim();
+            if (text.length === 0) {
+                editor.innerHTML = '';
+                // place caret at start
+                const range = document.createRange();
+                range.selectNodeContents(editor);
+                range.collapse(true);
+                const sel = window.getSelection();
+                sel.removeAllRanges();
+                sel.addRange(range);
+            }
+        }
+
+        function applyFontSizePx(sizePx) {
+            const sel = window.getSelection();
+            if (!sel || sel.rangeCount === 0) return;
+            const range = sel.getRangeAt(0);
+            if (range.collapsed) return;
+            const editor = document.getElementById('contentEditor');
+            if (!editor.contains(range.commonAncestorContainer)) return;
+
+            // Walk all text nodes within selection and apply font-size
+            const walker = document.createTreeWalker(
+                range.commonAncestorContainer,
+                NodeFilter.SHOW_TEXT,
+                {
+                    acceptNode: function(node) {
+                        if (!node.nodeValue || !node.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
+                        const nodeRange = document.createRange();
+                        nodeRange.selectNodeContents(node);
+                        // Check intersection with current selection range
+                        if (range.compareBoundaryPoints(Range.END_TO_START, nodeRange) >= 0 ||
+                            range.compareBoundaryPoints(Range.START_TO_END, nodeRange) <= 0) {
+                            return NodeFilter.FILTER_REJECT;
+                        }
+                        return NodeFilter.FILTER_ACCEPT;
+                    }
+                },
+                false
+            );
+
+            const toWrap = [];
+            let n;
+            while ((n = walker.nextNode())) {
+                toWrap.push(n);
+            }
+
+            toWrap.forEach(function(textNode) {
+                const parent = textNode.parentElement;
+                if (parent && parent.style && parent.style.fontSize) {
+                    parent.style.fontSize = sizePx;
+                } else {
+                    const span = document.createElement('span');
+                    span.style.fontSize = sizePx;
+                    parent.replaceChild(span, textNode);
+                    span.appendChild(textNode);
+                }
+            });
+
+            // Keep selection (browser usually preserves after DOM ops)
+        }
+    </script>
+</body>
+</html>

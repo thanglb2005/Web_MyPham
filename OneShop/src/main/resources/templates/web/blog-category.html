@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${category.categoryName} + ' - Blog OneShop'">Danh mục - Blog OneShop</title>
+    <meta name="description" th:content="${category.description ?: 'Bài viết trong danh mục ' + category.categoryName}">
+    
+    <!-- CSS -->
+    <link rel="stylesheet" th:href="@{/fonts/flaticon/flaticon.css}" />
+    <link rel="stylesheet" th:href="@{/fonts/icofont/icofont.min.css}" />
+    <link rel="stylesheet" th:href="@{/fonts/fontawesome/fontawesome.min.css}" />
+    <link rel="stylesheet" th:href="@{/vendor/bootstrap/bootstrap.min.css}" />
+    <link rel="stylesheet" th:href="@{/css/main.css}" />
+    
+    <style>
+        .category-hero {
+            background: #f8f9fa;
+            color: #2c3e50;
+            padding: 80px 0;
+            text-align: center;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .category-hero h1 {
+            font-size: 48px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #2c3e50;
+        }
+        
+        .category-hero p {
+            font-size: 18px;
+            color: #6c757d;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .blog-card {
+            border: 1px solid #e9ecef;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            margin-bottom: 32px;
+            overflow: hidden;
+            background: white;
+        }
+        
+        .blog-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            border-color: #dee2e6;
+        }
+        
+        .blog-card img {
+            width: 100%;
+            height: 240px;
+            object-fit: cover;
+        }
+        
+        .blog-card-body {
+            padding: 25px;
+        }
+        
+        .blog-card-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            line-height: 1.4;
+        }
+        
+        .blog-card-title a {
+            color: #333;
+            text-decoration: none;
+        }
+        
+        .blog-card-title a:hover {
+            color: #667eea;
+        }
+        
+        .blog-card-excerpt {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+        
+        .blog-meta {
+            color: #999;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+        
+        .blog-meta i {
+            margin-right: 5px;
+        }
+        
+        .read-more-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 14px;
+            text-decoration: none;
+            display: inline-block;
+            transition: background 0.3s ease;
+        }
+        
+        .read-more-btn:hover {
+            background: #5a6fd8;
+            color: white;
+            text-decoration: none;
+        }
+        
+        .pagination {
+            justify-content: center;
+            margin-top: 50px;
+        }
+        
+        .page-link {
+            color: #667eea;
+            border-color: #dee2e6;
+        }
+        
+        .page-link:hover {
+            color: #5a6fd8;
+            background-color: #f8f9fa;
+            border-color: #dee2e6;
+        }
+        
+        .page-item.active .page-link {
+            background-color: #667eea;
+            border-color: #667eea;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header th:replace="~{/web/fragments/header :: header}"></header>
+    
+    <!-- Category Hero -->
+    <section class="category-hero">
+        <div class="container">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb" style="background: none; padding: 0; justify-content: center;">
+                    <li class="breadcrumb-item"><a href="/" style="color: white;">Trang chủ</a></li>
+                    <li class="breadcrumb-item"><a href="/blogs" style="color: white;">Blog</a></li>
+                    <li class="breadcrumb-item active" th:text="${category.categoryName}" style="color: white;">Danh mục</li>
+                </ol>
+            </nav>
+            <h1 th:text="${category.categoryName}">Danh mục</h1>
+            <p th:if="${category.description}" th:text="${category.description}">Mô tả danh mục</p>
+            <p th:unless="${category.description}">Bài viết trong danh mục <span th:text="${category.categoryName}">danh mục</span></p>
+        </div>
+    </section>
+    
+    <!-- Blog Content -->
+    <section style="padding: 60px 0; background: #f8f9fa;">
+        <div class="container">
+            <div class="row">
+                <!-- Main Content -->
+                <div class="col-lg-8">
+                    <!-- Blog Posts -->
+                    <div th:if="${posts != null and !posts.empty}">
+                        <div class="row">
+                            <div th:each="post : ${posts}" class="col-md-6">
+                                <div class="card blog-card">
+                                    <img th:if="${post.featuredImage}" 
+                                         th:src="${post.featuredImage}" 
+                                         th:alt="${post.title}"
+                                         onerror="this.style.display='none'">
+                                    <div class="card-body blog-card-body">
+                                        <h5 class="blog-card-title">
+                                            <a th:href="@{'/blogs/' + ${post.slug}}" 
+                                               th:text="${post.title}">Tiêu đề bài viết</a>
+                                        </h5>
+                                        
+                                        <div class="blog-meta">
+                                            <i class="fas fa-calendar-alt"></i>
+                                            <span th:text="${#temporals.format(post.publishedAt, 'dd/MM/yyyy')}">01/01/2024</span>
+                                            <span style="margin: 0 10px;">•</span>
+                                            <i class="fas fa-user"></i>
+                                            <span th:text="${post.author.name}">Tác giả</span>
+                                            <span style="margin: 0 10px;">•</span>
+                                            <i class="fas fa-eye"></i>
+                                            <span th:text="${post.viewCount}">0</span>
+                                        </div>
+                                        
+                                        <p class="blog-card-excerpt" th:text="${post.excerpt}">
+                                            Mô tả ngắn về bài viết...
+                                        </p>
+                                        
+                                        <a th:href="@{'/blogs/' + ${post.slug}}" class="read-more-btn">
+                                            Đọc thêm <i class="fas fa-arrow-right" style="margin-left: 5px;"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Pagination -->
+                        <nav th:if="${posts.totalPages > 1}">
+                            <ul class="pagination">
+                                <li class="page-item" th:classappend="${posts.first} ? 'disabled'">
+                                    <a class="page-link" th:href="@{'/blogs/category/' + ${category.categorySlug} + '?page=' + ${posts.number - 1}}">Trước</a>
+                                </li>
+                                
+                                <li th:each="pageNum : ${#numbers.sequence(0, posts.totalPages - 1)}" 
+                                    class="page-item" 
+                                    th:classappend="${pageNum == posts.number} ? 'active'">
+                                    <a class="page-link" 
+                                       th:href="@{'/blogs/category/' + ${category.categorySlug} + '?page=' + ${pageNum}}"
+                                       th:text="${pageNum + 1}">1</a>
+                                </li>
+                                
+                                <li class="page-item" th:classappend="${posts.last} ? 'disabled'">
+                                    <a class="page-link" th:href="@{'/blogs/category/' + ${category.categorySlug} + '?page=' + ${posts.number + 1}}">Sau</a>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+                    
+                    <!-- No Posts -->
+                    <div th:unless="${posts != null and !posts.empty}" class="text-center" style="padding: 60px;">
+                        <i class="fas fa-newspaper" style="font-size: 64px; color: #ddd; margin-bottom: 20px;"></i>
+                        <h4 style="color: #666; margin-bottom: 15px;">Chưa có bài viết nào trong danh mục này</h4>
+                        <p style="color: #999;">Hãy quay lại sau để xem những bài viết mới nhất!</p>
+                        <a href="/blogs" class="read-more-btn">
+                            <i class="fas fa-arrow-left" style="margin-right: 5px;"></i>
+                            Quay lại blog
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Sidebar -->
+                <div class="col-lg-4">
+                    <!-- Back to Blog -->
+                    <div class="card" style="border: none; border-radius: 12px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); margin-bottom: 30px;">
+                        <div class="card-body text-center">
+                            <a href="/blogs" class="read-more-btn">
+                                <i class="fas fa-arrow-left" style="margin-right: 5px;"></i>
+                                Quay lại blog
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Footer -->
+    <footer th:replace="~{/web/fragments/footer :: footer}"></footer>
+    
+    <!-- Scripts -->
+    <script src="vendor/bootstrap/jquery-1.12.4.min.js"></script>
+    <script src="vendor/bootstrap/popper.min.js"></script>
+    <script src="vendor/bootstrap/bootstrap.min.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>
+
+

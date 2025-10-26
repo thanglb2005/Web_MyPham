@@ -9,6 +9,7 @@ import vn.entity.User;
 import vn.service.CategoryService;
 import vn.service.ProductService;
 import vn.repository.OrderRepository;
+import vn.repository.BlogPostRepository;
 import vn.service.UserService;
 
 @Controller
@@ -25,6 +26,9 @@ public class IndexAdminController {
 
     @Autowired
     private OrderRepository orderRepository;
+    
+    @Autowired
+    private BlogPostRepository blogPostRepository;
 
     @GetMapping("/admin")
     public String admin(HttpSession session) {
@@ -47,6 +51,7 @@ public class IndexAdminController {
         long totalCategories = categoryService.getAllCategories().size();
         long totalProducts = 0L;
         long totalOrders = 0L;
+        long totalBlogs = 0L;
 
         try {
             totalProducts = productService.findAll().size();
@@ -56,10 +61,15 @@ public class IndexAdminController {
             totalOrders = orderRepository.count();
         } catch (Exception ignored) {}
         
+        try {
+            totalBlogs = blogPostRepository.count();
+        } catch (Exception ignored) {}
+        
         model.addAttribute("totalUsers", totalUsers);
         model.addAttribute("totalCategories", totalCategories);
         model.addAttribute("totalProducts", totalProducts);
         model.addAttribute("totalOrders", totalOrders);
+        model.addAttribute("totalBlogs", totalBlogs);
         
         return "admin/index";
     }

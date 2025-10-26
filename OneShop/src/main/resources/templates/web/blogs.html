@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog Mỹ Phẩm - OneShop</title>
+    <meta name="description" content="Khám phá những bài viết hay về mỹ phẩm, skincare, makeup và làm đẹp từ OneShop">
+    
+    <!-- CSS -->
+    <link rel="stylesheet" th:href="@{/fonts/flaticon/flaticon.css}" />
+    <link rel="stylesheet" th:href="@{/fonts/icofont/icofont.min.css}" />
+    <link rel="stylesheet" th:href="@{/fonts/fontawesome/fontawesome.min.css}" />
+    <link rel="stylesheet" th:href="@{/vendor/bootstrap/bootstrap.min.css}" />
+    <link rel="stylesheet" th:href="@{/css/main.css}" />
+    
+    <style>
+        .blog-hero {
+            background: #f8f9fa;
+            color: #2c3e50;
+            padding: 80px 0;
+            text-align: center;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .blog-card {
+            border: 1px solid #e9ecef;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            overflow: hidden;
+            height: 100%;
+            background: white;
+        }
+        
+        .blog-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            border-color: #dee2e6;
+        }
+        
+        .blog-card img {
+            height: 240px;
+            object-fit: cover;
+            width: 100%;
+        }
+        
+        .blog-card-body {
+            padding: 20px;
+        }
+        
+        .blog-meta {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+        
+        .blog-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            line-height: 1.4;
+        }
+        
+        .blog-excerpt {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+        
+        .blog-tags {
+            margin-bottom: 15px;
+        }
+        
+        .blog-tag {
+            display: inline-block;
+            background: #f8f9fa;
+            color: #666;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            margin-right: 5px;
+            margin-bottom: 5px;
+        }
+        
+        .sidebar-card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+        
+        .sidebar-card-header {
+            background: #f8f9fa;
+            padding: 15px 20px;
+            border-bottom: 1px solid #e9ecef;
+            font-weight: 600;
+        }
+        
+        .category-item {
+            display: block;
+            padding: 10px 20px;
+            color: #333;
+            text-decoration: none;
+            border-bottom: 1px solid #f0f0f0;
+            transition: background 0.3s ease;
+        }
+        
+        .category-item:hover {
+            background: #f8f9fa;
+            color: #333;
+            text-decoration: none;
+        }
+        
+        .category-item:last-child {
+            border-bottom: none;
+        }
+        
+        .featured-post {
+            display: flex;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .featured-post:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        
+        .featured-post img {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-right: 15px;
+        }
+        
+        .featured-post-content h6 {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 5px;
+            line-height: 1.4;
+        }
+        
+        .featured-post-content small {
+            color: #666;
+        }
+        
+        .search-box {
+            position: relative;
+            margin-bottom: 20px;
+        }
+        
+        .search-box input {
+            width: 100%;
+            padding: 12px 45px 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 25px;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+        
+        .search-box input:focus {
+            border-color: #667eea;
+        }
+        
+        .search-box button {
+            position: absolute;
+            right: 5px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header th:replace="~{/web/fragments/header :: header}"></header>
+    
+    <!-- Blog Hero Section -->
+    <section class="blog-hero">
+        <div class="container">
+            <div class="row">
+                <div class="col-12">
+                    <h1 style="font-size: 48px; font-weight: 700; margin-bottom: 20px;">
+                        <i class="fas fa-blog" style="margin-right: 15px;"></i>
+                        Blog Mỹ Phẩm
+                    </h1>
+                    <p style="font-size: 18px; opacity: 0.9;">
+                        Khám phá những bí quyết làm đẹp, review sản phẩm và xu hướng mỹ phẩm mới nhất
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Blog Content -->
+    <section style="padding: 60px 0; background: #f8f9fa;">
+        <div class="container">
+            <div class="row">
+                <!-- Main Content -->
+                <div class="col-lg-8">
+                    <!-- Search Box -->
+                    <div class="search-box">
+                        <form th:action="@{/blogs}" method="get">
+                            <input type="text" name="search" th:value="${currentSearch}" placeholder="Tìm kiếm bài viết...">
+                            <button type="submit">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </form>
+                    </div>
+                    
+                    <!-- Blog Posts Grid -->
+                    <div class="row" th:if="${blogPosts.hasContent()}">
+                        <div class="col-md-6 col-lg-6 mb-4" th:each="post : ${blogPosts.content}">
+                            <div class="blog-card">
+                                <img th:src="${post.featuredImage != null ? post.featuredImage : '/images/blog-default.jpg'}" 
+                                     th:alt="${post.title}" 
+                                     onerror="this.src='/images/no-image.png'">
+                                <div class="blog-card-body">
+                                    <div class="blog-meta">
+                                        <i class="fas fa-calendar-alt" style="margin-right: 5px;"></i>
+                                        <span th:text="${#temporals.format(post.publishedAt, 'dd/MM/yyyy')}">01/01/2024</span>
+                                        <span style="margin: 0 10px;">•</span>
+                                        <i class="fas fa-eye" style="margin-right: 5px;"></i>
+                                        <span th:text="${post.viewCount}">0</span> lượt xem
+                                    </div>
+                                    
+                                    <h5 class="blog-title">
+                                        <a th:href="@{'/blogs/' + ${post.slug}}" 
+                                           style="color: #333; text-decoration: none;"
+                                           th:text="${post.title}">Tiêu đề bài viết</a>
+                                    </h5>
+                                    
+                                    <p class="blog-excerpt" th:text="${post.excerpt}">
+                                        Mô tả ngắn về bài viết...
+                                    </p>
+                                    
+                                    <div class="blog-tags" th:if="${post.tags != null and !post.tags.empty}">
+                                        <span class="blog-tag" th:each="tag : ${post.tags}" 
+                                              th:text="${tag.tagName}">tag</span>
+                                    </div>
+                                    
+                                    <a th:href="@{'/blogs/' + ${post.slug}}" 
+                                       style="color: #667eea; font-weight: 600; text-decoration: none;">
+                                        Đọc thêm <i class="fas fa-arrow-right" style="margin-left: 5px;"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- No Results -->
+                    <div th:unless="${blogPosts.hasContent()}" class="text-center" style="padding: 60px 20px;">
+                        <i class="fas fa-search" style="font-size: 64px; color: #ddd; margin-bottom: 20px;"></i>
+                        <h3 style="color: #666; margin-bottom: 10px;">Không tìm thấy bài viết nào</h3>
+                        <p style="color: #999;">Hãy thử tìm kiếm với từ khóa khác</p>
+                    </div>
+                    
+                    <!-- Pagination -->
+                    <nav th:if="${blogPosts.totalPages > 1}" aria-label="Blog pagination">
+                        <ul class="pagination justify-content-center">
+                            <li class="page-item" th:classappend="${!blogPosts.hasPrevious()} ? 'disabled'">
+                                <a class="page-link" th:href="@{/blogs(page=${blogPosts.number - 1}, category=${currentCategory}, tag=${currentTag}, search=${currentSearch})}">
+                                    <i class="fas fa-chevron-left"></i>
+                                </a>
+                            </li>
+                            
+                            <li class="page-item" th:each="i : ${#numbers.sequence(0, blogPosts.totalPages - 1)}"
+                                th:classappend="${i == blogPosts.number} ? 'active'">
+                                <a class="page-link" th:href="@{/blogs(page=${i}, category=${currentCategory}, tag=${currentTag}, search=${currentSearch})}"
+                                   th:text="${i + 1}">1</a>
+                            </li>
+                            
+                            <li class="page-item" th:classappend="${!blogPosts.hasNext()} ? 'disabled'">
+                                <a class="page-link" th:href="@{/blogs(page=${blogPosts.number + 1}, category=${currentCategory}, tag=${currentTag}, search=${currentSearch})}">
+                                    <i class="fas fa-chevron-right"></i>
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+                
+                <!-- Sidebar -->
+                <div class="col-lg-4">
+                    <!-- Categories -->
+                    <div class="sidebar-card" th:if="${categories != null and !categories.empty}">
+                        <div class="sidebar-card-header">
+                            <i class="fas fa-folder" style="margin-right: 8px;"></i>
+                            Danh mục
+                        </div>
+                        <div class="sidebar-card-body" style="padding: 0;">
+                            <a th:each="category : ${categories}" 
+                               th:href="@{'/blogs/category/' + ${category.categorySlug}}"
+                               class="category-item"
+                               th:classappend="${currentCategory == category.categorySlug} ? 'active'"
+                               th:text="${category.categoryName}">Danh mục</a>
+                        </div>
+                    </div>
+                    
+                    <!-- Popular Tags -->
+                    <div class="sidebar-card" th:if="${popularTags != null and !popularTags.empty}">
+                        <div class="sidebar-card-header">
+                            <i class="fas fa-tags" style="margin-right: 8px;"></i>
+                            Tags phổ biến
+                        </div>
+                        <div class="sidebar-card-body">
+                            <a th:each="tag : ${popularTags}" 
+                               th:href="@{'/blogs/tag/' + ${tag.tagSlug}}"
+                               class="blog-tag"
+                               th:text="${tag.tagName}">tag</a>
+                        </div>
+                    </div>
+                    
+                    <!-- Featured Posts -->
+                    <div class="sidebar-card" th:if="${featuredPosts != null and !featuredPosts.empty}">
+                        <div class="sidebar-card-header">
+                            <i class="fas fa-star" style="margin-right: 8px;"></i>
+                            Bài viết nổi bật
+                        </div>
+                        <div class="sidebar-card-body">
+                            <div th:each="post : ${featuredPosts}" class="featured-post">
+                                <img th:src="${post.featuredImage != null ? post.featuredImage : '/images/blog-default.jpg'}" 
+                                     th:alt="${post.title}"
+                                     onerror="this.src='/images/no-image.png'">
+                                <div class="featured-post-content">
+                                    <h6>
+                                        <a th:href="@{'/blogs/' + ${post.slug}}" 
+                                           style="color: #333; text-decoration: none;"
+                                           th:text="${post.title}">Tiêu đề</a>
+                                    </h6>
+                                    <small th:text="${#temporals.format(post.publishedAt, 'dd/MM/yyyy')}">01/01/2024</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Footer -->
+    <footer th:replace="~{/web/fragments/footer :: footer}"></footer>
+    
+    <!-- Scripts -->
+    <script src="vendor/bootstrap/jquery-1.12.4.min.js"></script>
+    <script src="vendor/bootstrap/popper.min.js"></script>
+    <script src="vendor/bootstrap/bootstrap.min.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>
+
+
