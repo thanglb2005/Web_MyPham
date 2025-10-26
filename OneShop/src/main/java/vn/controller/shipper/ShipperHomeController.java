@@ -52,44 +52,6 @@ public class ShipperHomeController {
     private OrderDetailRepository orderDetailRepository;
 
     /**
-     * Kiểm tra địa chỉ có phải là TP.HCM không
-     */
-    private boolean isHoChiMinhCity(String address) {
-        if (address == null) return false;
-        String lowerAddress = address.toLowerCase();
-        return lowerAddress.contains("hồ chí minh") || 
-               lowerAddress.contains("ho chi minh") ||
-               lowerAddress.contains("tp.hcm") ||
-               lowerAddress.contains("tphcm") ||
-               lowerAddress.contains("sài gòn") ||
-               lowerAddress.contains("sai gon") ||
-               lowerAddress.contains("quận 1") ||
-               lowerAddress.contains("quận 2") ||
-               lowerAddress.contains("quận 3") ||
-               lowerAddress.contains("quận 4") ||
-               lowerAddress.contains("quận 5") ||
-               lowerAddress.contains("quận 6") ||
-               lowerAddress.contains("quận 7") ||
-               lowerAddress.contains("quận 8") ||
-               lowerAddress.contains("quận 9") ||
-               lowerAddress.contains("quận 10") ||
-               lowerAddress.contains("quận 11") ||
-               lowerAddress.contains("quận 12") ||
-               lowerAddress.contains("thủ đức") ||
-               lowerAddress.contains("bình thạnh") ||
-               lowerAddress.contains("tân bình") ||
-               lowerAddress.contains("tân phú") ||
-               lowerAddress.contains("phú nhuận") ||
-               lowerAddress.contains("gò vấp") ||
-               lowerAddress.contains("bình tân") ||
-               lowerAddress.contains("hóc môn") ||
-               lowerAddress.contains("củ chi") ||
-               lowerAddress.contains("bình chánh") ||
-               lowerAddress.contains("nhà bè") ||
-               lowerAddress.contains("cần giờ");
-    }
-
-    /**
      * Trang chủ shipper - hiển thị dashboard với các đơn hàng được phân công
      */
     @GetMapping("/home")
@@ -112,14 +74,47 @@ public class ShipperHomeController {
         }
 
         // Lấy các đơn hàng được phân công cho shipper này
-        List<Order> assignedOrders = orderRepository.findOrdersByShipper(shipper);
+        List<Order> allAssignedOrders = orderRepository.findOrdersByShipper(shipper);
         
-        // Lấy các đơn hàng đang chờ giao (CONFIRMED) mà chưa có shipper
+        // Debug: Log tất cả đơn hàng được gán
+        System.out.println("All assigned orders for shipper: " + allAssignedOrders.size());
+        for (Order order : allAssignedOrders) {
+            System.out.println("Order #" + order.getOrderId() + " - Status: " + order.getStatus() + 
+                             " - Shop: " + (order.getShop() != null ? order.getShop().getShopId() : "null"));
+        }
+        
+        // Lấy các đơn hàng đang giao và đã giao của shipper này (không bao gồm CONFIRMED)
+        List<Order> assignedOrders = allAssignedOrders.stream()
+            .filter(order -> order.getStatus() == Order.OrderStatus.SHIPPING || 
+                            order.getStatus() == Order.OrderStatus.DELIVERED ||
+                            order.getStatus() == Order.OrderStatus.OVERDUE)
+            .collect(Collectors.toList());
+        
+        // Lấy các đơn hàng đang chờ giao (CONFIRMED) - bao gồm cả chưa có shipper và đã có shipper
         // Chỉ lấy đơn hàng từ các shop mà shipper được gán
         List<Order> availableOrders = orderRepository.findAvailableOrdersForShipper(
             shipper,
             Order.OrderStatus.CONFIRMED
         );
+        
+        // Thêm các đơn hàng CONFIRMED đã được gán shipper vào available orders
+        List<Order> confirmedAssignedOrders = allAssignedOrders.stream()
+            .filter(order -> order.getStatus() == Order.OrderStatus.CONFIRMED)
+            .collect(Collectors.toList());
+        availableOrders.addAll(confirmedAssignedOrders);
+        
+        // Sắp xếp theo ngày đặt hàng (mới nhất trước)
+        availableOrders.sort((o1, o2) -> o2.getOrderDate().compareTo(o1.getOrderDate()));
+        
+        // Debug: Log để kiểm tra
+        System.out.println("Available orders count: " + availableOrders.size());
+        System.out.println("Assigned orders count: " + assignedOrders.size());
+        for (Order order : availableOrders) {
+            System.out.println("Available order #" + order.getOrderId() + " - Status: " + order.getStatus());
+        }
+        for (Order order : assignedOrders) {
+            System.out.println("Assigned order #" + order.getOrderId() + " - Status: " + order.getStatus());
+        }
 
         // Lấy các đơn hàng giao muộn của shipper
         List<Order> overdueOrders = orderService.findOverdueOrdersByShipper(shipper);

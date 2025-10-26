@@ -221,7 +221,7 @@ public class ShipperManagementController {
                 .orElseThrow(() -> new RuntimeException("Shipper không tồn tại"));
             
             shipper.setStatus(true);
-            userService.save(shipper);
+            userRepository.save(shipper);
             
             return "success";
         } catch (Exception e) {
@@ -242,7 +242,7 @@ public class ShipperManagementController {
                 .orElseThrow(() -> new RuntimeException("Shipper không tồn tại"));
             
             shipper.setStatus(false);
-            userService.save(shipper);
+            userRepository.save(shipper);
             
             return "success";
         } catch (Exception e) {
