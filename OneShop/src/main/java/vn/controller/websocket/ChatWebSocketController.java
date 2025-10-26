@@ -14,6 +14,7 @@ import vn.service.ShopService;
 import vn.service.UserService;
 import vn.util.chat.ChatRoomUtils;
 import vn.service.chat.SupportAssignmentService;
+import vn.service.ai.AIChatService;
 
 import java.security.Principal;
 import java.time.LocalDateTime;
@@ -41,6 +42,9 @@ public class ChatWebSocketController {
     private UserService userService;
     @Autowired
     private SupportAssignmentService supportAssignmentService;
+
+    @Autowired
+    private AIChatService aiChatService;
     
     // In-memory storage for active users (room-based)
     private final Map<String, Map<String, String>> activeUsers = new ConcurrentHashMap<>();
@@ -592,4 +596,138 @@ public class ChatWebSocketController {
         System.err.println(String.format("[ERROR] %s: %s", message, e.getMessage()));
         e.printStackTrace();
     }
+
+    /**
+     * Xử lý tin nhắn từ khách hàng và tạo phản hồi AI
+     */
+    @MessageMapping("/chat.ai.send")
+    public void sendAIMessage(@Payload Map<String, Object> payload, Principal principal) {
+        try {
+            String roomId = String.valueOf(payload.getOrDefault("roomId", "public"));
+            String content = String.valueOf(payload.getOrDefault("messageContent", ""));
+            String senderName = String.valueOf(payload.getOrDefault("senderName", "")).trim();
+            
+            if (senderName.isEmpty()) {
+                senderName = "guest_" + (System.currentTimeMillis() % 100000);
+            }
+
+            // Lấy shopId từ roomId
+            Long shopId = ChatRoomUtils.extractShopId(roomId).orElse(null);
+
+            // Kiểm tra xem AI có sẵn sàng không
+            if (!aiChatService.isAIReady()) {
+                sendErrorMessage(roomId, "AI chatbot hiện tại không khả dụng. Vui lòng thử lại sau.");
+                return;
+            }
+
+            // Lưu tin nhắn của khách hàng vào lịch sử
+            Map<String, Object> userMessage = new HashMap<>();
+            userMessage.put("roomId", roomId);
+            userMessage.put("sender", senderName);
+            userMessage.put("senderType", "customer");
+            userMessage.put("messageType", "TEXT");
+            userMessage.put("messageContent", sanitizeContent(content));
+            userMessage.put("sentAt", System.currentTimeMillis());
+            userMessage.put("timestamp", LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm")));
+            
+            if (shopId != null) {
+                userMessage.put("shopId", shopId);
+                Optional<Shop> shopOpt = shopService.findById(shopId);
+                if (shopOpt.isPresent()) {
+                    userMessage.put("shopName", shopOpt.get().getShopName());
+                }
+            }
+
+            // Gửi tin nhắn của khách hàng đến room
+            messagingTemplate.convertAndSend("/topic/room/" + roomId, userMessage);
+            
+            // Lưu tin nhắn vào lịch sử
+            chatHistoryService.appendMessage(roomId, userMessage);
+
+            // Gửi tin nhắn "AI đang trả lời..."
+            Map<String, Object> typingMessage = new HashMap<>();
+            typingMessage.put("type", "AI_TYPING");
+            typingMessage.put("roomId", roomId);
+            typingMessage.put("message", "OneShop AI đang trả lời...");
+            typingMessage.put("timestamp", System.currentTimeMillis());
+            messagingTemplate.convertAndSend("/topic/room/" + roomId, typingMessage);
+
+            // Xử lý tin nhắn bằng AI
+            aiChatService.processUserMessage(roomId, content, senderName, shopId)
+                .thenAccept(aiResponse -> {
+                    try {
+                        // Tạo tin nhắn phản hồi từ AI
+                        Map<String, Object> aiMessage = new HashMap<>();
+                        aiMessage.put("roomId", roomId);
+                        aiMessage.put("sender", "OneShop AI");
+                        aiMessage.put("senderType", "ai");
+                        aiMessage.put("messageType", "TEXT");
+                        aiMessage.put("messageContent", aiResponse);
+                        aiMessage.put("sentAt", System.currentTimeMillis());
+                        aiMessage.put("timestamp", LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm")));
+                        
+                        if (shopId != null) {
+                            aiMessage.put("shopId", shopId);
+                            Optional<Shop> shopOpt = shopService.findById(shopId);
+                            if (shopOpt.isPresent()) {
+                                aiMessage.put("shopName", shopOpt.get().getShopName());
+                            }
+                        }
+
+                        // Gửi phản hồi AI đến room
+                        messagingTemplate.convertAndSend("/topic/room/" + roomId, aiMessage);
+                        
+                        System.out.println("AI response sent to room " + roomId + ": " + aiResponse);
+                        
+                    } catch (Exception e) {
+                        System.err.println("Error sending AI response: " + e.getMessage());
+                        sendErrorMessage(roomId, "Có lỗi xảy ra khi xử lý phản hồi AI.");
+                    }
+                })
+                .exceptionally(throwable -> {
+                    System.err.println("Error processing AI message: " + throwable.getMessage());
+                    sendErrorMessage(roomId, "AI không thể xử lý tin nhắn của bạn. Vui lòng thử lại sau.");
+                    return null;
+                });
+
+        } catch (Exception e) {
+            System.err.println("Error in sendAIMessage: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Gửi tin nhắn lỗi đến room
+     */
+    private void sendErrorMessage(String roomId, String errorMessage) {
+        Map<String, Object> errorResponse = new HashMap<>();
+        errorResponse.put("type", "ERROR");
+        errorResponse.put("roomId", roomId);
+        errorResponse.put("message", errorMessage);
+        errorResponse.put("timestamp", System.currentTimeMillis());
+        
+        messagingTemplate.convertAndSend("/topic/room/" + roomId, errorResponse);
+    }
+
+    /**
+     * Kiểm tra trạng thái AI
+     */
+    @MessageMapping("/chat.ai.status")
+    public void checkAIStatus(@Payload Map<String, Object> payload, Principal principal) {
+        try {
+            String roomId = String.valueOf(payload.getOrDefault("roomId", "public"));
+            
+            Map<String, Object> statusResponse = new HashMap<>();
+            statusResponse.put("type", "AI_STATUS");
+            statusResponse.put("roomId", roomId);
+            statusResponse.put("isReady", aiChatService.isAIReady());
+            statusResponse.put("timestamp", System.currentTimeMillis());
+            
+            messagingTemplate.convertAndSend("/topic/room/" + roomId, statusResponse);
+            
+        } catch (Exception e) {
+            System.err.println("Error checking AI status: " + e.getMessage());
+        }
+    }
+
 }
