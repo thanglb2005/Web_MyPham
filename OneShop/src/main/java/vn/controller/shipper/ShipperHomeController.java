@@ -53,6 +53,44 @@ public class ShipperHomeController {
     private OrderDetailRepository orderDetailRepository;
 
     /**
+     * Kiểm tra địa chỉ có phải là TP.HCM không
+     */
+    private boolean isHoChiMinhCity(String address) {
+        if (address == null) return false;
+        String lowerAddress = address.toLowerCase();
+        return lowerAddress.contains("hồ chí minh") || 
+               lowerAddress.contains("ho chi minh") ||
+               lowerAddress.contains("tp.hcm") ||
+               lowerAddress.contains("tphcm") ||
+               lowerAddress.contains("sài gòn") ||
+               lowerAddress.contains("sai gon") ||
+               lowerAddress.contains("quận 1") ||
+               lowerAddress.contains("quận 2") ||
+               lowerAddress.contains("quận 3") ||
+               lowerAddress.contains("quận 4") ||
+               lowerAddress.contains("quận 5") ||
+               lowerAddress.contains("quận 6") ||
+               lowerAddress.contains("quận 7") ||
+               lowerAddress.contains("quận 8") ||
+               lowerAddress.contains("quận 9") ||
+               lowerAddress.contains("quận 10") ||
+               lowerAddress.contains("quận 11") ||
+               lowerAddress.contains("quận 12") ||
+               lowerAddress.contains("thủ đức") ||
+               lowerAddress.contains("bình thạnh") ||
+               lowerAddress.contains("tân bình") ||
+               lowerAddress.contains("tân phú") ||
+               lowerAddress.contains("phú nhuận") ||
+               lowerAddress.contains("gò vấp") ||
+               lowerAddress.contains("bình tân") ||
+               lowerAddress.contains("hóc môn") ||
+               lowerAddress.contains("củ chi") ||
+               lowerAddress.contains("bình chánh") ||
+               lowerAddress.contains("nhà bè") ||
+               lowerAddress.contains("cần giờ");
+    }
+
+    /**
      * Trang chủ shipper - hiển thị dashboard với các đơn hàng được phân công
      */
     @GetMapping("/home")
@@ -85,24 +123,34 @@ public class ShipperHomeController {
         }
         
         // Lấy các đơn hàng đang giao và đã giao của shipper này (không bao gồm CONFIRMED)
+        // CHỈ LẤY ĐƠN HÀNG TRONG TPHCM (shipper chỉ giao trong TPHCM)
         List<Order> assignedOrders = allAssignedOrders.stream()
+            .filter(order -> isHoChiMinhCity(order.getShippingAddress()))
             .filter(order -> order.getStatus() == Order.OrderStatus.SHIPPING || 
                             order.getStatus() == Order.OrderStatus.DELIVERED ||
                             order.getStatus() == Order.OrderStatus.OVERDUE)
             .collect(Collectors.toList());
         
         // Lấy các đơn hàng đang chờ giao (CONFIRMED) - bao gồm cả chưa có shipper và đã có shipper
-        // Chỉ lấy đơn hàng từ các shop mà shipper được gán
+        // CHỈ LẤY ĐƠN HÀNG TRONG TPHCM (shipper chỉ giao trong TPHCM)
         List<Order> availableOrders = orderRepository.findAvailableOrdersForShipper(
             shipper,
             Order.OrderStatus.CONFIRMED
-        );
+        ).stream()
+            .filter(order -> isHoChiMinhCity(order.getShippingAddress()))
+            .collect(Collectors.toList());
         
-        // Thêm các đơn hàng CONFIRMED đã được gán shipper vào available orders
+        // Thêm các đơn hàng CONFIRMED đã được gán shipper vào available orders (CHỈ TRONG TPHCM)
         List<Order> confirmedAssignedOrders = allAssignedOrders.stream()
             .filter(order -> order.getStatus() == Order.OrderStatus.CONFIRMED)
+            .filter(order -> isHoChiMinhCity(order.getShippingAddress()))
             .collect(Collectors.toList());
         availableOrders.addAll(confirmedAssignedOrders);
+        
+        // Loại bỏ trùng lặp
+        availableOrders = availableOrders.stream()
+            .distinct()
+            .collect(Collectors.toList());
         
         // Sắp xếp theo ngày đặt hàng (mới nhất trước)
         availableOrders.sort((o1, o2) -> o2.getOrderDate().compareTo(o1.getOrderDate()));
