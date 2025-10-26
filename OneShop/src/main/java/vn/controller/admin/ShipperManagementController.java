@@ -8,19 +8,17 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import vn.entity.Shop;
 import vn.entity.User;
-import vn.entity.Role;
 import vn.repository.ShopRepository;
 import vn.repository.UserRepository;
+<<<<<<< HEAD
 import vn.repository.RoleRepository;
 import vn.service.UserService;
+=======
+>>>>>>> parent of 7dd478a (đơn hỏa tóc và đơn giao xa)
 
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.Date;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Controller quản lý shipper cho shop/admin
@@ -35,12 +33,15 @@ public class ShipperManagementController {
 
     @Autowired
     private UserRepository userRepository;
+<<<<<<< HEAD
     
     @Autowired
     private UserService userService;
     
     @Autowired
     private RoleRepository roleRepository;
+=======
+>>>>>>> parent of 7dd478a (đơn hỏa tóc và đơn giao xa)
 
     /**
      * Hiển thị trang quản lý shipper cho các shop
@@ -116,6 +117,7 @@ public class ShipperManagementController {
     }
 
     /**
+<<<<<<< HEAD
      * Hiển thị trang thêm shipper mới
      */
     @GetMapping("/shippers-list/add")
@@ -181,6 +183,8 @@ public class ShipperManagementController {
     }
 
     /**
+=======
+>>>>>>> parent of 7dd478a (đơn hỏa tóc và đơn giao xa)
      * Xem chi tiết shipper
      */
     @GetMapping("/shipper-detail/{shipperId}")
