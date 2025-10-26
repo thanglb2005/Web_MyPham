@@ -18,6 +18,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import vn.entity.User;
 import vn.repository.UserRepository;
 import vn.util.JwtUtil;
+import java.util.concurrent.ConcurrentHashMap;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -37,6 +38,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Autowired
     private UserRepository userRepository;
+    
+    // Simple in-memory cache for user data (expires on server restart)
+    private final ConcurrentHashMap<Long, User> userCache = new ConcurrentHashMap<>();
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, 
@@ -111,14 +115,26 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     
                     // Store user in session for web page access (Hybrid JWT + Session)
                     if (userId != null) {
-                        Optional<User> userOpt = userRepository.findByIdWithRoles(userId);
-                        if (userOpt.isPresent()) {
-                            User user = userOpt.get();
-                            request.setAttribute("jwtUser", user);
+                        // Check if user already in session to avoid DB query
+                        HttpSession session = request.getSession(false);
+                        if (session == null || session.getAttribute("user") == null) {
+                            // Try cache first, then database
+                            User user = userCache.get(userId);
+                            if (user == null) {
+                                Optional<User> userOpt = userRepository.findByIdWithRoles(userId);
+                                if (userOpt.isPresent()) {
+                                    user = userOpt.get();
+                                    userCache.put(userId, user); // Cache for next time
+                                }
+                            }
                             
-                            // Store in session for web pages (Hybrid approach)
-                            HttpSession session = request.getSession(true);
-                            session.setAttribute("user", user);
+                            if (user != null) {
+                                request.setAttribute("jwtUser", user);
+                                
+                                // Store in session for web pages (Hybrid approach)
+                                HttpSession newSession = request.getSession(true);
+                                newSession.setAttribute("user", user);
+                            }
                         }
                     }
                     

@@ -1648,6 +1648,11 @@ tbody tr td:last-child {
 .product-image img {
   width: 100%;
 }
+.product-content {
+  padding-top: 12px;
+  text-align: center;
+  border-top: 1px solid var(--border);
+}
 .product-widget {
   display: -webkit-box;
   display: -ms-flexbox;

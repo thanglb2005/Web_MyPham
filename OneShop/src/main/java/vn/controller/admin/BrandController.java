@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import vn.entity.Brand;
 import vn.service.BrandService;
+import vn.service.StorageService;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -33,6 +34,9 @@ public class BrandController {
     
     @Autowired
     private BrandService brandService;
+    
+    @Autowired
+    private StorageService storageService;
 
     @Value("${upload.brands.path}")
     private String uploadPath;    /**
@@ -114,15 +118,21 @@ public class BrandController {
             return "redirect:/admin/brands?error=true";
         }
         
-        // Handle image upload
+        // Handle image upload - sử dụng Cloudinary với fallback
         if (!brandImageFile.isEmpty()) {
             try {
-                String fileName = UUID.randomUUID().toString() + "_" + brandImageFile.getOriginalFilename();
-                Path path = Paths.get(uploadPath, fileName);
-                Files.write(path, brandImageFile.getBytes());
-                brand.setBrandImage(fileName);
-            } catch (IOException e) {
-                return "redirect:/admin/brands?error=image";
+                String imageUrl = storageService.storeBrandImage(brandImageFile);
+                brand.setBrandImage(imageUrl);
+            } catch (Exception e) {
+                // Fallback to old method if Cloudinary fails
+                try {
+                    String fileName = UUID.randomUUID().toString() + "_" + brandImageFile.getOriginalFilename();
+                    Path path = Paths.get(uploadPath, fileName);
+                    Files.write(path, brandImageFile.getBytes());
+                    brand.setBrandImage(fileName);
+                } catch (IOException ioException) {
+                    return "redirect:/admin/brands?error=image";
+                }
             }
         }
         
@@ -161,24 +171,41 @@ public class BrandController {
             brand.setBrandImage(existingBrand.get().getBrandImage());
         } else {
             try {
-                String fileName = UUID.randomUUID().toString() + "_" + brandImageFile.getOriginalFilename();
-                Path path = Paths.get(uploadPath, fileName);
-                Files.write(path, brandImageFile.getBytes());
+                String imageUrl = storageService.storeBrandImage(brandImageFile);
                 
-                // Delete old image if exists
+                // Delete old image if exists (Cloudinary URL)
                 if (existingBrand.get().getBrandImage() != null) {
                     try {
-                        Path oldImagePath = Paths.get(uploadPath, existingBrand.get().getBrandImage());
-                        Files.deleteIfExists(oldImagePath);
-                    } catch (IOException e) {
+                        storageService.deleteImage(existingBrand.get().getBrandImage());
+                    } catch (Exception e) {
                         // Log error but continue
                         System.err.println("Could not delete old image: " + e.getMessage());
                     }
                 }
                 
-                brand.setBrandImage(fileName);
-            } catch (IOException e) {
-                return "redirect:/admin/brands?error=image";
+                brand.setBrandImage(imageUrl);
+            } catch (Exception e) {
+                // Fallback to old method if Cloudinary fails
+                try {
+                    String fileName = UUID.randomUUID().toString() + "_" + brandImageFile.getOriginalFilename();
+                    Path path = Paths.get(uploadPath, fileName);
+                    Files.write(path, brandImageFile.getBytes());
+                    
+                    // Delete old image if exists (local file)
+                    if (existingBrand.get().getBrandImage() != null) {
+                        try {
+                            Path oldImagePath = Paths.get(uploadPath, existingBrand.get().getBrandImage());
+                            Files.deleteIfExists(oldImagePath);
+                        } catch (IOException ioException) {
+                            // Log error but continue
+                            System.err.println("Could not delete old image: " + ioException.getMessage());
+                        }
+                    }
+                    
+                    brand.setBrandImage(fileName);
+                } catch (IOException ioException) {
+                    return "redirect:/admin/brands?error=image";
+                }
             }
         }
         
@@ -196,11 +223,17 @@ public class BrandController {
             // Delete brand image if exists
             if (brand.get().getBrandImage() != null) {
                 try {
-                    Path imagePath = Paths.get(uploadPath, brand.get().getBrandImage());
-                    Files.deleteIfExists(imagePath);
-                } catch (IOException e) {
-                    // Log error but continue with deletion
-                    System.err.println("Could not delete brand image: " + e.getMessage());
+                    // Try to delete from Cloudinary first
+                    storageService.deleteImage(brand.get().getBrandImage());
+                } catch (Exception e) {
+                    // Fallback to local file deletion
+                    try {
+                        Path imagePath = Paths.get(uploadPath, brand.get().getBrandImage());
+                        Files.deleteIfExists(imagePath);
+                    } catch (IOException ioException) {
+                        // Log error but continue with deletion
+                        System.err.println("Could not delete brand image: " + ioException.getMessage());
+                    }
                 }
             }
             

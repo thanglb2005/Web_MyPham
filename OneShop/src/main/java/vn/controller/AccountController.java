@@ -17,6 +17,7 @@ import vn.service.UserService;
 import vn.service.ImageStorageService;
 import vn.service.OneXuService;
 import vn.service.PromotionService;
+import vn.service.StorageService;
 
 import java.io.IOException;
 // SimpleDateFormat is referenced with fully qualified name later; remove import to avoid warning
@@ -38,6 +39,9 @@ public class AccountController {
 
     @Autowired
     private ImageStorageService imageStorageService;
+    
+    @Autowired
+    private StorageService storageService;
     
     @Autowired
     private OneXuService oneXuService;
@@ -147,17 +151,23 @@ public class AccountController {
         user.setName(name);
         user.setEmail(email);
 
-        // Handle file upload
+        // Handle file upload - sử dụng Cloudinary với fallback
         if (avatarFile != null && !avatarFile.isEmpty()) {
             try {
-                String fileName = imageStorageService.store(avatarFile, user.getName());
-                user.setAvatar(fileName);
-            } catch (IOException e) {
-                // Log the error and add a message for the user
-                model.addAttribute("error", "Lỗi khi tải lên ảnh đại diện. Vui lòng thử lại.");
-                // Re-populate model attributes for the view
-                populateProfileModel(model, user);
-                return "profile";
+                String imageUrl = storageService.storeUserImage(avatarFile);
+                user.setAvatar(imageUrl);
+            } catch (Exception e) {
+                // Fallback to old method if Cloudinary fails
+                try {
+                    String fileName = imageStorageService.store(avatarFile, user.getName());
+                    user.setAvatar(fileName);
+                } catch (IOException ioException) {
+                    // Log the error and add a message for the user
+                    model.addAttribute("error", "Lỗi khi tải lên ảnh đại diện. Vui lòng thử lại.");
+                    // Re-populate model attributes for the view
+                    populateProfileModel(model, user);
+                    return "profile";
+                }
             }
         }
 

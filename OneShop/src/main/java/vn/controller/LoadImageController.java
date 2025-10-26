@@ -1,6 +1,7 @@
 package vn.controller;
 
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
@@ -14,9 +15,11 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import vn.service.StorageService;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -31,12 +34,24 @@ public class LoadImageController {
 
     @Value("${upload.images.path}")
     private String pathUploadImage;
+    
+    @Autowired
+    private StorageService storageService;
 
     @GetMapping("/loadImage")
     @ResponseBody
     public ResponseEntity<Resource> loadImage(@RequestParam("imageName") String imageName,
                                               HttpServletResponse response) {
         try {
+            // Kiểm tra nếu là Cloudinary URL - redirect đến URL đó với transformation
+            if (imageName.startsWith("http")) {
+                String optimizedUrl = optimizeCloudinaryUrl(imageName);
+                return ResponseEntity.status(HttpStatus.FOUND)
+                    .header("Location", optimizedUrl)
+                    .build();
+            }
+            
+            // Xử lý ảnh local như cũ
             Path imagePath = resolvePath(imageName);
             if (imagePath == null || !Files.exists(imagePath) || !Files.isRegularFile(imagePath)) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
@@ -59,6 +74,7 @@ public class LoadImageController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
+    
 
     private Path resolvePath(String imageName) throws IOException {
         Path uploadPath = Paths.get(pathUploadImage);
@@ -69,6 +85,33 @@ public class LoadImageController {
             Files.createDirectories(uploadPath);
         }
         return uploadPath.resolve(imageName).normalize();
+    }
+
+    /**
+     * Optimize Cloudinary URL for better display
+     * @param cloudinaryUrl Original Cloudinary URL
+     * @return Optimized URL with transformations
+     */
+    private String optimizeCloudinaryUrl(String cloudinaryUrl) {
+        try {
+            // Nếu URL đã có transformation, giữ nguyên
+            if (cloudinaryUrl.contains("/w_") || cloudinaryUrl.contains("/h_") || cloudinaryUrl.contains("/c_")) {
+                return cloudinaryUrl;
+            }
+            
+            // Thêm transformation để tối ưu hiển thị
+            // f_auto: tự động chọn format tốt nhất
+            // q_auto: tự động chọn chất lượng
+            // fl_progressive: progressive JPEG cho tải nhanh hơn
+            if (cloudinaryUrl.contains("/upload/")) {
+                return cloudinaryUrl.replace("/upload/", "/upload/f_auto,q_auto,fl_progressive/");
+            }
+            
+            return cloudinaryUrl;
+        } catch (Exception e) {
+            // Nếu có lỗi, trả về URL gốc
+            return cloudinaryUrl;
+        }
     }
 
     private MediaType guessMediaType(String filename) {

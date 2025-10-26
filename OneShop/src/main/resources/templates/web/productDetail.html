@@ -23,6 +23,7 @@
     <link rel="stylesheet" href="/vendor/bootstrap/bootstrap.min.css" />
     <link rel="stylesheet" href="/css/main.css" />
     <link rel="stylesheet" href="/css/product-details.css" />
+    <link rel="stylesheet" href="/css/product-images.css" />
   </head>
   <body>
     <header th:replace="~{/web/fragments/header :: header}"></header>
@@ -53,6 +54,7 @@
               <ul class="details-preview">
                 <li>
                   <img
+                    class="product-detail-image"
                     th:if="${product.productImage != null and !#strings.isEmpty(product.productImage)}"
                     th:src="@{'/loadImage?imageName='+${product.productImage}}"
                     alt="product"
@@ -67,6 +69,7 @@
               <ul class="details-thumb">
                 <li>
                   <img
+                    class="product-detail-image"
                     th:if="${product.productImage != null and !#strings.isEmpty(product.productImage)}"
                     th:src="@{'/loadImage?imageName='+${product.productImage}}"
                     alt="product"

@@ -20,6 +20,7 @@ import vn.service.CategoryService;
 import vn.service.ImageStorageService;
 import vn.service.ProductService;
 import vn.service.ShopService;
+import vn.service.StorageService;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -40,6 +41,9 @@ public class ProductController {
 
     @Autowired
     private ImageStorageService imageStorageService;
+    
+    @Autowired
+    private StorageService storageService;
 
     @Autowired
     private ShopService shopService;
@@ -180,10 +184,16 @@ public class ProductController {
                 product.setDiscount(0);
             }
 
-            // Handle file upload
+            // Handle file upload - sử dụng Cloudinary với fallback
             if (file != null && !file.isEmpty()) {
-                String fileName = imageStorageService.store(file, product.getProductName());
-                product.setProductImage(fileName);
+                try {
+                    String imageUrl = storageService.storeProductImage(file);
+                    product.setProductImage(imageUrl);
+                } catch (Exception e) {
+                    // Fallback to old method if Cloudinary fails
+                    String fileName = imageStorageService.store(file, product.getProductName());
+                    product.setProductImage(fileName);
+                }
             }
 
             Product savedProduct = productService.save(product);
@@ -251,8 +261,14 @@ public class ProductController {
                 }
 
                 if (file != null && !file.isEmpty()) {
-                    String fileName = imageStorageService.store(file, product.getProductName());
-                    existingProduct.setProductImage(fileName);
+                    try {
+                        String imageUrl = storageService.storeProductImage(file);
+                        existingProduct.setProductImage(imageUrl);
+                    } catch (Exception e) {
+                        // Fallback to old method if Cloudinary fails
+                        String fileName = imageStorageService.store(file, product.getProductName());
+                        existingProduct.setProductImage(fileName);
+                    }
                 }
 
                 productService.save(existingProduct);

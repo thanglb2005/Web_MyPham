@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import vn.entity.Provider;
 import vn.service.ProviderService;
+import vn.service.StorageService;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -33,6 +34,9 @@ public class ProviderController {
     
     @Autowired
     private ProviderService providerService;
+    
+    @Autowired
+    private StorageService storageService;
 
     @Value("${upload.providers.path}")
     private String uploadPath;
@@ -117,17 +121,23 @@ public class ProviderController {
             return "redirect:/admin/providers?error=duplicate";
         }
         
-        // Handle image upload
+        // Handle image upload - sử dụng Cloudinary với fallback
         if (imageFile != null && !imageFile.isEmpty()) {
             try {
-                String fileName = UUID.randomUUID().toString() + "_" + imageFile.getOriginalFilename();
-                Path filePath = Paths.get(uploadPath, fileName);
-                Files.createDirectories(filePath.getParent());
-                Files.write(filePath, imageFile.getBytes());
-                provider.setLogo(fileName);
-            } catch (IOException e) {
-                System.err.println("Error uploading provider image: " + e.getMessage());
-                return "redirect:/admin/providers?error=upload";
+                String imageUrl = storageService.storeGeneralImage(imageFile);
+                provider.setLogo(imageUrl);
+            } catch (Exception e) {
+                // Fallback to old method if Cloudinary fails
+                try {
+                    String fileName = UUID.randomUUID().toString() + "_" + imageFile.getOriginalFilename();
+                    Path filePath = Paths.get(uploadPath, fileName);
+                    Files.createDirectories(filePath.getParent());
+                    Files.write(filePath, imageFile.getBytes());
+                    provider.setLogo(fileName);
+                } catch (IOException ioException) {
+                    System.err.println("Error uploading provider image: " + ioException.getMessage());
+                    return "redirect:/admin/providers?error=upload";
+                }
             }
         }
         
@@ -148,25 +158,42 @@ public class ProviderController {
             return "redirect:/admin/providers?error=validation";
         }
         
-        // Handle image upload if new image is provided
+        // Handle image upload if new image is provided - sử dụng Cloudinary với fallback
         if (imageFile != null && !imageFile.isEmpty()) {
             try {
-                // Delete old image if exists
+                String imageUrl = storageService.storeGeneralImage(imageFile);
+                
+                // Delete old image if exists (Cloudinary URL)
                 Optional<Provider> existingProvider = providerService.findById(provider.getProviderId());
                 if (existingProvider.isPresent() && existingProvider.get().getLogo() != null) {
-                    Path oldImagePath = Paths.get(uploadPath, existingProvider.get().getLogo());
-                    Files.deleteIfExists(oldImagePath);
+                    try {
+                        storageService.deleteImage(existingProvider.get().getLogo());
+                    } catch (Exception e) {
+                        System.err.println("Could not delete old image: " + e.getMessage());
+                    }
                 }
                 
-                // Save new image
-                String fileName = UUID.randomUUID().toString() + "_" + imageFile.getOriginalFilename();
-                Path filePath = Paths.get(uploadPath, fileName);
-                Files.createDirectories(filePath.getParent());
-                Files.write(filePath, imageFile.getBytes());
-                provider.setLogo(fileName);
-            } catch (IOException e) {
-                System.err.println("Error uploading provider image: " + e.getMessage());
-                return "redirect:/admin/providers?error=upload";
+                provider.setLogo(imageUrl);
+            } catch (Exception e) {
+                // Fallback to old method if Cloudinary fails
+                try {
+                    // Delete old image if exists (local file)
+                    Optional<Provider> existingProvider = providerService.findById(provider.getProviderId());
+                    if (existingProvider.isPresent() && existingProvider.get().getLogo() != null) {
+                        Path oldImagePath = Paths.get(uploadPath, existingProvider.get().getLogo());
+                        Files.deleteIfExists(oldImagePath);
+                    }
+                    
+                    // Save new image
+                    String fileName = UUID.randomUUID().toString() + "_" + imageFile.getOriginalFilename();
+                    Path filePath = Paths.get(uploadPath, fileName);
+                    Files.createDirectories(filePath.getParent());
+                    Files.write(filePath, imageFile.getBytes());
+                    provider.setLogo(fileName);
+                } catch (IOException ioException) {
+                    System.err.println("Error uploading provider image: " + ioException.getMessage());
+                    return "redirect:/admin/providers?error=upload";
+                }
             }
         }
         
@@ -185,11 +212,17 @@ public class ProviderController {
                 // Delete provider image if exists
                 if (provider.get().getLogo() != null) {
                     try {
-                        Path imagePath = Paths.get(uploadPath, provider.get().getLogo());
-                        Files.deleteIfExists(imagePath);
-                    } catch (IOException e) {
-                        // Log error but continue with deletion
-                        System.err.println("Could not delete provider image: " + e.getMessage());
+                        // Try to delete from Cloudinary first
+                        storageService.deleteImage(provider.get().getLogo());
+                    } catch (Exception e) {
+                        // Fallback to local file deletion
+                        try {
+                            Path imagePath = Paths.get(uploadPath, provider.get().getLogo());
+                            Files.deleteIfExists(imagePath);
+                        } catch (IOException ioException) {
+                            // Log error but continue with deletion
+                            System.err.println("Could not delete provider image: " + ioException.getMessage());
+                        }
                     }
                 }
                 

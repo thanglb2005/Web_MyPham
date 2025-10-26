@@ -16,6 +16,7 @@ import org.springframework.web.multipart.MultipartFile;
 import vn.entity.Category;
 import vn.entity.User;
 import vn.service.CategoryService;
+import vn.service.StorageService;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -28,6 +29,9 @@ public class CategoryController {
 
     @Autowired
     private CategoryService categoryService;
+    
+    @Autowired
+    private StorageService storageService;
     
     @Value("${upload.images.path}")
     private String uploadPath;
@@ -147,10 +151,15 @@ public class CategoryController {
         Category category = new Category();
         category.setCategoryName(categoryName);
         
-        // Handle file upload only
+        // Handle file upload - sử dụng Cloudinary với fallback
         String finalImagePath = null;
         if (categoryImageFile != null && !categoryImageFile.isEmpty()) {
-            finalImagePath = saveUploadedFile(categoryImageFile, categoryName);
+            try {
+                finalImagePath = storageService.storeCategoryImage(categoryImageFile);
+            } catch (Exception e) {
+                // Fallback to old method if Cloudinary fails
+                finalImagePath = saveUploadedFile(categoryImageFile, categoryName);
+            }
         }
         
         category.setCategoryImage(finalImagePath);
@@ -203,10 +212,16 @@ public class CategoryController {
         if (category != null) {
             category.setCategoryName(categoryName);
             
-            // Handle file upload only, keep existing if no new file
+            // Handle file upload - sử dụng Cloudinary với fallback
             if (categoryImageFile != null && !categoryImageFile.isEmpty()) {
-                String finalImagePath = saveUploadedFile(categoryImageFile, categoryName);
-                category.setCategoryImage(finalImagePath);
+                try {
+                    String finalImagePath = storageService.storeCategoryImage(categoryImageFile);
+                    category.setCategoryImage(finalImagePath);
+                } catch (Exception e) {
+                    // Fallback to old method if Cloudinary fails
+                    String finalImagePath = saveUploadedFile(categoryImageFile, categoryName);
+                    category.setCategoryImage(finalImagePath);
+                }
             }
             // If no new file uploaded, keep existing image
             
