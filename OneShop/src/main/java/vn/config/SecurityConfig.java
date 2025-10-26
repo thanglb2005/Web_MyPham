@@ -6,6 +6,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
+import org.springframework.security.web.firewall.HttpFirewall;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import vn.service.CustomOAuth2UserService;
 
@@ -62,5 +64,10 @@ public class SecurityConfig {
             .logout(logout -> logout.disable());
 
         return http.build();
+    }
+
+    @Bean
+    public WebSecurityCustomizer webSecurityCustomizer() {
+        return (web) -> web.ignoring().requestMatchers("/assets/**", "/css/**", "/js/**", "/images/**", "/fonts/**", "/vendor/**");
     }
 }

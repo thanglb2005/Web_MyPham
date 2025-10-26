@@ -187,6 +187,13 @@
 			<artifactId>jackson-datatype-hibernate6</artifactId>
 		</dependency>
 		
+		<!-- SiteMesh 3.2.0 - Jakarta EE compatible -->
+		<dependency>
+			<groupId>org.sitemesh</groupId>
+			<artifactId>sitemesh</artifactId>
+			<version>3.2.0</version>
+		</dependency>
+		
 	</dependencies>
 	<build>
 		<plugins>
