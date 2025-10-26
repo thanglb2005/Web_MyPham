@@ -27,6 +27,7 @@ public class ViewResolverConfig {
                 "admin/promotions",
                 "admin/promotion-form",
                 "admin/promotion-detail",
+                "admin/accounts",
                 "decorators/*");
         // Give JSP higher priority for these specific views than Thymeleaf
         resolver.setOrder(0);

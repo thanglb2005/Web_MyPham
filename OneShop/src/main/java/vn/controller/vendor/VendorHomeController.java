@@ -88,11 +88,7 @@ public class VendorHomeController {
                 .mapToDouble(s -> s.getTotalRevenue() != null ? s.getTotalRevenue() : 0.0)
                 .sum();
         
-        if (shops.isEmpty()) {
-            model.addAttribute("error", "Bạn chưa có shop nào. Hãy đăng ký shop mới!");
-            return "vendor/home";
-        }
-        
+        // Always show my-shops page, even if empty (template handles empty state)
         model.addAttribute("vendor", vendor);
         model.addAttribute("shops", shops);
         model.addAttribute("totalShops", shops.size());

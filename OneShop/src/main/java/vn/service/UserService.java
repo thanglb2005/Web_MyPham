@@ -16,4 +16,7 @@ public interface UserService {
     boolean toggleUserStatus(Long userId);
     boolean verifyPassword(String rawPassword, String encodedPassword);
     String encodePassword(String rawPassword);
+    void updateUserRoles(Long userId, java.util.List<Long> roleIds);
+    void createUserWithRoles(String name, String email, String password, java.util.List<Long> roleIds);
+    void deleteById(Long userId);
 }
