@@ -10,11 +10,6 @@ import vn.entity.Shop;
 import vn.entity.User;
 import vn.repository.ShopRepository;
 import vn.repository.UserRepository;
-<<<<<<< HEAD
-import vn.repository.RoleRepository;
-import vn.service.UserService;
-=======
->>>>>>> parent of 7dd478a (đơn hỏa tóc và đơn giao xa)
 
 import java.util.List;
 import java.util.Set;
@@ -33,15 +28,6 @@ public class ShipperManagementController {
 
     @Autowired
     private UserRepository userRepository;
-<<<<<<< HEAD
-    
-    @Autowired
-    private UserService userService;
-    
-    @Autowired
-    private RoleRepository roleRepository;
-=======
->>>>>>> parent of 7dd478a (đơn hỏa tóc và đơn giao xa)
 
     /**
      * Hiển thị trang quản lý shipper cho các shop
@@ -117,74 +103,6 @@ public class ShipperManagementController {
     }
 
     /**
-<<<<<<< HEAD
-     * Hiển thị trang thêm shipper mới
-     */
-    @GetMapping("/shippers-list/add")
-    @Transactional
-    public String showAddShipperForm(Model model) {
-        model.addAttribute("pageTitle", "Thêm Shipper mới");
-        return "admin/add-shipper";
-    }
-
-    /**
-     * Xử lý thêm shipper mới
-     */
-    @PostMapping("/add-shipper")
-    @ResponseBody
-    @Transactional
-    public Map<String, Object> addShipper(@RequestParam String name,
-                                          @RequestParam String email,
-                                          @RequestParam String password,
-                                          Model model) {
-        Map<String, Object> response = new HashMap<>();
-        
-        try {
-            // Kiểm tra email đã tồn tại chưa
-            if (userRepository.existsByEmail(email)) {
-                response.put("success", false);
-                response.put("message", "Email này đã được sử dụng!");
-                return response;
-            }
-
-            // Tạo user mới với role SHIPPER
-            User shipper = new User();
-            shipper.setName(name);
-            shipper.setEmail(email);
-            shipper.setPassword(password);
-            shipper.setRegisterDate(new Date());
-            shipper.setStatus(false); // Mặc định chờ duyệt
-            shipper.setAvatar("user.png");
-            shipper.setOneXuBalance(0.0);
-            shipper.setEnabled(true);
-
-            // Gán role SHIPPER
-            Role shipperRole = roleRepository.findByName("ROLE_SHIPPER").orElse(null);
-            if (shipperRole == null) {
-                shipperRole = new Role("ROLE_SHIPPER");
-                roleRepository.save(shipperRole);
-            }
-            shipper.setRoles(Arrays.asList(shipperRole));
-
-            // Lưu shipper
-            userService.save(shipper);
-
-            response.put("success", true);
-            response.put("message", "Thêm shipper thành công!");
-            response.put("shipperId", shipper.getUserId());
-            
-        } catch (Exception e) {
-            e.printStackTrace();
-            response.put("success", false);
-            response.put("message", "Có lỗi xảy ra khi thêm shipper: " + e.getMessage());
-        }
-        
-        return response;
-    }
-
-    /**
-=======
->>>>>>> parent of 7dd478a (đơn hỏa tóc và đơn giao xa)
      * Xem chi tiết shipper
      */
     @GetMapping("/shipper-detail/{shipperId}")

@@ -114,64 +114,12 @@ public class ShipperHomeController {
         // Lấy các đơn hàng được phân công cho shipper này
         List<Order> assignedOrders = orderRepository.findOrdersByShipper(shipper);
         
-<<<<<<< HEAD
-        // Debug: Log tất cả đơn hàng được gán
-        System.out.println("All assigned orders for shipper: " + allAssignedOrders.size());
-        for (Order order : allAssignedOrders) {
-            System.out.println("Order #" + order.getOrderId() + " - Status: " + order.getStatus() + 
-                             " - Shop: " + (order.getShop() != null ? order.getShop().getShopId() : "null"));
-        }
-        
-        // Lấy các đơn hàng đang giao và đã giao của shipper này (không bao gồm CONFIRMED)
-        // CHỈ LẤY ĐƠN HÀNG TRONG TPHCM (shipper chỉ giao trong TPHCM)
-        List<Order> assignedOrders = allAssignedOrders.stream()
-            .filter(order -> isHoChiMinhCity(order.getShippingAddress()))
-            .filter(order -> order.getStatus() == Order.OrderStatus.SHIPPING || 
-                            order.getStatus() == Order.OrderStatus.DELIVERED ||
-                            order.getStatus() == Order.OrderStatus.OVERDUE)
-            .collect(Collectors.toList());
-        
-        // Lấy các đơn hàng đang chờ giao (CONFIRMED) - bao gồm cả chưa có shipper và đã có shipper
-        // CHỈ LẤY ĐƠN HÀNG TRONG TPHCM (shipper chỉ giao trong TPHCM)
-        List<Order> availableOrders = orderRepository.findAvailableOrdersForShipper(
-            shipper,
-            Order.OrderStatus.CONFIRMED
-        ).stream()
-            .filter(order -> isHoChiMinhCity(order.getShippingAddress()))
-            .collect(Collectors.toList());
-        
-        // Thêm các đơn hàng CONFIRMED đã được gán shipper vào available orders (CHỈ TRONG TPHCM)
-        List<Order> confirmedAssignedOrders = allAssignedOrders.stream()
-            .filter(order -> order.getStatus() == Order.OrderStatus.CONFIRMED)
-            .filter(order -> isHoChiMinhCity(order.getShippingAddress()))
-            .collect(Collectors.toList());
-        availableOrders.addAll(confirmedAssignedOrders);
-        
-        // Loại bỏ trùng lặp
-        availableOrders = availableOrders.stream()
-            .distinct()
-            .collect(Collectors.toList());
-        
-        // Sắp xếp theo ngày đặt hàng (mới nhất trước)
-        availableOrders.sort((o1, o2) -> o2.getOrderDate().compareTo(o1.getOrderDate()));
-        
-        // Debug: Log để kiểm tra
-        System.out.println("Available orders count: " + availableOrders.size());
-        System.out.println("Assigned orders count: " + assignedOrders.size());
-        for (Order order : availableOrders) {
-            System.out.println("Available order #" + order.getOrderId() + " - Status: " + order.getStatus());
-        }
-        for (Order order : assignedOrders) {
-            System.out.println("Assigned order #" + order.getOrderId() + " - Status: " + order.getStatus());
-        }
-=======
         // Lấy các đơn hàng đang chờ giao (CONFIRMED) mà chưa có shipper
         // Chỉ lấy đơn hàng từ các shop mà shipper được gán
         List<Order> availableOrders = orderRepository.findAvailableOrdersForShipper(
             shipper,
             Order.OrderStatus.CONFIRMED
         );
->>>>>>> parent of 7dd478a (đơn hỏa tóc và đơn giao xa)
 
         // Lấy các đơn hàng giao muộn của shipper
         List<Order> overdueOrders = orderService.findOverdueOrdersByShipper(shipper);
