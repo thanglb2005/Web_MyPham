@@ -109,7 +109,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     @Query("SELECT YEAR(o.orderDate) as year, MONTH(o.orderDate) as month, " +
            "COUNT(o) as totalOrders, " +
            "SUM(CASE WHEN o.status = 'DELIVERED' THEN 1 ELSE 0 END) as deliveredOrders, " +
-           "SUM(CASE WHEN o.status = 'DELIVERED' THEN o.totalAmount ELSE 0 END) as totalAmount " +
+           "SUM(CASE WHEN o.status = 'DELIVERED' THEN COALESCE(o.finalAmount, o.totalAmount) ELSE 0 END) as totalAmount " +
            "FROM Order o " +
            "WHERE o.shipper = :shipper " +
            "GROUP BY YEAR(o.orderDate), MONTH(o.orderDate) " +
@@ -139,10 +139,155 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     /**
      * Get total delivered amount for shipper
      */
-    @Query("SELECT COALESCE(SUM(o.totalAmount), 0) " +
+    @Query("SELECT COALESCE(SUM(COALESCE(o.finalAmount, o.totalAmount)), 0) " +
            "FROM Order o " +
            "WHERE o.shipper = :shipper AND o.status = 'DELIVERED'")
     Double getTotalDeliveredAmountByShipper(User shipper);
+
+    /**
+     * Get shipper monthly statistics with shop filter
+     * Returns: [year, month, totalOrders, deliveredOrders, totalAmount]
+     */
+    @Query("SELECT YEAR(o.orderDate) as year, MONTH(o.orderDate) as month, " +
+           "COUNT(o) as totalOrders, " +
+           "SUM(CASE WHEN o.status = 'DELIVERED' THEN 1 ELSE 0 END) as deliveredOrders, " +
+           "SUM(CASE WHEN o.status = 'DELIVERED' THEN COALESCE(o.finalAmount, o.totalAmount) ELSE 0 END) as totalAmount " +
+           "FROM Order o " +
+           "WHERE o.shipper = :shipper " +
+           "AND (:shopId IS NULL OR o.shop.shopId = :shopId) " +
+           "GROUP BY YEAR(o.orderDate), MONTH(o.orderDate) " +
+           "ORDER BY year DESC, month DESC")
+    List<Object[]> getShipperMonthlyStatisticsByShop(@Param("shipper") User shipper, @Param("shopId") Long shopId);
+
+    /**
+     * Get shipper monthly statistics with date range filter
+     * Returns: [year, month, totalOrders, deliveredOrders, totalAmount]
+     */
+    @Query("SELECT YEAR(o.orderDate) as year, MONTH(o.orderDate) as month, " +
+           "COUNT(o) as totalOrders, " +
+           "SUM(CASE WHEN o.status = 'DELIVERED' THEN 1 ELSE 0 END) as deliveredOrders, " +
+           "SUM(CASE WHEN o.status = 'DELIVERED' THEN COALESCE(o.finalAmount, o.totalAmount) ELSE 0 END) as totalAmount " +
+           "FROM Order o " +
+           "WHERE o.shipper = :shipper " +
+           "AND o.orderDate >= :fromDate AND o.orderDate <= :toDate " +
+           "GROUP BY YEAR(o.orderDate), MONTH(o.orderDate) " +
+           "ORDER BY year DESC, month DESC")
+    List<Object[]> getShipperMonthlyStatisticsByDateRange(@Param("shipper") User shipper, 
+                                                         @Param("fromDate") java.time.LocalDateTime fromDate, 
+                                                         @Param("toDate") java.time.LocalDateTime toDate);
+
+    /**
+     * Get shipper monthly statistics with shop and date range filter
+     * Returns: [year, month, totalOrders, deliveredOrders, totalAmount]
+     */
+    @Query("SELECT YEAR(o.orderDate) as year, MONTH(o.orderDate) as month, " +
+           "COUNT(o) as totalOrders, " +
+           "SUM(CASE WHEN o.status = 'DELIVERED' THEN 1 ELSE 0 END) as deliveredOrders, " +
+           "SUM(CASE WHEN o.status = 'DELIVERED' THEN COALESCE(o.finalAmount, o.totalAmount) ELSE 0 END) as totalAmount " +
+           "FROM Order o " +
+           "WHERE o.shipper = :shipper " +
+           "AND (:shopId IS NULL OR o.shop.shopId = :shopId) " +
+           "AND o.orderDate >= :fromDate AND o.orderDate <= :toDate " +
+           "GROUP BY YEAR(o.orderDate), MONTH(o.orderDate) " +
+           "ORDER BY year DESC, month DESC")
+    List<Object[]> getShipperMonthlyStatisticsByShopAndDateRange(@Param("shipper") User shipper, 
+                                                                 @Param("shopId") Long shopId,
+                                                                 @Param("fromDate") java.time.LocalDateTime fromDate, 
+                                                                 @Param("toDate") java.time.LocalDateTime toDate);
+
+    /**
+     * Get total delivered amount for shipper with shop filter
+     */
+    @Query("SELECT COALESCE(SUM(COALESCE(o.finalAmount, o.totalAmount)), 0) " +
+           "FROM Order o " +
+           "WHERE o.shipper = :shipper AND o.status = 'DELIVERED' " +
+           "AND (:shopId IS NULL OR o.shop.shopId = :shopId)")
+    Double getTotalDeliveredAmountByShipperAndShop(@Param("shipper") User shipper, @Param("shopId") Long shopId);
+
+    /**
+     * Get total delivered amount for shipper with date range filter
+     */
+    @Query("SELECT COALESCE(SUM(COALESCE(o.finalAmount, o.totalAmount)), 0) " +
+           "FROM Order o " +
+           "WHERE o.shipper = :shipper AND o.status = 'DELIVERED' " +
+           "AND o.orderDate >= :fromDate AND o.orderDate <= :toDate")
+    Double getTotalDeliveredAmountByShipperAndDateRange(@Param("shipper") User shipper, 
+                                                       @Param("fromDate") java.time.LocalDateTime fromDate, 
+                                                       @Param("toDate") java.time.LocalDateTime toDate);
+
+    /**
+     * Get total delivered amount for shipper with shop and date range filter
+     */
+    @Query("SELECT COALESCE(SUM(COALESCE(o.finalAmount, o.totalAmount)), 0) " +
+           "FROM Order o " +
+           "WHERE o.shipper = :shipper AND o.status = 'DELIVERED' " +
+           "AND (:shopId IS NULL OR o.shop.shopId = :shopId) " +
+           "AND o.orderDate >= :fromDate AND o.orderDate <= :toDate")
+    Double getTotalDeliveredAmountByShipperAndShopAndDateRange(@Param("shipper") User shipper, 
+                                                             @Param("shopId") Long shopId,
+                                                             @Param("fromDate") java.time.LocalDateTime fromDate, 
+                                                             @Param("toDate") java.time.LocalDateTime toDate);
+
+    /**
+     * Get shipper orders by shop
+     */
+    @Query("SELECT o FROM Order o WHERE o.shipper = :shipper " +
+           "AND (:shopId IS NULL OR o.shop.shopId = :shopId) " +
+           "ORDER BY o.orderDate DESC")
+    List<Order> findByShipperAndShop(@Param("shipper") User shipper, @Param("shopId") Long shopId);
+
+    /**
+     * Get shipper orders by date range
+     */
+    @Query("SELECT o FROM Order o WHERE o.shipper = :shipper " +
+           "AND o.orderDate >= :fromDate AND o.orderDate <= :toDate " +
+           "ORDER BY o.orderDate DESC")
+    List<Order> findByShipperAndDateRange(@Param("shipper") User shipper, 
+                                         @Param("fromDate") java.time.LocalDateTime fromDate, 
+                                         @Param("toDate") java.time.LocalDateTime toDate);
+
+    /**
+     * Get shipper orders by shop and date range
+     */
+    @Query("SELECT o FROM Order o WHERE o.shipper = :shipper " +
+           "AND (:shopId IS NULL OR o.shop.shopId = :shopId) " +
+           "AND o.orderDate >= :fromDate AND o.orderDate <= :toDate " +
+           "ORDER BY o.orderDate DESC")
+    List<Order> findByShipperAndShopAndDateRange(@Param("shipper") User shipper, 
+                                                 @Param("shopId") Long shopId,
+                                                 @Param("fromDate") java.time.LocalDateTime fromDate, 
+                                                 @Param("toDate") java.time.LocalDateTime toDate);
+
+    /**
+     * Count orders by shipper and status with shop filter
+     */
+    @Query("SELECT COUNT(o) FROM Order o WHERE o.shipper = :shipper AND o.status = :status " +
+           "AND (:shopId IS NULL OR o.shop.shopId = :shopId)")
+    long countByShipperAndStatusAndShop(@Param("shipper") User shipper, 
+                                       @Param("status") Order.OrderStatus status,
+                                       @Param("shopId") Long shopId);
+
+    /**
+     * Count orders by shipper and status with date range filter
+     */
+    @Query("SELECT COUNT(o) FROM Order o WHERE o.shipper = :shipper AND o.status = :status " +
+           "AND o.orderDate >= :fromDate AND o.orderDate <= :toDate")
+    long countByShipperAndStatusAndDateRange(@Param("shipper") User shipper, 
+                                            @Param("status") Order.OrderStatus status,
+                                            @Param("fromDate") java.time.LocalDateTime fromDate, 
+                                            @Param("toDate") java.time.LocalDateTime toDate);
+
+    /**
+     * Count orders by shipper and status with shop and date range filter
+     */
+    @Query("SELECT COUNT(o) FROM Order o WHERE o.shipper = :shipper AND o.status = :status " +
+           "AND (:shopId IS NULL OR o.shop.shopId = :shopId) " +
+           "AND o.orderDate >= :fromDate AND o.orderDate <= :toDate")
+    long countByShipperAndStatusAndShopAndDateRange(@Param("shipper") User shipper, 
+                                                   @Param("status") Order.OrderStatus status,
+                                                   @Param("shopId") Long shopId,
+                                                   @Param("fromDate") java.time.LocalDateTime fromDate, 
+                                                   @Param("toDate") java.time.LocalDateTime toDate);
 
 
     // ===== VENDOR ORDER MANAGEMENT METHODS =====

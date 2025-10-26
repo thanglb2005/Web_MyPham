@@ -23,6 +23,7 @@ import java.text.NumberFormat;
 import java.util.Locale;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -326,7 +327,10 @@ public class ShipperHomeController {
      * Trang thống kê chi tiết cho shipper
      */
     @GetMapping("/statistics")
-    public String statistics(HttpSession session, Model model) {
+    public String statistics(HttpSession session, Model model,
+                            @RequestParam(required = false) Long shopId,
+                            @RequestParam(required = false) String fromDate,
+                            @RequestParam(required = false) String toDate) {
         User shipper = ensureShipper(session);
         if (shipper == null) {
             return "redirect:/login";
@@ -351,26 +355,82 @@ public class ShipperHomeController {
             shopDescription = "Phụ trách giao hàng cho " + assignedShops.size() + " shop";
         }
 
-        // Lấy tất cả đơn hàng của shipper
-        List<Order> allOrders = orderRepository.findByShipperOrderByOrderDateDesc(shipper);
+        // Parse date strings
+        LocalDateTime fromDateTime = null;
+        LocalDateTime toDateTime = null;
+        boolean hasDateFilter = false;
 
-        // Thống kê tổng quan
-        long totalOrders = allOrders.size();
-        long shippingOrders = orderRepository.countByShipperAndStatus(shipper, Order.OrderStatus.SHIPPING);
-        long deliveredOrders = orderRepository.countByShipperAndStatus(shipper, Order.OrderStatus.DELIVERED);
-        long cancelledOrders = orderRepository.countByShipperAndStatus(shipper, Order.OrderStatus.CANCELLED);
-        
-        // Tổng giá trị đơn hàng đã giao
-        Double totalDeliveredAmount = orderRepository.getTotalDeliveredAmountByShipper(shipper);
+        if (fromDate != null && !fromDate.isEmpty()) {
+            try {
+                fromDateTime = LocalDateTime.parse(fromDate + "T00:00:00");
+                hasDateFilter = true;
+            } catch (Exception e) {
+                // Invalid date format, ignore
+            }
+        }
+
+        if (toDate != null && !toDate.isEmpty()) {
+            try {
+                toDateTime = LocalDateTime.parse(toDate + "T23:59:59");
+                hasDateFilter = true;
+            } catch (Exception e) {
+                // Invalid date format, ignore
+            }
+        }
+
+        // Kiểm tra nếu có filter
+        List<Order> allOrders;
+        long totalOrders;
+        long shippingOrders;
+        long deliveredOrders;
+        long cancelledOrders;
+        Double totalDeliveredAmount;
+        List<Object[]> monthlyStats;
+
+        if (hasDateFilter && shopId != null) {
+            // Filter by both shop and date range
+            allOrders = orderRepository.findByShipperAndShopAndDateRange(shipper, shopId, fromDateTime, toDateTime);
+            shippingOrders = orderRepository.countByShipperAndStatusAndShopAndDateRange(shipper, Order.OrderStatus.SHIPPING, shopId, fromDateTime, toDateTime);
+            deliveredOrders = orderRepository.countByShipperAndStatusAndShopAndDateRange(shipper, Order.OrderStatus.DELIVERED, shopId, fromDateTime, toDateTime);
+            cancelledOrders = orderRepository.countByShipperAndStatusAndShopAndDateRange(shipper, Order.OrderStatus.CANCELLED, shopId, fromDateTime, toDateTime);
+            totalDeliveredAmount = orderRepository.getTotalDeliveredAmountByShipperAndShopAndDateRange(shipper, shopId, fromDateTime, toDateTime);
+            monthlyStats = orderRepository.getShipperMonthlyStatisticsByShopAndDateRange(shipper, shopId, fromDateTime, toDateTime);
+            totalOrders = allOrders.size();
+        } else if (hasDateFilter) {
+            // Filter by date range only
+            allOrders = orderRepository.findByShipperAndDateRange(shipper, fromDateTime, toDateTime);
+            shippingOrders = orderRepository.countByShipperAndStatusAndDateRange(shipper, Order.OrderStatus.SHIPPING, fromDateTime, toDateTime);
+            deliveredOrders = orderRepository.countByShipperAndStatusAndDateRange(shipper, Order.OrderStatus.DELIVERED, fromDateTime, toDateTime);
+            cancelledOrders = orderRepository.countByShipperAndStatusAndDateRange(shipper, Order.OrderStatus.CANCELLED, fromDateTime, toDateTime);
+            totalDeliveredAmount = orderRepository.getTotalDeliveredAmountByShipperAndDateRange(shipper, fromDateTime, toDateTime);
+            monthlyStats = orderRepository.getShipperMonthlyStatisticsByDateRange(shipper, fromDateTime, toDateTime);
+            totalOrders = allOrders.size();
+        } else if (shopId != null) {
+            // Filter by shop only
+            allOrders = orderRepository.findByShipperAndShop(shipper, shopId);
+            shippingOrders = orderRepository.countByShipperAndStatusAndShop(shipper, Order.OrderStatus.SHIPPING, shopId);
+            deliveredOrders = orderRepository.countByShipperAndStatusAndShop(shipper, Order.OrderStatus.DELIVERED, shopId);
+            cancelledOrders = orderRepository.countByShipperAndStatusAndShop(shipper, Order.OrderStatus.CANCELLED, shopId);
+            totalDeliveredAmount = orderRepository.getTotalDeliveredAmountByShipperAndShop(shipper, shopId);
+            monthlyStats = orderRepository.getShipperMonthlyStatisticsByShop(shipper, shopId);
+            totalOrders = allOrders.size();
+        } else {
+            // No filter
+            allOrders = orderRepository.findByShipperOrderByOrderDateDesc(shipper);
+            shippingOrders = orderRepository.countByShipperAndStatus(shipper, Order.OrderStatus.SHIPPING);
+            deliveredOrders = orderRepository.countByShipperAndStatus(shipper, Order.OrderStatus.DELIVERED);
+            cancelledOrders = orderRepository.countByShipperAndStatus(shipper, Order.OrderStatus.CANCELLED);
+            totalDeliveredAmount = orderRepository.getTotalDeliveredAmountByShipper(shipper);
+            monthlyStats = orderRepository.getShipperMonthlyStatistics(shipper);
+            totalOrders = allOrders.size();
+        }
+
         if (totalDeliveredAmount == null) {
             totalDeliveredAmount = 0.0;
         }
 
         // Tính tỷ lệ giao hàng thành công
         double successRate = totalOrders > 0 ? (deliveredOrders * 100.0 / totalOrders) : 0.0;
-
-        // Thống kê theo tháng
-        List<Object[]> monthlyStats = orderRepository.getShipperMonthlyStatistics(shipper);
         
         // Thống kê theo trạng thái
         List<Object[]> statusStats = orderRepository.getShipperOrderStatsByStatus(shipper);
@@ -388,6 +448,9 @@ public class ShipperHomeController {
         model.addAttribute("monthlyStats", monthlyStats);
         model.addAttribute("statusStats", statusStats);
         model.addAttribute("pageTitle", "Thống kê giao hàng");
+        model.addAttribute("selectedShopId", shopId);
+        model.addAttribute("fromDate", fromDate);
+        model.addAttribute("toDate", toDate);
 
         return "shipper/statistics";
     }
@@ -397,7 +460,10 @@ public class ShipperHomeController {
      */
     @GetMapping("/api/monthly-stats")
     @ResponseBody
-    public Map<String, Object> getMonthlyStats(HttpSession session) {
+    public Map<String, Object> getMonthlyStats(HttpSession session,
+                                                @RequestParam(required = false) Long shopId,
+                                                @RequestParam(required = false) String fromDate,
+                                                @RequestParam(required = false) String toDate) {
         User shipper = ensureShipper(session);
         Map<String, Object> response = new HashMap<>();
         
@@ -406,7 +472,40 @@ public class ShipperHomeController {
             return response;
         }
 
-        List<Object[]> monthlyStats = orderRepository.getShipperMonthlyStatistics(shipper);
+        // Parse date strings
+        LocalDateTime fromDateTime = null;
+        LocalDateTime toDateTime = null;
+        boolean hasDateFilter = false;
+
+        if (fromDate != null && !fromDate.isEmpty()) {
+            try {
+                fromDateTime = LocalDateTime.parse(fromDate + "T00:00:00");
+                hasDateFilter = true;
+            } catch (Exception e) {
+                // Invalid date format, ignore
+            }
+        }
+
+        if (toDate != null && !toDate.isEmpty()) {
+            try {
+                toDateTime = LocalDateTime.parse(toDate + "T23:59:59");
+                hasDateFilter = true;
+            } catch (Exception e) {
+                // Invalid date format, ignore
+            }
+        }
+
+        List<Object[]> monthlyStats;
+        
+        if (hasDateFilter && shopId != null) {
+            monthlyStats = orderRepository.getShipperMonthlyStatisticsByShopAndDateRange(shipper, shopId, fromDateTime, toDateTime);
+        } else if (hasDateFilter) {
+            monthlyStats = orderRepository.getShipperMonthlyStatisticsByDateRange(shipper, fromDateTime, toDateTime);
+        } else if (shopId != null) {
+            monthlyStats = orderRepository.getShipperMonthlyStatisticsByShop(shipper, shopId);
+        } else {
+            monthlyStats = orderRepository.getShipperMonthlyStatistics(shipper);
+        }
         
         List<Map<String, Object>> formattedStats = monthlyStats.stream()
             .map(stat -> {
@@ -467,7 +566,10 @@ public class ShipperHomeController {
      */
     @GetMapping("/api/status-stats")
     @ResponseBody
-    public Map<String, Object> getStatusStats(HttpSession session) {
+    public Map<String, Object> getStatusStats(HttpSession session,
+                                               @RequestParam(required = false) Long shopId,
+                                               @RequestParam(required = false) String fromDate,
+                                               @RequestParam(required = false) String toDate) {
         User shipper = ensureShipper(session);
         Map<String, Object> response = new HashMap<>();
         
@@ -476,35 +578,73 @@ public class ShipperHomeController {
             return response;
         }
 
-        List<Object[]> statusStats = orderRepository.getShipperOrderStatsByStatus(shipper);
-        
-        List<Map<String, Object>> formattedStats = statusStats.stream()
-            .map(stat -> {
-                Map<String, Object> item = new HashMap<>();
-                String status = stat[0].toString();
-                String label;
-                
-                // Convert status to Vietnamese label
-                switch (status) {
-                    case "SHIPPING":
-                        label = "Đang giao";
-                        break;
-                    case "DELIVERED":
-                        label = "Đã giao";
-                        break;
-                    case "CANCELLED":
-                        label = "Đã hủy";
-                        break;
-                    default:
-                        label = status;
-                }
-                
-                item.put("status", status);
-                item.put("label", label);
-                item.put("count", stat[1]);
-                return item;
-            })
-            .collect(Collectors.toList());
+        // Parse date strings
+        LocalDateTime fromDateTime = null;
+        LocalDateTime toDateTime = null;
+        boolean hasDateFilter = false;
+
+        if (fromDate != null && !fromDate.isEmpty()) {
+            try {
+                fromDateTime = LocalDateTime.parse(fromDate + "T00:00:00");
+                hasDateFilter = true;
+            } catch (Exception e) {
+                // Invalid date format, ignore
+            }
+        }
+
+        if (toDate != null && !toDate.isEmpty()) {
+            try {
+                toDateTime = LocalDateTime.parse(toDate + "T23:59:59");
+                hasDateFilter = true;
+            } catch (Exception e) {
+                // Invalid date format, ignore
+            }
+        }
+
+        // Get filtered orders
+        List<Order> allOrders;
+        if (hasDateFilter && shopId != null) {
+            allOrders = orderRepository.findByShipperAndShopAndDateRange(shipper, shopId, fromDateTime, toDateTime);
+        } else if (hasDateFilter) {
+            allOrders = orderRepository.findByShipperAndDateRange(shipper, fromDateTime, toDateTime);
+        } else if (shopId != null) {
+            allOrders = orderRepository.findByShipperAndShop(shipper, shopId);
+        } else {
+            allOrders = orderRepository.findByShipperOrderByOrderDateDesc(shipper);
+        }
+
+        // Calculate status stats
+        Map<String, Long> statusCounts = allOrders.stream()
+            .collect(Collectors.groupingBy(
+                order -> order.getStatus().name(),
+                Collectors.counting()
+            ));
+
+        List<Map<String, Object>> formattedStats = new ArrayList<>();
+        statusCounts.forEach((status, count) -> {
+            Map<String, Object> item = new HashMap<>();
+            String label;
+            
+            // Convert status to Vietnamese label
+            switch (status) {
+                case "SHIPPING":
+                    label = "Đang giao";
+                    break;
+                case "DELIVERED":
+                    label = "Đã giao";
+                    break;
+                case "CANCELLED":
+                    label = "Đã hủy";
+                    break;
+                default:
+                    label = status;
+            }
+            
+            item.put("status", status);
+            item.put("label", label);
+            item.put("count", count);
+            formattedStats.add(item);
+        });
 
         response.put("data", formattedStats);
         return response;

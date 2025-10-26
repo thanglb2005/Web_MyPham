@@ -183,6 +183,50 @@
       </div>
     </div>
 
+    <!-- Filter Section -->
+    <div class="mb-4" style="
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+    ">
+      <div class="row align-items-end">
+        <div class="col-md-4 mb-3 mb-md-0">
+          <label class="form-label fw-bold mb-2">
+            <i class="fas fa-shop me-2 text-primary"></i>Lọc theo shop
+          </label>
+          <select class="form-select" id="shopFilter" name="shopId" form="filterForm">
+            <option value="">Tất cả shop</option>
+            <option th:each="shop : ${assignedShops}" 
+                    th:value="${shop.shopId}" 
+                    th:text="${shop.shopName}"
+                    th:selected="${selectedShopId != null && selectedShopId == shop.shopId}">
+              Shop Name
+            </option>
+          </select>
+        </div>
+        <div class="col-md-3 mb-3 mb-md-0">
+          <label class="form-label fw-bold mb-2">
+            <i class="fas fa-calendar-alt me-2 text-success"></i>Từ ngày
+          </label>
+          <input type="date" class="form-control" id="fromDate" name="fromDate" form="filterForm" th:value="${fromDate}"/>
+        </div>
+        <div class="col-md-3 mb-3 mb-md-0">
+          <label class="form-label fw-bold mb-2">
+            <i class="fas fa-calendar-check me-2 text-info"></i>Đến ngày
+          </label>
+          <input type="date" class="form-control" id="toDate" name="toDate" form="filterForm" th:value="${toDate}"/>
+        </div>
+        <div class="col-md-2">
+          <form id="filterForm" method="get" action="/shipper/statistics">
+            <button type="submit" class="btn btn-success w-100">
+              <i class="fas fa-filter me-2"></i>Lọc
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+
     <!-- Statistics Cards -->
     <div class="row g-4 mb-4">
       <div class="col-md-3">
@@ -353,8 +397,27 @@
         return;
       }
 
+      // Get filter parameters from URL
+      var urlParams = new URLSearchParams(window.location.search);
+      var shopId = urlParams.get('shopId');
+      var fromDate = urlParams.get('fromDate');
+      var toDate = urlParams.get('toDate');
+      
+      // Build API URL with filters
+      var monthlyStatsUrl = '/shipper/api/monthly-stats';
+      var statusStatsUrl = '/shipper/api/status-stats';
+      
+      if (shopId || fromDate || toDate) {
+        var params = [];
+        if (shopId) params.push('shopId=' + shopId);
+        if (fromDate) params.push('fromDate=' + fromDate);
+        if (toDate) params.push('toDate=' + toDate);
+        monthlyStatsUrl += '?' + params.join('&');
+        statusStatsUrl += '?' + params.join('&');
+      }
+
       // Fetch data from API
-      fetch('/shipper/api/monthly-stats')
+      fetch(monthlyStatsUrl)
         .then(function(response) { return response.json(); })
         .then(function(result) {
           createMonthlyChart(result.data || []);
@@ -364,7 +427,7 @@
           createMonthlyChart([]);
         });
 
-      fetch('/shipper/api/status-stats')
+      fetch(statusStatsUrl)
         .then(function(response) { return response.json(); })
         .then(function(result) {
           createStatusChart(result.data || []);
