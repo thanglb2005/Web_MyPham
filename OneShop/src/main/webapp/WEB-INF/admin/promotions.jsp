@@ -2,11 +2,14 @@
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 
 <div class="page-header">
-  <h2 class="page-title">Quản lý khuyến mãi</h2>
-  <div>
-    <a href="/admin/promotions/add" class="btn btn-primary"><i class="fas fa-plus"></i> Thêm khuyến mãi mới</a>
+  <div class="d-flex align-items-center justify-content-between w-100">
+    <h2 class="page-title mb-0">Quản lý khuyến mãi</h2>
+    <div class="ml-auto">
+      <a href="/admin/promotions/add" class="btn btn-primary">
+        <i class="fas fa-plus"></i> Thêm khuyến mãi mới
+      </a>
+    </div>
   </div>
-  
 </div>
 
 <div class="page-inner">

@@ -20,10 +20,7 @@ taglib prefix="c" uri="jakarta.tags.core" %>
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
     />
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
-    />
+    <!-- animate.css removed to keep UI static -->
 
     <!-- Atlantis CSS -->
     <link rel="stylesheet" href="/assets/css/atlantis.min.css" />
@@ -38,10 +35,139 @@ taglib prefix="c" uri="jakarta.tags.core" %>
 
     <!-- Admin Layout Styles -->
     <style>
+      /* Disable all animations/transitions site-wide for admin */
+      *,
+      *::before,
+      *::after {
+        transition: none !important;
+        animation: none !important;
+      }
+      /* Allow smooth transitions for specific sidebar elements (match statistics) */
+      .logo-header,
+      .logo-header .logo,
+      .sidebar,
+      .sidebar .sidebar-wrapper,
+      .main-panel,
+      .nav-item .caret {
+        transition: all 0.3s ease !important;
+      }
+      html:focus-within {
+        scroll-behavior: auto !important;
+      }
+      a:hover,
+      button:hover,
+      .btn:hover {
+        transform: none !important;
+      }
+      /* Global neutralize of interactive effects */
+      *:hover,
+      *:focus,
+      *:active {
+        transform: none !important;
+        box-shadow: none !important;
+        text-shadow: none !important;
+        filter: none !important;
+        backdrop-filter: none !important;
+      }
+      @keyframes shimmer {
+        from {
+          opacity: 1;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+      @keyframes fadeInUp {
+        from {
+          opacity: 1;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+      /* Hard-neutralize common hover visual changes */
+      .nav-primary .nav-item:hover {
+        background: transparent !important; /* match statistics sidebar */
+        box-shadow: none !important;
+      }
+      .nav-primary .nav-item:hover a {
+        color: #007bff !important;
+        text-shadow: none !important;
+      }
+      .nav-primary .nav-item.active > a {
+        background-color: #007bff !important;
+        color: #fff !important;
+      }
+      .footer-links a:hover {
+        opacity: 1 !important;
+        text-shadow: none !important;
+      }
+      .card:hover {
+        box-shadow: none !important;
+        transform: none !important;
+      }
+      .btn-primary:hover {
+        background: linear-gradient(135deg, #007bff, #0056b3) !important;
+        box-shadow: none !important;
+        transform: none !important;
+      }
+      .btn-info:hover {
+        background: linear-gradient(135deg, #17a2b8, #138496) !important;
+        box-shadow: none !important;
+        transform: none !important;
+      }
+      .btn-danger:hover {
+        background: linear-gradient(135deg, #dc3545, #c82333) !important;
+        box-shadow: none !important;
+        transform: none !important;
+      }
+      .btn-edit:hover {
+        background: linear-gradient(
+          135deg,
+          #ffc107 0%,
+          #ffb300 100%
+        ) !important;
+        box-shadow: none !important;
+        transform: none !important;
+      }
+      .btn-delete:hover {
+        background: linear-gradient(
+          135deg,
+          #dc3545 0%,
+          #c82333 100%
+        ) !important;
+        box-shadow: none !important;
+        transform: none !important;
+      }
+      .table td {
+        transition: none !important;
+      }
+      .table tbody tr:hover {
+        background: rgba(0, 123, 255, 0.06) !important; /* light blue tint */
+        transform: none !important;
+      }
+      .table tbody tr:hover td {
+        color: inherit !important;
+      }
+      .category-image {
+        transition: none !important;
+      }
+      .category-image:hover {
+        transform: none !important;
+        border-color: #e9ecef !important;
+        box-shadow: none !important;
+      }
+      .no-image {
+        transition: none !important;
+      }
+      .no-image:hover {
+        background: #e9ecef !important;
+        border-color: #e9ecef !important;
+      }
       /* ===== HEADER STYLES ===== */
       .main-header {
-        background: linear-gradient(135deg, #1e3c72, #2a5298);
-        box-shadow: 0 4px 20px rgba(30, 60, 114, 0.3);
+        background: #ffffff; /* match admin statistics header */
+        box-shadow: none;
         position: fixed;
         top: 0;
         left: 0;
@@ -68,37 +194,35 @@ taglib prefix="c" uri="jakarta.tags.core" %>
       .logo-header {
         display: flex;
         align-items: center;
-        padding: 15px 25px;
-        background: rgba(255, 255, 255, 0.1);
-        backdrop-filter: blur(10px);
-        border-radius: 0 0 15px 0;
-        margin-right: 20px;
+        padding: 10px 20px;
+        background: #ffffff; /* white strip like statistics */
+        border-bottom: 1px solid #e9ecef;
+        margin-right: 0;
+        border-radius: 0;
       }
 
       .logo-header .logo {
         display: flex;
         align-items: center;
         text-decoration: none;
-        color: white;
+        color: #007bff;
         font-weight: 700;
         font-size: 24px;
-        transition: all 0.3s ease;
       }
 
       .logo-header .logo:hover {
-        transform: scale(1.05);
-        text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+        text-decoration: none;
       }
 
       .logo-header .logo img {
-        height: 45px;
-        margin-right: 15px;
-        filter: brightness(1.2);
-        transition: all 0.3s ease;
+        width: 180px;
+        height: auto;
+        margin-right: 0;
+        filter: none;
       }
 
       .logo-header .logo:hover img {
-        filter: brightness(1.5) drop-shadow(0 0 10px rgba(255, 255, 255, 0.3));
+        filter: none;
       }
 
       .toggle-sidebar {
@@ -117,16 +241,16 @@ taglib prefix="c" uri="jakarta.tags.core" %>
       }
 
       .navbar-header {
-        background: transparent;
-        padding: 15px 25px;
+        background: #007bff; /* primary blue like statistics */
+        padding: 12px 20px;
       }
 
       .navbar-header h4 {
-        color: white;
+        color: #ffffff;
         margin: 0;
         font-weight: 600;
-        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-        font-size: 20px;
+        text-shadow: none;
+        font-size: 18px;
       }
 
       /* ===== SIDEBAR STYLES ===== */
