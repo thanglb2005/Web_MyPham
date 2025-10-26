@@ -24,6 +24,7 @@ public class SiteMeshWebFilter extends ConfigurableSiteMeshFilter {
         builder.addDecoratorPath("/admin/promotions/add", "admin.jsp");
         builder.addDecoratorPath("/admin/promotions/edit/*", "admin.jsp");
         builder.addDecoratorPath("/admin/promotions/view/*", "admin.jsp");
+        builder.addDecoratorPath("/admin/accounts", "admin.jsp");
         
         // Exclude static resources and other paths
         builder.addExcludedPath("/assets/*");

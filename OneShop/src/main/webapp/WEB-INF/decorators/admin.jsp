@@ -1253,6 +1253,11 @@ taglib prefix="c" uri="jakarta.tags.core" %>
                       </a>
                     </li>
                     <li>
+                      <a href="/admin/accounts">
+                        <span class="sub-item">Quản lý tài khoản</span>
+                      </a>
+                    </li>
+                    <li>
                       <a href="/admin/promotions">
                         <span class="sub-item">Quản Lý Khuyến Mãi</span>
                       </a>

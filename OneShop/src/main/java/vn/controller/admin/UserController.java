@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import vn.entity.User;
 import vn.service.UserService;
+import vn.repository.RoleRepository;
 
 import java.util.List;
 import java.util.Optional;
@@ -23,6 +24,9 @@ public class UserController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private RoleRepository roleRepository;
 
     /**
      * Hiển thị danh sách tất cả khách hàng
@@ -39,6 +43,104 @@ public class UserController {
         model.addAttribute("user", adminUser);
         
         return "admin/users";
+    }
+
+    /**
+     * Trang quản lý tài khoản: cấp role và tạo tài khoản
+     */
+    @GetMapping("/admin/accounts")
+    public String accounts(HttpSession session, Model model) {
+        User adminUser = (User) session.getAttribute("user");
+        if (adminUser == null) {
+            return "redirect:/login";
+        }
+        model.addAttribute("user", adminUser);
+        model.addAttribute("users", userService.findAll());
+        model.addAttribute("roles", roleRepository.findAll());
+        return "admin/accounts";
+    }
+
+    /** Cập nhật role cho user */
+    @PostMapping("/admin/accounts/update-roles")
+    public String updateRoles(@RequestParam(value = "userId", required = false) Long userId,
+                              @RequestParam(value = "roleIds", required = false) List<Long> roleIds,
+                              HttpSession session) {
+        User adminUser = (User) session.getAttribute("user");
+        if (adminUser == null) {
+            return "redirect:/login";
+        }
+        if (userId == null) {
+            return "redirect:/admin/accounts?error=missing_user";
+        }
+        try {
+            userService.updateUserRoles(userId, roleIds);
+            
+            // If admin is updating their own roles, refresh session
+            if (adminUser.getUserId().equals(userId)) {
+                Optional<User> updatedUser = userService.findByIdWithRoles(userId);
+                updatedUser.ifPresent(u -> session.setAttribute("user", u));
+            }
+            
+            return "redirect:/admin/accounts?success=updated";
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            return "redirect:/admin/accounts?error=update_failed";
+        }
+    }
+
+    /** Graceful redirect if someone opens the POST URL directly */
+    @GetMapping("/admin/accounts/update-roles")
+    public String updateRolesGetFallback() {
+        return "redirect:/admin/accounts";
+    }
+
+    /** Tạo tài khoản mới + phân role */
+    @PostMapping("/admin/accounts/create")
+    public String createAccount(@RequestParam String name,
+                                @RequestParam String email,
+                                @RequestParam String password,
+                                @RequestParam(value = "roleIds", required = false) List<Long> roleIds,
+                                HttpSession session) {
+        User adminUser = (User) session.getAttribute("user");
+        if (adminUser == null) {
+            return "redirect:/login";
+        }
+        User user = new User();
+        user.setName(name);
+        user.setEmail(email);
+        user.setPassword(password);
+        user.setStatus(true);
+        if (roleIds != null && !roleIds.isEmpty()) {
+            user.setRoles(new java.util.HashSet<>(roleRepository.findAllById(roleIds)));
+        }
+        userService.save(user);
+        return "redirect:/admin/accounts";
+    }
+
+    /** Xóa tài khoản */
+    @PostMapping("/admin/accounts/delete")
+    public String deleteAccount(@RequestParam(value = "userId", required = false) Long userId,
+                                HttpSession session) {
+        User adminUser = (User) session.getAttribute("user");
+        if (adminUser == null) {
+            return "redirect:/login";
+        }
+        if (userId == null) {
+            return "redirect:/admin/accounts?error=missing_user";
+        }
+        
+        // Prevent admin from deleting themselves
+        if (adminUser.getUserId().equals(userId)) {
+            return "redirect:/admin/accounts?error=cannot_delete_self";
+        }
+        
+        try {
+            userService.deleteById(userId);
+            return "redirect:/admin/accounts?success=deleted";
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            return "redirect:/admin/accounts?error=delete_failed";
+        }
     }
 
     /**

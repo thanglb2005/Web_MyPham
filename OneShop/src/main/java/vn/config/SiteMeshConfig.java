@@ -24,9 +24,10 @@ public class SiteMeshConfig {
                 filter.addUrlPatterns("/admin/shops");
                 filter.addUrlPatterns("/admin/products");
                 filter.addUrlPatterns("/admin/orders");
-                filter.addUrlPatterns("/admin/shippers-list");
+        filter.addUrlPatterns("/admin/shippers-list");
                 filter.addUrlPatterns("/admin/promotions");
                 filter.addUrlPatterns("/admin/promotions/*");
+        filter.addUrlPatterns("/admin/accounts");
         // Only decorate initial REQUESTs, avoid FORWARD/INCLUDE re-processing (prevents double decoration)
         filter.setDispatcherTypes(EnumSet.of(DispatcherType.REQUEST));
         filter.setName("sitemesh");
