@@ -91,16 +91,20 @@ public class ShipperHomeController {
                             order.getStatus() == Order.OrderStatus.OVERDUE)
             .collect(Collectors.toList());
         
-        // Lấy các đơn hàng đang chờ giao (CONFIRMED) - bao gồm cả chưa có shipper và đã có shipper
+        // Lấy các đơn hàng đang chờ giao (CONFIRMED) - ChỈ LẤY ĐƠN HỎA TỐC
         // Chỉ lấy đơn hàng từ các shop mà shipper được gán
         List<Order> availableOrders = orderRepository.findAvailableOrdersForShipper(
             shipper,
             Order.OrderStatus.CONFIRMED
         );
         
-        // Thêm các đơn hàng CONFIRMED đã được gán shipper vào available orders
+        // Thêm các đơn hàng CONFIRMED ĐÃ ĐƯỢC GÁN CHO SHIPPER HIỆN TẠI (chỉ hỏa tốc)
+        // Chỉ hiển thị đơn đã được vendor gán cho shipper này
         List<Order> confirmedAssignedOrders = allAssignedOrders.stream()
-            .filter(order -> order.getStatus() == Order.OrderStatus.CONFIRMED)
+            .filter(order -> order.getStatus() == Order.OrderStatus.CONFIRMED 
+                        && order.getDeliveryType() == Order.DeliveryType.EXPRESS
+                        && order.getShipper() != null 
+                        && order.getShipper().getUserId().equals(shipper.getUserId()))
             .collect(Collectors.toList());
         availableOrders.addAll(confirmedAssignedOrders);
         
@@ -160,28 +164,54 @@ public class ShipperHomeController {
         }
 
         try {
-            // Kiểm tra đơn hàng có tồn tại và chưa được phân công shipper
+            // Kiểm tra đơn hàng có tồn tại
             Order order = orderService.getOrderById(orderId);
-            if (order != null && order.getShipper() == null && 
-                order.getStatus() == Order.OrderStatus.CONFIRMED) {
+            
+            // Kiểm tra điều kiện: đơn hỏa tốc, đã xác nhận
+            if (order != null && 
+                order.getStatus() == Order.OrderStatus.CONFIRMED &&
+                order.getDeliveryType() == Order.DeliveryType.EXPRESS) {
                 
-                // Phân công shipper cho đơn hàng
-                orderService.assignShipper(orderId, shipper);
+                // Nếu đơn chưa có shipper → Phân công cho shipper hiện tại
+                // Nếu đơn đã có shipper → Kiểm tra xem có phải là shipper hiện tại không
+                boolean canPickup = false;
+                String reason = "";
                 
-                // Cập nhật trạng thái đơn hàng sang SHIPPING
-                orderService.updateOrderStatus(orderId, Order.OrderStatus.SHIPPING);
+                if (order.getShipper() == null) {
+                    // Đơn chưa có shipper → shipper tự nhận
+                    canPickup = true;
+                } else if (order.getShipper().getUserId().equals(shipper.getUserId())) {
+                    // Đơn đã được vendor gán cho shipper này
+                    canPickup = true;
+                } else {
+                    // Đơn đã được gán cho shipper khác
+                    canPickup = false;
+                    reason = "Đơn đã được gán cho shipper khác";
+                }
                 
-                // Gửi email thông báo đã nhận đơn tới khách hàng
-                try {
-                    Order picked = orderService.getOrderById(orderId);
-                    if (picked != null) {
-                        sendOrderPickedUpEmail(picked, shipper);
+                if (canPickup) {
+                    // Nếu chưa có shipper, phân công
+                    if (order.getShipper() == null) {
+                        orderService.assignShipper(orderId, shipper);
                     }
-                } catch (Exception ignore) {}
-                
-                model.addAttribute("success", "Đã nhận đơn hàng #" + orderId + " thành công!");
+                    
+                    // Cập nhật trạng thái đơn hàng sang SHIPPING
+                    orderService.updateOrderStatus(orderId, Order.OrderStatus.SHIPPING);
+                    
+                    // Gửi email thông báo đã nhận đơn tới khách hàng
+                    try {
+                        Order picked = orderService.getOrderById(orderId);
+                        if (picked != null) {
+                            sendOrderPickedUpEmail(picked, shipper);
+                        }
+                    } catch (Exception ignore) {}
+                    
+                    model.addAttribute("success", "Đã nhận đơn hàng #" + orderId + " thành công!");
+                } else {
+                    model.addAttribute("error", reason.isEmpty() ? "Không thể nhận đơn hàng này!" : reason);
+                }
             } else {
-                model.addAttribute("error", "Không thể nhận đơn hàng này!");
+                model.addAttribute("error", "Chỉ có thể nhận đơn hỏa tốc đã được xác nhận!");
             }
         } catch (Exception e) {
             model.addAttribute("error", "Có lỗi xảy ra: " + e.getMessage());

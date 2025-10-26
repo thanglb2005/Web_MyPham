@@ -236,6 +236,27 @@
                           ></span>
                         </div>
                       </div>
+                      <!-- Delivery Type Badge -->
+                      <div class="mt-1" th:if="${order.deliveryType}">
+                        <span th:if="${order.deliveryType.name() == 'EXPRESS'}" class="badge bg-danger">
+                          <i class="fas fa-bolt me-1"></i>Hỏa tốc
+                        </span>
+                        <span th:if="${order.deliveryType.name() == 'STANDARD'}" class="badge bg-info">
+                          <i class="fas fa-truck me-1"></i>Tiêu chuẩn
+                        </span>
+                        <!-- Display assigned shipper for EXPRESS orders -->
+                        <div th:if="${order.deliveryType.name() == 'EXPRESS' && order.status.name() != 'PENDING' && order.shipper != null}" 
+                             class="mt-1 text-success">
+                          <i class="fas fa-user-tie me-1"></i>
+                          <small th:text="|Shipper: ${shipperNameMap[order.shipper.userId]}|">Shipper Name</small>
+                        </div>
+                        <!-- Display shipping provider for STANDARD orders -->
+                        <div th:if="${order.deliveryType.name() == 'STANDARD' && order.status.name() != 'PENDING' && order.shippingProviderId != null}" 
+                             class="mt-1 text-primary">
+                          <i class="fas fa-truck me-1"></i>
+                          <small th:text="|Đơn vị: ${shippingProviderMap[order.shippingProviderId]}|">Provider Name</small>
+                        </div>
+                      </div>
                       <div class="mt-1">
                         <i class="fas fa-map-marker-alt me-1"></i>
                         <small
@@ -281,28 +302,33 @@
                       >
                         <!-- Các nút hành động chỉ hiển thị khi trạng thái là PENDING -->
                         <div th:if="${order.status.name() == 'PENDING'}">
-                          <form
-                            th:action="@{/vendor/orders/confirm}"
-                            method="post"
-                            class="d-inline"
-                          >
-                            <input
-                              type="hidden"
-                              name="orderId"
-                              th:value="${order.orderId}"
-                            />
-                            <input
-                              type="hidden"
-                              name="shopId"
-                              th:value="${shopId}"
-                            />
+                          <!-- Express orders: open modal to select shipper -->
+                          <div th:if="${order.deliveryType != null && order.deliveryType.name() == 'EXPRESS'}">
                             <button
-                              type="submit"
-                              class="btn btn-sm btn-success"
+                              type="button"
+                              class="btn btn-sm btn-success btn-confirm-express"
+                              th:data-order-id="${order.orderId}"
+                              th:data-shop-id="${shopId}"
+                              onclick="openConfirmExpressModal(this)"
                             >
                               <i class="fas fa-check me-1"></i>Xác nhận
                             </button>
-                          </form>
+                          </div>
+                          
+                          <!-- Standard orders: open modal to select shipping provider -->
+                          <div th:if="${order.deliveryType == null || order.deliveryType.name() != 'EXPRESS'}">
+                            <button
+                              type="button"
+                              class="btn btn-sm btn-success btn-confirm-standard"
+                              th:data-order-id="${order.orderId}"
+                              th:data-shop-id="${shopId}"
+                              onclick="openConfirmStandardModal(this)"
+                            >
+                              <i class="fas fa-check me-1"></i>Xác nhận
+                            </button>
+                          </div>
+                          
+                          <!-- Cancel button -->
                           <form
                             th:action="@{/vendor/orders/cancel}"
                             method="post"
@@ -401,5 +427,186 @@
         <h5 class="text-muted">Chưa có đơn hàng nào</h5>
       </div>
     </main>
+    
+    <!-- Modal to select shipping provider for STANDARD orders -->
+    <div class="modal fade" id="confirmStandardModal" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Xác nhận đơn hàng tiêu chuẩn</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <p class="text-muted mb-3">
+              Đơn hàng này là đơn giao tiêu chuẩn. Vui lòng chọn nhà vận chuyển trước khi xác nhận.
+            </p>
+            <form id="confirmStandardOrderForm" action="/vendor/orders/confirm" method="post">
+              <input type="hidden" name="orderId" id="confirmStandardOrderId" value="" />
+              <input type="hidden" name="shopId" id="confirmStandardShopId" th:value="${shopId}" />
+              
+              <div class="mb-3">
+                <label for="shippingProvider" class="form-label">
+                  <i class="fas fa-truck me-2"></i>Nhà vận chuyển <span class="text-danger">*</span>
+                </label>
+                <select class="form-select" id="shippingProvider" name="shippingProviderId" required>
+                  <option value="">-- Chọn nhà vận chuyển --</option>
+                  <option value="1">GHN - Giao Hàng Nhanh</option>
+                  <option value="2">GHTK - Giao Hàng Tiết Kiệm</option>
+                  <option value="3">J&T Express</option>
+                  <option value="4">Viettel Post</option>
+                  <option value="5">Vietnam Post</option>
+                </select>
+                <small class="text-muted">
+                  Vui lòng chọn nhà vận chuyển để có thể xác nhận đơn hàng tiêu chuẩn.
+                </small>
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+              Hủy
+            </button>
+            <button type="submit" form="confirmStandardOrderForm" class="btn btn-success">
+              <i class="fas fa-check me-2"></i>Xác nhận đơn hàng
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Modal to select shipper for EXPRESS orders -->
+    <div class="modal fade" id="confirmExpressModal" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Xác nhận đơn hàng hỏa tốc</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <p class="text-muted mb-3">
+              Đơn hàng này là đơn hỏa tốc. Vui lòng chọn shipper trước khi xác nhận.
+            </p>
+            <form id="confirmExpressOrderForm" action="/vendor/orders/confirm" method="post">
+              <input type="hidden" name="orderId" id="confirmExpressOrderId" value="" />
+              <input type="hidden" name="shopId" id="confirmExpressShopId" th:value="${shopId}" />
+              
+              <div class="mb-3">
+                <label for="shipperSelect" class="form-label">
+                  <i class="fas fa-user-tie me-2"></i>Shipper <span class="text-danger">*</span>
+                </label>
+                <select class="form-select" id="shipperSelect" name="shipperId" required>
+                  <option value="">-- Chọn shipper --</option>
+                  <option th:each="shipper : ${shopShippers}" 
+                          th:value="${shipper.userId}" 
+                          th:text="${shipper.name}">
+                    Shipper Name
+                  </option>
+                </select>
+                <small class="text-muted">
+                  Vui lòng chọn shipper để có thể xác nhận đơn hàng hỏa tốc.
+                </small>
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+              Hủy
+            </button>
+            <button type="submit" form="confirmExpressOrderForm" class="btn btn-success">
+              <i class="fas fa-check me-2"></i>Xác nhận đơn hàng
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <script>
+      // Function to open modal for EXPRESS orders (select shipper)
+      function openConfirmExpressModal(button) {
+        console.log('Opening confirm EXPRESS modal...');
+        
+        // Get orderId and shopId from button data attributes
+        const orderId = button.getAttribute('data-order-id');
+        const shopId = button.getAttribute('data-shop-id');
+        
+        console.log('EXPRESS Order ID:', orderId, 'Shop ID:', shopId);
+        
+        // Set order ID
+        document.getElementById('confirmExpressOrderId').value = orderId;
+        
+        // Set shop ID if provided
+        const shopIdInput = document.querySelector('#confirmExpressOrderForm input[name="shopId"]');
+        if (shopIdInput && shopId) {
+          shopIdInput.value = shopId;
+        }
+        
+        // Reset shipper selection
+        document.getElementById('shipperSelect').value = '';
+        
+        // Open modal
+        const modal = new bootstrap.Modal(document.getElementById('confirmExpressModal'));
+        modal.show();
+      }
+      
+      // Function to open modal for STANDARD orders (select shipping provider)
+      function openConfirmStandardModal(button) {
+        console.log('Opening confirm STANDARD modal...');
+        
+        // Get orderId and shopId from button data attributes
+        const orderId = button.getAttribute('data-order-id');
+        const shopId = button.getAttribute('data-shop-id');
+        
+        console.log('STANDARD Order ID:', orderId, 'Shop ID:', shopId);
+        
+        // Set order ID
+        document.getElementById('confirmStandardOrderId').value = orderId;
+        
+        // Set shop ID if provided
+        const shopIdInput = document.querySelector('#confirmStandardOrderForm input[name="shopId"]');
+        if (shopIdInput && shopId) {
+          shopIdInput.value = shopId;
+        }
+        
+        // Reset shipping provider selection
+        document.getElementById('shippingProvider').value = '';
+        
+        // Open modal
+        const modal = new bootstrap.Modal(document.getElementById('confirmStandardModal'));
+        modal.show();
+      }
+      
+      // Handle form submit with validation for STANDARD orders
+      document.addEventListener('DOMContentLoaded', function() {
+        const standardForm = document.getElementById('confirmStandardOrderForm');
+        if (standardForm) {
+          standardForm.addEventListener('submit', function(e) {
+            const shippingProvider = document.getElementById('shippingProvider').value;
+            if (!shippingProvider || shippingProvider === '') {
+              e.preventDefault();
+              alert('Vui lòng chọn nhà vận chuyển trước khi xác nhận đơn hàng!');
+              return false;
+            }
+            console.log('Submitting STANDARD order with shipping provider:', shippingProvider);
+          });
+        }
+        
+        // Handle form submit with validation for EXPRESS orders
+        const expressForm = document.getElementById('confirmExpressOrderForm');
+        if (expressForm) {
+          expressForm.addEventListener('submit', function(e) {
+            const shipperId = document.getElementById('shipperSelect').value;
+            if (!shipperId || shipperId === '') {
+              e.preventDefault();
+              alert('Vui lòng chọn shipper trước khi xác nhận đơn hàng!');
+              return false;
+            }
+            console.log('Submitting EXPRESS order with shipper ID:', shipperId);
+          });
+        }
+      });
+    </script>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
   </body>
 </html>

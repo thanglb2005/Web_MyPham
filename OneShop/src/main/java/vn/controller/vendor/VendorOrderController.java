@@ -11,16 +11,25 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import vn.entity.Order;
+import vn.entity.OrderDetail;
+import vn.entity.Shop;
 import vn.entity.User;
+import vn.entity.ShippingProvider;
+import vn.repository.OrderDetailRepository;
+import vn.repository.ShopRepository;
+import vn.repository.ShippingProviderRepository;
+import vn.repository.UserRepository;
 import vn.service.OrderService;
 import vn.service.SendMailService;
-import vn.repository.OrderDetailRepository;
-import vn.entity.OrderDetail;
-import java.text.NumberFormat;
-import java.util.Locale;
 import vn.service.ShopService;
 
+import java.time.LocalDateTime;
+import java.text.NumberFormat;
+import java.util.Locale;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.HashMap;
 
 /**
  * Controller quản lý đơn hàng cho Vendor
@@ -41,6 +50,15 @@ public class VendorOrderController {
 
     @Autowired
     private OrderDetailRepository orderDetailRepository;
+    
+    @Autowired
+    private ShopRepository shopRepository;
+    
+    @Autowired
+    private UserRepository userRepository;
+    
+    @Autowired
+    private ShippingProviderRepository shippingProviderRepository;
 
     private static final Order.OrderStatus[] STATUS_TABS = {
             Order.OrderStatus.PENDING,
@@ -141,6 +159,40 @@ public class VendorOrderController {
             model.addAttribute("shopId", shopId);
             model.addAttribute("pageTitle", "Quản lý đơn hàng");
             
+            // Add list of shippers for the shop (for EXPRESS orders)
+            if (shopId != null) {
+                Shop shop = shopRepository.findById(shopId).orElse(null);
+                if (shop != null) {
+                    // Force load shippers
+                    shop.getShippers().size();
+                    model.addAttribute("shopShippers", shop.getShippers());
+                } else {
+                    model.addAttribute("shopShippers", Set.of());
+                }
+            } else {
+                model.addAttribute("shopShippers", Set.of());
+            }
+            
+            // Add shipping provider map (ID -> name) for display
+            List<ShippingProvider> allProviders = shippingProviderRepository.findAll();
+            Map<Long, String> shippingProviderMap = new HashMap<>();
+            for (ShippingProvider provider : allProviders) {
+                shippingProviderMap.put(provider.getProviderId(), provider.getProviderName());
+            }
+            model.addAttribute("shippingProviderMap", shippingProviderMap);
+            
+            // Add shipper name map for confirmed orders
+            Map<Long, String> shipperNameMap = new HashMap<>();
+            // Get all unique shipper IDs from confirmed orders
+            orders.getContent().stream()
+                .filter(o -> o.getShipper() != null)
+                .forEach(o -> {
+                    if (!shipperNameMap.containsKey(o.getShipper().getUserId())) {
+                        shipperNameMap.put(o.getShipper().getUserId(), o.getShipper().getName());
+                    }
+                });
+            model.addAttribute("shipperNameMap", shipperNameMap);
+            
             return "vendor/orders/list";
 
         } catch (Exception e) {
@@ -162,6 +214,8 @@ public class VendorOrderController {
     @PostMapping("/confirm")
     public String confirmOrder(@RequestParam("orderId") Long orderId,
                                @RequestParam(value = "shopId", required = false) Long shopId,
+                               @RequestParam(value = "shippingProviderId", required = false) Long shippingProviderId,
+                               @RequestParam(value = "shipperId", required = false) Long shipperId,
                                RedirectAttributes redirectAttributes,
                                HttpSession session) {
         
@@ -180,6 +234,39 @@ public class VendorOrderController {
                 return "redirect:/vendor/orders" + (shopId != null ? "?shopId=" + shopId : "");
             }
 
+            // If order is STANDARD delivery, require shipping provider
+            if (order.getDeliveryType() != null && order.getDeliveryType() == Order.DeliveryType.STANDARD) {
+                if (shippingProviderId == null || shippingProviderId <= 0) {
+                    redirectAttributes.addFlashAttribute("error", "Vui lòng chọn nhà vận chuyển trước khi xác nhận đơn hàng tiêu chuẩn.");
+                    return "redirect:/vendor/orders" + (shopId != null ? "?shopId=" + shopId : "");
+                }
+                
+                // Load fresh order entity and update
+                Order freshOrder = orderService.getOrderById(orderId);
+                if (freshOrder != null) {
+                    freshOrder.setShippingProviderId(shippingProviderId);
+                    orderService.updateOrder(freshOrder);
+                    System.out.println("Set shipping provider ID " + shippingProviderId + " for STANDARD order #" + orderId);
+                }
+            }
+            
+            // If order is EXPRESS delivery, require shipper
+            if (order.getDeliveryType() != null && order.getDeliveryType() == Order.DeliveryType.EXPRESS) {
+                if (shipperId == null || shipperId <= 0) {
+                    redirectAttributes.addFlashAttribute("error", "Vui lòng chọn shipper trước khi xác nhận đơn hàng hỏa tốc.");
+                    return "redirect:/vendor/orders" + (shopId != null ? "?shopId=" + shopId : "");
+                }
+                
+                // Load shipper User entity
+                User selectedShipper = userRepository.findById(shipperId)
+                    .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy shipper #" + shipperId));
+                
+                // Assign shipper to order
+                orderService.assignShipper(orderId, selectedShipper);
+                System.out.println("Assigned shipper ID " + shipperId + " (" + selectedShipper.getName() + ") for EXPRESS order #" + orderId);
+            }
+
+            // Confirm the order
             orderService.confirmOrder(orderId);
             try {
                 Order confirmed = orderService.findById(orderId).orElse(null);
@@ -189,6 +276,8 @@ public class VendorOrderController {
             } catch (Exception ignore) {}
             redirectAttributes.addFlashAttribute("success", "Đã xác nhận đơn hàng #" + orderId + " thành công.");
         } catch (Exception e) {
+            e.printStackTrace(); // Log full stack trace
+            System.err.println("Error confirming order #" + orderId + ": " + e.getMessage());
             redirectAttributes.addFlashAttribute("error", "Lỗi khi xác nhận đơn hàng: " + e.getMessage());
         }
 
@@ -423,6 +512,108 @@ public class VendorOrderController {
             redirectAttributes.addFlashAttribute("error", "Lỗi duyệt hoàn tiền: " + e.getMessage());
         }
         
+        return "redirect:/vendor/orders/" + orderId;
+    }
+
+    /**
+     * Đánh dấu đơn tiêu chuẩn đã giao thành công
+     */
+    @PostMapping("/{orderId}/mark-delivered")
+    @Transactional
+    public String markDelivered(@PathVariable Long orderId,
+                                HttpSession session,
+                                RedirectAttributes redirectAttributes) {
+        User vendor = ensureVendor(session);
+        if (vendor == null) {
+            return "redirect:/login";
+        }
+
+        try {
+            Order order = getOrderForVendor(orderId, vendor);
+            if (order == null) {
+                redirectAttributes.addFlashAttribute("error", "Không tìm thấy đơn hàng hoặc không có quyền truy cập");
+                return "redirect:/vendor/orders";
+            }
+
+            // Chỉ cho phép đánh dấu đơn tiêu chuẩn (CONFIRMED hoặc SHIPPING)
+            if (order.getStatus() != Order.OrderStatus.CONFIRMED && 
+                order.getStatus() != Order.OrderStatus.SHIPPING) {
+                redirectAttributes.addFlashAttribute("error", "Chỉ có thể đánh dấu giao thành công cho đơn đã xác nhận hoặc đang giao");
+                return "redirect:/vendor/orders/" + orderId;
+            }
+
+            // Cập nhật trạng thái sang DELIVERED
+            orderService.updateOrderStatus(orderId, Order.OrderStatus.DELIVERED);
+            
+            // TODO: Gửi email thông báo đến khách hàng
+            // try {
+            //     Order deliveredOrder = orderService.getOrderById(orderId);
+            //     if (deliveredOrder != null && deliveredOrder.getUser() != null) {
+            //         sendMailService.sendOrderDeliveredEmail(...);
+            //     }
+            // } catch (Exception e) {
+            //     System.err.println("Error sending delivery notification: " + e.getMessage());
+            // }
+
+            redirectAttributes.addFlashAttribute("success", "Đã đánh dấu đơn hàng #" + orderId + " giao thành công!");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Lỗi: " + e.getMessage());
+        }
+
+        return "redirect:/vendor/orders/" + orderId;
+    }
+
+    /**
+     * Đánh dấu đơn tiêu chuẩn giao thất bại
+     */
+    @PostMapping("/{orderId}/mark-failed")
+    @Transactional
+    public String markFailed(@PathVariable Long orderId,
+                            HttpSession session,
+                            RedirectAttributes redirectAttributes) {
+        User vendor = ensureVendor(session);
+        if (vendor == null) {
+            return "redirect:/login";
+        }
+
+        try {
+            Order order = getOrderForVendor(orderId, vendor);
+            if (order == null) {
+                redirectAttributes.addFlashAttribute("error", "Không tìm thấy đơn hàng hoặc không có quyền truy cập");
+                return "redirect:/vendor/orders";
+            }
+
+            // Chỉ cho phép đánh dấu đơn tiêu chuẩn (CONFIRMED hoặc SHIPPING)
+            if (order.getStatus() != Order.OrderStatus.CONFIRMED && 
+                order.getStatus() != Order.OrderStatus.SHIPPING) {
+                redirectAttributes.addFlashAttribute("error", "Chỉ có thể đánh dấu giao thất bại cho đơn đã xác nhận hoặc đang giao");
+                return "redirect:/vendor/orders/" + orderId;
+            }
+
+            // Cập nhật trạng thái sang CANCELLED với lý do
+            orderService.updateOrderStatus(orderId, Order.OrderStatus.CANCELLED);
+            
+            Order cancelledOrder = orderService.getOrderById(orderId);
+            if (cancelledOrder != null) {
+                cancelledOrder.setCancellationReason("Giao thất bại do vấn đề kỹ thuật");
+                cancelledOrder.setCancelledDate(LocalDateTime.now());
+                orderService.updateOrder(cancelledOrder);
+            }
+
+            // TODO: Gửi email thông báo đến khách hàng
+            // try {
+            //     if (cancelledOrder != null && cancelledOrder.getUser() != null) {
+            //         sendMailService.sendOrderCancelledEmail(...);
+            //     }
+            // } catch (Exception e) {
+            //     System.err.println("Error sending cancellation notification: " + e.getMessage());
+            // }
+
+            redirectAttributes.addFlashAttribute("success", "Đã đánh dấu đơn hàng #" + orderId + " giao thất bại!");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Lỗi: " + e.getMessage());
+        }
+
         return "redirect:/vendor/orders/" + orderId;
     }
 

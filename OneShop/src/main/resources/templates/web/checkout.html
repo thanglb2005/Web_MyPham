@@ -1108,6 +1108,13 @@
                     shippingFeeInput.name = 'shippingFee';
                     shippingFeeInput.value = currentShippingFee;
                     form.appendChild(shippingFeeInput);
+                    
+                    // Add delivery type to form
+                    const deliveryTypeInput = document.createElement('input');
+                    deliveryTypeInput.type = 'hidden';
+                    deliveryTypeInput.name = 'deliveryType';
+                    deliveryTypeInput.value = selectedDeliveryType || 'STANDARD';
+                    form.appendChild(deliveryTypeInput);
                 });
             });
             

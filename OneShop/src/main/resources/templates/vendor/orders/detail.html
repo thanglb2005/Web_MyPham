@@ -457,6 +457,25 @@
                                 th:if="${order.status == T(vn.entity.Order.OrderStatus).CONFIRMED}">
                             <i class="fas fa-times-circle me-2"></i>Cancel order
                         </button>
+                        <!-- Standard orders: Mark delivered/failed buttons for CONFIRMED or SHIPPING status -->
+                        <!-- Only show for STANDARD delivery orders -->
+                        <div th:if="${order.deliveryType != null && order.deliveryType.name() == 'STANDARD' && 
+                                      (order.status.name() == 'CONFIRMED' or order.status.name() == 'SHIPPING')}">
+                            <form th:action="@{/vendor/orders/{id}/mark-delivered(id=${order.orderId})}"
+                                  method="post"
+                                  class="d-grid mb-2">
+                                <button class="btn btn-success">
+                                    <i class="fas fa-check-circle me-2"></i>Giao thành công
+                                </button>
+                            </form>
+                            <form th:action="@{/vendor/orders/{id}/mark-failed(id=${order.orderId})}"
+                                  method="post"
+                                  class="d-grid">
+                                <button class="btn btn-danger">
+                                    <i class="fas fa-times-circle me-2"></i>Giao thất bại
+                                </button>
+                            </form>
+                        </div>
                         <button type="button"
                                 class="btn btn-outline-warning"
                                 th:if="${order.status == T(vn.entity.Order.OrderStatus).DELIVERED}">

@@ -406,6 +406,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     /**
      * Find available orders for shipper based on their assigned shops
      * Returns orders with status CONFIRMED, no shipper assigned, and from shops the shipper is assigned to
+     * ONLY shows EXPRESS delivery orders for shippers
      */
     @Query("SELECT DISTINCT o FROM Order o " +
            "JOIN o.orderDetails od " +
@@ -414,15 +415,18 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
            "JOIN s.shippers shipper " +
            "WHERE o.status = :status " +
            "AND o.shipper IS NULL " +
+           "AND o.deliveryType = 'EXPRESS' " +
            "AND shipper = :shipper " +
            "ORDER BY o.orderDate DESC")
     List<Order> findAvailableOrdersForShipper(User shipper, Order.OrderStatus status);
 
     /**
      * Find orders assigned to shipper (for their assigned shops)
+     * ONLY shows EXPRESS delivery orders for shippers
      */
     @Query("SELECT DISTINCT o FROM Order o " +
            "WHERE o.shipper = :shipper " +
+           "AND o.deliveryType = 'EXPRESS' " +
            "ORDER BY o.orderDate DESC")
     List<Order> findOrdersByShipper(User shipper);
 

@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import vn.entity.CartItem;
 import vn.entity.Order;
 import vn.entity.OrderDetail;
+import vn.entity.Shop;
 import vn.entity.User;
 import vn.repository.OrderDetailRepository;
 import vn.repository.OrderRepository;
@@ -55,6 +56,19 @@ public class OrderServiceImpl implements OrderService {
                              String shippingAddress, String note, Order.PaymentMethod paymentMethod,
                              Map<Long, CartItem> cartItems, String promotionCode, Double discountAmount, 
                              Double shippingFee, String shippingVoucherCode, Double shippingVoucherDiscount) {
+        // Delegate to the full method with default delivery type
+        return createOrder(user, customerName, customerEmail, customerPhone, shippingAddress, note, 
+                          paymentMethod, cartItems, promotionCode, discountAmount, shippingFee, 
+                          shippingVoucherCode, shippingVoucherDiscount, Order.DeliveryType.STANDARD);
+    }
+    
+    @Override
+    @Transactional
+    public Order createOrder(User user, String customerName, String customerEmail, String customerPhone,
+                             String shippingAddress, String note, Order.PaymentMethod paymentMethod,
+                             Map<Long, CartItem> cartItems, String promotionCode, Double discountAmount, 
+                             Double shippingFee, String shippingVoucherCode, Double shippingVoucherDiscount,
+                             Order.DeliveryType deliveryType) {
 
         if (cartItems == null || cartItems.isEmpty()) {
             throw new IllegalArgumentException("Cart cannot be empty to create an order.");
@@ -72,12 +86,30 @@ public class OrderServiceImpl implements OrderService {
         order.setOrderDate(LocalDateTime.now());
 
         // Set shop_id from first product in cart items
+        Shop orderShop = null;
         if (!cartItems.isEmpty()) {
             CartItem firstItem = cartItems.values().iterator().next();
             if (firstItem.getProduct() != null && firstItem.getProduct().getShop() != null) {
-                order.setShop(firstItem.getProduct().getShop());
-                System.out.println("Order shop set to: " + firstItem.getProduct().getShop().getShopName());
+                orderShop = firstItem.getProduct().getShop();
+                order.setShop(orderShop);
+                System.out.println("Order shop set to: " + orderShop.getShopName());
             }
+        }
+        
+        // Set delivery type from parameter OR auto-detect based on shop
+        if (deliveryType != null) {
+            // Use deliveryType from checkout (user's choice)
+            order.setDeliveryType(deliveryType);
+            order.setIsExpress(deliveryType == Order.DeliveryType.EXPRESS);
+        } else if (orderShop != null && orderShop.getShippers() != null && !orderShop.getShippers().isEmpty()) {
+            // If shop has shippers and no deliveryType specified, default to EXPRESS
+            order.setDeliveryType(Order.DeliveryType.EXPRESS);
+            order.setIsExpress(true);
+            System.out.println("Order auto-set to EXPRESS (shop has shippers)");
+        } else {
+            // Otherwise, default to STANDARD
+            order.setDeliveryType(Order.DeliveryType.STANDARD);
+            order.setIsExpress(false);
         }
 
         double originalAmount = cartItems.values().stream()

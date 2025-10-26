@@ -441,6 +441,7 @@ public class CartController {
                                  @RequestParam("paymentMethod") String paymentMethod,
                                  @RequestParam(value = "city", required = false) String city,
                                  @RequestParam(value = "shippingFee", required = false, defaultValue = "0") Double shippingFee,
+                                 @RequestParam(value = "deliveryType", required = false, defaultValue = "STANDARD") String deliveryType,
                                  HttpServletRequest request, Model model) {
 
         User user = (User) request.getSession().getAttribute("user");
@@ -560,6 +561,12 @@ public class CartController {
             // Get shipping voucher info
             Promotion shippingVoucher = (Promotion) request.getSession().getAttribute("shippingVoucher");
             String shippingVoucherCode = shippingVoucher != null ? shippingVoucher.getPromotionCode() : null;
+            
+            // Parse deliveryType
+            Order.DeliveryType deliveryTypeEnum = Order.DeliveryType.STANDARD;
+            if (deliveryType != null && deliveryType.equalsIgnoreCase("EXPRESS")) {
+                deliveryTypeEnum = Order.DeliveryType.EXPRESS;
+            }
 
             // Chỉ tạo order cho COD
             // MOMO và BANK_TRANSFER sẽ tạo order sau khi thanh toán thành công
@@ -577,7 +584,8 @@ public class CartController {
                     totalDiscount,
                     shippingFee,
                     shippingVoucherCode,
-                    shippingVoucherDiscount
+                    shippingVoucherDiscount,
+                    deliveryTypeEnum
                 );
 
                 // Deduct xu from user balance if xu was used
@@ -637,7 +645,8 @@ public class CartController {
                     totalDiscount,
                     shippingFee,
                     shippingVoucherCode,
-                    shippingVoucherDiscount
+                    shippingVoucherDiscount,
+                    deliveryTypeEnum
                 );
                 return "redirect:/payment/momo/create?orderId=" + momoOrder.getOrderId();
             } else if (paymentMethodEnum == Order.PaymentMethod.BANK_TRANSFER) {
@@ -655,7 +664,8 @@ public class CartController {
                     totalDiscount,
                     shippingFee,
                     shippingVoucherCode,
-                    shippingVoucherDiscount
+                    shippingVoucherDiscount,
+                    deliveryTypeEnum
                 );
                 return "redirect:/payos/create-payment?orderId=" + payosOrder.getOrderId();
             }
