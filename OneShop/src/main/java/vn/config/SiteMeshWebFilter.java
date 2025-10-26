@@ -11,8 +11,19 @@ public class SiteMeshWebFilter extends ConfigurableSiteMeshFilter {
 
     @Override
     protected void applyCustomConfiguration(SiteMeshFilterBuilder builder) {
-        // Only decorate the admin categories page using the admin layout
+        // Decorate admin pages using the admin layout
         builder.addDecoratorPath("/admin/categories", "admin.jsp");
+        builder.addDecoratorPath("/admin/brands", "admin.jsp");
+        builder.addDecoratorPath("/admin/providers", "admin.jsp");
+        builder.addDecoratorPath("/admin/users", "admin.jsp");
+        builder.addDecoratorPath("/admin/shops", "admin.jsp");
+        builder.addDecoratorPath("/admin/products", "admin.jsp");
+        builder.addDecoratorPath("/admin/orders", "admin.jsp");
+        builder.addDecoratorPath("/admin/shippers-list", "admin.jsp");
+        builder.addDecoratorPath("/admin/promotions", "admin.jsp");
+        builder.addDecoratorPath("/admin/promotions/add", "admin.jsp");
+        builder.addDecoratorPath("/admin/promotions/edit/*", "admin.jsp");
+        builder.addDecoratorPath("/admin/promotions/view/*", "admin.jsp");
         
         // Exclude static resources and other paths
         builder.addExcludedPath("/assets/*");

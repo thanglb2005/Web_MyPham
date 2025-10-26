@@ -48,6 +48,8 @@ public class ProviderController {
             @RequestParam(name = "search", required = false) String search,
             @RequestParam(name = "sortBy", defaultValue = "providerId") String sortBy,
             @RequestParam(name = "sortDir", defaultValue = "asc") String sortDir,
+            @RequestParam(name = "success", required = false) String success,
+            @RequestParam(name = "error", required = false) String error,
             Principal principal
     ) {
         Sort sort = Sort.by(sortDir.equals("asc") ? Sort.Direction.ASC : Sort.Direction.DESC, sortBy);
@@ -60,9 +62,29 @@ public class ProviderController {
             providerPage = providerService.findAll(pageable);
         }
         
+        int totalPages = providerPage.getTotalPages();
+        if (totalPages > 0 && page >= totalPages) {
+            int lastPage = Math.max(0, totalPages - 1);
+            StringBuilder redirect = new StringBuilder("redirect:/admin/providers");
+            redirect.append("?page=").append(lastPage);
+            redirect.append("&size=").append(size);
+            redirect.append("&sortBy=").append(sortBy);
+            redirect.append("&sortDir=").append(sortDir);
+            if (search != null && !search.trim().isEmpty()) {
+                redirect.append("&search=").append(search);
+            }
+            if (success != null && !success.isBlank()) {
+                redirect.append("&success=").append(success);
+            }
+            if (error != null && !error.isBlank()) {
+                redirect.append("&error=").append(error);
+            }
+            return redirect.toString();
+        }
+
         model.addAttribute("providers", providerPage.getContent());
         model.addAttribute("currentPage", page);
-        model.addAttribute("totalPages", providerPage.getTotalPages());
+        model.addAttribute("totalPages", totalPages);
         model.addAttribute("totalItems", providerPage.getTotalElements());
         model.addAttribute("pageSize", size);
         model.addAttribute("sortBy", sortBy);
@@ -155,7 +177,7 @@ public class ProviderController {
     /**
      * Delete a provider
      */
-    @GetMapping("/deleteProvider/{id}")
+    @PostMapping("/deleteProvider/{id}")
     public String deleteProvider(@PathVariable("id") Long id) {
         Optional<Provider> provider = providerService.findById(id);
         if (provider.isPresent()) {
