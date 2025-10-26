@@ -39,6 +39,8 @@ public class CategoryController {
             @RequestParam(required = false) String sortBy,
             @RequestParam(required = false) String sortDir,
             @RequestParam(required = false) String search,
+            @RequestParam(required = false) String success,
+            @RequestParam(required = false) String action,
             HttpSession session, Model model) throws Exception {
         User user = (User) session.getAttribute("user");
         if (user == null) {
@@ -68,6 +70,27 @@ public class CategoryController {
         } else {
             categoryPage = categoryService.getAllCategoriesPaged(pageable);
         }
+
+        // If requested page is out of bounds (e.g., after deletion), redirect to last valid page
+        int totalPages = categoryPage.getTotalPages();
+        if (totalPages > 0 && p >= totalPages) {
+            int lastPage = Math.max(0, totalPages - 1);
+            StringBuilder redirect = new StringBuilder("redirect:/admin/categories");
+            redirect.append("?page=").append(lastPage);
+            redirect.append("&size=").append(s);
+            redirect.append("&sortBy=").append(sb);
+            redirect.append("&sortDir=").append(sd);
+            if (search != null && !search.trim().isEmpty()) {
+                redirect.append("&search=").append(search);
+            }
+            if (success != null && !success.isBlank()) {
+                redirect.append("&success=").append(success);
+            }
+            if (action != null && !action.isBlank()) {
+                redirect.append("&action=").append(action);
+            }
+            return redirect.toString();
+        }
         
         model.addAttribute("categoryPage", categoryPage);
         model.addAttribute("categories", categoryPage.getContent());
@@ -90,9 +113,11 @@ public class CategoryController {
             @RequestParam(required = false) String sortBy,
             @RequestParam(required = false) String sortDir,
             @RequestParam(required = false) String search,
+            @RequestParam(required = false) String success,
+            @RequestParam(required = false) String action,
             HttpSession session, Model model) throws Exception {
 
-        return categories(page, size, sortBy, sortDir, search, session, model);
+        return categories(page, size, sortBy, sortDir, search, success, action, session, model);
     }
 
     private int safeParseInt(String value, int defaultVal) {

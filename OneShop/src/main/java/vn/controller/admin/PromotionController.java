@@ -9,7 +9,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import jakarta.servlet.http.HttpSession;
 import vn.entity.Promotion;
+import vn.entity.User;
 import vn.service.PromotionService;
 
 import java.util.List;
@@ -82,9 +84,19 @@ public class PromotionController {
      * Handle adding new promotion
      */
     @PostMapping("/promotions/add")
-    public String addPromotion(@ModelAttribute Promotion promotion, 
+    public String addPromotion(@ModelAttribute Promotion promotion,
+                              HttpSession session,
                               RedirectAttributes redirectAttributes) {
         try {
+            // Ensure createdBy is set (DB requires not null)
+            User user = (User) session.getAttribute("user");
+            if (user == null) {
+                return "redirect:/login";
+            }
+            promotion.setCreatedBy(user);
+            if (promotion.getIsActive() == null) {
+                promotion.setIsActive(Boolean.TRUE);
+            }
             // Validate promotion code uniqueness
             if (!promotionService.validatePromotionCode(promotion.getPromotionCode())) {
                 redirectAttributes.addFlashAttribute("error", "Mã khuyến mãi đã tồn tại!");
@@ -140,7 +152,7 @@ public class PromotionController {
      * Handle updating promotion
      */
     @PostMapping("/promotions/edit/{id}")
-    public String updatePromotion(@PathVariable Long id, 
+    public String updatePromotion(@PathVariable Long id,
                                  @ModelAttribute Promotion promotion,
                                  RedirectAttributes redirectAttributes) {
         try {
@@ -159,7 +171,8 @@ public class PromotionController {
                 existing.setUsageLimit(promotion.getUsageLimit());
                 existing.setStartDate(promotion.getStartDate());
                 existing.setEndDate(promotion.getEndDate());
-                existing.setIsActive(promotion.getIsActive());
+                Boolean active = promotion.getIsActive() != null && promotion.getIsActive();
+                existing.setIsActive(active);
                 
                 // Validate dates
                 if (!promotionService.validatePromotionDates(existing.getStartDate(), existing.getEndDate())) {

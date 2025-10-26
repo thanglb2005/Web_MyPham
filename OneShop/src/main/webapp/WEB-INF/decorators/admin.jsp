@@ -1,13 +1,15 @@
 ﻿<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %> <%@
 taglib prefix="c" uri="jakarta.tags.core" %>
-
+<!-- Force no favicon on JSP-admin pages -->
+<link rel="icon" href="data:," />
+<link rel="shortcut icon" href="data:," />
+<link rel="apple-touch-icon" href="data:," />
 <!DOCTYPE html>
 <html lang="vi">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title><sitemesh:write property='title' /></title>
-    <link rel="icon" type="image/png" href="/images/logo/logo.png" />
 
     <!-- CSS Libraries -->
     <link
@@ -40,7 +42,10 @@ taglib prefix="c" uri="jakarta.tags.core" %>
       .main-header {
         background: linear-gradient(135deg, #1e3c72, #2a5298);
         box-shadow: 0 4px 20px rgba(30, 60, 114, 0.3);
-        position: relative;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
         z-index: 1000;
       }
 
@@ -243,6 +248,8 @@ taglib prefix="c" uri="jakarta.tags.core" %>
       .main-panel {
         background: #f8f9fa;
         min-height: 100vh;
+        margin-top: 60px; /* height of fixed header */
+        margin-left: 250px; /* width of fixed sidebar */
       }
 
       .content {

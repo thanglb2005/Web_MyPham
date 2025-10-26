@@ -109,6 +109,8 @@ public class ShipperManagementController {
         model.addAttribute("pendingShippers", pendingShippers);
         model.addAttribute("assignedShippers", assignedShippers);
         model.addAttribute("unassignedShippers", unassignedShippers);
+        // Provide all shops for assignment modal
+        model.addAttribute("shops", shopRepository.findAll());
         
         return "admin/shippers-list";
     }

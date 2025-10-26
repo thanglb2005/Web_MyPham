@@ -15,9 +15,21 @@ public class ViewResolverConfig {
         resolver.setSuffix(".jsp");
         resolver.setViewClass(JstlView.class);
         // Only resolve specific JSP views, not all views
-        resolver.setViewNames("admin/categories", "decorators/*");
-        // Set lower priority than Thymeleaf (higher number = lower priority)
-        resolver.setOrder(2);
+        resolver.setViewNames(
+                "admin/categories",
+                "admin/brands",
+                "admin/providers",
+                "admin/users",
+                "admin/shops",
+                "admin/products",
+                "admin/orders",
+                "admin/shippers-list",
+                "admin/promotions",
+                "admin/promotion-form",
+                "admin/promotion-detail",
+                "decorators/*");
+        // Give JSP higher priority for these specific views than Thymeleaf
+        resolver.setOrder(0);
         return resolver;
     }
 }

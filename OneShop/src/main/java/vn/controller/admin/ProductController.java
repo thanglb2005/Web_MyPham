@@ -265,6 +265,28 @@ public class ProductController {
         return "redirect:/admin/products?error=true&action=edit";
     }
 
+    // Assign product to shop (change shop mapping only)
+    @PostMapping("/editProduct/assign")
+    public String assignProductToShop(@RequestParam Long productId,
+                                      @RequestParam Long shopId,
+                                      HttpSession session) {
+        User user = (User) session.getAttribute("user");
+        if (user == null) {
+            return "redirect:/login";
+        }
+        try {
+            Product product = productService.findById(productId).orElse(null);
+            Shop shop = shopService.findById(shopId).orElse(null);
+            if (product == null || shop == null) {
+                return "redirect:/admin/products?error=true&action=assign";
+            }
+            product.setShop(shop);
+            productService.save(product);
+            return "redirect:/admin/products?success=true&action=assign";
+        } catch (Exception e) {
+            return "redirect:/admin/products?error=true&action=assign";
+        }
+    }
     @GetMapping("/deleteProduct/{id}")
     public String deleteProduct(@PathVariable("id") Long id, Model model, HttpSession session) {
         User user = (User) session.getAttribute("user");

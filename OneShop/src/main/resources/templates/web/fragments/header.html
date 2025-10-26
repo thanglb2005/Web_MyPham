@@ -1211,8 +1211,8 @@
         /* Chat Button - Static Design */
         #floatingChatButton {
           position: fixed;
-          bottom: 100px; /* Moved higher above back to top button */
-          right: 20px; /* Same horizontal position as back to top */
+          bottom: 80px; /* Below chatbot button */
+          right: 20px;
           width: 60px;
           height: 60px;
           background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
@@ -1222,7 +1222,7 @@
           font-size: 24px;
           cursor: pointer;
           box-shadow: 0 12px 35px rgba(30, 58, 138, 0.4), 0 4px 15px rgba(0, 0, 0, 0.1);
-          z-index: 1000;
+          z-index: 999; /* Below chatbot z-index */
           display: flex;
           align-items: center;
           justify-content: center;
@@ -2072,6 +2072,1644 @@
           };
         });
       </script>
-    </th:block>
+
+    <!-- Floating AI Chatbot Button -->
+    <div id="oneshopChatbotButton" class="oneshop-chatbot-button" onclick="toggleOneshopChatbot()">
+      <div class="chatbot-icon">
+        <div class="chatbot-avatar">
+          <div class="robot-face">
+            <div class="robot-eyes">
+              <div class="eye left"></div>
+              <div class="eye right"></div>
+            </div>
+            <div class="robot-mouth"></div>
+          </div>
+        </div>
+        <div class="chatbot-sparkles">
+          <span class="sparkle">✨</span>
+          <span class="sparkle">✨</span>
+        </div>
+      </div>
+      <span class="chatbot-badge" id="chatbotBadge" style="display: none;">1</span>
+    </div>
+
+    <!-- Floating AI Chatbot Popup -->
+    <div id="floatingChatbotPopup" class="oneshop-chatbot-popup" style="display: none;">
+      <div class="chatbot-header">
+        <div class="chatbot-title">
+          <div class="title-icon">
+            <div class="robot-face-small">
+              <div class="robot-eyes">
+                <div class="eye left"></div>
+                <div class="eye right"></div>
+              </div>
+              <div class="robot-mouth"></div>
+            </div>
+            <span class="sparkle-icon">✨</span>
+          </div>
+          <div class="title-text">
+            <h3>Trợ lý AI - OneShop</h3>
+          </div>
+        </div>
+        <div class="chatbot-controls">
+          <button class="control-btn refresh-btn" onclick="refreshChatbot()">
+            <i class="fas fa-sync-alt"></i>
+          </button>
+          <button class="control-btn expand-btn" onclick="expandChatbot()">
+            <i class="fas fa-expand"></i>
+          </button>
+          <button class="control-btn close-btn" onclick="closeOneshopChatbot()">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+      </div>
+      
+      <div class="chatbot-body">
+        <!-- OneShop AI Introduction -->
+        <div class="chatbot-intro">
+          <div class="intro-avatar">
+            <div class="oneshop-robot">
+              <div class="robot-body">
+                <div class="robot-face-large">
+                  <div class="robot-eyes">
+                    <div class="eye left"></div>
+                    <div class="eye right"></div>
+                  </div>
+                  <div class="robot-mouth"></div>
+                </div>
+                <div class="robot-chest">
+                  <div class="oneshop-logo">OS</div>
+                </div>
+                <div class="robot-arm wave"></div>
+              </div>
+              <div class="thinking-bubble">
+                <span></span>
+                <span></span>
+                <span></span>
+              </div>
+            </div>
+          </div>
+          <div class="intro-content">
+            <h2>OneShop AI</h2>
+            <div class="ai-badge">AI</div>
+            <p class="intro-tagline">OneShop AI - Biết tuốt hỗ trợ bạn tìm sản phẩm mỹ phẩm và đặt hàng dễ dàng</p>
+          </div>
+        </div>
+
+        <!-- Welcome Message -->
+        <div class="welcome-section">
+          <div class="welcome-avatar">
+            <div class="robot-face-small">
+              <div class="robot-eyes">
+                <div class="eye left"></div>
+                <div class="eye right"></div>
+              </div>
+              <div class="robot-mouth"></div>
+            </div>
+          </div>
+          <div class="welcome-message">
+            <p>Chào bạn, mình là trợ lý AI của OneShop! Bạn cần hỗ trợ gì hoặc có thể chọn một trong các chủ đề dưới đây nhé</p>
+            <p class="escalation-note">Trong quá trình tư vấn, nếu chưa hài lòng với câu trả lời của AI, bạn vui lòng chat <strong>Tôi muốn gặp tư vấn viên</strong> để được hỗ trợ.</p>
+          </div>
+        </div>
+
+        <!-- Suggested Topics -->
+        <div class="suggested-topics">
+          <button class="topic-btn" onclick="sendSuggestedMessage('Tư vấn kem dưỡng da')">
+            Kem dưỡng da
+          </button>
+          <button class="topic-btn" onclick="sendSuggestedMessage('Son môi cao cấp')">
+            Son môi cao cấp
+          </button>
+          <button class="topic-btn" onclick="sendSuggestedMessage('Chính sách bảo hành')">
+            Chính sách bảo hành
+          </button>
+          <button class="topic-btn" onclick="sendSuggestedMessage('Chính sách đổi trả')">
+            Chính sách đổi trả
+          </button>
+        </div>
+
+        <!-- Chat Messages -->
+        <div class="chat-messages" id="chatbotMessages">
+          <!-- Messages will be added here dynamically -->
+        </div>
+
+        <!-- Input Area -->
+        <div class="chatbot-input-area">
+          <div class="input-label">Bạn cần hỗ trợ gì?</div>
+          <!-- Image Preview -->
+          <div id="chatbotImagePreview" class="image-preview" style="display: none; margin-bottom: 10px;">
+            <img id="chatbotPreviewImg" src="" alt="Preview" style="max-width: 100%; max-height: 200px; border-radius: 8px;">
+            <button class="remove-image-btn" onclick="removeImagePreview()">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+          <div class="input-group">
+            <button class="upload-btn" id="chatbotUploadBtn" title="Gửi hình ảnh">
+              <i class="fas fa-image"></i>
+              <input type="file" id="chatbotImageInput" accept="image/*" style="display: none;" onchange="handleImageUpload(event)">
+            </button>
+            <input type="text" id="chatbotMessageInput" placeholder="Nhập tin nhắn..." class="chatbot-input">
+            <button class="send-btn" id="chatbotSendBtn" onclick="sendChatbotMessage()">
+              <i class="fas fa-paper-plane"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Disclaimer -->
+        <div class="disclaimer">
+          <small>Thông tin được AI hỗ trợ chỉ mang tính chất tham khảo</small>
+        </div>
+      </div>
+    </div>
+
+    <style>
+      /* OneShop Chatbot Button - Original Orange Style */
+      #oneshopChatbotButton {
+        position: fixed !important;
+        bottom: 170px !important; /* Above chat button */
+        right: 20px !important;
+        width: 70px !important;
+        height: 70px !important;
+        background: linear-gradient(135deg, #ff6b00 0%, #ff8c00 100%) !important;
+        border-radius: 50% !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        cursor: pointer !important;
+        box-shadow: 0 8px 25px rgba(255, 107, 0, 0.4) !important;
+        transition: all 0.3s ease !important;
+        z-index: 1002 !important; /* Higher than chat button */
+        animation: float 3s ease-in-out infinite !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+      }
+
+      @keyframes float {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-10px); }
+      }
+
+      .oneshop-chatbot-button:hover {
+        transform: scale(1.1);
+        box-shadow: 0 12px 35px rgba(255, 107, 157, 0.6);
+      }
+
+      .chatbot-icon {
+        position: relative;
+        width: 50px;
+        height: 50px;
+      }
+
+      .chatbot-avatar {
+        width: 50px;
+        height: 50px;
+        background: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .robot-face {
+        width: 35px;
+        height: 35px;
+        position: relative;
+      }
+
+      .robot-eyes {
+        position: absolute;
+        top: 8px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        gap: 8px;
+      }
+
+      .eye {
+        width: 6px;
+        height: 6px;
+        background: #333;
+        border-radius: 50%;
+        animation: blink 4s infinite;
+      }
+
+      @keyframes blink {
+        0%, 90%, 100% { transform: scaleY(1); }
+        95% { transform: scaleY(0.1); }
+      }
+
+      .robot-mouth {
+        position: absolute;
+        bottom: 8px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 12px;
+        height: 6px;
+        background: #333;
+        border-radius: 0 0 12px 12px;
+      }
+
+      .chatbot-sparkles {
+        position: absolute;
+        top: -5px;
+        right: -5px;
+        display: flex;
+        gap: 2px;
+      }
+
+      .sparkle {
+        font-size: 12px;
+        animation: sparkle 2s infinite;
+      }
+
+      .sparkle:nth-child(2) {
+        animation-delay: 1s;
+      }
+
+      @keyframes sparkle {
+        0%, 100% { opacity: 0.3; transform: scale(0.8); }
+        50% { opacity: 1; transform: scale(1.2); }
+      }
+
+      .chatbot-badge {
+        position: absolute;
+        top: -8px;
+        right: -8px;
+        background: #ff4757;
+        color: white;
+        border-radius: 50%;
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        font-weight: bold;
+        animation: pulse 2s infinite;
+      }
+
+      @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+        100% { transform: scale(1); }
+      }
+
+      /* OneShop Chatbot Popup - Bitu Style */
+      .oneshop-chatbot-popup {
+        position: fixed;
+        bottom: 100px;
+        right: 20px;
+        width: 380px;
+        height: 600px;
+        background: #fef7f7;
+        border-radius: 20px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+        z-index: 1001;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        animation: slideUp 0.4s ease-out;
+        border: 1px solid rgba(255, 107, 157, 0.2);
+      }
+
+      @keyframes slideUp {
+        from {
+          transform: translateY(100%) scale(0.8);
+          opacity: 0;
+        }
+        to {
+          transform: translateY(0) scale(1);
+          opacity: 1;
+        }
+      }
+
+      .chatbot-header {
+        background: linear-gradient(135deg, #ff6b9d 0%, #ff8fab 100%);
+        color: white;
+        padding: 15px 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-radius: 20px 20px 0 0;
+      }
+
+      .chatbot-title {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .title-icon {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+
+      .robot-face-small {
+        width: 25px;
+        height: 25px;
+        background: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+      }
+
+      .robot-face-small .robot-eyes {
+        top: 6px;
+        gap: 6px;
+      }
+
+      .robot-face-small .eye {
+        width: 4px;
+        height: 4px;
+      }
+
+      .robot-face-small .robot-mouth {
+        bottom: 6px;
+        width: 8px;
+        height: 4px;
+      }
+
+      .sparkle-icon {
+        font-size: 14px;
+        animation: sparkle 2s infinite;
+      }
+
+      .title-text h3 {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 600;
+      }
+
+      .chatbot-controls {
+        display: flex;
+        gap: 8px;
+      }
+
+      .control-btn {
+        width: 32px;
+        height: 32px;
+        background: rgba(255, 255, 255, 0.2);
+        border: none;
+        border-radius: 50%;
+        color: white;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+        font-size: 12px;
+      }
+
+      .control-btn:hover {
+        background: rgba(255, 255, 255, 0.3);
+        transform: scale(1.1);
+      }
+
+      .chatbot-body {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        padding: 20px;
+        background: #fef7f7;
+      }
+
+      /* Chatbot Introduction */
+      .chatbot-intro {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 20px;
+        padding: 15px;
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 4px 15px rgba(255, 107, 157, 0.1);
+      }
+
+      .intro-avatar {
+        position: relative;
+      }
+
+      .oneshop-robot {
+        width: 60px;
+        height: 60px;
+        position: relative;
+      }
+
+      .robot-body {
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, #ff6b9d 0%, #ff8fab 100%);
+        border-radius: 50%;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .robot-face-large {
+        width: 40px;
+        height: 40px;
+        background: white;
+        border-radius: 50%;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .robot-face-large .robot-eyes {
+        top: 10px;
+        gap: 8px;
+      }
+
+      .robot-face-large .eye {
+        width: 6px;
+        height: 6px;
+      }
+
+      .robot-face-large .robot-mouth {
+        bottom: 10px;
+        width: 12px;
+        height: 6px;
+      }
+
+      .robot-chest {
+        position: absolute;
+        bottom: 8px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 20px;
+        height: 15px;
+        background: white;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .oneshop-logo {
+        font-size: 8px;
+        font-weight: bold;
+        color: #ff6b9d;
+      }
+
+      .robot-arm {
+        position: absolute;
+        right: -8px;
+        top: 15px;
+        width: 12px;
+        height: 20px;
+        background: #ff6b9d;
+        border-radius: 6px;
+        animation: wave 2s infinite;
+      }
+
+      @keyframes wave {
+        0%, 100% { transform: rotate(0deg); }
+        50% { transform: rotate(20deg); }
+      }
+
+      .thinking-bubble {
+        position: absolute;
+        top: -15px;
+        right: -10px;
+        display: flex;
+        gap: 2px;
+      }
+
+      .thinking-bubble span {
+        width: 4px;
+        height: 4px;
+        background: #ff6b9d;
+        border-radius: 50%;
+        animation: thinking 1.5s infinite;
+      }
+
+      .thinking-bubble span:nth-child(2) {
+        animation-delay: 0.3s;
+      }
+
+      .thinking-bubble span:nth-child(3) {
+        animation-delay: 0.6s;
+      }
+
+      @keyframes thinking {
+        0%, 100% { opacity: 0.3; transform: scale(0.8); }
+        50% { opacity: 1; transform: scale(1.2); }
+      }
+
+      .intro-content h2 {
+        margin: 0 0 5px 0;
+        font-size: 18px;
+        color: #333;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .ai-badge {
+        background: linear-gradient(135deg, #ff6b9d 0%, #ff8fab 100%);
+        color: white;
+        padding: 2px 8px;
+        border-radius: 10px;
+        font-size: 10px;
+        font-weight: bold;
+      }
+
+      .intro-tagline {
+        margin: 0;
+        font-size: 12px;
+        color: #666;
+        line-height: 1.4;
+      }
+
+      /* Welcome Section */
+      .welcome-section {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 20px;
+        padding: 15px;
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 4px 15px rgba(255, 107, 157, 0.1);
+      }
+
+      .welcome-avatar {
+        flex-shrink: 0;
+      }
+
+      .welcome-message p {
+        margin: 0 0 10px 0;
+        font-size: 14px;
+        color: #333;
+        line-height: 1.5;
+      }
+
+      .escalation-note {
+        font-size: 12px;
+        color: #666;
+        font-style: italic;
+      }
+
+      /* Suggested Topics */
+      .suggested-topics {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-bottom: 20px;
+      }
+
+      .topic-btn {
+        background: white;
+        border: 1px solid rgba(255, 107, 157, 0.3);
+        border-radius: 12px;
+        padding: 12px 8px;
+        font-size: 12px;
+        color: #333;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-align: center;
+        line-height: 1.3;
+      }
+
+      .topic-btn:hover {
+        background: linear-gradient(135deg, #ff6b9d 0%, #ff8fab 100%);
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(255, 107, 157, 0.3);
+      }
+
+      /* Chat Messages */
+      .chat-messages {
+        flex: 1;
+        overflow-y: auto;
+        margin-bottom: 15px;
+        padding-right: 5px;
+      }
+
+      .chat-message {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 15px;
+        align-items: flex-start;
+      }
+
+      .chat-message.user {
+        flex-direction: row-reverse;
+      }
+
+      .message-avatar {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+      }
+
+      .message-avatar.ai {
+        background: linear-gradient(135deg, #ff6b9d 0%, #ff8fab 100%);
+        color: white;
+        font-size: 12px;
+      }
+
+      .message-avatar.user {
+        background: #e0e0e0;
+        color: #666;
+        font-size: 12px;
+      }
+
+      .message-bubble {
+        max-width: 80%;
+        padding: 12px 15px;
+        border-radius: 15px;
+        font-size: 14px;
+        line-height: 1.4;
+        word-wrap: break-word;
+      }
+
+      .message-bubble.ai {
+        background: white;
+        color: #333;
+        border: 1px solid rgba(255, 107, 157, 0.2);
+        box-shadow: 0 2px 8px rgba(255, 107, 157, 0.1);
+      }
+
+      .message-bubble.user {
+        background: linear-gradient(135deg, #ff6b9d 0%, #ff8fab 100%);
+        color: white;
+      }
+
+      /* Input Area */
+      .chatbot-input-area {
+        background: white;
+        border-radius: 15px;
+        padding: 14px;
+        box-shadow: 0 4px 15px rgba(255, 107, 157, 0.1);
+      }
+
+      .input-label {
+        font-size: 11px;
+        color: #666;
+        margin-bottom: 6px;
+        font-weight: 500;
+      }
+
+      .input-group {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .chatbot-input {
+        flex: 1;
+        padding: 11px 14px;
+        border: 1px solid rgba(255, 107, 157, 0.3);
+        min-height: 44px;
+        border-radius: 25px;
+        font-size: 14px;
+        outline: none;
+        transition: all 0.3s ease;
+        background: #fef7f7;
+      }
+
+      .chatbot-input:focus {
+        border-color: #ff6b9d;
+        box-shadow: 0 0 0 3px rgba(255, 107, 157, 0.1);
+        background: white;
+      }
+
+      .upload-btn {
+        width: 42px;
+        height: 42px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        border-radius: 50%;
+        color: white;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+        font-size: 16px;
+        flex-shrink: 0;
+      }
+
+      .upload-btn:hover {
+        transform: scale(1.05);
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+      }
+
+      .image-preview {
+        position: relative;
+        background: #f8fafc;
+        padding: 10px;
+        border-radius: 8px;
+        border: 1px solid #e5e7eb;
+      }
+
+      .remove-image-btn {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        width: 24px;
+        height: 24px;
+        background: #ff4757;
+        color: white;
+        border: none;
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+      }
+
+      .remove-image-btn:hover {
+        background: #ff6b7d;
+      }
+
+      .send-btn {
+        width: 42px;
+        height: 42px;
+        background: linear-gradient(135deg, #ff6b9d 0%, #ff8fab 100%);
+        border: none;
+        border-radius: 50%;
+        color: white;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+        font-size: 15px;
+        flex-shrink: 0;
+      }
+
+      .send-btn:hover {
+        transform: scale(1.05);
+        box-shadow: 0 4px 15px rgba(255, 107, 157, 0.4);
+      }
+
+      .send-btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      /* Disclaimer */
+      .disclaimer {
+        text-align: center;
+        margin-top: 10px;
+      }
+
+      .disclaimer small {
+        color: #999;
+        font-size: 11px;
+        font-style: italic;
+      }
+
+      /* Typing Indicator */
+      .typing-indicator {
+        display: flex;
+        gap: 4px;
+        align-items: center;
+        padding: 10px 15px;
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 2px 8px rgba(255, 107, 157, 0.1);
+        margin-bottom: 10px;
+        border: 1px solid rgba(255, 107, 157, 0.2);
+      }
+
+      .typing-indicator span {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #ff6b9d;
+        animation: typing 1.4s infinite ease-in-out;
+      }
+
+      .typing-indicator span:nth-child(1) {
+        animation-delay: -0.32s;
+      }
+
+      .typing-indicator span:nth-child(2) {
+        animation-delay: -0.16s;
+      }
+
+      @keyframes typing {
+        0%, 80%, 100% {
+          transform: scale(0.8);
+          opacity: 0.5;
+        }
+        40% {
+          transform: scale(1);
+          opacity: 1;
+        }
+      }
+
+      /* Product Display Styles */
+      .chatbot-products {
+        max-width: 100%;
+        margin-top: 10px;
+      }
+
+      .products-title {
+        font-size: 13px;
+        font-weight: 600;
+        color: #ff6b9d;
+        margin-bottom: 12px;
+      }
+
+      .products-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        gap: 12px;
+      }
+
+      .product-card {
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+      }
+
+      .product-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      }
+
+      .product-image {
+        position: relative;
+        width: 100%;
+        padding-top: 75%;
+        overflow: hidden;
+      }
+
+      .product-image img {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .product-discount {
+        position: absolute;
+        top: 6px;
+        right: 6px;
+        background: linear-gradient(135deg, #ff6b9d 0%, #ff8fab 100%);
+        color: white;
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 10px;
+        font-weight: bold;
+      }
+
+      .product-info {
+        padding: 10px;
+      }
+
+      .product-name {
+        font-size: 13px;
+        font-weight: 600;
+        color: #333;
+        margin: 0 0 4px 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .product-brand, .product-category {
+        font-size: 11px;
+        color: #666;
+        margin: 2px 0;
+      }
+
+      .product-price {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin: 8px 0;
+      }
+
+      .old-price {
+        font-size: 11px;
+        color: #999;
+        text-decoration: line-through;
+      }
+
+      .current-price {
+        font-size: 14px;
+        font-weight: bold;
+        color: #ff6b9d;
+      }
+
+      .product-button {
+        display: block;
+        width: 100%;
+        padding: 8px;
+        background: linear-gradient(135deg, #ff6b9d 0%, #ff8fab 100%);
+        color: white;
+        text-align: center;
+        border-radius: 6px;
+        font-size: 12px;
+        text-decoration: none;
+        transition: opacity 0.3s ease;
+      }
+
+      .product-button:hover {
+        opacity: 0.9;
+      }
+
+      /* Error message */
+      .error-message {
+        background: #fef2f2;
+        color: #dc2626;
+        padding: 10px 15px;
+        border-radius: 15px;
+        border: 1px solid #fecaca;
+        margin-bottom: 10px;
+        font-size: 14px;
+      }
+
+      /* Drag and drop effect */
+      .oneshop-chatbot-popup.drag-over {
+        border: 3px dashed #ff6b9d;
+        background: linear-gradient(135deg, #fff5f8 0%, #ffeef3 100%);
+      }
+
+      .oneshop-chatbot-popup.drag-over::before {
+        content: 'Thả hình ảnh vào đây';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(255, 107, 157, 0.9);
+        color: white;
+        padding: 20px 40px;
+        border-radius: 15px;
+        font-size: 16px;
+        font-weight: 600;
+        z-index: 1000;
+        pointer-events: none;
+      }
+
+      /* Responsive */
+      @media (max-width: 768px) {
+        .oneshop-chatbot-popup {
+          width: 320px;
+          height: 500px;
+          right: 10px;
+          bottom: 80px;
+        }
+        
+        .oneshop-chatbot-button {
+          width: 60px;
+          height: 60px;
+          bottom: 15px;
+          right: 15px;
+        }
+
+        .chatbot-icon {
+          width: 40px;
+          height: 40px;
+        }
+
+        .chatbot-avatar {
+          width: 40px;
+          height: 40px;
+        }
+
+        .robot-face {
+          width: 30px;
+          height: 30px;
+        }
+
+        .suggested-topics {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+
+    <script>
+      // OneShop Chatbot Functions - Bitu Style
+      let chatbotOpen = false;
+      let isTyping = false;
+
+      function toggleOneshopChatbot() {
+        const popup = document.getElementById('floatingChatbotPopup');
+        const button = document.getElementById('oneshopChatbotButton');
+        
+        if (chatbotOpen) {
+          popup.style.display = 'none';
+          button.style.transform = 'scale(1)';
+          chatbotOpen = false;
+        } else {
+          popup.style.display = 'flex';
+          button.style.transform = 'scale(0.9)';
+          chatbotOpen = true;
+          hideChatbotBadge();
+          
+          // Focus input
+          setTimeout(() => {
+            document.getElementById('chatbotMessageInput').focus();
+          }, 400);
+        }
+      }
+
+      function closeOneshopChatbot() {
+        const popup = document.getElementById('floatingChatbotPopup');
+        const button = document.getElementById('oneshopChatbotButton');
+        
+        popup.style.display = 'none';
+        button.style.transform = 'scale(1)';
+        chatbotOpen = false;
+      }
+
+      function refreshChatbot() {
+        // Clear messages and reset
+        const messagesContainer = document.getElementById('chatbotMessages');
+        messagesContainer.innerHTML = '';
+        
+        // Show intro and welcome sections again
+        const introSection = document.querySelector('.chatbot-intro');
+        const welcomeSection = document.querySelector('.welcome-section');
+        const suggestedTopics = document.querySelector('.suggested-topics');
+        
+        if (introSection) {
+          introSection.style.display = 'flex';
+        }
+        if (welcomeSection) {
+          welcomeSection.style.display = 'flex';
+        }
+        if (suggestedTopics) {
+          suggestedTopics.style.display = 'grid';
+        }
+        
+        // Show welcome message again
+        showWelcomeMessage();
+      }
+
+      function expandChatbot() {
+        const popup = document.getElementById('floatingChatbotPopup');
+        if (popup.style.width === '420px') {
+          popup.style.width = '500px';
+          popup.style.height = '700px';
+        } else {
+          popup.style.width = '420px';
+          popup.style.height = '600px';
+        }
+      }
+
+      // Set initial popup size
+      function initializeChatbotPopup() {
+        const popup = document.getElementById('floatingChatbotPopup');
+        if (popup) {
+          popup.style.width = '420px';
+          popup.style.height = '600px';
+        }
+      }
+
+      function hideIntroAndWelcome() {
+        const introSection = document.querySelector('.chatbot-intro');
+        const welcomeSection = document.querySelector('.welcome-section');
+        const suggestedTopics = document.querySelector('.suggested-topics');
+        
+        if (introSection) {
+          introSection.style.display = 'none';
+        }
+        if (welcomeSection) {
+          welcomeSection.style.display = 'none';
+        }
+        if (suggestedTopics) {
+          suggestedTopics.style.display = 'none';
+        }
+      }
+
+      function sendChatbotMessage() {
+        const input = document.getElementById('chatbotMessageInput');
+        const sendBtn = document.getElementById('chatbotSendBtn');
+        const message = input.value.trim();
+        
+        if (!message || isTyping) {
+          return;
+        }
+        
+        // Hide intro and welcome sections on first message
+        hideIntroAndWelcome();
+        
+        // Disable input and button
+        input.disabled = true;
+        sendBtn.disabled = true;
+        isTyping = true;
+        
+        // Add user message
+        addChatbotMessage(message, 'user');
+        
+        // Clear input
+        input.value = '';
+        
+        // Show typing indicator
+        showChatbotTypingIndicator();
+        
+        // Call REST API instead of WebSocket
+        fetch('/api/ai/chat', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            message: message,
+            context: 'OneShop mỹ phẩm'
+          })
+        })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Network response was not ok');
+          }
+          return response.json();
+        })
+        .then(data => {
+          hideChatbotTypingIndicator();
+          
+          if (data.status === 'success') {
+            addChatbotMessage(data.message, 'ai');
+            
+            // Check if message contains product-related keywords and search for products
+            const productKeywords = ['sản phẩm', 'kem', 'son', 'mỹ phẩm', 'nước hoa', 'serum', 'tư vấn', 'giới thiệu', 'bạn có', 'có gì'];
+            const hasProductKeyword = productKeywords.some(keyword => message.toLowerCase().includes(keyword));
+            
+            if (hasProductKeyword) {
+              // Search for related products
+              fetch('/api/ai/search-products', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                  query: message
+                })
+              })
+              .then(response => response.json())
+              .then(productData => {
+                if (productData.status === 'success' && productData.products && productData.products.length > 0) {
+                  // Display products
+                  displayProducts(productData.products);
+                }
+              })
+              .catch(err => {
+                console.error('Error searching products:', err);
+              });
+            }
+          } else {
+            addChatbotMessage('Xin lỗi, có lỗi xảy ra: ' + (data.message || 'Vui lòng thử lại'), 'ai');
+          }
+        })
+        .catch(error => {
+          console.error('Error calling AI:', error);
+          hideChatbotTypingIndicator();
+          addChatbotMessage('Xin lỗi, không thể kết nối với AI. Vui lòng thử lại sau.', 'ai');
+        })
+        .finally(() => {
+          // Re-enable input and button
+          input.disabled = false;
+          sendBtn.disabled = false;
+          isTyping = false;
+          input.focus();
+        });
+      }
+
+      function sendSuggestedMessage(message) {
+        const input = document.getElementById('chatbotMessageInput');
+        input.value = message;
+        sendChatbotMessage();
+      }
+
+      function addChatbotMessage(content, type) {
+        const messagesContainer = document.getElementById('chatbotMessages');
+        
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `chat-message ${type}`;
+        
+        const avatarDiv = document.createElement('div');
+        avatarDiv.className = `message-avatar ${type}`;
+        avatarDiv.textContent = type === 'user' ? '👤' : '🤖';
+        
+        const bubbleDiv = document.createElement('div');
+        bubbleDiv.className = 'message-bubble';
+        bubbleDiv.textContent = content;
+        
+        messageDiv.appendChild(avatarDiv);
+        messageDiv.appendChild(bubbleDiv);
+        messagesContainer.appendChild(messageDiv);
+        
+        // Scroll to bottom
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+      }
+
+      function displayProducts(products) {
+        const messagesContainer = document.getElementById('chatbotMessages');
+        
+        // Create product container
+        const productContainer = document.createElement('div');
+        productContainer.className = 'chatbot-products';
+        productContainer.innerHTML = '<div class="products-title">📦 Sản phẩm liên quan:</div><div class="products-grid"></div>';
+        
+        const productsGrid = productContainer.querySelector('.products-grid');
+        
+        // Display each product as a card
+        products.forEach(product => {
+          const productCard = document.createElement('div');
+          productCard.className = 'product-card';
+          
+          const imageUrl = product.image ? `/images/${product.image}` : '/images/default-product.png';
+          const finalPrice = product.discount > 0 
+            ? product.price * (100 - product.discount) / 100 
+            : product.price;
+          
+          productCard.innerHTML = `
+            <div class="product-image">
+              <img src="${imageUrl}" alt="${product.name}" onerror="this.src='/images/default-product.png'">
+              ${product.discount > 0 ? `<span class="product-discount">-${product.discount}%</span>` : ''}
+            </div>
+            <div class="product-info">
+              <h4 class="product-name">${product.name}</h4>
+              ${product.brand ? `<p class="product-brand">Thương hiệu: ${product.brand}</p>` : ''}
+              ${product.category ? `<p class="product-category">Loại: ${product.category}</p>` : ''}
+              <div class="product-price">
+                ${product.discount > 0 ? `<span class="old-price">${product.price.toLocaleString('vi-VN')}₫</span>` : ''}
+                <span class="current-price">${finalPrice.toLocaleString('vi-VN')}₫</span>
+              </div>
+              <a href="/product/${product.id}" class="product-button">Xem chi tiết</a>
+            </div>
+          `;
+          
+          productsGrid.appendChild(productCard);
+        });
+        
+        // Add product container to messages
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'chat-message ai';
+        
+        const avatarDiv = document.createElement('div');
+        avatarDiv.className = 'message-avatar ai';
+        avatarDiv.textContent = '🤖';
+        
+        messageDiv.appendChild(avatarDiv);
+        messageDiv.appendChild(productContainer);
+        messagesContainer.appendChild(messageDiv);
+        
+        // Scroll to bottom
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+      }
+
+      function showChatbotTypingIndicator() {
+        const messagesContainer = document.getElementById('chatbotMessages');
+        
+        // Remove existing typing indicator
+        const existingTyping = document.getElementById('chatbotTypingIndicator');
+        if (existingTyping) {
+          existingTyping.remove();
+        }
+        
+        const typingDiv = document.createElement('div');
+        typingDiv.id = 'chatbotTypingIndicator';
+        typingDiv.className = 'typing-indicator';
+        typingDiv.innerHTML = `
+          <span></span>
+          <span></span>
+          <span></span>
+        `;
+        
+        messagesContainer.appendChild(typingDiv);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+      }
+
+      function hideChatbotTypingIndicator() {
+        const typingIndicator = document.getElementById('chatbotTypingIndicator');
+        if (typingIndicator) {
+          typingIndicator.remove();
+        }
+      }
+
+      function showChatbotBadge() {
+        const badge = document.getElementById('chatbotBadge');
+        badge.style.display = 'flex';
+      }
+
+      function hideChatbotBadge() {
+        const badge = document.getElementById('chatbotBadge');
+        badge.style.display = 'none';
+      }
+
+      function showWelcomeMessage() {
+        // This function can be used to show welcome message again if needed
+        console.log('Welcome message shown');
+      }
+
+      // Image upload handling
+      let currentImageBase64 = null;
+
+      function handleImageUpload(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        // Validate file type
+        if (!file.type.startsWith('image/')) {
+          alert('Vui lòng chọn file hình ảnh');
+          return;
+        }
+
+        // Validate file size (max 5MB)
+        if (file.size > 5 * 1024 * 1024) {
+          alert('Kích thước file không được vượt quá 5MB');
+          return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          currentImageBase64 = e.target.result;
+          
+          // Show preview
+          const preview = document.getElementById('chatbotImagePreview');
+          const previewImg = document.getElementById('chatbotPreviewImg');
+          previewImg.src = currentImageBase64;
+          preview.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+      }
+
+      function removeImagePreview() {
+        currentImageBase64 = null;
+        const preview = document.getElementById('chatbotImagePreview');
+        preview.style.display = 'none';
+        document.getElementById('chatbotImageInput').value = '';
+      }
+
+      // Update sendChatbotMessage to handle images
+      const originalSendChatbotMessage = sendChatbotMessage;
+      sendChatbotMessage = function() {
+        if (currentImageBase64) {
+          sendChatbotMessageWithImage();
+        } else {
+          originalSendChatbotMessage();
+        }
+      };
+
+      function sendChatbotMessageWithImage() {
+        const input = document.getElementById('chatbotMessageInput');
+        const sendBtn = document.getElementById('chatbotSendBtn');
+        const message = input.value.trim() || 'Phân tích hình ảnh này cho tôi';
+        
+        if (isTyping) return;
+        
+        // Disable input and button
+        input.disabled = true;
+        sendBtn.disabled = true;
+        isTyping = true;
+        
+        // Hide intro and welcome
+        hideIntroAndWelcome();
+        
+        // Show typing indicator
+        showChatbotTypingIndicator();
+        
+        // Validate image data before sending
+        if (!currentImageBase64) {
+          console.error('No image data to send');
+          hideChatbotTypingIndicator();
+          addChatbotMessage('Vui lòng chọn hình ảnh để gửi.', 'ai');
+          input.disabled = false;
+          sendBtn.disabled = false;
+          isTyping = false;
+          return;
+        }
+
+        // Prepare request body
+        const requestBody = {
+          message: message,
+          imageData: currentImageBase64
+        };
+
+        console.log('Sending image to AI, image size:', currentImageBase64.length);
+
+        // Call API with image
+        fetch('/api/ai/upload-image', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(requestBody)
+        })
+        .then(response => {
+          console.log('Response status:', response.status);
+          if (!response.ok) {
+            return response.json().then(err => {
+              console.error('API error:', err);
+              throw new Error(err.message || 'Network response was not ok');
+            }).catch(() => {
+              throw new Error('Network response was not ok');
+            });
+          }
+          return response.json();
+        })
+        .then(data => {
+          console.log('Response data:', data);
+          hideChatbotTypingIndicator();
+          
+          if (data.status === 'success') {
+            addChatbotMessage(data.message, 'ai');
+          } else {
+            addChatbotMessage('Xin lỗi, có lỗi xảy ra: ' + (data.message || 'Vui lòng thử lại'), 'ai');
+          }
+        })
+        .catch(error => {
+          console.error('Error calling AI with image:', error);
+          hideChatbotTypingIndicator();
+          addChatbotMessage('Xin lỗi, không thể xử lý hình ảnh: ' + error.message, 'ai');
+        })
+        .finally(() => {
+          // Add user message with image
+          addChatbotMessage(message, 'user', currentImageBase64);
+          
+          // Clear input and image after sending
+          input.value = '';
+          removeImagePreview();
+          
+          input.disabled = false;
+          sendBtn.disabled = false;
+          isTyping = false;
+          input.focus();
+        });
+      }
+
+      // Update addChatbotMessage to handle images
+      const originalAddChatbotMessage = addChatbotMessage;
+      addChatbotMessage = function(content, type, imageBase64) {
+        originalAddChatbotMessage(content, type);
+        
+        // If image provided, add it to the last message
+        if (imageBase64) {
+          const messagesContainer = document.getElementById('chatbotMessages');
+          const lastMessage = messagesContainer.lastElementChild;
+          if (lastMessage) {
+            const bubble = lastMessage.querySelector('.message-bubble');
+            if (bubble) {
+              const img = document.createElement('img');
+              img.src = imageBase64;
+              img.style.maxWidth = '200px';
+              img.style.maxHeight = '200px';
+              img.style.borderRadius = '8px';
+              img.style.marginTop = '10px';
+              bubble.appendChild(img);
+            }
+          }
+        }
+      };
+
+      // Enter key support
+      document.addEventListener('DOMContentLoaded', function() {
+        // Initialize chatbot popup size
+        initializeChatbotPopup();
+        
+        const chatbotInput = document.getElementById('chatbotMessageInput');
+        const chatbotBody = document.getElementById('floatingChatbotPopup');
+        
+        if (chatbotInput) {
+          chatbotInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+              e.preventDefault();
+              sendChatbotMessage();
+            }
+          });
+        }
+
+        // Click on upload button
+        const uploadBtn = document.getElementById('chatbotUploadBtn');
+        if (uploadBtn) {
+          uploadBtn.addEventListener('click', function() {
+            document.getElementById('chatbotImageInput').click();
+          });
+        }
+
+        // Drag and drop functionality
+        if (chatbotBody) {
+          chatbotBody.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            chatbotBody.classList.add('drag-over');
+          });
+
+          chatbotBody.addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            chatbotBody.classList.remove('drag-over');
+          });
+
+          chatbotBody.addEventListener('drop', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            chatbotBody.classList.remove('drag-over');
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+              const file = files[0];
+              if (file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                  currentImageBase64 = event.target.result;
+                  
+                  // Show preview
+                  const preview = document.getElementById('chatbotImagePreview');
+                  const previewImg = document.getElementById('chatbotPreviewImg');
+                  if (preview && previewImg) {
+                    previewImg.src = currentImageBase64;
+                    preview.style.display = 'block';
+                  }
+                };
+                reader.readAsDataURL(file);
+              } else {
+                alert('Vui lòng kéo thả file hình ảnh');
+              }
+            }
+          });
+        }
+
+        // Paste from clipboard
+        if (chatbotInput) {
+          chatbotInput.addEventListener('paste', function(e) {
+            const items = e.clipboardData.items;
+            
+            for (let i = 0; i < items.length; i++) {
+              if (items[i].type.indexOf('image') !== -1) {
+                const blob = items[i].getAsFile();
+                
+                if (blob.size > 5 * 1024 * 1024) {
+                  alert('Kích thước hình ảnh quá lớn (tối đa 5MB)');
+                  return;
+                }
+                
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                  currentImageBase64 = event.target.result;
+                  
+                  // Show preview
+                  const preview = document.getElementById('chatbotImagePreview');
+                  const previewImg = document.getElementById('chatbotPreviewImg');
+                  if (preview && previewImg) {
+                    previewImg.src = currentImageBase64;
+                    preview.style.display = 'block';
+                  }
+                };
+                reader.readAsDataURL(blob);
+                
+                e.preventDefault();
+                break;
+              }
+            }
+          });
+        }
+      });
+
+      // Hide badge when chat is opened
+      document.addEventListener('click', function(e) {
+        if (e.target.closest('#floatingChatbotPopup')) {
+          hideChatbotBadge();
+        }
+      });
+
+      // Auto-hide suggested topics after first message
+      let suggestedTopicsHidden = false;
+      function hideSuggestedTopics() {
+        if (!suggestedTopicsHidden) {
+          const suggestedTopics = document.querySelector('.suggested-topics');
+          if (suggestedTopics) {
+            suggestedTopics.style.display = 'none';
+            suggestedTopicsHidden = true;
+          }
+        }
+      }
+
+      // Wrap original sendChatbotMessage to hide suggested topics
+      window.sendChatbotMessageOriginal = sendChatbotMessage;
+      window.sendChatbotMessage = function() {
+        hideSuggestedTopics();
+        if (window.sendChatbotMessageOriginal) {
+          window.sendChatbotMessageOriginal();
+        }
+      };
+    </script>
   </body>
 </html>
+

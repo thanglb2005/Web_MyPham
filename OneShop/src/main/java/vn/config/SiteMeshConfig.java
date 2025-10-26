@@ -16,8 +16,17 @@ public class SiteMeshConfig {
         SiteMeshWebFilter siteMeshFilter = new SiteMeshWebFilter();
 
         filter.setFilter(siteMeshFilter);
-        // Only apply to /admin/categories exactly
-        filter.addUrlPatterns("/admin/categories");
+                // Apply only to selected admin pages
+                filter.addUrlPatterns("/admin/categories");
+                filter.addUrlPatterns("/admin/brands");
+                filter.addUrlPatterns("/admin/providers");
+                filter.addUrlPatterns("/admin/users");
+                filter.addUrlPatterns("/admin/shops");
+                filter.addUrlPatterns("/admin/products");
+                filter.addUrlPatterns("/admin/orders");
+                filter.addUrlPatterns("/admin/shippers-list");
+                filter.addUrlPatterns("/admin/promotions");
+                filter.addUrlPatterns("/admin/promotions/*");
         // Only decorate initial REQUESTs, avoid FORWARD/INCLUDE re-processing (prevents double decoration)
         filter.setDispatcherTypes(EnumSet.of(DispatcherType.REQUEST));
         filter.setName("sitemesh");
