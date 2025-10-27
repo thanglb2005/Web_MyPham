@@ -27,6 +27,7 @@
             border-radius: 8px;
             padding: 40px;
             margin-bottom: 32px;
+            overflow: hidden; /* prevent children from overflowing card */
         }
         
         .blog-meta {
@@ -65,7 +66,11 @@
             font-size: 16px;
             line-height: 1.7;
             color: #495057;
+            word-break: break-word;
+            overflow-wrap: anywhere;
         }
+        /* Ensure floats inside content don't overlap following blocks */
+        .blog-body::after { content: ""; display: block; clear: both; }
         
         .blog-body h1, .blog-body h2, .blog-body h3, .blog-body h4, .blog-body h5, .blog-body h6 {
             margin-top: 24px;
@@ -79,11 +84,19 @@
         }
         
         .blog-body img {
-            max-width: 100%;
-            height: auto;
+            display: block;
+            max-width: 100% !important;
+            height: auto !important;
             border-radius: 6px;
-            margin: 16px 0;
+            margin: 16px auto; /* center images and add spacing */
         }
+        .blog-body iframe, .blog-body video {
+            max-width: 100%;
+            width: 100% !important;
+            height: auto;
+        }
+        .blog-body figure { max-width: 100%; margin: 16px 0; }
+        .blog-body table { width: 100% !important; display: block; overflow-x: auto; }
         
         .blog-tags {
             margin: 24px 0;
@@ -91,6 +104,7 @@
             background: #f8f9fa;
             border-radius: 6px;
             border: 1px solid #e9ecef;
+            clear: both; /* force below any floated media from content */
         }
         
         .blog-tag {
