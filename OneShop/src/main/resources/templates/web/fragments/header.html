@@ -126,6 +126,45 @@
 
       }
 
+      /* ====== Chatbot AI message formatting (ChatGPT style) ====== */
+      .oneshop-chatbot-popup .message-bubble.message-bubble-ai {
+        white-space: pre-line;       /* Giữ \n và xuống dòng như nội dung gốc */
+        line-height: 1.65;           /* Giãn dòng nhẹ cho dễ đọc */
+        font-size: 14px;
+        color: #1f2937;
+        background: #ffffff;
+        padding: 12px 16px;
+        border-radius: 14px;
+        border: 1px solid #e5e7eb;
+        margin: 8px 0;
+      }
+
+      /* Căn lề cho danh sách (bullet hoặc numbered list) */
+      .oneshop-chatbot-popup .message-bubble.message-bubble-ai ul,
+      .oneshop-chatbot-popup .message-bubble.message-bubble-ai ol {
+        margin: 8px 0 8px 22px;
+        padding-left: 0;
+      }
+
+      /* Kiểu bullet (•) hoặc numbered (1.) căn đều */
+      .oneshop-chatbot-popup .message-bubble.message-bubble-ai li {
+        margin-bottom: 6px;
+      }
+
+      /* In đậm, in nghiêng giữ màu gốc */
+      .oneshop-chatbot-popup .message-bubble.message-bubble-ai strong {
+        color: #1e3a8a;
+        font-weight: 600;
+      }
+      .oneshop-chatbot-popup .message-bubble.message-bubble-ai em {
+        font-style: italic;
+      }
+
+      /* Giữa các đoạn cách nhẹ (như ChatGPT) */
+      .oneshop-chatbot-popup .message-bubble.message-bubble-ai p {
+        margin: 8px 0;
+      }
+
     </style>
 
   </head>
@@ -6079,6 +6118,93 @@
           conversationHistory: []
         };
       }
+      
+      // Get user ID from localStorage or use 'guest' as default
+      function getChatbotUserId() {
+        try {
+          // Get user info from JWT auth system
+          const userInfoStr = localStorage.getItem('oneshop_user_info');
+          if (userInfoStr) {
+            const userInfo = JSON.parse(userInfoStr);
+            // Return user ID from userInfo object (userInfo.user_id)
+            if (userInfo && userInfo.user_id) {
+              return `user_${userInfo.user_id}`;
+            }
+            // Fallback to email if user_id not available
+            if (userInfo && userInfo.email) {
+              return `user_${userInfo.email}`;
+            }
+          }
+          return 'guest';
+        } catch (e) {
+          console.error('Error getting chatbot user ID:', e);
+          return 'guest';
+        }
+      }
+      
+      // Get storage key for current user
+      function getChatbotStorageKey() {
+        return `oneshopChatbotHistory_${getChatbotUserId()}`;
+      }
+      
+      // Load conversation history from localStorage (per user)
+      function loadChatbotHistory() {
+        try {
+          const storageKey = getChatbotStorageKey();
+          const savedHistory = localStorage.getItem(storageKey);
+          if (savedHistory) {
+            window.chatbotState.conversationHistory = JSON.parse(savedHistory);
+            return true;
+          }
+        } catch (e) {
+          console.error('Error loading chatbot history:', e);
+        }
+        return false;
+      }
+      
+      // Save conversation history to localStorage (per user)
+      function saveChatbotHistory() {
+        try {
+          const storageKey = getChatbotStorageKey();
+          localStorage.setItem(storageKey, JSON.stringify(window.chatbotState.conversationHistory));
+        } catch (e) {
+          console.error('Error saving chatbot history:', e);
+        }
+      }
+      
+      // Render saved conversation history
+      function renderChatbotHistory() {
+        const messagesContainer = document.getElementById('aiChatbotMessages');
+        const history = window.chatbotState.conversationHistory;
+        
+        if (!history || history.length === 0) {
+          return;
+        }
+        
+        // Clear welcome message and suggested topics
+        hideIntroAndWelcome();
+        
+        // Render each message from history
+        history.forEach(item => {
+          if (item.role === 'user') {
+            addChatbotMessage(item.content, 'user');
+          } else if (item.role === 'model') {
+            // Check if it's a products message
+            if (item.type === 'products' && item.products) {
+              // Restore products display (skip history to avoid duplicates)
+              displayProducts(item.products, true);
+            } else {
+              // Regular text message
+              addChatbotMessage(item.content, 'ai');
+            }
+          }
+        });
+      }
+      
+      // Load history when chatbot opens
+      window.loadChatbotHistory = loadChatbotHistory;
+      window.saveChatbotHistory = saveChatbotHistory;
+      window.renderChatbotHistory = renderChatbotHistory;
 
       // Define all functions first
       function toggleOneshopChatbot() {
@@ -6099,6 +6225,21 @@
 
         if (open) {
           hideChatbotBadge();
+          
+          // Load conversation history from localStorage for current user
+          loadChatbotHistory();
+          
+          // Check if there's history to render
+          if (window.chatbotState.conversationHistory && window.chatbotState.conversationHistory.length > 0) {
+            // Clear current messages first
+            const messagesContainer = document.getElementById('aiChatbotMessages');
+            if (messagesContainer) {
+              messagesContainer.innerHTML = '';
+            }
+            // Render saved history
+            renderChatbotHistory();
+          }
+          
           setTimeout(() => {
             const inp = document.getElementById('aiChatbotMessageInput');
             if (inp) inp.focus();
@@ -6122,6 +6263,13 @@
         popup.style.display = 'none';
 
         button.style.transform = 'scale(1)';
+        
+        // Update chatbot state
+        window.chatbotState.open = false;
+        
+        // Remove body classes
+        document.body.classList.remove('oneshop-chatbot-popup-open');
+        document.body.classList.remove('chatbot-open');
 
       }
 
@@ -6135,6 +6283,13 @@
         const messagesContainer = document.getElementById('aiChatbotMessages');
 
         messagesContainer.innerHTML = '';
+        
+        // Clear conversation history
+        window.chatbotState.conversationHistory = [];
+        
+        // Clear localStorage history for current user
+        const storageKey = getChatbotStorageKey();
+        localStorage.removeItem(storageKey);
 
         
 
@@ -6246,6 +6401,9 @@
         // Thêm vào lịch sử
         window.chatbotState.conversationHistory.push({ role: 'user', content: message });
         
+        // Save history to localStorage
+        saveChatbotHistory();
+        
         // Clear input
 
         input.value = '';
@@ -6305,6 +6463,9 @@
             
             // Thêm phản hồi AI vào lịch sử
             window.chatbotState.conversationHistory.push({ role: 'model', content: data.message });
+            
+            // Save history to localStorage
+            saveChatbotHistory();
 
             // Check if message contains product-related keywords and search for products
 
@@ -6429,7 +6590,9 @@
 
         bubbleDiv.className = 'message-bubble';
 
-        bubbleDiv.textContent = content;
+        // Format content for better readability (convert numbered lists to HTML)
+        const formattedContent = formatMessageContent(content);
+        bubbleDiv.innerHTML = formattedContent;
         
         // Add class to differentiate bubble styling
         bubbleDiv.classList.add(`message-bubble-${type}`);
@@ -6447,10 +6610,59 @@
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
 
       }
+      
+      // Helper function to format message content (ChatGPT style - convert to proper HTML)
+      function formatMessageContent(text) {
+        // Escape HTML to prevent XSS
+        let safeText = text
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#039;');
+        
+        // Convert **text** to bold
+        safeText = safeText.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+        
+        // Split into lines
+        const lines = safeText.replace(/\r\n/g, '\n').split('\n');
+        let html = '';
+        let inOl = false, inUl = false;
+
+        const openOl = () => { if (!inOl) { html += '<ol>'; inOl = true; } };
+        const closeOl = () => { if (inOl) { html += '</ol>'; inOl = false; } };
+        const openUl = () => { if (!inUl) { html += '<ul>'; inUl = true; } };
+        const closeUl = () => { if (inUl) { html += '</ul>'; inUl = false; } };
+
+        for (const raw of lines) {
+          const line = raw.trim();
+
+          if (/^\d+\.\s+/.test(line)) {
+            // numbered list: 1. 2. 3.
+            closeUl(); openOl();
+            html += '<li>' + line.replace(/^\d+\.\s+/, '') + '</li>';
+          } else if (/^[\*\-]\s+/.test(line)) {
+            // bullet list: *  hoặc -
+            closeOl(); openUl();
+            html += '<li>' + line.replace(/^[\*\-]\s+/, '') + '</li>';
+          } else if (line === '') {
+            // dòng trống -> ngắt đoạn
+            closeOl(); closeUl();
+            html += '<br>';
+          } else {
+            // đoạn văn bình thường
+            closeOl(); closeUl();
+            html += '<p>' + line + '</p>';
+          }
+        }
+        closeOl(); closeUl();
+        
+        return html;
+      }
 
 
 
-      function displayProducts(products) {
+      function displayProducts(products, skipHistory) {
 
         const messagesContainer = document.getElementById('aiChatbotMessages');
 
@@ -6577,8 +6789,19 @@
         messageDiv.appendChild(productContainer);
 
         messagesContainer.appendChild(messageDiv);
-
         
+        // Save products to conversation history (skip if rendering from history)
+        if (!skipHistory) {
+          window.chatbotState.conversationHistory.push({
+            role: 'model',
+            type: 'products',
+            products: products,
+            content: '📦 Sản phẩm liên quan'
+          });
+          
+          // Save to localStorage
+          saveChatbotHistory();
+        }
 
         // Scroll to bottom
 
