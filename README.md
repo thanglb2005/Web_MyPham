@@ -299,10 +299,10 @@ Distributed under the MIT License. See `LICENSE` for more information.
 ## 👨‍💻 Tác giả
 
 **OneShop Team**
-Võ Thanh Sang                        	23110301
-Lê Văn Chiến Thắng                	  23110328
-Trịnh Nguyễn Hoàng Nguyên  	          23110272
-Nguyễn Phươc Khang              	    23110236
+- Võ Thanh Sang                        	23110301
+- Lê Văn Chiến Thắng                	  23110328
+- Trịnh Nguyễn Hoàng Nguyên  	          23110272
+- Nguyễn Phươc Khang              	    23110236
 
 
 ## 🙏 Acknowledgments
