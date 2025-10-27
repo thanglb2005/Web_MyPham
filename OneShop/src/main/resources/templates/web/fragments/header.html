@@ -1924,20 +1924,15 @@
 
 
 
-        .message {
-
+        /* Scope .message for chat popup only, not chatbot AI */
+        #floatingChatButton ~ #floatingChatPopup .message,
+        .chat-container .message {
           margin-bottom: 20px;
-
           display: flex;
-
           align-items: flex-end;
-
           /* Remove animations */
-
           animation: none !important;
-
           transition: none !important;
-
         }
 
 
@@ -1946,70 +1941,47 @@
 
 
 
-        .message.sent {
-
+        /* Scope .message.sent/.received for chat popup only */
+        #floatingChatButton ~ #floatingChatPopup .message.sent,
+        .chat-container .message.sent {
           justify-content: flex-end;
-
         }
 
-
-
-        .message.received {
-
+        #floatingChatButton ~ #floatingChatPopup .message.received,
+        .chat-container .message.received {
           justify-content: flex-start;
-
         }
 
 
 
-        .message-bubble {
-
+        /* Scope .message-bubble for chat popup only */
+        #floatingChatButton ~ #floatingChatPopup .message-bubble,
+        .chat-container .message-bubble {
           max-width: 70%;
-
           padding: 15px 20px;
-
           border-radius: 20px;
-
           font-size: 14px;
-
           line-height: 1.5;
-
           position: relative;
-
           word-wrap: break-word;
-
           backdrop-filter: blur(10px);
-
         }
 
-
-
-        .message.sent .message-bubble {
-
+        #floatingChatButton ~ #floatingChatPopup .message.sent .message-bubble,
+        .chat-container .message.sent .message-bubble {
           background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
-
           color: white;
-
           border-bottom-right-radius: 8px;
-
           box-shadow: 0 4px 15px rgba(30, 58, 138, 0.3);
-
         }
 
-
-
-        .message.received .message-bubble {
-
+        #floatingChatButton ~ #floatingChatPopup .message.received .message-bubble,
+        .chat-container .message.received .message-bubble {
           background: #ffffff;
-
           color: #1e293b;
-
           border-bottom-left-radius: 8px;
-
           box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-
           border: 1px solid #e2e8f0;
-
         }
 
 
@@ -5206,7 +5178,7 @@
 
         overflow-y: auto;
 
-        padding: 15px 20px;
+        padding: 20px;
         background: #fff;
         /* Reserve space for input + footer */
         padding-bottom: 140px;
@@ -5214,15 +5186,16 @@
 
       #ai-chatbot-container .chat-message {
         display: flex;
-        gap: 10px;
-        margin-bottom: 15px;
+        gap: 12px;
+        margin-bottom: 20px;
         align-items: flex-start;
       }
 
       #ai-chatbot-container .chat-message.user {
-        flex-direction: row-reverse;
-        /* User messages align to right */
-        justify-content: flex-start;
+        /* User messages align to right - avatar on right side */
+        justify-content: flex-end;
+        flex-direction: row;
+        align-items: flex-end;
       }
       
       /* AI messages stay left-aligned by default */
@@ -5232,9 +5205,9 @@
 
       #ai-chatbot-container .message-avatar {
 
-        width: 30px;
+        width: 36px;
 
-        height: 30px;
+        height: 36px;
 
         border-radius: 50%;
 
@@ -5255,38 +5228,40 @@
 
         color: white;
 
-        font-size: 12px;
+        font-size: 14px;
+        font-weight: 600;
 
       }
 
 
       #ai-chatbot-container .message-avatar.user {
 
-        background: #e0e0e0;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 
-        color: #666;
+        color: white;
 
-        font-size: 12px;
+        font-size: 14px;
+        font-weight: 600;
 
       }
 
       #ai-chatbot-container .message-bubble {
 
-        max-width: 80%;
-        padding: 12px 15px;
-        border-radius: 15px;
+        max-width: 75%;
+        padding: 14px 18px;
+        border-radius: 18px;
         font-size: 14px;
-        line-height: 1.4;
+        line-height: 1.5;
         word-wrap: break-word;
 
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       }
 
       #ai-chatbot-container .message-bubble-ai {
-        background: white;
+        background: #f8f9fa;
         color: #333;
-        border: 1px solid rgba(255, 107, 157, 0.2);
-        box-shadow: 0 2px 8px rgba(255, 107, 157, 0.1);
+        border: 1px solid rgba(255, 107, 157, 0.15);
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
       }
 
       #ai-chatbot-container .message-bubble-user {
@@ -5316,7 +5291,7 @@
       .chatbot-input-area {
         background: #fff;
         border-top: 1px solid #e5e5e5;
-        padding: 10px 20px 15px 20px;
+        padding: 12px 20px;
         flex-shrink: 0;
         position: relative;
         z-index: 3;
@@ -5487,6 +5462,127 @@
       body.oneshop-chatbot-popup-open #floatingChatButton,
       body.oneshop-chatbot-popup-open #oneshopChatbotButton {
         display: none !important;
+      }
+
+      /* ====== CHATBOT AI — FIX LỆCH CĂN ====== */
+      /* Override tất cả rule CSS của chat thường để không ảnh hưởng chatbot AI */
+      .oneshop-chatbot-popup #ai-chatbot-container .chat-message.user {
+        justify-content: flex-end !important;
+        flex-direction: row !important;
+      }
+      
+      .oneshop-chatbot-popup #ai-chatbot-container .chat-message:not(.user) {
+        justify-content: flex-start !important;
+      }
+      
+      /* Đảm bảo input group nằm ngang và full width */
+      .oneshop-chatbot-popup .chatbot-input-area {
+        padding: 12px 16px !important;
+      }
+      
+      .oneshop-chatbot-popup .chatbot-input-area .input-group {
+        display: flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+        width: 100% !important;
+      }
+
+      /* ========== 1) CĂN VỊ TRÍ TIN NHẮN (AVATAR + BUBBLE) ========== */
+      /* Danh sách tin nhắn cuộn dọc, không đổi thiết kế */
+      .oneshop-chatbot-popup .chat-messages {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        overflow-y: auto;
+      }
+
+      /* Mỗi message = 1 hàng: avatar + bubble */
+      .oneshop-chatbot-popup .chat-message {
+        display: flex;
+        align-items: flex-end;
+        gap: 8px;
+      }
+
+      /* AI (bot) bên trái: avatar trái, bubble/phần nội dung bên phải */
+      .oneshop-chatbot-popup .chat-message.ai {
+        justify-content: flex-start;
+        flex-direction: row;
+      }
+      .oneshop-chatbot-popup .chat-message.ai .message-avatar.ai {
+        width: 30px; height: 30px; line-height: 30px; text-align: center;
+        flex: 0 0 30px; border-radius: 50%;
+        margin-right: 8px;
+      }
+      .oneshop-chatbot-popup .chat-message.ai .message-bubble.message-bubble-ai {
+        max-width: 78%;
+        word-break: break-word;
+      }
+
+      /* Trường hợp AI trả về khối sản phẩm không nằm trong bubble */
+      .oneshop-chatbot-popup .chat-message.ai > .chatbot-products {
+        max-width: 100%;
+        overflow: hidden;
+      }
+
+      /* User bên phải: avatar ngoài cùng bên phải, bubble ở trái avatar */
+      .oneshop-chatbot-popup .chat-message.user {
+        justify-content: flex-end;
+        flex-direction: row-reverse;
+        align-self: flex-end;
+        margin-left: auto;
+      }
+      .oneshop-chatbot-popup .chat-message.user .message-avatar.user {
+        width: 30px; height: 30px; line-height: 30px; text-align: center;
+        flex: 0 0 30px; border-radius: 50%;
+        margin-left: 8px;
+      }
+      .oneshop-chatbot-popup .chat-message.user .message-bubble.message-bubble-user {
+        max-width: 78%;
+        word-break: break-word;
+      }
+
+      /* ========== 2) CĂN LẠI THANH NHẬP (UPLOAD + INPUT + SEND) ========== */
+      .oneshop-chatbot-popup .chatbot-input-area {
+        /* Giữ nguyên layout hiện tại, chỉ đảm bảo mọi thứ thẳng hàng */
+        padding: 10px 14px;
+        border-top: 1px solid #e5e7eb;
+        box-sizing: border-box;
+      }
+      .oneshop-chatbot-popup .chatbot-input-area .input-group {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        width: 100%;
+      }
+
+      /* Nút upload và gửi giữ kích thước gọn, không bị kéo giãn */
+      .oneshop-chatbot-popup .chatbot-input-area .upload-btn,
+      .oneshop-chatbot-popup .chatbot-input-area .send-btn {
+        flex-shrink: 0;
+        width: 38px; height: 38px;
+        display: flex; align-items: center; justify-content: center;
+        border: none; background: transparent; cursor: pointer;
+      }
+
+      /* Ô nhập giãn hết phần còn lại, không tràn */
+      .oneshop-chatbot-popup .chatbot-input-area .chatbot-input {
+        flex: 1;
+        min-width: 0;
+        height: 38px;
+        box-sizing: border-box;
+      }
+
+      /* Nhãn "Bạn cần hỗ trợ gì?" chiếm 100% chiều ngang (tránh đẩy input lệch) */
+      .oneshop-chatbot-popup .chatbot-input-area .input-label {
+        display: block;
+        width: 100%;
+        margin-bottom: 6px;
+      }
+
+      /* Ảnh preview không làm bể hàng input */
+      .oneshop-chatbot-popup .chatbot-input-area .image-preview {
+        margin-bottom: 8px;
+        max-width: 100%;
       }
 
       .disclaimer {
@@ -6328,9 +6424,7 @@
         avatarDiv.className = `message-avatar ${type}`;
 
         avatarDiv.textContent = type === 'user' ? '👤' : '🤖';
-
         
-
         const bubbleDiv = document.createElement('div');
 
         bubbleDiv.className = 'message-bubble';
@@ -6339,9 +6433,6 @@
         
         // Add class to differentiate bubble styling
         bubbleDiv.classList.add(`message-bubble-${type}`);
-
-
-        
 
         messageDiv.appendChild(avatarDiv);
 
