@@ -1911,6 +1911,42 @@ INSERT INTO dbo.blog_post_tags (post_id, tag_id) VALUES
 (3, 2), (3, 4), (3, 5); -- Tutorial post
 GO
 
+-- 7. Sample Blog Comments (approved) with replies
+DECLARE @post1 BIGINT = (SELECT post_id FROM dbo.blog_posts WHERE slug = '10-buoc-skincare-co-ban-cho-nguoi-moi-bat-dau');
+DECLARE @post2 BIGINT = (SELECT post_id FROM dbo.blog_posts WHERE slug = 'review-kem-chong-nang-la-roche-posay-anthelios');
+DECLARE @post3 BIGINT = (SELECT post_id FROM dbo.blog_posts WHERE slug = 'huong-dan-trang-diem-co-ban-cho-nguoi-moi');
+
+-- Post 1: two top-level comments and one reply each
+DECLARE @cmt1 BIGINT;
+INSERT INTO dbo.blog_comments (post_id, user_id, parent_comment_id, author_name, author_email, content, is_approved, created_at)
+VALUES (@post1, 1, NULL, N'Trần Thảo Chi', 'chi@gmail.com', N'Bài viết rất hữu ích, cảm ơn bạn!', 1, GETDATE());
+SET @cmt1 = SCOPE_IDENTITY();
+
+INSERT INTO dbo.blog_comments (post_id, user_id, parent_comment_id, author_name, author_email, content, is_approved, created_at)
+VALUES (@post1, 3, @cmt1, N'User Demo', 'user@gmail.com', N'Mình áp dụng thấy da cải thiện rõ!', 1, GETDATE());
+
+DECLARE @cmt2 BIGINT;
+INSERT INTO dbo.blog_comments (post_id, user_id, parent_comment_id, author_name, author_email, content, is_approved, created_at)
+VALUES (@post1, 2, NULL, N'Trần Hữu Đồng', 'dong@gmail.com', N'Cho mình hỏi thứ tự toner với serum nhe?', 1, GETDATE());
+SET @cmt2 = SCOPE_IDENTITY();
+
+INSERT INTO dbo.blog_comments (post_id, user_id, parent_comment_id, author_name, author_email, content, is_approved, created_at)
+VALUES (@post1, 1, @cmt2, N'Trần Thảo Chi', 'chi@gmail.com', N'Toner trước, serum sau bạn nhé!', 1, GETDATE());
+
+-- Post 2: one top-level comment
+DECLARE @cmt3 BIGINT;
+INSERT INTO dbo.blog_comments (post_id, user_id, parent_comment_id, author_name, author_email, content, is_approved, created_at)
+VALUES (@post2, 3, NULL, N'User Demo', 'user@gmail.com', N'Dùng bản Oil Control thấy kiềm dầu ổn.', 1, GETDATE());
+SET @cmt3 = SCOPE_IDENTITY();
+
+INSERT INTO dbo.blog_comments (post_id, user_id, parent_comment_id, author_name, author_email, content, is_approved, created_at)
+VALUES (@post2, 1, @cmt3, N'Trần Thảo Chi', 'chi@gmail.com', N'Mình cũng thích bản Invisible Fluid cho make-up.', 1, GETDATE());
+
+-- Post 3: one top-level comment
+INSERT INTO dbo.blog_comments (post_id, user_id, parent_comment_id, author_name, author_email, content, is_approved, created_at)
+VALUES (@post3, 2, NULL, N'Trần Hữu Đồng', 'dong@gmail.com', N'Hướng dẫn rất dễ hiểu cho người mới.', 1, GETDATE());
+GO
+
 -- Create indexes for better performance
 CREATE INDEX IX_blog_posts_status ON dbo.blog_posts(status);
 CREATE INDEX IX_blog_posts_published_at ON dbo.blog_posts(published_at);

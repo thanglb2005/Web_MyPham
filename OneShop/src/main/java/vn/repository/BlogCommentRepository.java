@@ -24,6 +24,9 @@ public interface BlogCommentRepository extends JpaRepository<BlogComment, Long> 
     // Find top-level comments (not replies)
     List<BlogComment> findByPostAndParentCommentIsNullAndIsApprovedTrueOrderByCreatedAtAsc(BlogPost post);
     
+    // Fetch replies for a set of parent ids if needed
+    List<BlogComment> findByParentCommentCommentIdInOrderByCreatedAtAsc(java.util.Collection<Long> parentIds);
+    
     // Find comments by user
     List<BlogComment> findByUserUserIdOrderByCreatedAtDesc(Long userId);
     

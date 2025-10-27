@@ -297,35 +297,29 @@
                     </article>
                     
                     <!-- Comments Section -->
-                    <div class="comment-section">
+                    <div class="comment-section" id="comments">
                         <h4 style="margin-bottom: 30px;">
                             <i class="fas fa-comments" style="margin-right: 8px; color: #667eea;"></i>
-                            Bình luận (<span th:text="${comments != null ? comments.size() : 0}">0</span>)
+                            Bình luận (<span th:text="${commentCount != null ? commentCount : 0}">0</span>)
                         </h4>
                         
-                        <!-- Comment Form -->
-                        <div class="comment-form">
+                        <!-- Comment Form (login required) -->
+                        <div class="comment-form" th:if="${isAuthenticated}">
                             <h6 style="margin-bottom: 15px;">Viết bình luận</h6>
                             <form th:action="@{'/blogs/' + ${post.slug} + '/comment'}" method="post">
+                                <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
                                 <div class="form-group">
                                     <textarea name="content" class="form-control" rows="4" 
                                               placeholder="Viết bình luận của bạn..." required></textarea>
-                                </div>
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <input type="text" name="authorName" class="form-control" 
-                                               placeholder="Tên của bạn" required>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <input type="email" name="authorEmail" class="form-control" 
-                                               placeholder="Email của bạn" required>
-                                    </div>
                                 </div>
                                 <button type="submit" class="btn btn-primary" style="margin-top: 15px;">
                                     <i class="fas fa-paper-plane" style="margin-right: 5px;"></i>
                                     Gửi bình luận
                                 </button>
                             </form>
+                        </div>
+                        <div class="alert alert-info" th:unless="${isAuthenticated}">
+                            Vui lòng <a href="/login">đăng nhập</a> để bình luận.
                         </div>
                         
                         <!-- Comments List -->
@@ -334,28 +328,19 @@
                                 <div class="comment-author" th:text="${comment.authorName}">Tên người dùng</div>
                                 <div class="comment-date" th:text="${#temporals.format(comment.createdAt, 'dd/MM/yyyy HH:mm')}">01/01/2024 10:00</div>
                                 <div class="comment-content" th:text="${comment.content}">Nội dung bình luận...</div>
-                                <button class="reply-btn" th:onclick="'showReplyForm(' + ${comment.commentId} + ')'">
+                                <button class="reply-btn" th:if="${isAuthenticated}" th:onclick="'showReplyForm(' + ${comment.commentId} + ')'">
                                     <i class="fas fa-reply" style="margin-right: 3px;"></i>
                                     Trả lời
                                 </button>
                                 
-                                <!-- Reply Form (Hidden by default) -->
-                                <div th:id="'reply-form-' + ${comment.commentId}" class="reply-form">
+                                <!-- Reply Form (login required, hidden by default) -->
+                                <div th:id="'reply-form-' + ${comment.commentId}" class="reply-form" th:if="${isAuthenticated}">
                                     <form th:action="@{'/blogs/' + ${post.slug} + '/comment'}" method="post">
+                                        <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
                                         <input type="hidden" name="parentCommentId" th:value="${comment.commentId}">
                                         <div class="form-group">
                                             <textarea name="content" class="form-control" rows="3" 
                                                       placeholder="Viết trả lời..." required></textarea>
-                                        </div>
-                                        <div class="row">
-                                            <div class="col-md-6">
-                                                <input type="text" name="authorName" class="form-control" 
-                                                       placeholder="Tên của bạn" required>
-                                            </div>
-                                            <div class="col-md-6">
-                                                <input type="email" name="authorEmail" class="form-control" 
-                                                       placeholder="Email của bạn" required>
-                                            </div>
                                         </div>
                                         <button type="submit" class="btn btn-sm btn-primary" style="margin-top: 10px;">
                                             <i class="fas fa-paper-plane" style="margin-right: 3px;"></i>
@@ -366,6 +351,15 @@
                                             Hủy
                                         </button>
                                     </form>
+                                </div>
+                                
+                                <!-- Child replies -->
+                                <div th:if="${comment.replies != null and !comment.replies.empty}" style="margin-left: 20px; margin-top: 10px;">
+                                    <div th:each="rep : ${comment.replies}" class="comment-item">
+                                        <div class="comment-author" th:text="${rep.authorName}">Tên người dùng</div>
+                                        <div class="comment-date" th:text="${#temporals.format(rep.createdAt, 'dd/MM/yyyy HH:mm')}">01/01/2024 10:10</div>
+                                        <div class="comment-content" th:text="${rep.content}">Nội dung trả lời...</div>
+                                    </div>
                                 </div>
                             </div>
                         </div>

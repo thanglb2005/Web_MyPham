@@ -51,6 +51,7 @@ public class BlogComment {
     
     // One-to-Many relationship with replies
     @OneToMany(mappedBy = "parentComment", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OrderBy("createdAt ASC")
     private List<BlogComment> replies = new ArrayList<>();
     
     // Constructors
