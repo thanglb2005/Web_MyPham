@@ -6187,7 +6187,12 @@
         // Render each message from history
         history.forEach(item => {
           if (item.role === 'user') {
-            addChatbotMessage(item.content, 'user');
+            // Check if user message has image
+            if (item.image) {
+              addChatbotMessage(item.content, 'user', item.image);
+            } else {
+              addChatbotMessage(item.content, 'user');
+            }
           } else if (item.role === 'model') {
             // Check if it's a products message
             if (item.type === 'products' && item.products) {
@@ -6590,9 +6595,37 @@
 
         bubbleDiv.className = 'message-bubble';
 
+        // If there's an image, display it
+        if (imageBase64) {
+          const imageWrapper = document.createElement('div');
+          imageWrapper.className = 'chatbot-image-wrapper';
+          
+          const image = document.createElement('img');
+          
+          // Check if base64 already has data: prefix, if not add it
+          let imageSrc = imageBase64;
+          if (!imageBase64.startsWith('data:image')) {
+            imageSrc = `data:image/jpeg;base64,${imageBase64}`;
+          }
+          
+          image.src = imageSrc;
+          image.className = 'chatbot-uploaded-image';
+          image.style.maxWidth = '200px';
+          image.style.maxHeight = '200px';
+          image.style.borderRadius = '8px';
+          image.style.marginBottom = '8px';
+          
+          imageWrapper.appendChild(image);
+          bubbleDiv.appendChild(imageWrapper);
+        }
+
         // Format content for better readability (convert numbered lists to HTML)
         const formattedContent = formatMessageContent(content);
-        bubbleDiv.innerHTML = formattedContent;
+        if (content && content.trim()) {
+          const textDiv = document.createElement('div');
+          textDiv.innerHTML = formattedContent;
+          bubbleDiv.appendChild(textDiv);
+        }
         
         // Add class to differentiate bubble styling
         bubbleDiv.classList.add(`message-bubble-${type}`);
@@ -6984,6 +7017,19 @@
         // Hide intro and welcome
 
         hideIntroAndWelcome();
+        
+        // Add user message FIRST (before AI response)
+        addChatbotMessage(message, 'user', window.chatbotState.imageBase64);
+        
+        // Save user message with image to conversation history
+        window.chatbotState.conversationHistory.push({
+          role: 'user',
+          content: message,
+          image: window.chatbotState.imageBase64
+        });
+        
+        // Save to localStorage
+        saveChatbotHistory();
 
         
 
@@ -7077,6 +7123,15 @@
           if (data.status === 'success') {
 
             addChatbotMessage(data.message, 'ai');
+            
+            // Save AI response to conversation history
+            window.chatbotState.conversationHistory.push({
+              role: 'model',
+              content: data.message
+            });
+            
+            // Save to localStorage
+            saveChatbotHistory();
 
           } else {
 
@@ -7097,11 +7152,6 @@
         })
 
         .finally(() => {
-
-          // Add user message with image
-
-          addChatbotMessage(message, 'user', window.chatbotState.imageBase64);
-          
 
           // Clear input and image after sending
 
