@@ -27,11 +27,25 @@ uri="jakarta.tags.functions" %>
   .shop-chip {
     background: #e9f5ff;
     color: #0069d9;
-    padding: 4px 8px;
+    padding: 4px 12px 4px 8px;
     border-radius: 999px;
     font-size: 12px;
     margin-right: 6px;
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    position: relative;
+  }
+  .shop-chip .remove-btn {
+    color: #dc3545;
+    cursor: pointer;
+    font-weight: bold;
+    padding: 0 4px;
+    border-radius: 50%;
+    transition: background 0.2s;
+  }
+  .shop-chip .remove-btn:hover {
+    background: rgba(220, 53, 69, 0.1);
   }
 </style>
 
@@ -74,9 +88,23 @@ uri="jakarta.tags.functions" %>
         <h5 class="mb-1">${s.name}</h5>
         <div class="text-muted mb-2">${s.email}</div>
         <div>
-          <c:forEach var="shop" items="${s.assignedShops}">
-            <span class="shop-chip">${shop.shopName}</span>
-          </c:forEach>
+          <c:if test="${s.assignedShops != null && !s.assignedShops.isEmpty()}">
+            <c:forEach var="shop" items="${s.assignedShops}">
+              <span class="shop-chip">
+                <span>${shop.shopName}</span>
+                <span
+                  class="remove-btn"
+                  onclick="removeShipperFromShop(${shop.shopId}, ${s.userId}, '${shop.shopName}')"
+                  title="Gỡ shipper khỏi shop này"
+                >
+                  ×
+                </span>
+              </span>
+            </c:forEach>
+          </c:if>
+          <c:if test="${s.assignedShops == null || s.assignedShops.isEmpty()}">
+            <span class="text-muted"><em>Chưa phân công shop nào</em></span>
+          </c:if>
         </div>
       </div>
       <div class="text-right">
@@ -319,6 +347,37 @@ uri="jakarta.tags.functions" %>
       .catch((err) => {
         console.error(err);
         alert("Lỗi kết nối khi xóa shipper!");
+      });
+  }
+
+  function removeShipperFromShop(shopId, shipperId, shopName) {
+    if (!confirm('Bạn có chắc muốn gỡ shipper khỏi shop "' + shopName + '"?')) {
+      return;
+    }
+
+    fetch("/admin/remove-shipper", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body:
+        "shopId=" +
+        encodeURIComponent(shopId) +
+        "&shipperId=" +
+        encodeURIComponent(shipperId),
+    })
+      .then((r) => r.text())
+      .then((t) => {
+        if (t === "success") {
+          alert("Đã gỡ shipper khỏi shop thành công!");
+          location.reload();
+        } else if (t === "duplicate") {
+          alert("Shipper không thuộc shop này!");
+        } else {
+          alert("Không thể gỡ shipper khỏi shop. Vui lòng thử lại!");
+        }
+      })
+      .catch((err) => {
+        console.error(err);
+        alert("Lỗi kết nối!");
       });
   }
 
