@@ -116,6 +116,8 @@ public class UserServiceImpl implements UserService {
         newUser.setRegisterDate(new java.util.Date());
         newUser.setStatus(true);
         newUser.setEnabled(true);
+        newUser.setAvatar("user.png"); // Set default avatar
+        newUser.setOneXuBalance(0.0); // Set default balance
         
         java.util.List<Long> safeIds = (roleIds == null) ? java.util.Collections.emptyList()
                 : roleIds.stream().filter(java.util.Objects::nonNull).toList();

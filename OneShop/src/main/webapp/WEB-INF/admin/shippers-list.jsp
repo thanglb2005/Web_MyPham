@@ -118,6 +118,14 @@ uri="jakarta.tags.functions" %>
               <i class="fas fa-times"></i> Từ chối
             </button>
           </c:if>
+          <button
+            type="button"
+            class="btn btn-sm btn-danger"
+            onclick="deleteShipper(${s.userId})"
+            title="Xóa shipper"
+          >
+            <i class="fas fa-trash"></i> Xóa
+          </button>
         </div>
       </div>
     </div>
@@ -139,23 +147,65 @@ uri="jakarta.tags.functions" %>
       <form id="addShipperForm">
         <div class="modal-body">
           <div class="form-group">
-            <label>Họ tên</label>
-            <input type="text" class="form-control" name="name" required />
+            <label>Họ tên <span class="text-danger">*</span></label>
+            <input
+              type="text"
+              class="form-control"
+              name="name"
+              required
+              placeholder="Nhập họ tên shipper"
+            />
           </div>
           <div class="form-group">
-            <label>Email</label>
-            <input type="email" class="form-control" name="email" required />
+            <label>Email <span class="text-danger">*</span></label>
+            <input
+              type="email"
+              class="form-control"
+              name="email"
+              required
+              placeholder="Nhập email"
+            />
+            <small class="form-text text-muted"
+              >Email sẽ dùng để đăng nhập</small
+            >
           </div>
           <div class="form-group">
-            <label>Mật khẩu tạm</label>
-            <input type="text" class="form-control" name="password" required />
+            <label>Mật khẩu <span class="text-danger">*</span></label>
+            <input
+              type="password"
+              class="form-control"
+              name="password"
+              required
+              placeholder="Nhập mật khẩu"
+            />
+            <small class="form-text text-muted">Tối thiểu 6 ký tự</small>
+          </div>
+          <div class="form-group">
+            <div class="custom-control custom-checkbox">
+              <input
+                type="checkbox"
+                class="custom-control-input"
+                id="autoApproveCheckbox"
+                name="autoApprove"
+                value="true"
+                checked
+              />
+              <label class="custom-control-label" for="autoApproveCheckbox"
+                >Tự động duyệt shipper</label
+              >
+            </div>
+            <small class="form-text text-muted"
+              >Nếu không chọn, shipper sẽ ở trạng thái chờ duyệt</small
+            >
           </div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-dismiss="modal">
-            Hủy
+            <i class="fas fa-times me-1"></i>Hủy
           </button>
-          <button type="submit" class="btn btn-primary">Tạo mới</button>
+          <button type="submit" class="btn btn-primary">
+            <i class="fas fa-save me-1"></i>Tạo mới
+          </button>
         </div>
       </form>
     </div>
@@ -199,6 +249,9 @@ uri="jakarta.tags.functions" %>
 
 <script>
   function approveShipper(id) {
+    if (!confirm("Bạn có chắc muốn duyệt shipper này?")) {
+      return;
+    }
     fetch("/admin/approve-shipper", {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -207,6 +260,7 @@ uri="jakarta.tags.functions" %>
       .then((r) => r.text())
       .then((t) => {
         if (t === "success") {
+          alert("Đã duyệt shipper thành công!");
           location.reload();
         } else {
           alert("Không duyệt được");
@@ -214,23 +268,113 @@ uri="jakarta.tags.functions" %>
       });
   }
 
+  function rejectShipper(id) {
+    if (!confirm("Bạn có chắc muốn từ chối shipper này?")) {
+      return;
+    }
+    fetch("/admin/reject-shipper", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: "shipperId=" + encodeURIComponent(id),
+    })
+      .then((r) => r.text())
+      .then((t) => {
+        if (t === "success") {
+          alert("Đã từ chối shipper!");
+          location.reload();
+        } else {
+          alert("Không từ chối được");
+        }
+      });
+  }
+
+  function deleteShipper(id) {
+    if (
+      !confirm(
+        "Bạn có chắc muốn XÓA VĨNH VIỄN shipper này?\n\nHành động này KHÔNG THỂ hoàn tác!"
+      )
+    ) {
+      return;
+    }
+
+    // Double confirm for safety
+    if (!confirm("XÁC NHẬN LẦN CUỐI: Bạn thực sự muốn xóa shipper này?")) {
+      return;
+    }
+
+    fetch("/admin/delete-shipper", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: "shipperId=" + encodeURIComponent(id),
+    })
+      .then((r) => r.text())
+      .then((t) => {
+        if (t === "success") {
+          alert("Đã xóa shipper thành công!");
+          location.reload();
+        } else {
+          alert("Không thể xóa shipper. Vui lòng thử lại!");
+        }
+      })
+      .catch((err) => {
+        console.error(err);
+        alert("Lỗi kết nối khi xóa shipper!");
+      });
+  }
+
   document
     .getElementById("addShipperForm")
     ?.addEventListener("submit", function (e) {
       e.preventDefault();
-      const fd = new URLSearchParams(new FormData(this));
-      fetch("/admin/add-shipper", {
+
+      // Get form data
+      const formData = new FormData(this);
+      const name = formData.get("name");
+      const email = formData.get("email");
+      const password = formData.get("password");
+      const autoApprove = formData.get("autoApprove") === "true";
+
+      // Validate
+      if (!name || !email || !password) {
+        alert("Vui lòng điền đầy đủ thông tin!");
+        return;
+      }
+
+      if (password.length < 6) {
+        alert("Mật khẩu phải có ít nhất 6 ký tự!");
+        return;
+      }
+
+      // Create URLSearchParams
+      const fd = new URLSearchParams();
+      fd.append("name", name);
+      fd.append("email", email);
+      fd.append("password", password);
+      fd.append("autoApprove", autoApprove);
+
+      fetch("/admin/create-shipper", {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: fd.toString(),
       })
-        .then((r) => r.json())
+        .then((r) => r.text())
         .then((res) => {
-          if (res.success) {
+          if (res === "success") {
+            alert("Tạo shipper thành công!");
+            $("#addShipperModal").modal("hide");
+            this.reset();
             location.reload();
+          } else if (res === "email_exists") {
+            alert("Email đã tồn tại trong hệ thống!");
+          } else if (res === "role_not_found") {
+            alert("Không tìm thấy role SHIPPER!");
           } else {
-            alert(res.message || "Lỗi");
+            alert("Lỗi: " + res);
           }
+        })
+        .catch((err) => {
+          console.error(err);
+          alert("Lỗi kết nối!");
         });
     });
 

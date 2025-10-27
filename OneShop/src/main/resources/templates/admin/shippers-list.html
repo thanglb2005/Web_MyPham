@@ -1,264 +1,444 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Danh sách Shipper - OneShop Admin</title>
-    
+
     <!-- CSS -->
     <link rel="stylesheet" href="/assets/css/bootstrap.min.css" />
     <link rel="stylesheet" href="/assets/css/atlantis.css" />
     <link rel="stylesheet" href="/css/admin-fonts.css" />
-    
+
     <style>
-        body { background-color: #f8f9fa; }
-        
-        .page-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 30px;
-            border-radius: 10px;
-            margin-bottom: 30px;
-        }
-        
-        .page-header .btn-light {
-            background: white;
-            color: #667eea;
-            border: 2px solid white;
-            padding: 10px 20px;
-            border-radius: 5px;
-            font-weight: 500;
-            transition: all 0.3s;
-        }
-        
-        .page-header .btn-light:hover {
-            background: rgba(255,255,255,0.2);
-            color: white;
-            border-color: white;
-        }
-        
-        .shipper-card {
-            background: white;
-            border-radius: 10px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-        
-        .shipper-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
-        }
-        
-        .shipper-info {
-            flex: 1;
-        }
-        
-        .shipper-name {
-            font-size: 1.3rem;
-            font-weight: 600;
-            color: #2c3e50;
-            margin-bottom: 5px;
-        }
-        
-        .shipper-email {
-            color: #7f8c8d;
-            font-size: 0.9rem;
-        }
-        
-        .shop-badge {
-            display: inline-block;
-            background: #e3f2fd;
-            color: #1976d2;
-            padding: 5px 12px;
-            border-radius: 15px;
-            margin: 3px;
-            font-size: 0.85rem;
-        }
-        
-        .status-badge {
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            font-weight: 500;
-        }
-        
-        .status-active {
-            background: #d4edda;
-            color: #155724;
-        }
-        
-        .status-inactive {
-            background: #f8d7da;
-            color: #721c24;
-        }
-        
-        .btn-view-detail {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            padding: 8px 20px;
-            border-radius: 5px;
-            transition: opacity 0.3s;
-        }
-        
-        .btn-view-detail:hover {
-            opacity: 0.9;
-            color: white;
-        }
-        
-        .stats-box {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 8px;
-            text-align: center;
-            margin: 5px;
-        }
-        
-        .stats-number {
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: #667eea;
-        }
-        
-        .stats-label {
-            font-size: 0.85rem;
-            color: #6c757d;
-            margin-top: 5px;
-        }
+      body {
+        background-color: #f8f9fa;
+      }
+
+      .page-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 30px;
+        border-radius: 10px;
+        margin-bottom: 30px;
+      }
+
+      .page-header .btn-light {
+        background: white;
+        color: #667eea;
+        border: 2px solid white;
+        padding: 10px 20px;
+        border-radius: 5px;
+        font-weight: 500;
+        transition: all 0.3s;
+      }
+
+      .page-header .btn-light:hover {
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+        border-color: white;
+      }
+
+      .shipper-card {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+      }
+
+      .shipper-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+      }
+
+      .shipper-info {
+        flex: 1;
+      }
+
+      .shipper-name {
+        font-size: 1.3rem;
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 5px;
+      }
+
+      .shipper-email {
+        color: #7f8c8d;
+        font-size: 0.9rem;
+      }
+
+      .shop-badge {
+        display: inline-block;
+        background: #e3f2fd;
+        color: #1976d2;
+        padding: 5px 12px;
+        border-radius: 15px;
+        margin: 3px;
+        font-size: 0.85rem;
+      }
+
+      .status-badge {
+        padding: 5px 15px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 500;
+      }
+
+      .status-active {
+        background: #d4edda;
+        color: #155724;
+      }
+
+      .status-inactive {
+        background: #f8d7da;
+        color: #721c24;
+      }
+
+      .btn-view-detail {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        padding: 8px 20px;
+        border-radius: 5px;
+        transition: opacity 0.3s;
+      }
+
+      .btn-view-detail:hover {
+        opacity: 0.9;
+        color: white;
+      }
+
+      .stats-box {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 8px;
+        text-align: center;
+        margin: 5px;
+      }
+
+      .stats-number {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #667eea;
+      }
+
+      .stats-label {
+        font-size: 0.85rem;
+        color: #6c757d;
+        margin-top: 5px;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="wrapper">
-        <!-- Header -->
-        <th:block th:replace="~{admin/fragments/header :: header}"></th:block>
+      <!-- Header -->
+      <th:block th:replace="~{admin/fragments/header :: header}"></th:block>
 
-        <!-- Navbar -->
-        <th:block th:replace="~{admin/fragments/navbar :: navbar}"></th:block>
+      <!-- Navbar -->
+      <th:block th:replace="~{admin/fragments/navbar :: navbar}"></th:block>
 
-        <div class="main-panel">
-            <div class="content">
-                <div class="container-fluid mt-4">
-                    <!-- Page Header -->
-                    <div class="page-header">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <h1><i class="fas fa-shipping-fast me-2"></i>Quản lý Shipper</h1>
-                                <p class="mb-0">Xem và quản lý thông tin các shipper trong hệ thống</p>
-                            </div>
-                            <div>
-                                <a href="/admin/manage-shippers" class="btn btn-light">
-                                    <i class="fas fa-user-plus me-2"></i>Phân công Shipper
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Statistics -->
-                    <div class="row mb-4">
-                        <div class="col-md-3">
-                            <div class="stats-box">
-                                <div class="stats-number" th:text="${totalShippers}">0</div>
-                                <div class="stats-label">Tổng Shipper</div>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="stats-box" style="background: #d4edda;">
-                                <div class="stats-number" style="color: #155724;" th:text="${approvedShippers}">0</div>
-                                <div class="stats-label" style="color: #155724;">Đã duyệt</div>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="stats-box" style="background: #fff3cd;">
-                                <div class="stats-number" style="color: #856404;" th:text="${pendingShippers}">0</div>
-                                <div class="stats-label" style="color: #856404;">Chờ duyệt</div>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="stats-box">
-                                <div class="stats-number" th:text="${assignedShippers}">0</div>
-                                <div class="stats-label">Đã phân công</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Shipper List -->
-                    <div th:if="${shippers == null or shippers.isEmpty()}" class="alert alert-info">
-                        <i class="fas fa-info-circle me-2"></i>Chưa có shipper nào trong hệ thống
-                    </div>
-
-                    <div class="row">
-                        <div class="col-md-6" th:each="shipper : ${shippers}">
-                            <div class="shipper-card">
-                                <div class="d-flex align-items-start">
-                                    <div class="shipper-info">
-                                        <div class="d-flex justify-content-between align-items-center mb-2">
-                                            <div class="shipper-name" th:text="${shipper.name}">Tên Shipper</div>
-                                            <span th:if="${shipper.status != null and shipper.status}" class="status-badge status-active">
-                                                <i class="fas fa-check-circle me-1"></i>Đã duyệt
-                                            </span>
-                                            <span th:if="${shipper.status == null or !shipper.status}" class="status-badge" style="background: #fff3cd; color: #856404;">
-                                                <i class="fas fa-clock me-1"></i>Chờ duyệt
-                                            </span>
-                                        </div>
-                                        
-                                        <div class="shipper-email mb-3">
-                                            <i class="fas fa-envelope me-1"></i>
-                                            <span th:text="${shipper.email}">email@example.com</span>
-                                        </div>
-                                        
-                                        <div class="mb-3">
-                                            <strong><i class="fas fa-store me-1"></i>Shop được gán:</strong>
-                                            <div th:if="${shipper.assignedShops != null and !shipper.assignedShops.isEmpty()}">
-                                                <span th:each="shop : ${shipper.assignedShops}" class="shop-badge">
-                                                    <span th:text="${shop.shopName}">Shop Name</span>
-                                                </span>
-                                            </div>
-                                            <div th:if="${shipper.assignedShops == null or shipper.assignedShops.isEmpty()}" 
-                                                 class="text-muted">
-                                                <em>Chưa được gán shop nào</em>
-                                            </div>
-                                        </div>
-                                        
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <small class="text-muted">
-                                                <i class="fas fa-calendar me-1"></i>
-                                                Tham gia: <span th:text="${#dates.format(shipper.registerDate, 'dd/MM/yyyy')}">01/01/2024</span>
-                                            </small>
-                                            <div>
-                                                <!-- Nút duyệt/từ chối cho shipper chờ duyệt -->
-                                                <div th:if="${shipper.status == null or !shipper.status}" class="d-inline">
-                                                    <button class="btn btn-success btn-sm me-1" 
-                                                            th:onclick="'approveShipper(' + ${shipper.userId} + ')'"
-                                                            title="Duyệt shipper">
-                                                        <i class="fas fa-check"></i>
-                                                    </button>
-                                                    <button class="btn btn-danger btn-sm me-2" 
-                                                            th:onclick="'rejectShipper(' + ${shipper.userId} + ')'"
-                                                            title="Từ chối">
-                                                        <i class="fas fa-times"></i>
-                                                    </button>
-                                                </div>
-                                                <!-- Nút xem chi tiết -->
-                                                <button class="btn btn-info btn-sm" 
-                                                        th:onclick="'viewShipperDetail(' + ${shipper.userId} + ')'"
-                                                        title="Xem chi tiết">
-                                                    <i class="fas fa-eye me-1"></i>Chi tiết
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+      <div class="main-panel">
+        <div class="content">
+          <div class="container-fluid mt-4">
+            <!-- Page Header -->
+            <div class="page-header">
+              <div class="d-flex justify-content-between align-items-center">
+                <div>
+                  <h1>
+                    <i class="fas fa-shipping-fast me-2"></i>Quản lý Shipper
+                  </h1>
+                  <p class="mb-0">
+                    Xem và quản lý thông tin các shipper trong hệ thống
+                  </p>
                 </div>
+                <div>
+                  <button
+                    type="button"
+                    class="btn btn-light me-2"
+                    data-toggle="modal"
+                    data-target="#addShipperModal"
+                  >
+                    <i class="fas fa-plus me-2"></i>Thêm Shipper mới
+                  </button>
+                  <a href="/admin/manage-shippers" class="btn btn-light">
+                    <i class="fas fa-user-plus me-2"></i>Phân công Shipper
+                  </a>
+                </div>
+              </div>
             </div>
 
-            <!-- Footer -->
-            <th:block th:replace="~{admin/fragments/footer :: footer}"></th:block>
+            <!-- Statistics -->
+            <div class="row mb-4">
+              <div class="col-md-3">
+                <div class="stats-box">
+                  <div class="stats-number" th:text="${totalShippers}">0</div>
+                  <div class="stats-label">Tổng Shipper</div>
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="stats-box" style="background: #d4edda">
+                  <div
+                    class="stats-number"
+                    style="color: #155724"
+                    th:text="${approvedShippers}"
+                  >
+                    0
+                  </div>
+                  <div class="stats-label" style="color: #155724">Đã duyệt</div>
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="stats-box" style="background: #fff3cd">
+                  <div
+                    class="stats-number"
+                    style="color: #856404"
+                    th:text="${pendingShippers}"
+                  >
+                    0
+                  </div>
+                  <div class="stats-label" style="color: #856404">
+                    Chờ duyệt
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="stats-box">
+                  <div class="stats-number" th:text="${assignedShippers}">
+                    0
+                  </div>
+                  <div class="stats-label">Đã phân công</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Shipper List -->
+            <div
+              th:if="${shippers == null or shippers.isEmpty()}"
+              class="alert alert-info"
+            >
+              <i class="fas fa-info-circle me-2"></i>Chưa có shipper nào trong
+              hệ thống
+            </div>
+
+            <div class="row">
+              <div class="col-md-6" th:each="shipper : ${shippers}">
+                <div class="shipper-card">
+                  <div class="d-flex align-items-start">
+                    <div class="shipper-info">
+                      <div
+                        class="d-flex justify-content-between align-items-center mb-2"
+                      >
+                        <div class="shipper-name" th:text="${shipper.name}">
+                          Tên Shipper
+                        </div>
+                        <span
+                          th:if="${shipper.status != null and shipper.status}"
+                          class="status-badge status-active"
+                        >
+                          <i class="fas fa-check-circle me-1"></i>Đã duyệt
+                        </span>
+                        <span
+                          th:if="${shipper.status == null or !shipper.status}"
+                          class="status-badge"
+                          style="background: #fff3cd; color: #856404"
+                        >
+                          <i class="fas fa-clock me-1"></i>Chờ duyệt
+                        </span>
+                      </div>
+
+                      <div class="shipper-email mb-3">
+                        <i class="fas fa-envelope me-1"></i>
+                        <span th:text="${shipper.email}"
+                          >email@example.com</span
+                        >
+                      </div>
+
+                      <div class="mb-3">
+                        <strong
+                          ><i class="fas fa-store me-1"></i>Shop được
+                          gán:</strong
+                        >
+                        <div
+                          th:if="${shipper.assignedShops != null and !shipper.assignedShops.isEmpty()}"
+                        >
+                          <span
+                            th:each="shop : ${shipper.assignedShops}"
+                            class="shop-badge"
+                          >
+                            <span th:text="${shop.shopName}">Shop Name</span>
+                          </span>
+                        </div>
+                        <div
+                          th:if="${shipper.assignedShops == null or shipper.assignedShops.isEmpty()}"
+                          class="text-muted"
+                        >
+                          <em>Chưa được gán shop nào</em>
+                        </div>
+                      </div>
+
+                      <div
+                        class="d-flex justify-content-between align-items-center"
+                      >
+                        <small class="text-muted">
+                          <i class="fas fa-calendar me-1"></i>
+                          Tham gia:
+                          <span
+                            th:text="${#dates.format(shipper.registerDate, 'dd/MM/yyyy')}"
+                            >01/01/2024</span
+                          >
+                        </small>
+                        <div>
+                          <!-- Nút duyệt/từ chối cho shipper chờ duyệt -->
+                          <div
+                            th:if="${shipper.status == null or !shipper.status}"
+                            class="d-inline"
+                          >
+                            <button
+                              class="btn btn-success btn-sm me-1"
+                              th:onclick="'approveShipper(' + ${shipper.userId} + ')'"
+                              title="Duyệt shipper"
+                            >
+                              <i class="fas fa-check"></i>
+                            </button>
+                            <button
+                              class="btn btn-danger btn-sm me-2"
+                              th:onclick="'rejectShipper(' + ${shipper.userId} + ')'"
+                              title="Từ chối"
+                            >
+                              <i class="fas fa-times"></i>
+                            </button>
+                          </div>
+                          <!-- Nút xem chi tiết -->
+                          <button
+                            class="btn btn-info btn-sm"
+                            th:onclick="'viewShipperDetail(' + ${shipper.userId} + ')'"
+                            title="Xem chi tiết"
+                          >
+                            <i class="fas fa-eye me-1"></i>Chi tiết
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
+
+        <!-- Footer -->
+        <th:block th:replace="~{admin/fragments/footer :: footer}"></th:block>
+      </div>
+    </div>
+
+    <!-- Add Shipper Modal -->
+    <div
+      class="modal fade"
+      id="addShipperModal"
+      tabindex="-1"
+      role="dialog"
+      aria-labelledby="addShipperModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header bg-primary text-white">
+            <h5 class="modal-title" id="addShipperModalLabel">
+              <i class="fas fa-user-plus me-2"></i>Thêm Shipper mới
+            </h5>
+            <button
+              type="button"
+              class="close text-white"
+              data-dismiss="modal"
+              aria-label="Close"
+            >
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <form id="addShipperForm">
+              <div class="form-group">
+                <label for="shipperName"
+                  >Tên Shipper <span class="text-danger">*</span></label
+                >
+                <input
+                  type="text"
+                  class="form-control"
+                  id="shipperName"
+                  name="name"
+                  required
+                  placeholder="Nhập tên shipper"
+                />
+              </div>
+              <div class="form-group">
+                <label for="shipperEmail"
+                  >Email <span class="text-danger">*</span></label
+                >
+                <input
+                  type="email"
+                  class="form-control"
+                  id="shipperEmail"
+                  name="email"
+                  required
+                  placeholder="Nhập email"
+                />
+                <small class="form-text text-muted"
+                  >Email sẽ dùng để đăng nhập</small
+                >
+              </div>
+              <div class="form-group">
+                <label for="shipperPassword"
+                  >Mật khẩu <span class="text-danger">*</span></label
+                >
+                <input
+                  type="password"
+                  class="form-control"
+                  id="shipperPassword"
+                  name="password"
+                  required
+                  placeholder="Nhập mật khẩu"
+                />
+                <small class="form-text text-muted">Tối thiểu 6 ký tự</small>
+              </div>
+              <div class="form-group">
+                <div class="custom-control custom-checkbox">
+                  <input
+                    type="checkbox"
+                    class="custom-control-input"
+                    id="autoApprove"
+                    name="autoApprove"
+                    value="true"
+                  />
+                  <label class="custom-control-label" for="autoApprove"
+                    >Tự động duyệt shipper</label
+                  >
+                </div>
+                <small class="form-text text-muted"
+                  >Nếu không chọn, shipper sẽ ở trạng thái chờ duyệt</small
+                >
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-dismiss="modal"
+            >
+              <i class="fas fa-times me-1"></i>Hủy
+            </button>
+            <button
+              type="button"
+              class="btn btn-primary"
+              onclick="submitAddShipper()"
+            >
+              <i class="fas fa-save me-1"></i>Thêm Shipper
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Scripts -->
@@ -268,56 +448,115 @@
     <script src="/assets/js/atlantis.min.js"></script>
 
     <script>
-        function viewShipperDetail(shipperId) {
-            window.location.href = '/admin/shipper-detail/' + shipperId;
+      function viewShipperDetail(shipperId) {
+        window.location.href = "/admin/shipper-detail/" + shipperId;
+      }
+
+      function approveShipper(shipperId) {
+        if (!confirm("Bạn có chắc muốn duyệt shipper này?")) {
+          return;
         }
 
-        function approveShipper(shipperId) {
-            if (!confirm('Bạn có chắc muốn duyệt shipper này?')) {
-                return;
+        $.ajax({
+          url: "/admin/approve-shipper",
+          method: "POST",
+          data: { shipperId: shipperId },
+          success: function (response) {
+            if (response === "success") {
+              alert("Đã duyệt shipper thành công!");
+              location.reload();
+            } else {
+              alert("Có lỗi xảy ra!");
             }
+          },
+          error: function () {
+            alert("Có lỗi kết nối đến server!");
+          },
+        });
+      }
 
-            $.ajax({
-                url: '/admin/approve-shipper',
-                method: 'POST',
-                data: { shipperId: shipperId },
-                success: function(response) {
-                    if (response === 'success') {
-                        alert('Đã duyệt shipper thành công!');
-                        location.reload();
-                    } else {
-                        alert('Có lỗi xảy ra!');
-                    }
-                },
-                error: function() {
-                    alert('Có lỗi kết nối đến server!');
-                }
-            });
+      function rejectShipper(shipperId) {
+        if (!confirm("Bạn có chắc muốn từ chối shipper này?")) {
+          return;
         }
 
-        function rejectShipper(shipperId) {
-            if (!confirm('Bạn có chắc muốn từ chối shipper này?')) {
-                return;
+        $.ajax({
+          url: "/admin/reject-shipper",
+          method: "POST",
+          data: { shipperId: shipperId },
+          success: function (response) {
+            if (response === "success") {
+              alert("Đã từ chối shipper!");
+              location.reload();
+            } else {
+              alert("Có lỗi xảy ra!");
             }
+          },
+          error: function () {
+            alert("Có lỗi kết nối đến server!");
+          },
+        });
+      }
 
-            $.ajax({
-                url: '/admin/reject-shipper',
-                method: 'POST',
-                data: { shipperId: shipperId },
-                success: function(response) {
-                    if (response === 'success') {
-                        alert('Đã từ chối shipper!');
-                        location.reload();
-                    } else {
-                        alert('Có lỗi xảy ra!');
-                    }
-                },
-                error: function() {
-                    alert('Có lỗi kết nối đến server!');
-                }
-            });
+      function submitAddShipper() {
+        // Validate form
+        var name = $("#shipperName").val().trim();
+        var email = $("#shipperEmail").val().trim();
+        var password = $("#shipperPassword").val();
+        var autoApprove = $("#autoApprove").is(":checked");
+
+        if (!name || !email || !password) {
+          alert("Vui lòng điền đầy đủ thông tin!");
+          return;
         }
+
+        if (password.length < 6) {
+          alert("Mật khẩu phải có ít nhất 6 ký tự!");
+          return;
+        }
+
+        // Email validation
+        var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+          alert("Email không hợp lệ!");
+          return;
+        }
+
+        // Submit form
+        $.ajax({
+          url: "/admin/create-shipper",
+          method: "POST",
+          data: {
+            name: name,
+            email: email,
+            password: password,
+            autoApprove: autoApprove,
+          },
+          success: function (response) {
+            if (response === "success") {
+              alert("Thêm shipper thành công!");
+              $("#addShipperModal").modal("hide");
+              $("#addShipperForm")[0].reset();
+              location.reload();
+            } else if (response === "email_exists") {
+              alert("Email đã tồn tại trong hệ thống!");
+            } else if (response === "role_not_found") {
+              alert("Không tìm thấy role SHIPPER trong hệ thống!");
+            } else {
+              alert("Có lỗi xảy ra khi tạo shipper!");
+            }
+          },
+          error: function (xhr, status, error) {
+            console.error("Error:", error);
+            alert("Có lỗi kết nối đến server!");
+          },
+        });
+      }
+
+      // Reset form when modal is closed
+      $("#addShipperModal").on("hidden.bs.modal", function () {
+        $("#addShipperForm")[0].reset();
+      });
     </script>
-</body>
+  </body>
 </html>
-

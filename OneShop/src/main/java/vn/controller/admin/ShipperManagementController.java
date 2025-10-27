@@ -6,12 +6,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import vn.entity.Role;
 import vn.entity.Shop;
 import vn.entity.User;
+import vn.repository.RoleRepository;
 import vn.repository.ShopRepository;
 import vn.repository.UserRepository;
+import vn.service.UserService;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -28,6 +33,12 @@ public class ShipperManagementController {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private UserService userService;
+
+    @Autowired
+    private RoleRepository roleRepository;
 
     /**
      * Hiển thị trang quản lý shipper cho các shop
@@ -243,6 +254,91 @@ public class ShipperManagementController {
             
             shipper.setStatus(false);
             userRepository.save(shipper);
+            
+            return "success";
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "error";
+        }
+    }
+
+    /**
+     * Tạo shipper mới
+     */
+    @PostMapping("/create-shipper")
+    @ResponseBody
+    @Transactional
+    public String createShipper(@RequestParam String name,
+                                @RequestParam String email,
+                                @RequestParam String password,
+                                @RequestParam(required = false, defaultValue = "false") Boolean autoApprove) {
+        try {
+            // Kiểm tra email đã tồn tại chưa
+            if (userRepository.existsByEmail(email)) {
+                return "email_exists";
+            }
+
+            // Lấy ROLE_SHIPPER
+            Optional<Role> shipperRole = roleRepository.findByName("ROLE_SHIPPER");
+            if (!shipperRole.isPresent()) {
+                return "role_not_found";
+            }
+
+            // Tạo shipper mới sử dụng UserService
+            userService.createUserWithRoles(name, email, password, Collections.singletonList(shipperRole.get().getId()));
+            
+            // Cập nhật thông tin bổ sung cho shipper
+            Optional<User> newShipper = userRepository.findByEmail(email);
+            if (newShipper.isPresent()) {
+                User shipper = newShipper.get();
+                
+                // Set avatar mặc định nếu chưa có
+                if (shipper.getAvatar() == null || shipper.getAvatar().isEmpty()) {
+                    shipper.setAvatar("user.png");
+                }
+                
+                // Set oneXuBalance mặc định nếu chưa có
+                if (shipper.getOneXuBalance() == null) {
+                    shipper.setOneXuBalance(0.0);
+                }
+                
+                // Set status dựa vào autoApprove
+                shipper.setStatus(autoApprove);
+                
+                userRepository.save(shipper);
+            }
+
+            return "success";
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "error";
+        }
+    }
+
+    /**
+     * Xóa shipper
+     */
+    @PostMapping("/delete-shipper")
+    @ResponseBody
+    @Transactional
+    public String deleteShipper(@RequestParam Long shipperId) {
+        try {
+            User shipper = userRepository.findById(shipperId)
+                .orElseThrow(() -> new RuntimeException("Shipper không tồn tại"));
+            
+            // Kiểm tra xem shipper có đang được gán cho shop nào không
+            List<Shop> assignedShops = shopRepository.findShopsByShipper(shipper);
+            if (assignedShops != null && !assignedShops.isEmpty()) {
+                // Xóa shipper khỏi tất cả các shop trước
+                for (Shop shop : assignedShops) {
+                    shop.getShippers().size(); // Force initialize
+                    shop.getShippers().remove(shipper);
+                    shopRepository.save(shop);
+                }
+            }
+            
+            // Xóa shipper
+            userRepository.delete(shipper);
             
             return "success";
         } catch (Exception e) {
