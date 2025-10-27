@@ -1,23 +1,10 @@
 <!DOCTYPE html>
-<<<<<<< Updated upstream
+
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
   <head>
     <meta charset="UTF-8">
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-=======
-<<<<<<< HEAD
 
-<html lang="" xmlns:th="http://www.thymeleaf.org">
-
-  <head>
-
-=======
-<html lang="vi" xmlns:th="http://www.thymeleaf.org">
-  <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
->>>>>>> 2e291d9b8aafebfdd75ffc8a3f18b1277f1b7429
->>>>>>> Stashed changes
     <title></title>
 
     <link rel="stylesheet" href="/vendor/bootstrap/bootstrap.min.css" />
@@ -31,27 +18,8 @@
     <script src="/assets/js/plugin/sweetalert/sweetalert.min.js"></script>
 
     <style>
-<<<<<<< Updated upstream
-=======
-<<<<<<< HEAD
 
-=======
->>>>>>> Stashed changes
-      /* Chatbot isolation: container scope + overlay behavior */
-      body.chatbot-open #floatingChatButton,
-      body.chatbot-open .floating-mascot {
-        pointer-events: none;
-        opacity: 0.3;
-      }
-      #ai-chatbot-container .oneshop-chatbot-popup { z-index: 10020; }
-      #ai-chatbot-container #oneshopChatbotButton { z-index: 10015; }
-      #ai-chatbot-container .chatbot-input-area { position: relative; z-index: 10030; }
-      #ai-chatbot-container .send-btn,
-      #ai-chatbot-container #aiChatbotMessageInput { pointer-events: auto; }
-<<<<<<< Updated upstream
-=======
->>>>>>> 2e291d9b8aafebfdd75ffc8a3f18b1277f1b7429
->>>>>>> Stashed changes
+
       /* Improve visibility of cart count badge */
 
       .header-part .header-widget {
@@ -939,15 +907,7 @@
         }
 
       </style>
-<<<<<<< Updated upstream
-=======
-<<<<<<< HEAD
 
-      <script src="/assets/js/plugin/sweetalert/sweetalert.min.js"></script>
-
-=======
->>>>>>> 2e291d9b8aafebfdd75ffc8a3f18b1277f1b7429
->>>>>>> Stashed changes
       <script th:inline="javascript">
 
         /*<![CDATA[*/
@@ -2519,25 +2479,7 @@
           animation: none !important;
 
           transition: none !important;
-<<<<<<< Updated upstream
-=======
-<<<<<<< HEAD
 
-=======
->>>>>>> Stashed changes
-        }
-        
-        /* Prevent content overlap on mobile */
-        @media (max-width: 768px) {
-          body {
-            padding-bottom: 120px; /* More padding for mobile */
-          }
-          
-          #floatingChatButton {
-            bottom: 120px; /* More space on mobile */
-            right: 20px;
-          }
->>>>>>> 2e291d9b8aafebfdd75ffc8a3f18b1277f1b7429
         }
 
         
@@ -2601,73 +2543,16 @@
 
 
         /* Disabled animations */
-<<<<<<< Updated upstream
-=======
-<<<<<<< HEAD
 
 
-
-=======
->>>>>>> 2e291d9b8aafebfdd75ffc8a3f18b1277f1b7429
->>>>>>> Stashed changes
         #floatingChatButton:hover {
 
           opacity: 0.9;
 
         }
 
-<<<<<<< Updated upstream
-=======
-<<<<<<< HEAD
 
 
-        .unread-count {
-
-          position: absolute;
-
-          top: -5px;
-
-          right: -5px;
-
-          background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-
-          color: white;
-
-          border-radius: 50%;
-
-          width: 24px;
-
-          height: 24px;
-
-          font-size: 12px;
-
-          font-weight: 700;
-
-          display: flex;
-
-          align-items: center;
-
-          justify-content: center;
-
-          box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
-
-          /* Remove animations */
-
-          animation: none !important;
-
-          transition: none !important;
-
-        }
-
-
-
-        /* Disabled animations */
-
-
-
-=======
->>>>>>> 2e291d9b8aafebfdd75ffc8a3f18b1277f1b7429
->>>>>>> Stashed changes
       </style>
 
 
@@ -4076,36 +3961,16 @@
 
         }
 
-<<<<<<< Updated upstream
-        // Flag to ensure floating chat listeners are bound only once
-        let floatingChatBound = false;
-=======
-<<<<<<< HEAD
 
-=======
         // Flag to ensure floating chat listeners are bound only once
         let floatingChatBound = false;
->>>>>>> 2e291d9b8aafebfdd75ffc8a3f18b1277f1b7429
->>>>>>> Stashed changes
+
 
         // Initialize when page loads
 
         document.addEventListener("DOMContentLoaded", function () {
-<<<<<<< Updated upstream
-=======
-<<<<<<< HEAD
 
-=======
->>>>>>> Stashed changes
-          if (floatingChatBound) {
-            console.log("Floating chat already initialized");
-            return;
-          }
-          
-<<<<<<< Updated upstream
-=======
->>>>>>> 2e291d9b8aafebfdd75ffc8a3f18b1277f1b7429
->>>>>>> Stashed changes
+
           console.log("Floating chat button initialized");
 
           
@@ -4175,17 +4040,10 @@
           }
 
           
-<<<<<<< Updated upstream
-          floatingChatBound = true;
-          
-=======
-<<<<<<< HEAD
 
-=======
           floatingChatBound = true;
           
->>>>>>> 2e291d9b8aafebfdd75ffc8a3f18b1277f1b7429
->>>>>>> Stashed changes
+
           // DON'T auto-restore chat state - let user click to open
 
           // setTimeout(() => {
@@ -4270,29 +4128,9 @@
 
       </script>
 
-<<<<<<< Updated upstream
-=======
-<<<<<<< HEAD
-
-
-    <!-- Floating AI Chatbot Button -->
-
+    <!-- Floating OneShop AI Chatbot Button -->
     <div id="oneshopChatbotButton" class="oneshop-chatbot-button" onclick="toggleOneshopChatbot()">
-
-      <div class="chatbot-icon">
-
-=======
->>>>>>> Stashed changes
-    <!-- AI Chatbot Container - Isolated from regular chat -->
-     <div id="ai-chatbot-container">
-     <!-- Floating AI Chatbot Button -->
-     <div id="oneshopChatbotButton" class="oneshop-chatbot-button" onclick="toggleOneshopChatbot()">
-       <div class="chatbot-icon">
-<<<<<<< Updated upstream
-=======
->>>>>>> 2e291d9b8aafebfdd75ffc8a3f18b1277f1b7429
->>>>>>> Stashed changes
-        <div class="chatbot-avatar">
+      <div class="chatbot-avatar">
 
           <div class="robot-face">
 
@@ -4321,8 +4159,8 @@
       </div>
 
       <span class="chatbot-badge" id="chatbotBadge" style="display: none;">1</span>
-
     </div>
+    <!-- End Floating OneShop AI Chatbot Button -->
 
 
 
@@ -4335,31 +4173,9 @@
         <div class="chatbot-title">
 
           <div class="title-icon">
-<<<<<<< Updated upstream
+
             <div class="oneshop-logo-icon">OS</div>
-=======
-<<<<<<< HEAD
 
-            <div class="robot-face-small">
-
-              <div class="robot-eyes">
-
-                <div class="eye left"></div>
-
-                <div class="eye right"></div>
-
-              </div>
-
-              <div class="robot-mouth"></div>
-
-            </div>
-
-            <span class="sparkle-icon">✨</span>
-
-=======
-            <div class="oneshop-logo-icon">OS</div>
->>>>>>> 2e291d9b8aafebfdd75ffc8a3f18b1277f1b7429
->>>>>>> Stashed changes
           </div>
 
           <div class="title-text">
@@ -4369,161 +4185,33 @@
           </div>
 
         </div>
-<<<<<<< Updated upstream
-         <div class="chatbot-controls">
-=======
-<<<<<<< HEAD
 
-        <div class="chatbot-controls">
-
-=======
          <div class="chatbot-controls">
->>>>>>> 2e291d9b8aafebfdd75ffc8a3f18b1277f1b7429
->>>>>>> Stashed changes
+
           <button class="control-btn refresh-btn" onclick="refreshChatbot()">
 
             <i class="fas fa-sync-alt"></i>
 
           </button>
-<<<<<<< Updated upstream
-=======
-<<<<<<< HEAD
 
-          <button class="control-btn expand-btn" onclick="expandChatbot()">
 
-            <i class="fas fa-expand"></i>
-
-          </button>
-
-=======
->>>>>>> 2e291d9b8aafebfdd75ffc8a3f18b1277f1b7429
->>>>>>> Stashed changes
           <button class="control-btn close-btn" onclick="closeOneshopChatbot()">
 
             <i class="fas fa-times"></i>
 
           </button>
-<<<<<<< Updated upstream
-         </div>
-=======
-<<<<<<< HEAD
 
-        </div>
-
-=======
          </div>
->>>>>>> 2e291d9b8aafebfdd75ffc8a3f18b1277f1b7429
->>>>>>> Stashed changes
+
       </div>
 
       
 
       <div class="chatbot-body">
-<<<<<<< Updated upstream
+
         <!-- Welcome Message -->
         <div class="welcome-message-simple">
           <p>Chào bạn! 👋 Mình là trợ lý AI của OneShop. Mình có thể giúp bạn tìm kiếm sản phẩm mỹ phẩm phù hợp.</p>
-=======
-<<<<<<< HEAD
-
-        <!-- OneShop AI Introduction -->
-
-        <div class="chatbot-intro">
-
-          <div class="intro-avatar">
-
-            <div class="oneshop-robot">
-
-              <div class="robot-body">
-
-                <div class="robot-face-large">
-
-                  <div class="robot-eyes">
-
-                    <div class="eye left"></div>
-
-                    <div class="eye right"></div>
-
-                  </div>
-
-                  <div class="robot-mouth"></div>
-
-                </div>
-
-                <div class="robot-chest">
-
-                  <div class="oneshop-logo">OS</div>
-
-                </div>
-
-                <div class="robot-arm wave"></div>
-
-              </div>
-
-              <div class="thinking-bubble">
-
-                <span></span>
-
-                <span></span>
-
-                <span></span>
-
-              </div>
-
-            </div>
-
-          </div>
-
-          <div class="intro-content">
-
-            <h2>OneShop AI</h2>
-
-            <div class="ai-badge">AI</div>
-
-            <p class="intro-tagline">OneShop AI - Biết tuốt hỗ trợ bạn tìm sản phẩm mỹ phẩm và đặt hàng dễ dàng</p>
-
-          </div>
-
-        </div>
-
-
-
-        <!-- Welcome Message -->
-
-        <div class="welcome-section">
-
-          <div class="welcome-avatar">
-
-            <div class="robot-face-small">
-
-              <div class="robot-eyes">
-
-                <div class="eye left"></div>
-
-                <div class="eye right"></div>
-
-              </div>
-
-              <div class="robot-mouth"></div>
-
-            </div>
-
-          </div>
-
-          <div class="welcome-message">
-
-            <p>Chào bạn, mình là trợ lý AI của OneShop! Bạn cần hỗ trợ gì hoặc có thể chọn một trong các chủ đề dưới đây nhé</p>
-
-            <p class="escalation-note">Trong quá trình tư vấn, nếu chưa hài lòng với câu trả lời của AI, bạn vui lòng chat <strong>Tôi muốn gặp tư vấn viên</strong> để được hỗ trợ.</p>
-
-          </div>
-
-=======
-        <!-- Welcome Message -->
-        <div class="welcome-message-simple">
-          <p>Chào bạn! 👋 Mình là trợ lý AI của OneShop. Mình có thể giúp bạn tìm kiếm sản phẩm mỹ phẩm phù hợp.</p>
->>>>>>> 2e291d9b8aafebfdd75ffc8a3f18b1277f1b7429
->>>>>>> Stashed changes
         </div>
 
 
@@ -4558,58 +4246,26 @@
 
         </div>
 
-<<<<<<< Updated upstream
+
         <!-- Chat Messages - Scrollable -->
         <div class="chat-messages" id="aiChatbotMessages">
-=======
-<<<<<<< HEAD
 
-
-        <!-- Chat Messages -->
-
-        <div class="chat-messages" id="chatbotMessages">
-
-=======
-        <!-- Chat Messages - Scrollable -->
-        <div class="chat-messages" id="aiChatbotMessages">
->>>>>>> 2e291d9b8aafebfdd75ffc8a3f18b1277f1b7429
->>>>>>> Stashed changes
           <!-- Messages will be added here dynamically -->
 
         </div>
 
-<<<<<<< Updated upstream
+
         <!-- Input Area - Fixed -->
-=======
-<<<<<<< HEAD
 
-
-        <!-- Input Area -->
-
-=======
-        <!-- Input Area - Fixed -->
->>>>>>> 2e291d9b8aafebfdd75ffc8a3f18b1277f1b7429
->>>>>>> Stashed changes
         <div class="chatbot-input-area">
 
           <div class="input-label">Bạn cần hỗ trợ gì?</div>
 
           <!-- Image Preview -->
-<<<<<<< Updated upstream
+
           <div id="aiChatbotImagePreview" class="image-preview" style="display: none; margin-bottom: 10px;">
             <img id="aiChatbotPreviewImg" src="" alt="Preview" style="max-width: 100%; max-height: 200px; border-radius: 8px;">
-=======
-<<<<<<< HEAD
 
-          <div id="chatbotImagePreview" class="image-preview" style="display: none; margin-bottom: 10px;">
-
-            <img id="chatbotPreviewImg" src="" alt="Preview" style="max-width: 100%; max-height: 200px; border-radius: 8px;">
-
-=======
-          <div id="aiChatbotImagePreview" class="image-preview" style="display: none; margin-bottom: 10px;">
-            <img id="aiChatbotPreviewImg" src="" alt="Preview" style="max-width: 100%; max-height: 200px; border-radius: 8px;">
->>>>>>> 2e291d9b8aafebfdd75ffc8a3f18b1277f1b7429
->>>>>>> Stashed changes
             <button class="remove-image-btn" onclick="removeImagePreview()">
 
               <i class="fas fa-times"></i>
@@ -4619,38 +4275,13 @@
           </div>
 
           <div class="input-group">
-<<<<<<< Updated upstream
+
             <button type="button" class="upload-btn" id="aiChatbotUploadBtn" title="Gửi hình ảnh">
               <i class="fas fa-image"></i>
               <input type="file" id="aiChatbotImageInput" accept="image/*" style="display: none;">
             </button>
-            <input type="text" id="aiChatbotMessageInput" placeholder="Nhập tin nhắn..." class="chatbot-input">
+            <input type="text" id="aiChatbotMessageInput" placeholder="Nhập Tin Nhắn..." class="chatbot-input">
             <button type="button" class="send-btn" id="aiChatbotSendBtn">
-              <i class="fas fa-paper-plane"></i>
-=======
-<<<<<<< HEAD
-
-            <button class="upload-btn" id="chatbotUploadBtn" title="Gửi hình ảnh">
-
-              <i class="fas fa-image"></i>
-
-              <input type="file" id="chatbotImageInput" accept="image/*" style="display: none;" onchange="handleImageUpload(event)">
-
-            </button>
-
-            <input type="text" id="chatbotMessageInput" placeholder="Nhập tin nhắn..." class="chatbot-input">
-
-            <button class="send-btn" id="chatbotSendBtn" onclick="sendChatbotMessage()">
-
-=======
-            <button type="button" class="upload-btn" id="aiChatbotUploadBtn" title="Gửi hình ảnh">
-              <i class="fas fa-image"></i>
-              <input type="file" id="aiChatbotImageInput" accept="image/*" style="display: none;">
->>>>>>> Stashed changes
-            </button>
-            <input type="text" id="aiChatbotMessageInput" placeholder="Nhập tin nhắn..." class="chatbot-input">
-            <button type="button" class="send-btn" id="aiChatbotSendBtn">
->>>>>>> 2e291d9b8aafebfdd75ffc8a3f18b1277f1b7429
               <i class="fas fa-paper-plane"></i>
 
             </button>
@@ -4659,39 +4290,21 @@
 
         </div>
 
-<<<<<<< Updated upstream
-=======
-<<<<<<< HEAD
 
 
-        <!-- Disclaimer -->
-
-        <div class="disclaimer">
-
-          <small>Thông tin được AI hỗ trợ chỉ mang tính chất tham khảo</small>
-
-=======
->>>>>>> Stashed changes
         <!-- Footer with Disclaimer - Sticky -->
         <div class="chatbot-footer">
           <div class="disclaimer">
             <small>Thông tin chỉ mang tính tham khảo, được tư vấn bởi Trí Tuệ Nhân Tạo</small>
           </div>
-<<<<<<< Updated upstream
-=======
->>>>>>> 2e291d9b8aafebfdd75ffc8a3f18b1277f1b7429
->>>>>>> Stashed changes
         </div>
 
       </div>
 
     </div>
     </div> <!-- End ai-chatbot-container -->
-<<<<<<< Updated upstream
-=======
 
 
->>>>>>> Stashed changes
 
     <style>
 
@@ -4701,9 +4314,9 @@
 
         position: fixed !important;
 
-        bottom: 170px !important; /* Above chat button */
+        bottom: 220px !important; /* Higher position */
 
-        right: 20px !important;
+        right: 30px !important; /* Moved slightly left */
 
         width: 70px !important;
 
@@ -4970,37 +4583,18 @@
         bottom: 100px;
 
         right: 20px;
-<<<<<<< Updated upstream
+
         width: 500px;
         height: 700px;
-=======
-<<<<<<< HEAD
 
-        width: 380px;
-
-        height: 600px;
-
-=======
-        width: 500px;
-        height: 700px;
->>>>>>> 2e291d9b8aafebfdd75ffc8a3f18b1277f1b7429
->>>>>>> Stashed changes
         background: #fef7f7;
 
         border-radius: 20px;
 
         box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
-<<<<<<< Updated upstream
-        z-index: 10020;
-=======
-<<<<<<< HEAD
 
-        z-index: 1001;
-
-=======
         z-index: 10020;
->>>>>>> 2e291d9b8aafebfdd75ffc8a3f18b1277f1b7429
->>>>>>> Stashed changes
+
         display: flex;
 
         flex-direction: column;
@@ -5010,15 +4604,9 @@
         animation: slideUp 0.4s ease-out;
 
         border: 1px solid rgba(255, 107, 157, 0.2);
-<<<<<<< Updated upstream
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-=======
-<<<<<<< HEAD
 
-=======
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
->>>>>>> 2e291d9b8aafebfdd75ffc8a3f18b1277f1b7429
->>>>>>> Stashed changes
+
       }
 
 
@@ -5046,21 +4634,10 @@
 
 
       .chatbot-header {
-<<<<<<< Updated upstream
+
         background: #fff;
         color: #333;
-=======
-<<<<<<< HEAD
 
-        background: linear-gradient(135deg, #ff6b9d 0%, #ff8fab 100%);
-
-        color: white;
-
-=======
-        background: #fff;
-        color: #333;
->>>>>>> 2e291d9b8aafebfdd75ffc8a3f18b1277f1b7429
->>>>>>> Stashed changes
         padding: 15px 20px;
 
         display: flex;
@@ -5068,17 +4645,8 @@
         justify-content: space-between;
 
         align-items: center;
-<<<<<<< Updated upstream
-        border-bottom: 1px solid #e5e5e5;
-=======
-<<<<<<< HEAD
 
-        border-radius: 20px 20px 0 0;
-
-=======
         border-bottom: 1px solid #e5e5e5;
->>>>>>> 2e291d9b8aafebfdd75ffc8a3f18b1277f1b7429
->>>>>>> Stashed changes
       }
 
 
@@ -5105,7 +4673,7 @@
 
       }
 
-<<<<<<< Updated upstream
+
       .oneshop-logo-icon {
         width: 40px;
         height: 40px;
@@ -5241,220 +4809,9 @@
       }
 
       .robot-face-large {
-=======
-<<<<<<< HEAD
-
-
-      .robot-face-small {
-
-        width: 25px;
-
-        height: 25px;
-
-        background: white;
-
-=======
-      .oneshop-logo-icon {
->>>>>>> Stashed changes
-        width: 40px;
-        height: 40px;
-        background: linear-gradient(135deg, #ff6b9d 0%, #ff8fab 100%);
-        color: white;
->>>>>>> 2e291d9b8aafebfdd75ffc8a3f18b1277f1b7429
-        border-radius: 50%;
-
-        display: flex;
-
-        align-items: center;
-
-        justify-content: center;
-<<<<<<< HEAD
-
-        position: relative;
 
       }
 
-
-
-      .robot-face-small .robot-eyes {
-
-        top: 6px;
-
-        gap: 6px;
-
-      }
-
-
-
-      .robot-face-small .eye {
-
-        width: 4px;
-
-        height: 4px;
-
-      }
-
-
-
-      .robot-face-small .robot-mouth {
-
-        bottom: 6px;
-
-        width: 8px;
-
-        height: 4px;
-
-      }
-
-
-
-      .sparkle-icon {
-
-        font-size: 14px;
-
-        animation: sparkle 2s infinite;
-
-=======
-        font-weight: bold;
-        font-size: 16px;
->>>>>>> 2e291d9b8aafebfdd75ffc8a3f18b1277f1b7429
-      }
-
-
-
-      .title-text h3 {
-
-        margin: 0;
-<<<<<<< HEAD
-
-        font-size: 16px;
-
-        font-weight: 600;
-
-=======
-        font-size: 18px;
-        font-weight: 600;
-        color: #333;
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
->>>>>>> 2e291d9b8aafebfdd75ffc8a3f18b1277f1b7429
-      }
-
-
-
-      .chatbot-controls {
-
-        display: flex;
-
-        gap: 8px;
-
-      }
-
-
-
-      .control-btn {
-<<<<<<< HEAD
-
-        width: 32px;
-
-        height: 32px;
-
-        background: rgba(255, 255, 255, 0.2);
-
-        border: none;
-
-        border-radius: 50%;
-
-        color: white;
-
-=======
-        width: 36px;
-        height: 36px;
-        background: transparent;
-        border: 1px solid #e5e5e5;
-        border-radius: 50%;
-        color: #666;
->>>>>>> 2e291d9b8aafebfdd75ffc8a3f18b1277f1b7429
-        cursor: pointer;
-
-        display: flex;
-
-        align-items: center;
-
-        justify-content: center;
-
-        transition: all 0.3s ease;
-<<<<<<< HEAD
-
-        font-size: 12px;
-
-=======
-        font-size: 14px;
->>>>>>> 2e291d9b8aafebfdd75ffc8a3f18b1277f1b7429
-      }
-
-
-
-      .control-btn:hover {
-<<<<<<< HEAD
-
-        background: rgba(255, 255, 255, 0.3);
-
-        transform: scale(1.1);
-
-=======
-        background: #f8f9fa;
-        border-color: #ccc;
-        transform: scale(1.05);
->>>>>>> 2e291d9b8aafebfdd75ffc8a3f18b1277f1b7429
-      }
-
-
-
-      .chatbot-body {
-
-        flex: 1;
-
-        display: flex;
-
-        flex-direction: column;
-
-        overflow: hidden;
-<<<<<<< HEAD
-
-        padding: 20px;
-
-        background: #fef7f7;
-
-=======
-        padding: 0;
-        background: #fff;
-      }
-      
-      .welcome-message-simple {
-        padding: 15px 20px;
-        background: #f8f9fa;
-        border-bottom: 1px solid #e5e5e5;
-      }
-      
-      .welcome-message-simple p {
-        margin: 0;
-        font-size: 14px;
-        color: #333;
-        line-height: 1.5;
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      }
-<<<<<<< Updated upstream
-
-      .escalation-note {
-        font-size: 12px;
-        color: #666;
-        font-style: italic;
-      }
-
-      /* Chat Messages - Scrollable - Scoped to AI Chatbot */
-      #ai-chatbot-container .chat-messages {
-=======
-      
       /* Suggested Topics */
       .suggested-topics {
         display: grid;
@@ -5484,7 +4841,6 @@
         border-color: #ccc;
         transform: translateY(-1px);
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
->>>>>>> 2e291d9b8aafebfdd75ffc8a3f18b1277f1b7429
       }
 
 
@@ -5843,78 +5199,13 @@
 
       }
 
-<<<<<<< HEAD
-
-
-      /* Suggested Topics */
-
-      .suggested-topics {
-
-        display: grid;
-
-        grid-template-columns: 1fr 1fr;
-
-        gap: 10px;
-
-        margin-bottom: 20px;
-
-      }
-
-
-
-      .topic-btn {
-
-        background: white;
-
-        border: 1px solid rgba(255, 107, 157, 0.3);
-
-        border-radius: 12px;
-
-        padding: 12px 8px;
-
-        font-size: 12px;
-
-        color: #333;
-
-        cursor: pointer;
-
-        transition: all 0.3s ease;
-
-        text-align: center;
-
-        line-height: 1.3;
-
-      }
-
-
-
-      .topic-btn:hover {
-
-        background: linear-gradient(135deg, #ff6b9d 0%, #ff8fab 100%);
-
-        color: white;
-
-        transform: translateY(-2px);
-
-        box-shadow: 0 4px 15px rgba(255, 107, 157, 0.3);
-
-      }
-
-
-
-      /* Chat Messages */
-
-      .chat-messages {
-
-=======
       /* Chat Messages - Scrollable - Scoped to AI Chatbot */
       #ai-chatbot-container .chat-messages {
->>>>>>> 2e291d9b8aafebfdd75ffc8a3f18b1277f1b7429
->>>>>>> Stashed changes
+
         flex: 1;
 
         overflow-y: auto;
-<<<<<<< Updated upstream
+
         padding: 15px 20px;
         background: #fff;
         /* Reserve space for input + footer */
@@ -5929,63 +5220,18 @@
       }
 
       #ai-chatbot-container .chat-message.user {
-=======
-<<<<<<< HEAD
-
-        margin-bottom: 15px;
-
-        padding-right: 5px;
-
-      }
-
-
-
-      .chat-message {
-
-=======
-        padding: 15px 20px;
-        background: #fff;
-        /* Reserve space for input + footer */
-        padding-bottom: 140px;
-      }
-
-      #ai-chatbot-container .chat-message {
->>>>>>> 2e291d9b8aafebfdd75ffc8a3f18b1277f1b7429
-        display: flex;
-
-        gap: 10px;
-
-        margin-bottom: 15px;
-
-        align-items: flex-start;
-
-      }
-
-<<<<<<< HEAD
-
-
-      .chat-message.user {
-
-=======
-      #ai-chatbot-container .chat-message.user {
->>>>>>> 2e291d9b8aafebfdd75ffc8a3f18b1277f1b7429
->>>>>>> Stashed changes
         flex-direction: row-reverse;
-
+        /* User messages align to right */
+        justify-content: flex-start;
+      }
+      
+      /* AI messages stay left-aligned by default */
+      #ai-chatbot-container .chat-message:not(.user) {
+        justify-content: flex-start;
       }
 
-<<<<<<< Updated upstream
       #ai-chatbot-container .message-avatar {
-=======
-<<<<<<< HEAD
 
-
-      .message-avatar {
-
-=======
-      #ai-chatbot-container .message-avatar {
->>>>>>> 2e291d9b8aafebfdd75ffc8a3f18b1277f1b7429
->>>>>>> Stashed changes
         width: 30px;
 
         height: 30px;
@@ -6002,18 +5248,9 @@
 
       }
 
-<<<<<<< Updated upstream
+
       #ai-chatbot-container .message-avatar.ai {
-=======
-<<<<<<< HEAD
 
-
-      .message-avatar.ai {
-
-=======
-      #ai-chatbot-container .message-avatar.ai {
->>>>>>> 2e291d9b8aafebfdd75ffc8a3f18b1277f1b7429
->>>>>>> Stashed changes
         background: linear-gradient(135deg, #ff6b9d 0%, #ff8fab 100%);
 
         color: white;
@@ -6022,18 +5259,9 @@
 
       }
 
-<<<<<<< Updated upstream
+
       #ai-chatbot-container .message-avatar.user {
-=======
-<<<<<<< HEAD
 
-
-      .message-avatar.user {
-
-=======
-      #ai-chatbot-container .message-avatar.user {
->>>>>>> 2e291d9b8aafebfdd75ffc8a3f18b1277f1b7429
->>>>>>> Stashed changes
         background: #e0e0e0;
 
         color: #666;
@@ -6042,33 +5270,32 @@
 
       }
 
-<<<<<<< Updated upstream
       #ai-chatbot-container .message-bubble {
-=======
-<<<<<<< HEAD
 
-
-      .message-bubble {
-
-=======
-      #ai-chatbot-container .message-bubble {
->>>>>>> 2e291d9b8aafebfdd75ffc8a3f18b1277f1b7429
->>>>>>> Stashed changes
         max-width: 80%;
-
         padding: 12px 15px;
-
         border-radius: 15px;
-
         font-size: 14px;
-
         line-height: 1.4;
-
         word-wrap: break-word;
-<<<<<<< Updated upstream
+
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       }
 
+      #ai-chatbot-container .message-bubble-ai {
+        background: white;
+        color: #333;
+        border: 1px solid rgba(255, 107, 157, 0.2);
+        box-shadow: 0 2px 8px rgba(255, 107, 157, 0.1);
+      }
+
+      #ai-chatbot-container .message-bubble-user {
+        background: linear-gradient(135deg, #ff6b9d 0%, #ff8fab 100%);
+        color: white;
+        /* User messages align to right with avatar on right side */
+      }
+
+      /* Legacy support - keep old classes for now */
       #ai-chatbot-container .message-bubble.ai {
         background: white;
         color: #333;
@@ -6077,86 +5304,29 @@
       }
 
       #ai-chatbot-container .message-bubble.user {
-=======
-<<<<<<< HEAD
 
-      }
-
-
-
-      .message-bubble.ai {
-
-=======
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      }
-
-      #ai-chatbot-container .message-bubble.ai {
->>>>>>> 2e291d9b8aafebfdd75ffc8a3f18b1277f1b7429
-        background: white;
-
-        color: #333;
-
-        border: 1px solid rgba(255, 107, 157, 0.2);
-
-        box-shadow: 0 2px 8px rgba(255, 107, 157, 0.1);
-
-      }
-
-<<<<<<< HEAD
-
-
-      .message-bubble.user {
-
-=======
-      #ai-chatbot-container .message-bubble.user {
->>>>>>> 2e291d9b8aafebfdd75ffc8a3f18b1277f1b7429
->>>>>>> Stashed changes
         background: linear-gradient(135deg, #ff6b9d 0%, #ff8fab 100%);
 
         color: white;
 
       }
 
-<<<<<<< Updated upstream
+
       /* Input Area - Fixed */
       .chatbot-input-area {
-=======
-<<<<<<< HEAD
-
-
-      /* Input Area */
-
-      .chatbot-input-area {
-
-        background: white;
-
-        border-radius: 15px;
-
-        padding: 14px;
-
-        box-shadow: 0 4px 15px rgba(255, 107, 157, 0.1);
-
-=======
-      /* Input Area - Fixed */
-      .chatbot-input-area {
->>>>>>> Stashed changes
         background: #fff;
         border-top: 1px solid #e5e5e5;
-        padding: 10px 15px 8px;
+        padding: 10px 20px 15px 20px;
         flex-shrink: 0;
         position: relative;
         z-index: 3;
         pointer-events: auto;
-<<<<<<< Updated upstream
-=======
->>>>>>> 2e291d9b8aafebfdd75ffc8a3f18b1277f1b7429
->>>>>>> Stashed changes
       }
 
 
 
       .input-label {
-<<<<<<< Updated upstream
+
         font-size: 10px;
         color: #999;
         margin-bottom: 4px;
@@ -6167,167 +5337,25 @@
       #ai-chatbot-container .input-group {
         display: flex;
         align-items: center;
-        gap: 6px;
-        position: relative;
-        z-index: 3;
-        pointer-events: auto;
-      }
-
-      /* Scoped to chatbot AI to avoid conflicts */
-      #ai-chatbot-container .chatbot-input {
-        flex: 1;
-        padding: 8px 12px;
-        border: 1px solid #e5e5e5;
-        min-height: 36px;
-        border-radius: 20px;
-        font-size: 13px;
-        outline: none;
-        transition: all 0.3s ease;
-        background: #f8f9fa;
-        position: relative;
-        z-index: 3;
-        pointer-events: auto;
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      }
-
-      #ai-chatbot-container .chatbot-input:focus {
-        border-color: #ff6b9d;
-        box-shadow: 0 0 0 2px rgba(255, 107, 157, 0.1);
-        background: #fff;
-      }
-
-      /* Scoped to chatbot AI to avoid conflicts */
-      #ai-chatbot-container .upload-btn {
-        width: 36px;
-        height: 36px;
-        background: #f8f9fa;
-        border: 1px solid #e5e5e5;
-        border-radius: 50%;
-        color: #666;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: all 0.3s ease;
-        font-size: 13px;
-        flex-shrink: 0;
-        position: relative;
-        z-index: 4;
-        pointer-events: auto;
-      }
-
-      #ai-chatbot-container .upload-btn:hover {
-        background: #e8e8e8;
-        border-color: #ccc;
-      }
-
-      #ai-chatbot-container .image-preview {
-=======
-<<<<<<< HEAD
-
-        font-size: 11px;
-
-        color: #666;
-
-        margin-bottom: 6px;
-
-        font-weight: 500;
-
-      }
-
-
-
-      .input-group {
-
-=======
-        font-size: 10px;
-        color: #999;
-        margin-bottom: 4px;
-        font-weight: normal;
-      }
-
-      /* Scoped to chatbot AI popup to avoid conflicts with regular chat */
-      #ai-chatbot-container .input-group {
->>>>>>> 2e291d9b8aafebfdd75ffc8a3f18b1277f1b7429
-        display: flex;
-
-        align-items: center;
-<<<<<<< HEAD
-
         gap: 8px;
-
-      }
-
-
-
-      .chatbot-input {
-
-        flex: 1;
-
-        padding: 11px 14px;
-
-        border: 1px solid rgba(255, 107, 157, 0.3);
-
-        min-height: 44px;
-
-        border-radius: 25px;
-
-        font-size: 14px;
-
-=======
-        gap: 6px;
         position: relative;
         z-index: 3;
         pointer-events: auto;
+        width: 100%; /* Full width của chatbot-input-area */
       }
 
       /* Scoped to chatbot AI to avoid conflicts */
       #ai-chatbot-container .chatbot-input {
         flex: 1;
-        padding: 8px 12px;
+        min-width: 0; /* Allow input to shrink */
+        width: 100%;
+        padding: 10px 15px;
         border: 1px solid #e5e5e5;
-        min-height: 36px;
+        min-height: 40px;
         border-radius: 20px;
-        font-size: 13px;
->>>>>>> 2e291d9b8aafebfdd75ffc8a3f18b1277f1b7429
+        font-size: 14px;
         outline: none;
-
         transition: all 0.3s ease;
-<<<<<<< HEAD
-
-        background: #fef7f7;
-
-      }
-
-
-
-      .chatbot-input:focus {
-
-        border-color: #ff6b9d;
-
-        box-shadow: 0 0 0 3px rgba(255, 107, 157, 0.1);
-
-        background: white;
-
-      }
-
-
-
-      .upload-btn {
-
-        width: 42px;
-
-        height: 42px;
-
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-
-        border: none;
-
-        border-radius: 50%;
-
-        color: white;
-
-=======
         background: #f8f9fa;
         position: relative;
         z-index: 3;
@@ -6343,84 +5371,31 @@
 
       /* Scoped to chatbot AI to avoid conflicts */
       #ai-chatbot-container .upload-btn {
-        width: 36px;
-        height: 36px;
+        width: 45px;
+        height: 45px;
         background: #f8f9fa;
         border: 1px solid #e5e5e5;
         border-radius: 50%;
         color: #666;
->>>>>>> 2e291d9b8aafebfdd75ffc8a3f18b1277f1b7429
         cursor: pointer;
-
         display: flex;
-
         align-items: center;
-
         justify-content: center;
-
         transition: all 0.3s ease;
-<<<<<<< HEAD
-
-        font-size: 16px;
-
+        font-size: 18px;
         flex-shrink: 0;
-
-      }
-
-
-
-      .upload-btn:hover {
-
-        transform: scale(1.05);
-
-        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-
-      }
-
-
-
-      .image-preview {
-
-=======
-        font-size: 13px;
-        flex-shrink: 0;
->>>>>>> Stashed changes
         position: relative;
         z-index: 4;
         pointer-events: auto;
       }
 
-<<<<<<< Updated upstream
-      #ai-chatbot-container .remove-image-btn {
-=======
       #ai-chatbot-container .upload-btn:hover {
         background: #e8e8e8;
         border-color: #ccc;
       }
 
       #ai-chatbot-container .image-preview {
->>>>>>> 2e291d9b8aafebfdd75ffc8a3f18b1277f1b7429
-        position: relative;
 
-        background: #f8fafc;
-
-        padding: 10px;
-
-        border-radius: 8px;
-
-        border: 1px solid #e5e7eb;
-
-      }
-
-<<<<<<< HEAD
-
-
-      .remove-image-btn {
-
-=======
-      #ai-chatbot-container .remove-image-btn {
->>>>>>> 2e291d9b8aafebfdd75ffc8a3f18b1277f1b7429
->>>>>>> Stashed changes
         position: absolute;
 
         top: 5px;
@@ -6451,45 +5426,20 @@
 
       }
 
-<<<<<<< Updated upstream
+
       #ai-chatbot-container .remove-image-btn:hover {
-=======
-<<<<<<< HEAD
 
-
-      .remove-image-btn:hover {
-
-=======
-      #ai-chatbot-container .remove-image-btn:hover {
->>>>>>> 2e291d9b8aafebfdd75ffc8a3f18b1277f1b7429
->>>>>>> Stashed changes
         background: #ff6b7d;
 
       }
 
-<<<<<<< Updated upstream
-=======
-<<<<<<< HEAD
 
 
-      .send-btn {
-
-        width: 42px;
-
-        height: 42px;
-
-        background: linear-gradient(135deg, #ff6b9d 0%, #ff8fab 100%);
-
-=======
->>>>>>> Stashed changes
       #ai-chatbot-container .send-btn {
-        width: 36px;
-        height: 36px;
+        width: 45px;
+        height: 45px;
         background: #ff6b9d;
-<<<<<<< Updated upstream
-=======
->>>>>>> 2e291d9b8aafebfdd75ffc8a3f18b1277f1b7429
->>>>>>> Stashed changes
+
         border: none;
 
         border-radius: 50%;
@@ -6505,8 +5455,8 @@
         justify-content: center;
 
         transition: all 0.3s ease;
-<<<<<<< Updated upstream
-        font-size: 14px;
+
+        font-size: 18px;
         flex-shrink: 0;
         position: relative;
         z-index: 4;
@@ -6545,117 +5495,19 @@
         background: #f8f9fb;
         border-radius: 6px;
         text-align: center;
-=======
-<<<<<<< HEAD
-
-        font-size: 15px;
-
-        flex-shrink: 0;
-
-      }
-
-
-
-      .send-btn:hover {
-
-        transform: scale(1.05);
-
-        box-shadow: 0 4px 15px rgba(255, 107, 157, 0.4);
-
-      }
-
-
-
-      .send-btn:disabled {
-
-=======
-        font-size: 14px;
-        flex-shrink: 0;
-        position: relative;
-        z-index: 4;
-        pointer-events: auto;
-      }
-
-      #ai-chatbot-container .send-btn:hover {
-        background: #ff8fab;
-        transform: scale(1.05);
-      }
-
-      #ai-chatbot-container .send-btn:disabled {
->>>>>>> 2e291d9b8aafebfdd75ffc8a3f18b1277f1b7429
-        opacity: 0.6;
-
-        cursor: not-allowed;
-
-        transform: none;
-
-      }
-
-<<<<<<< HEAD
-
-
-      /* Disclaimer */
-
-      .disclaimer {
-
-        text-align: center;
-
-        margin-top: 10px;
-
-=======
-      /* Footer with Disclaimer - Sticky */
-      .chatbot-footer {
-        background: #fff;
-        border-top: 1px solid #e5e5e5;
-        flex-shrink: 0;
-        position: relative;
-        z-index: 1;
->>>>>>> Stashed changes
-      }
-
-      /* Hide floating buttons when chatbot is open */
-      body.oneshop-chatbot-popup-open #floatingChatButton,
-      body.oneshop-chatbot-popup-open #oneshopChatbotButton {
-        display: none !important;
-      }
-
-      .disclaimer {
-        margin: 6px 15px;
-        padding: 6px 12px;
-        background: #f8f9fb;
-        border-radius: 6px;
-        text-align: center;
->>>>>>> 2e291d9b8aafebfdd75ffc8a3f18b1277f1b7429
       }
 
 
 
       .disclaimer small {
-<<<<<<< Updated upstream
+
         color: #64748b;
         font-size: 10px;
         font-style: italic;
         line-height: 1.3;
         display: block;
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-=======
-<<<<<<< HEAD
 
-        color: #999;
-
-        font-size: 11px;
-
-        font-style: italic;
-
-=======
-        color: #64748b;
-        font-size: 10px;
-        font-style: italic;
-        line-height: 1.3;
-        display: block;
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
->>>>>>> 2e291d9b8aafebfdd75ffc8a3f18b1277f1b7429
->>>>>>> Stashed changes
       }
 
 
@@ -6769,7 +5621,7 @@
       .products-grid {
 
         display: grid;
-<<<<<<< Updated upstream
+
         grid-template-columns: repeat(2, 1fr);
         gap: 10px;
       }
@@ -6780,26 +5632,6 @@
           grid-template-columns: repeat(2, 1fr);
           gap: 8px;
         }
-=======
-<<<<<<< HEAD
-
-        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-
-        gap: 12px;
-
-=======
-        grid-template-columns: repeat(2, 1fr);
-        gap: 10px;
->>>>>>> Stashed changes
-      }
-      
-      /* Responsive: Giữ nguyên 2x2 trên tất cả màn hình */
-      @media (max-width: 600px) {
-        .products-grid {
-          grid-template-columns: repeat(2, 1fr);
-          gap: 8px;
-        }
->>>>>>> 2e291d9b8aafebfdd75ffc8a3f18b1277f1b7429
       }
 
 
@@ -6835,17 +5667,9 @@
         position: relative;
 
         width: 100%;
-<<<<<<< Updated upstream
-        padding-top: 100%; /* Tăng tỷ lệ ảnh để ảnh gần vuông hơn */
-=======
-<<<<<<< HEAD
 
-        padding-top: 75%;
-
-=======
         padding-top: 100%; /* Tăng tỷ lệ ảnh để ảnh gần vuông hơn */
->>>>>>> 2e291d9b8aafebfdd75ffc8a3f18b1277f1b7429
->>>>>>> Stashed changes
+
         overflow: hidden;
 
       }
@@ -6895,61 +5719,30 @@
 
 
       .product-info {
-<<<<<<< Updated upstream
-        padding: 12px;
-=======
-<<<<<<< HEAD
 
-        padding: 10px;
-
-=======
         padding: 12px;
->>>>>>> 2e291d9b8aafebfdd75ffc8a3f18b1277f1b7429
->>>>>>> Stashed changes
+
       }
 
 
 
       .product-name {
-<<<<<<< Updated upstream
-        font-size: 14px;
-=======
-<<<<<<< HEAD
 
-        font-size: 13px;
-
-=======
         font-size: 14px;
->>>>>>> 2e291d9b8aafebfdd75ffc8a3f18b1277f1b7429
->>>>>>> Stashed changes
+
         font-weight: 600;
 
         color: #333;
-<<<<<<< Updated upstream
-        margin: 0 0 6px 0;
-=======
-<<<<<<< HEAD
 
-        margin: 0 0 4px 0;
-
-=======
         margin: 0 0 6px 0;
->>>>>>> 2e291d9b8aafebfdd75ffc8a3f18b1277f1b7429
->>>>>>> Stashed changes
+
         overflow: hidden;
 
         text-overflow: ellipsis;
 
         white-space: nowrap;
-<<<<<<< Updated upstream
-        line-height: 1.3;
-=======
-<<<<<<< HEAD
 
-=======
         line-height: 1.3;
->>>>>>> 2e291d9b8aafebfdd75ffc8a3f18b1277f1b7429
->>>>>>> Stashed changes
       }
 
 
@@ -6975,15 +5768,9 @@
         gap: 8px;
 
         margin: 8px 0;
-<<<<<<< Updated upstream
-        flex-wrap: wrap;
-=======
-<<<<<<< HEAD
 
-=======
         flex-wrap: wrap;
->>>>>>> 2e291d9b8aafebfdd75ffc8a3f18b1277f1b7429
->>>>>>> Stashed changes
+
       }
 
 
@@ -7001,17 +5788,8 @@
 
 
       .current-price {
-<<<<<<< Updated upstream
-        font-size: 15px;
-=======
-<<<<<<< HEAD
 
-        font-size: 14px;
-
-=======
         font-size: 15px;
->>>>>>> 2e291d9b8aafebfdd75ffc8a3f18b1277f1b7429
->>>>>>> Stashed changes
         font-weight: bold;
 
         color: #ff6b9d;
@@ -7125,21 +5903,9 @@
       @media (max-width: 768px) {
 
         .oneshop-chatbot-popup {
-<<<<<<< Updated upstream
+
           width: 400px;
           height: 600px;
-=======
-<<<<<<< HEAD
-
-          width: 320px;
-
-          height: 500px;
-
-=======
-          width: 400px;
-          height: 600px;
->>>>>>> 2e291d9b8aafebfdd75ffc8a3f18b1277f1b7429
->>>>>>> Stashed changes
           right: 10px;
 
           bottom: 80px;
@@ -7207,41 +5973,24 @@
     <script>
 
       // OneShop Chatbot Functions - Bitu Style
-<<<<<<< Updated upstream
-=======
-<<<<<<< HEAD
-
-      let chatbotOpen = false;
-
-      let isTyping = false;
-=======
->>>>>>> Stashed changes
-      // Global state object - single source of truth
-      window.chatbotState = {
-        open: false,
-        imageBase64: null,
-        inputBound: false,
-        isTyping: false,
-        history: []
-      };
-
-      // Initialize popup (safe no-op to prevent missing ref errors)
-      function initializeChatbotPopup() {
-        // Reserved for future size/position logic
+      
+      // Initialize chatbot state
+      if (!window.chatbotState) {
+        window.chatbotState = {
+          isTyping: false,
+          open: false,
+          imageBase64: null,
+          conversationHistory: []
+        };
       }
-<<<<<<< Updated upstream
-=======
->>>>>>> 2e291d9b8aafebfdd75ffc8a3f18b1277f1b7429
 
-
->>>>>>> Stashed changes
-
+      // Define all functions first
       function toggleOneshopChatbot() {
 
         const popup = document.getElementById('floatingChatbotPopup');
 
         const button = document.getElementById('oneshopChatbotButton');
-<<<<<<< Updated upstream
+
         const isHidden = getComputedStyle(popup).display === 'none';
         const open = isHidden;
 
@@ -7257,62 +6006,14 @@
           setTimeout(() => {
             const inp = document.getElementById('aiChatbotMessageInput');
             if (inp) inp.focus();
-=======
-<<<<<<< HEAD
-
-        
-
-        if (chatbotOpen) {
-
-          popup.style.display = 'none';
-
-          button.style.transform = 'scale(1)';
-
-          chatbotOpen = false;
-
-        } else {
-
-          popup.style.display = 'flex';
-
-          button.style.transform = 'scale(0.9)';
-
-          chatbotOpen = true;
-
-          hideChatbotBadge();
-
-          
-
-          // Focus input
-
-          setTimeout(() => {
-
-            document.getElementById('chatbotMessageInput').focus();
-
-=======
-        const isHidden = getComputedStyle(popup).display === 'none';
-        const open = isHidden;
-
-        popup.style.display = open ? 'flex' : 'none';
-        button.style.transform = open ? 'scale(0.9)' : 'scale(1)';
-        window.chatbotState.open = open;
-
-        document.body.classList.toggle('oneshop-chatbot-popup-open', open);
-        document.body.classList.toggle('chatbot-open', open);
-
-        if (open) {
-          hideChatbotBadge();
-          setTimeout(() => {
-            const inp = document.getElementById('aiChatbotMessageInput');
-            if (inp) inp.focus();
->>>>>>> 2e291d9b8aafebfdd75ffc8a3f18b1277f1b7429
->>>>>>> Stashed changes
           }, 400);
 
         }
 
       }
 
-
+      // Expose toggleOneshopChatbot immediately
+      window.toggleOneshopChatbot = toggleOneshopChatbot;
 
       function closeOneshopChatbot() {
 
@@ -7325,41 +6026,18 @@
         popup.style.display = 'none';
 
         button.style.transform = 'scale(1)';
-<<<<<<< Updated upstream
-=======
-<<<<<<< HEAD
 
-        chatbotOpen = false;
-
-=======
->>>>>>> Stashed changes
-        window.chatbotState.open = false;
-        
-        // Remove class to show floating buttons again
-        document.body.classList.remove('oneshop-chatbot-popup-open');
-        document.body.classList.remove('chatbot-open');
-<<<<<<< Updated upstream
-=======
->>>>>>> 2e291d9b8aafebfdd75ffc8a3f18b1277f1b7429
->>>>>>> Stashed changes
       }
 
-
+      // Expose closeOneshopChatbot immediately  
+      window.closeOneshopChatbot = closeOneshopChatbot;
 
       function refreshChatbot() {
 
         // Clear messages and reset
-<<<<<<< Updated upstream
-        const messagesContainer = document.getElementById('aiChatbotMessages');
-=======
-<<<<<<< HEAD
 
-        const messagesContainer = document.getElementById('chatbotMessages');
-
-=======
         const messagesContainer = document.getElementById('aiChatbotMessages');
->>>>>>> 2e291d9b8aafebfdd75ffc8a3f18b1277f1b7429
->>>>>>> Stashed changes
+
         messagesContainer.innerHTML = '';
 
         
@@ -7400,60 +6078,8 @@
 
       }
 
-<<<<<<< Updated upstream
-=======
-<<<<<<< HEAD
-
-
-      function expandChatbot() {
-
-        const popup = document.getElementById('floatingChatbotPopup');
-
-        if (popup.style.width === '420px') {
-
-          popup.style.width = '500px';
-
-          popup.style.height = '700px';
-
-        } else {
-
-          popup.style.width = '420px';
-
-          popup.style.height = '600px';
-
-        }
-
-      }
-
-
-
-      // Set initial popup size
-
-      function initializeChatbotPopup() {
-
-        const popup = document.getElementById('floatingChatbotPopup');
-
-        if (popup) {
-
-          popup.style.width = '420px';
-
-          popup.style.height = '600px';
-
-        }
-
-      }
-=======
->>>>>>> Stashed changes
-      // Expose functions globally IMMEDIATELY (before DOMContentLoaded)
-      window.toggleOneshopChatbot = toggleOneshopChatbot;
-      window.closeOneshopChatbot = closeOneshopChatbot;
+      // Expose refreshChatbot immediately
       window.refreshChatbot = refreshChatbot;
-<<<<<<< Updated upstream
-=======
->>>>>>> 2e291d9b8aafebfdd75ffc8a3f18b1277f1b7429
-
-
->>>>>>> Stashed changes
 
       function hideIntroAndWelcome() {
 
@@ -7484,43 +6110,15 @@
         }
 
       }
-<<<<<<< Updated upstream
+
       
       function sendChatbotMessage() {
         const input = document.getElementById('aiChatbotMessageInput');
         const sendBtn = document.getElementById('aiChatbotSendBtn');
-=======
-<<<<<<< HEAD
-
-
-
-      function sendChatbotMessage() {
-
-        const input = document.getElementById('chatbotMessageInput');
-
-        const sendBtn = document.getElementById('chatbotSendBtn');
-
-=======
-      
-      function sendChatbotMessage() {
-        const input = document.getElementById('aiChatbotMessageInput');
-        const sendBtn = document.getElementById('aiChatbotSendBtn');
->>>>>>> 2e291d9b8aafebfdd75ffc8a3f18b1277f1b7429
->>>>>>> Stashed changes
         const message = input.value.trim();
 
-        
-<<<<<<< Updated upstream
         if (!message || window.chatbotState.isTyping) {
-=======
-<<<<<<< HEAD
 
-        if (!message || isTyping) {
-
-=======
-        if (!message || window.chatbotState.isTyping) {
->>>>>>> 2e291d9b8aafebfdd75ffc8a3f18b1277f1b7429
->>>>>>> Stashed changes
           return;
 
         }
@@ -7538,17 +6136,9 @@
         input.disabled = true;
 
         sendBtn.disabled = true;
-<<<<<<< Updated upstream
-        window.chatbotState.isTyping = true;
-=======
-<<<<<<< HEAD
 
-        isTyping = true;
-
-=======
         window.chatbotState.isTyping = true;
->>>>>>> 2e291d9b8aafebfdd75ffc8a3f18b1277f1b7429
->>>>>>> Stashed changes
+
         
 
         // Add user message
@@ -7556,19 +6146,10 @@
         addChatbotMessage(message, 'user');
 
         
-<<<<<<< Updated upstream
-        // Thêm vào lịch sử
-        window.chatbotState.history.push({ role: 'user', content: message });
-        
-=======
-<<<<<<< HEAD
 
-=======
         // Thêm vào lịch sử
-        window.chatbotState.history.push({ role: 'user', content: message });
+        window.chatbotState.conversationHistory.push({ role: 'user', content: message });
         
->>>>>>> 2e291d9b8aafebfdd75ffc8a3f18b1277f1b7429
->>>>>>> Stashed changes
         // Clear input
 
         input.value = '';
@@ -7597,16 +6178,9 @@
 
             message: message,
 
-            context: 'OneShop mỹ phẩm'
-<<<<<<< Updated upstream
-            history: window.chatbotState.history
-=======
-<<<<<<< HEAD
+            context: 'OneShop mỹ phẩm',
 
-=======
-            history: window.chatbotState.history
->>>>>>> 2e291d9b8aafebfdd75ffc8a3f18b1277f1b7429
->>>>>>> Stashed changes
+            history: window.chatbotState.conversationHistory
           })
 
         })
@@ -7632,52 +6206,10 @@
           if (data.status === 'success') {
 
             addChatbotMessage(data.message, 'ai');
+            
+            // Thêm phản hồi AI vào lịch sử
+            window.chatbotState.conversationHistory.push({ role: 'model', content: data.message });
 
-            
-<<<<<<< Updated upstream
-=======
-<<<<<<< HEAD
-
-=======
->>>>>>> Stashed changes
-            // Thêm phản hồi AI vào lịch sử (chỉ lưu tối đa 10 cặp tin nhắn)
-            window.chatbotState.history.push({ role: 'model', content: data.message });
-            if (window.chatbotState.history.length > 20) { // Chỉ giữ 20 tin nhắn cuối (10 cặp)
-              chatHistory.shift();
-              chatHistory.shift(); // Xóa 2 tin nhắn đầu (user + model)
-<<<<<<< Updated upstream
-            }
-            
-            // Check if message contains product-related keywords and search for products
-            const productKeywords = ['sản phẩm', 'kem', 'son', 'mỹ phẩm', 'nước hoa', 'serum', 'tư vấn', 'giới thiệu', 'bạn có', 'có gì'];
-            const hasProductKeyword = productKeywords.some(keyword => message.toLowerCase().includes(keyword));
-            
-            if (hasProductKeyword) {
-              // Search for related products
-              fetch('/api/ai/search-products', {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                  query: message
-                })
-              })
-              .then(response => response.json())
-              .then(productData => {
-                if (productData.status === 'success' && productData.products && productData.products.length > 0) {
-                  // Display products
-                  displayProducts(productData.products);
-                }
-              })
-              .catch(err => {
-                console.error('Error searching products:', err);
-              });
-=======
->>>>>>> Stashed changes
-            }
-            
->>>>>>> 2e291d9b8aafebfdd75ffc8a3f18b1277f1b7429
             // Check if message contains product-related keywords and search for products
 
             const productKeywords = ['sản phẩm', 'kem', 'son', 'mỹ phẩm', 'nước hoa', 'serum', 'tư vấn', 'giới thiệu', 'bạn có', 'có gì'];
@@ -7755,17 +6287,8 @@
           input.disabled = false;
 
           sendBtn.disabled = false;
-<<<<<<< Updated upstream
-          window.chatbotState.isTyping = false;
-=======
-<<<<<<< HEAD
 
-          isTyping = false;
-
-=======
           window.chatbotState.isTyping = false;
->>>>>>> 2e291d9b8aafebfdd75ffc8a3f18b1277f1b7429
->>>>>>> Stashed changes
           input.focus();
 
         });
@@ -7775,43 +6298,23 @@
 
 
       function sendSuggestedMessage(message) {
-<<<<<<< Updated upstream
-        const input = document.getElementById('aiChatbotMessageInput');
-=======
-<<<<<<< HEAD
 
-        const input = document.getElementById('chatbotMessageInput');
-
-=======
         const input = document.getElementById('aiChatbotMessageInput');
->>>>>>> 2e291d9b8aafebfdd75ffc8a3f18b1277f1b7429
->>>>>>> Stashed changes
+        if (!input) return;
+        
         input.value = message;
 
+        // Hide suggested topics
+        hideIntroAndWelcome();
+
+        // Trigger send
         sendChatbotMessage();
 
       }
 
-<<<<<<< Updated upstream
-=======
-<<<<<<< HEAD
-
-
-      function addChatbotMessage(content, type) {
-
-        const messagesContainer = document.getElementById('chatbotMessages');
-
-=======
->>>>>>> Stashed changes
-      // Expose more functions globally IMMEDIATELY
-      window.sendSuggestedMessage = sendSuggestedMessage;
-
       function addChatbotMessage(content, type, imageBase64) {
         const messagesContainer = document.getElementById('aiChatbotMessages');
-<<<<<<< Updated upstream
-=======
->>>>>>> 2e291d9b8aafebfdd75ffc8a3f18b1277f1b7429
->>>>>>> Stashed changes
+
         
 
         const messageDiv = document.createElement('div');
@@ -7833,25 +6336,11 @@
         bubbleDiv.className = 'message-bubble';
 
         bubbleDiv.textContent = content;
-<<<<<<< Updated upstream
-=======
-<<<<<<< HEAD
+        
+        // Add class to differentiate bubble styling
+        bubbleDiv.classList.add(`message-bubble-${type}`);
 
-=======
->>>>>>> Stashed changes
-        if (imageBase64) {
-          const img = document.createElement('img');
-          img.src = imageBase64;
-          img.style.maxWidth = '200px';
-          img.style.maxHeight = '200px';
-          img.style.borderRadius = '8px';
-          img.style.marginTop = '10px';
-          bubbleDiv.appendChild(img);
-        }
-<<<<<<< Updated upstream
-=======
->>>>>>> 2e291d9b8aafebfdd75ffc8a3f18b1277f1b7429
->>>>>>> Stashed changes
+
         
 
         messageDiv.appendChild(avatarDiv);
@@ -7871,17 +6360,9 @@
 
 
       function displayProducts(products) {
-<<<<<<< Updated upstream
-        const messagesContainer = document.getElementById('aiChatbotMessages');
-=======
-<<<<<<< HEAD
 
-        const messagesContainer = document.getElementById('chatbotMessages');
-
-=======
         const messagesContainer = document.getElementById('aiChatbotMessages');
->>>>>>> 2e291d9b8aafebfdd75ffc8a3f18b1277f1b7429
->>>>>>> Stashed changes
+
         
 
         // Create product container
@@ -7907,30 +6388,8 @@
           productCard.className = 'product-card';
 
           
-<<<<<<< Updated upstream
-=======
-<<<<<<< HEAD
 
-          const imageUrl = product.image ? `/images/${product.image}` : '/images/default-product.png';
 
-=======
->>>>>>> Stashed changes
-          // Xử lý URL ảnh từ database - sử dụng endpoint /loadImage
-          let imageUrl = '/assets/img/examples/product1.jpg'; // Default fallback
-          if (product.image) {
-            if (product.image.startsWith('http://') || product.image.startsWith('https://')) {
-              // Cloudinary URL
-              imageUrl = product.image;
-            } else {
-              // Local file - sử dụng endpoint /loadImage
-              imageUrl = `/loadImage?imageName=${encodeURIComponent(product.image)}`;
-            }
-          }
-            
-<<<<<<< Updated upstream
-=======
->>>>>>> 2e291d9b8aafebfdd75ffc8a3f18b1277f1b7429
->>>>>>> Stashed changes
           const finalPrice = product.discount > 0 
 
             ? product.price * (100 - product.discount) / 100 
@@ -7939,20 +6398,39 @@
 
           
 
+          // Get product image - mỗi product_id tương ứng với product_image từ database
+          let imageUrl = '/assets/img/examples/product1.jpg'; // Default fallback
+          
+          if (product.image) {
+            // Nếu là URL Cloudinary (http/https)
+            if (product.image.startsWith('http://') || product.image.startsWith('https://')) {
+              imageUrl = product.image;
+            } 
+            // Nếu là local file, sử dụng endpoint /loadImage
+            else if (product.image.includes('upload') || product.image.includes('images')) {
+              // Đây là file upload local
+              imageUrl = `/loadImage?imageName=${encodeURIComponent(product.image)}`;
+            }
+            // Nếu chỉ có tên file (như kemEAU.png)
+            else {
+              imageUrl = `/loadImage?imageName=${encodeURIComponent(product.image)}`;
+            }
+          } else if (product.imageUrl) {
+            imageUrl = product.imageUrl.startsWith('http') 
+              ? product.imageUrl 
+              : `/loadImage?imageName=${encodeURIComponent(product.imageUrl)}`;
+          }
+          
+          console.log(`Product ID: ${product.id}, Name: ${product.name}`);
+          console.log(`Original image path: ${product.image || product.imageUrl}`);
+          console.log(`Final image URL: ${imageUrl}`);
+          
           productCard.innerHTML = `
 
             <div class="product-image">
-<<<<<<< Updated upstream
-              <img src="${imageUrl}" alt="${product.name}" onerror="this.src='/assets/img/examples/product1.jpg'">
-=======
-<<<<<<< HEAD
 
-              <img src="${imageUrl}" alt="${product.name}" onerror="this.src='/images/default-product.png'">
-
-=======
-              <img src="${imageUrl}" alt="${product.name}" onerror="this.src='/assets/img/examples/product1.jpg'">
->>>>>>> 2e291d9b8aafebfdd75ffc8a3f18b1277f1b7429
->>>>>>> Stashed changes
+              <img src="${imageUrl}" alt="${product.name}" 
+                   onerror="console.error('Image failed for product ${product.id}: ${imageUrl}'); this.src='/assets/img/examples/product1.jpg'">
               ${product.discount > 0 ? `<span class="product-discount">-${product.discount}%</span>` : ''}
 
             </div>
@@ -7973,7 +6451,7 @@
 
               </div>
 
-              <a href="/product/${product.id}" class="product-button">Xem chi tiết</a>
+              <a href="/productDetail?id=${product.id}" class="product-button">Xem chi tiết</a>
 
             </div>
 
@@ -8020,17 +6498,9 @@
 
 
       function showChatbotTypingIndicator() {
-<<<<<<< Updated upstream
-        const messagesContainer = document.getElementById('aiChatbotMessages');
-=======
-<<<<<<< HEAD
 
-        const messagesContainer = document.getElementById('chatbotMessages');
-
-=======
         const messagesContainer = document.getElementById('aiChatbotMessages');
->>>>>>> 2e291d9b8aafebfdd75ffc8a3f18b1277f1b7429
->>>>>>> Stashed changes
+
         
 
         // Remove existing typing indicator
@@ -8116,17 +6586,7 @@
 
 
       // Image upload handling
-<<<<<<< Updated upstream
-=======
-<<<<<<< HEAD
 
-      let currentImageBase64 = null;
-
-
-
-=======
->>>>>>> 2e291d9b8aafebfdd75ffc8a3f18b1277f1b7429
->>>>>>> Stashed changes
       function handleImageUpload(event) {
 
         const file = event.target.files[0];
@@ -8162,39 +6622,16 @@
         const reader = new FileReader();
 
         reader.onload = function(e) {
-<<<<<<< Updated upstream
-          window.chatbotState.imageBase64 = e.target.result;
-=======
-<<<<<<< HEAD
 
-          currentImageBase64 = e.target.result;
-
-=======
           window.chatbotState.imageBase64 = e.target.result;
->>>>>>> 2e291d9b8aafebfdd75ffc8a3f18b1277f1b7429
->>>>>>> Stashed changes
+
           
 
           // Show preview
-<<<<<<< Updated upstream
+
           const preview = document.getElementById('aiChatbotImagePreview');
           const previewImg = document.getElementById('aiChatbotPreviewImg');
           previewImg.src = window.chatbotState.imageBase64;
-=======
-<<<<<<< HEAD
-
-          const preview = document.getElementById('chatbotImagePreview');
-
-          const previewImg = document.getElementById('chatbotPreviewImg');
-
-          previewImg.src = currentImageBase64;
-
-=======
-          const preview = document.getElementById('aiChatbotImagePreview');
-          const previewImg = document.getElementById('aiChatbotPreviewImg');
-          previewImg.src = window.chatbotState.imageBase64;
->>>>>>> 2e291d9b8aafebfdd75ffc8a3f18b1277f1b7429
->>>>>>> Stashed changes
           preview.style.display = 'block';
 
         };
@@ -8203,9 +6640,6 @@
 
       }
 
-<<<<<<< Updated upstream
-      // Expose image upload function IMMEDIATELY
-      window.handleImageUpload = handleImageUpload;
 
       function removeImagePreview() {
         window.chatbotState.imageBase64 = null;
@@ -8214,96 +6648,14 @@
         document.getElementById('aiChatbotImageInput').value = '';
       }
 
-=======
-<<<<<<< HEAD
-
-
-      function removeImagePreview() {
-
-        currentImageBase64 = null;
-
-        const preview = document.getElementById('chatbotImagePreview');
-
-        preview.style.display = 'none';
-
-        document.getElementById('chatbotImageInput').value = '';
-
-      }
-
-
-
-      // Update sendChatbotMessage to handle images
-
-      const originalSendChatbotMessage = sendChatbotMessage;
-
-      sendChatbotMessage = function() {
-
-        if (currentImageBase64) {
-
-          sendChatbotMessageWithImage();
-
-        } else {
-
-          originalSendChatbotMessage();
-
-        }
-
-      };
-=======
-      // Expose image upload function IMMEDIATELY
-      window.handleImageUpload = handleImageUpload;
-
-      function removeImagePreview() {
-        window.chatbotState.imageBase64 = null;
-        const preview = document.getElementById('aiChatbotImagePreview');
-        preview.style.display = 'none';
-        document.getElementById('aiChatbotImageInput').value = '';
-      }
-
->>>>>>> Stashed changes
-      // Expose removeImagePreview IMMEDIATELY
-      window.removeImagePreview = removeImagePreview;
-
-      // Expose sendChatbotMessage IMMEDIATELY
-      window.sendChatbotMessage = sendChatbotMessage;
-
-      // Don't wrap sendChatbotMessage - it already has all the logic needed
-<<<<<<< Updated upstream
-
       function sendChatbotMessageWithImage() {
         const input = document.getElementById('aiChatbotMessageInput');
         const sendBtn = document.getElementById('aiChatbotSendBtn');
-=======
->>>>>>> 2e291d9b8aafebfdd75ffc8a3f18b1277f1b7429
-
-
-
-      function sendChatbotMessageWithImage() {
-<<<<<<< HEAD
-
-        const input = document.getElementById('chatbotMessageInput');
-
-        const sendBtn = document.getElementById('chatbotSendBtn');
-
-=======
-        const input = document.getElementById('aiChatbotMessageInput');
-        const sendBtn = document.getElementById('aiChatbotSendBtn');
->>>>>>> 2e291d9b8aafebfdd75ffc8a3f18b1277f1b7429
->>>>>>> Stashed changes
         const message = input.value.trim() || 'Phân tích hình ảnh này cho tôi';
 
         
-<<<<<<< Updated upstream
-        if (window.chatbotState.isTyping) return;
-=======
-<<<<<<< HEAD
 
-        if (isTyping) return;
-
-=======
         if (window.chatbotState.isTyping) return;
->>>>>>> 2e291d9b8aafebfdd75ffc8a3f18b1277f1b7429
->>>>>>> Stashed changes
         
 
         // Disable input and button
@@ -8311,17 +6663,8 @@
         input.disabled = true;
 
         sendBtn.disabled = true;
-<<<<<<< Updated upstream
-        window.chatbotState.isTyping = true;
-=======
-<<<<<<< HEAD
 
-        isTyping = true;
-
-=======
         window.chatbotState.isTyping = true;
->>>>>>> 2e291d9b8aafebfdd75ffc8a3f18b1277f1b7429
->>>>>>> Stashed changes
         
 
         // Hide intro and welcome
@@ -8337,17 +6680,9 @@
         
 
         // Validate image data before sending
-<<<<<<< Updated upstream
-        if (!window.chatbotState.imageBase64) {
-=======
-<<<<<<< HEAD
 
-        if (!currentImageBase64) {
-
-=======
         if (!window.chatbotState.imageBase64) {
->>>>>>> 2e291d9b8aafebfdd75ffc8a3f18b1277f1b7429
->>>>>>> Stashed changes
+
           console.error('No image data to send');
 
           hideChatbotTypingIndicator();
@@ -8357,17 +6692,8 @@
           input.disabled = false;
 
           sendBtn.disabled = false;
-<<<<<<< Updated upstream
-          window.chatbotState.isTyping = false;
-=======
-<<<<<<< HEAD
 
-          isTyping = false;
-
-=======
           window.chatbotState.isTyping = false;
->>>>>>> 2e291d9b8aafebfdd75ffc8a3f18b1277f1b7429
->>>>>>> Stashed changes
           return;
 
         }
@@ -8379,30 +6705,12 @@
         const requestBody = {
 
           message: message,
-<<<<<<< Updated upstream
+
           imageData: window.chatbotState.imageBase64
         };
 
         console.log('Sending image to AI, image size:', window.chatbotState.imageBase64.length);
-=======
-<<<<<<< HEAD
 
-          imageData: currentImageBase64
-
-        };
-
-
-
-        console.log('Sending image to AI, image size:', currentImageBase64.length);
-=======
-          imageData: window.chatbotState.imageBase64
-        };
-
-        console.log('Sending image to AI, image size:', window.chatbotState.imageBase64.length);
->>>>>>> 2e291d9b8aafebfdd75ffc8a3f18b1277f1b7429
-
-
->>>>>>> Stashed changes
 
         // Call API with image
 
@@ -8477,17 +6785,8 @@
         .finally(() => {
 
           // Add user message with image
-<<<<<<< Updated upstream
-          addChatbotMessage(message, 'user', window.chatbotState.imageBase64);
-=======
-<<<<<<< HEAD
 
-          addChatbotMessage(message, 'user', currentImageBase64);
-
-=======
           addChatbotMessage(message, 'user', window.chatbotState.imageBase64);
->>>>>>> 2e291d9b8aafebfdd75ffc8a3f18b1277f1b7429
->>>>>>> Stashed changes
           
 
           // Clear input and image after sending
@@ -8501,108 +6800,37 @@
           input.disabled = false;
 
           sendBtn.disabled = false;
-<<<<<<< Updated upstream
-          window.chatbotState.isTyping = false;
-=======
-<<<<<<< HEAD
 
-          isTyping = false;
-
-=======
           window.chatbotState.isTyping = false;
->>>>>>> 2e291d9b8aafebfdd75ffc8a3f18b1277f1b7429
->>>>>>> Stashed changes
           input.focus();
 
         });
 
       }
 
-<<<<<<< Updated upstream
-        // Expose sendChatbotMessageWithImage IMMEDIATELY
+      // Expose remaining functions globally BEFORE DOMContentLoaded
+      // (toggleOneshopChatbot, closeOneshopChatbot, refreshChatbot already exposed immediately above)
+      window.hideIntroAndWelcome = hideIntroAndWelcome;
+      window.showWelcomeMessage = showWelcomeMessage;
+      window.sendChatbotMessage = sendChatbotMessage;
       window.sendChatbotMessageWithImage = sendChatbotMessageWithImage;
+      window.sendSuggestedMessage = sendSuggestedMessage;
+      window.handleImageUpload = handleImageUpload;
+      window.removeImagePreview = removeImagePreview;
+      window.hideChatbotBadge = hideChatbotBadge;
+      window.showChatbotBadge = showChatbotBadge;
+      window.showChatbotTypingIndicator = showChatbotTypingIndicator;
+      window.hideChatbotTypingIndicator = hideChatbotTypingIndicator;
+      window.addChatbotMessage = addChatbotMessage;
+      window.displayProducts = displayProducts;
 
       // Flag to ensure we only bind once
       // Enter key support - Single initialization with window flag
       document.addEventListener('DOMContentLoaded', function() {
-=======
-<<<<<<< HEAD
 
-
-      // Update addChatbotMessage to handle images
-
-      const originalAddChatbotMessage = addChatbotMessage;
-
-      addChatbotMessage = function(content, type, imageBase64) {
-
-        originalAddChatbotMessage(content, type);
-
-        
-
-        // If image provided, add it to the last message
-
-        if (imageBase64) {
-
-          const messagesContainer = document.getElementById('chatbotMessages');
-
-          const lastMessage = messagesContainer.lastElementChild;
-
-          if (lastMessage) {
-
-            const bubble = lastMessage.querySelector('.message-bubble');
-
-            if (bubble) {
-
-              const img = document.createElement('img');
-
-              img.src = imageBase64;
-
-              img.style.maxWidth = '200px';
-
-              img.style.maxHeight = '200px';
-
-              img.style.borderRadius = '8px';
-
-              img.style.marginTop = '10px';
-
-              bubble.appendChild(img);
-
-            }
-
-          }
-
-        }
-
-      };
-
-
-
-      // Enter key support
-
-      document.addEventListener('DOMContentLoaded', function() {
-
-=======
-        // Expose sendChatbotMessageWithImage IMMEDIATELY
-      window.sendChatbotMessageWithImage = sendChatbotMessageWithImage;
-
-      // Flag to ensure we only bind once
-      // Enter key support - Single initialization with window flag
-      document.addEventListener('DOMContentLoaded', function() {
->>>>>>> Stashed changes
-        // Check if already initialized
-        if (window.__aiChatbotBound) return;
-        window.__aiChatbotBound = true;
-        
-<<<<<<< Updated upstream
-=======
->>>>>>> 2e291d9b8aafebfdd75ffc8a3f18b1277f1b7429
->>>>>>> Stashed changes
         // Initialize chatbot popup size
+        // initializeChatbotPopup(); // Function not defined yet
 
-        initializeChatbotPopup();
-
-        
-<<<<<<< Updated upstream
         // Reset possible pre-bound listeners by cloning elements
         const __idsToReset = ['aiChatbotMessageInput','aiChatbotSendBtn','aiChatbotUploadBtn','aiChatbotImageInput'];
         __idsToReset.forEach(id => {
@@ -8717,6 +6945,7 @@
             let hasImage = false;
             
             // Check if clipboard contains image
+            // Process each clipboard item
             for (let i = 0; i < items.length; i++) {
               if (items[i].type.indexOf('image') !== -1) {
                 hasImage = true;
@@ -8748,182 +6977,9 @@
                   console.log('Image pasted from clipboard, size:', window.chatbotState.imageBase64.length);
                 };
                 reader.readAsDataURL(blob);
-                
-=======
-<<<<<<< HEAD
-
-        const chatbotInput = document.getElementById('chatbotMessageInput');
-
-        const chatbotBody = document.getElementById('floatingChatbotPopup');
-
-        
-
-        if (chatbotInput) {
-
-          chatbotInput.addEventListener('keypress', function(e) {
-
-            if (e.key === 'Enter' && !e.shiftKey) {
-
-              e.preventDefault();
-
-              sendChatbotMessage();
-
-            }
-
-          });
-
-        }
-
-
-
-        // Click on upload button
-
-        const uploadBtn = document.getElementById('chatbotUploadBtn');
-
-        if (uploadBtn) {
-
-          uploadBtn.addEventListener('click', function() {
-
-            document.getElementById('chatbotImageInput').click();
-
-          });
-
-        }
-
-
-
-        // Drag and drop functionality
-
-        if (chatbotBody) {
-
-          chatbotBody.addEventListener('dragover', function(e) {
-
-            e.preventDefault();
-
-            e.stopPropagation();
-
-            chatbotBody.classList.add('drag-over');
-
-          });
-
-
-
-          chatbotBody.addEventListener('dragleave', function(e) {
-
-            e.preventDefault();
-
-            e.stopPropagation();
-
-            chatbotBody.classList.remove('drag-over');
-
-          });
-
-
-
-          chatbotBody.addEventListener('drop', function(e) {
-
-            e.preventDefault();
-
-            e.stopPropagation();
-
-            chatbotBody.classList.remove('drag-over');
-
-            
-
-            const files = e.dataTransfer.files;
-
-            if (files.length > 0) {
-
-              const file = files[0];
-
-              if (file.type.startsWith('image/')) {
-
-                const reader = new FileReader();
-
-                reader.onload = function(event) {
-
-                  currentImageBase64 = event.target.result;
-
-                  
-
-                  // Show preview
-
-                  const preview = document.getElementById('chatbotImagePreview');
-
-                  const previewImg = document.getElementById('chatbotPreviewImg');
-
-                  if (preview && previewImg) {
-
-                    previewImg.src = currentImageBase64;
-
-                    preview.style.display = 'block';
-
-                  }
-
-                };
-
-                reader.readAsDataURL(file);
-
-              } else {
-
-                alert('Vui lòng kéo thả file hình ảnh');
-
-              }
-
-            }
-
-          });
-
-        }
-
-
-
-        // Paste from clipboard
-
-        if (chatbotInput) {
-
-          chatbotInput.addEventListener('paste', function(e) {
-
-            const items = e.clipboardData.items;
-
-            
-
-=======
-        // Reset possible pre-bound listeners by cloning elements
-        const __idsToReset = ['aiChatbotMessageInput','aiChatbotSendBtn','aiChatbotUploadBtn','aiChatbotImageInput'];
-        __idsToReset.forEach(id => {
-          const el = document.getElementById(id);
-          if (!el || !el.parentNode) return;
-          const fresh = el.cloneNode(true);
-          el.parentNode.replaceChild(fresh, el);
-        });
-
-        // Bind event listeners only once
-        const chatbotInput = document.getElementById('aiChatbotMessageInput');
-        const chatbotBody = document.getElementById('floatingChatbotPopup');
-        const aiChatbotSendBtn = document.getElementById('aiChatbotSendBtn');
-        const uploadBtn = document.getElementById('aiChatbotUploadBtn');
-        const aiImageInput = document.getElementById('aiChatbotImageInput');
-        const chatbotToggleBtn = document.getElementById('oneshopChatbotButton');
-        const refreshBtn = document.querySelector('#floatingChatbotPopup .refresh-btn');
-        const closeBtn = document.querySelector('#floatingChatbotPopup .close-btn');
-
-        // Functions are already exposed globally above (before DOMContentLoaded)
-          
-          if (chatbotInput) {
-            chatbotInput.addEventListener('keydown', function(e) {
-              if (e.key === 'Enter' && !e.shiftKey) {
->>>>>>> Stashed changes
                 e.preventDefault();
-                
-                // Check if there's an image ready to send
-                if (window.chatbotState.imageBase64) {
-                  sendChatbotMessageWithImage();
-                } else {
-                  sendChatbotMessage();
-                }
+                break; // Only process first image
               }
-<<<<<<< Updated upstream
             }
             
             // If image was pasted, prevent default text paste
@@ -8931,190 +6987,8 @@
               e.preventDefault();
             }
           });
-        }
-=======
-            });
-          }
-
-          // Click on send button (no onclick in HTML)
-          if (aiChatbotSendBtn) {
-            aiChatbotSendBtn.addEventListener('click', function() {
-              if (window.chatbotState.imageBase64) {
-                sendChatbotMessageWithImage();
-              } else {
-                sendChatbotMessage();
-              }
-            });
-          }
-
-          // Click on upload button (no onclick in HTML)
-          if (uploadBtn) {
-            uploadBtn.addEventListener('click', function() {
-              document.getElementById('aiChatbotImageInput').click();
-            });
-          }
-
-          // Bind file input change once (avoid inline handler duplication)
-          if (aiImageInput) {
-            aiImageInput.addEventListener('change', handleImageUpload);
-          }
-          
-          // Drag and drop functionality
-          if (chatbotBody) {
-            chatbotBody.addEventListener('dragover', function(e) {
-              e.preventDefault();
-              e.stopPropagation();
-              chatbotBody.classList.add('drag-over');
-            });
-
-            chatbotBody.addEventListener('dragleave', function(e) {
-              e.preventDefault();
-              e.stopPropagation();
-              chatbotBody.classList.remove('drag-over');
-            });
-
-            chatbotBody.addEventListener('drop', function(e) {
-              e.preventDefault();
-              e.stopPropagation();
-              chatbotBody.classList.remove('drag-over');
-              
-              const files = e.dataTransfer.files;
-              if (files.length > 0) {
-                const file = files[0];
-                if (file.type.startsWith('image/')) {
-                  const reader = new FileReader();
-                  reader.onload = function(event) {
-                    window.chatbotState.imageBase64 = event.target.result;
-                    
-                    // Show preview
-                    const preview = document.getElementById('aiChatbotImagePreview');
-                    const previewImg = document.getElementById('aiChatbotPreviewImg');
-                    if (preview && previewImg) {
-                      previewImg.src = window.chatbotState.imageBase64;
-                      preview.style.display = 'block';
-                    }
-                  };
-                  reader.readAsDataURL(file);
-                } else {
-                  alert('Vui lòng kéo thả file hình ảnh');
-                }
-              }
-            });
-          }
-      });
->>>>>>> Stashed changes
-
-      // Paste from clipboard - Global event listener (bind once)
-      if (!window.chatbotPasteBound) {
-        window.chatbotPasteBound = true;
-        document.addEventListener('paste', function(e) {
-          // Only handle paste when chatbot is open
-          if (!window.chatbotState.open) return;
-            
-            const items = e.clipboardData.items;
-            let hasImage = false;
-            
-            // Check if clipboard contains image
->>>>>>> 2e291d9b8aafebfdd75ffc8a3f18b1277f1b7429
-            for (let i = 0; i < items.length; i++) {
-
-              if (items[i].type.indexOf('image') !== -1) {
-<<<<<<< HEAD
-
-=======
-                hasImage = true;
->>>>>>> 2e291d9b8aafebfdd75ffc8a3f18b1277f1b7429
-                const blob = items[i].getAsFile();
-
-                
-<<<<<<< HEAD
-
-=======
-                if (!blob) continue;
-                
-                // Validate file size (max 5MB)
->>>>>>> 2e291d9b8aafebfdd75ffc8a3f18b1277f1b7429
-                if (blob.size > 5 * 1024 * 1024) {
-
-                  alert('Kích thước hình ảnh quá lớn (tối đa 5MB)');
-
-                  return;
-
-                }
-
-                
-
-                const reader = new FileReader();
-
-                reader.onload = function(event) {
-<<<<<<< HEAD
-
-                  currentImageBase64 = event.target.result;
-
-=======
-                  window.chatbotState.imageBase64 = event.target.result;
->>>>>>> 2e291d9b8aafebfdd75ffc8a3f18b1277f1b7429
-                  
-
-                  // Show preview
-<<<<<<< HEAD
-
-                  const preview = document.getElementById('chatbotImagePreview');
-
-                  const previewImg = document.getElementById('chatbotPreviewImg');
-
-                  if (preview && previewImg) {
-
-                    previewImg.src = currentImageBase64;
-
-=======
-                  const preview = document.getElementById('aiChatbotImagePreview');
-                  const previewImg = document.getElementById('aiChatbotPreviewImg');
-                  if (preview && previewImg) {
-                    previewImg.src = window.chatbotState.imageBase64;
->>>>>>> 2e291d9b8aafebfdd75ffc8a3f18b1277f1b7429
-                    preview.style.display = 'block';
-
-                  }
-<<<<<<< HEAD
-
-=======
-                  
-                  // Hide intro when image is pasted
-                  hideIntroAndWelcome();
-                  
-                  console.log('Image pasted from clipboard, size:', window.chatbotState.imageBase64.length);
->>>>>>> 2e291d9b8aafebfdd75ffc8a3f18b1277f1b7429
-                };
-
-                reader.readAsDataURL(blob);
-
-                
-
-                e.preventDefault();
-
-                break;
-
-              }
-
-            }
-<<<<<<< HEAD
-
-=======
-            
-            // If image was pasted, prevent default text paste
-            if (hasImage) {
-              e.preventDefault();
-            }
->>>>>>> 2e291d9b8aafebfdd75ffc8a3f18b1277f1b7429
-          });
 
         }
-<<<<<<< HEAD
-
-      });
-=======
->>>>>>> 2e291d9b8aafebfdd75ffc8a3f18b1277f1b7429
 
 
 
@@ -9154,110 +7028,6 @@
 
       }
 
-<<<<<<< Updated upstream
-    </script>
-    <script>
-      // Mở/đóng popup Chatbot AI (định nghĩa global)
-      window.toggleOneshopChatbot = window.toggleOneshopChatbot || function () {
-        var popup = document.getElementById('floatingChatbotPopup');
-        if (!popup) return;
-
-        var open = getComputedStyle(popup).display === 'none';
-        popup.style.display = open ? 'flex' : 'none';
-
-        // Ẩn floater khác khi mở, và cho phép paste ảnh hoạt động đúng
-        document.body.classList.toggle('chatbot-open', open);
-        window.aiChat = window.aiChat || {};
-        window.aiChat.open = open;
-
-        // Focus ô nhập khi mở
-        if (open) {
-          setTimeout(function () {
-            var input = document.getElementById('aiChatbotMessageInput') 
-                        || document.getElementById('chatbotMessageInput'); // fallback tên cũ nếu có
-            input && input.focus();
-          }, 50);
-        }
-      };
-
-      // Nút X trong header chatbot
-      window.closeOneshopChatbot = window.closeOneshopChatbot || function () {
-        var popup = document.getElementById('floatingChatbotPopup');
-        if (!popup) return;
-        popup.style.display = 'none';
-        document.body.classList.remove('chatbot-open');
-        window.aiChat = window.aiChat || {};
-        window.aiChat.open = false;
-      };
-
-      // Nút refresh (làm sạch khung chat)
-      window.refreshChatbot = window.refreshChatbot || function () {
-        var box = document.getElementById('aiChatbotMessages') || document.getElementById('chatbotMessages');
-        if (box) box.innerHTML = '';
-      };
-=======
-<<<<<<< HEAD
-
-
-      // Wrap original sendChatbotMessage to hide suggested topics
-
-      window.sendChatbotMessageOriginal = sendChatbotMessage;
-
-      window.sendChatbotMessage = function() {
-
-        hideSuggestedTopics();
-
-        if (window.sendChatbotMessageOriginal) {
-
-          window.sendChatbotMessageOriginal();
-
-=======
->>>>>>> Stashed changes
-    </script>
-    <script>
-      // Mở/đóng popup Chatbot AI (định nghĩa global)
-      window.toggleOneshopChatbot = window.toggleOneshopChatbot || function () {
-        var popup = document.getElementById('floatingChatbotPopup');
-        if (!popup) return;
-
-        var open = getComputedStyle(popup).display === 'none';
-        popup.style.display = open ? 'flex' : 'none';
-
-        // Ẩn floater khác khi mở, và cho phép paste ảnh hoạt động đúng
-        document.body.classList.toggle('chatbot-open', open);
-        window.aiChat = window.aiChat || {};
-        window.aiChat.open = open;
-
-        // Focus ô nhập khi mở
-        if (open) {
-          setTimeout(function () {
-            var input = document.getElementById('aiChatbotMessageInput') 
-                        || document.getElementById('chatbotMessageInput'); // fallback tên cũ nếu có
-            input && input.focus();
-          }, 50);
->>>>>>> 2e291d9b8aafebfdd75ffc8a3f18b1277f1b7429
-        }
-
-      };
-
-<<<<<<< HEAD
-=======
-      // Nút X trong header chatbot
-      window.closeOneshopChatbot = window.closeOneshopChatbot || function () {
-        var popup = document.getElementById('floatingChatbotPopup');
-        if (!popup) return;
-        popup.style.display = 'none';
-        document.body.classList.remove('chatbot-open');
-        window.aiChat = window.aiChat || {};
-        window.aiChat.open = false;
-      };
-
-      // Nút refresh (làm sạch khung chat)
-      window.refreshChatbot = window.refreshChatbot || function () {
-        var box = document.getElementById('aiChatbotMessages') || document.getElementById('chatbotMessages');
-        if (box) box.innerHTML = '';
-      };
->>>>>>> 2e291d9b8aafebfdd75ffc8a3f18b1277f1b7429
     </script>
 
   </body>
@@ -9265,10 +7035,5 @@
 </html>
 
 
-<<<<<<< Updated upstream
-=======
-<<<<<<< HEAD
 
-=======
->>>>>>> 2e291d9b8aafebfdd75ffc8a3f18b1277f1b7429
->>>>>>> Stashed changes
+
