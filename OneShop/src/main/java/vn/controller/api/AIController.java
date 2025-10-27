@@ -247,7 +247,28 @@ public class AIController {
                 productMap.put("name", p.getProductName());
                 productMap.put("price", p.getPrice());
                 productMap.put("discount", p.getDiscount() != null ? p.getDiscount() : 0);
-                productMap.put("image", p.getProductImage());
+                
+                // Map product image with proper path
+                // Each product_id will have its corresponding product_image from database
+                String productImage = p.getProductImage();
+                System.out.println("Product ID: " + p.getProductId() + ", Original Image: " + productImage);
+                
+                if (productImage != null && !productImage.isEmpty()) {
+                    // Remove leading slash if exists to avoid double encoding
+                    String cleanImage = productImage.startsWith("/") 
+                        ? productImage.substring(1) 
+                        : productImage;
+                    
+                    System.out.println("Product ID: " + p.getProductId() + ", Clean Image: " + cleanImage);
+                    
+                    // Store the clean image path (without leading /)
+                    productMap.put("image", cleanImage);
+                    productMap.put("imageUrl", cleanImage);
+                } else {
+                    // Fallback to default image if product has no image
+                    productMap.put("image", "/assets/img/examples/product1.jpg");
+                    productMap.put("imageUrl", "/assets/img/examples/product1.jpg");
+                }
                 
                 // Add brand and category for display
                 if (p.getBrand() != null) {
