@@ -1262,6 +1262,11 @@ taglib prefix="c" uri="jakarta.tags.core" %>
                         <span class="sub-item">Quản Lý Khuyến Mãi</span>
                       </a>
                     </li>
+                    <li>
+                      <a href="/admin/blog">
+                        <span class="sub-item">Quản lý Blog</span>
+                      </a>
+                    </li>
                   </ul>
                 </div>
               </li>
