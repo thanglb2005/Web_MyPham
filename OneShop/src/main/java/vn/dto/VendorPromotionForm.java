@@ -5,6 +5,7 @@ import vn.entity.Promotion;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import org.springframework.format.annotation.DateTimeFormat;
 
 public class VendorPromotionForm {
     
@@ -16,15 +17,14 @@ public class VendorPromotionForm {
     private String description;
     
     @NotBlank(message = "Mã khuyến mãi không được để trống")
-    @Size(min = 6, max = 20, message = "Mã khuyến mãi phải có độ dài từ 6-20 ký tự")
-    @Pattern(regexp = "^[A-Z0-9_-]{6,20}$", message = "Mã khuyến mãi chỉ gồm A-Z, 0-9, '-' hoặc '_' và dài 6-20 ký tự")
+    @Size(max = 50, message = "Mã khuyến mãi không được quá 50 ký tự")
     private String promotionCode;
     
     @NotNull(message = "Loại khuyến mãi không được để trống")
     private Promotion.PromotionType promotionType;
     
     @NotNull(message = "Giá trị giảm giá không được để trống")
-    @DecimalMin(value = "0.01", message = "Giá trị giảm giá phải lớn hơn 0")
+    @DecimalMin(value = "0.00", message = "Giá trị giảm giá không được âm")
     @DecimalMax(value = "999999999.99", message = "Giá trị giảm giá quá lớn")
     private BigDecimal discountValue;
     
@@ -44,11 +44,13 @@ public class VendorPromotionForm {
     private Integer usageLimit;
     
     @NotNull(message = "Ngày bắt đầu không được để trống")
-    @Future(message = "Ngày bắt đầu phải là ngày tương lai")
+    @FutureOrPresent(message = "Ngày bắt đầu không được là ngày quá khứ")
+    @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm")
     private LocalDateTime startDate;
     
     @NotNull(message = "Ngày kết thúc không được để trống")
-    @Future(message = "Ngày kết thúc phải là ngày tương lai")
+    @FutureOrPresent(message = "Ngày kết thúc không được là ngày quá khứ")
+    @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm")
     private LocalDateTime endDate;
     
     private Boolean isActive = true;
@@ -166,7 +168,8 @@ public class VendorPromotionForm {
         if (startDate == null || endDate == null) {
             return false;
         }
-        return endDate.isAfter(startDate);
+        // Allow endDate to be the same as startDate
+        return !endDate.isBefore(startDate);
     }
     
     public boolean isValidDiscountAmounts() {
