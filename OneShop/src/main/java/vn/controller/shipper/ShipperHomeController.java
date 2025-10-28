@@ -84,7 +84,7 @@ public class ShipperHomeController {
                              " - Shop: " + (order.getShop() != null ? order.getShop().getShopId() : "null"));
         }
         
-        // Lấy các đơn hàng đang giao và đã giao của shipper này (không bao gồm CONFIRMED)
+        // Lấy các đơn hàng đang giao và đã giao của shipper này 
         List<Order> assignedOrders = allAssignedOrders.stream()
             .filter(order -> order.getStatus() == Order.OrderStatus.SHIPPING || 
                             order.getStatus() == Order.OrderStatus.DELIVERED ||

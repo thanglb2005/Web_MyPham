@@ -125,7 +125,9 @@ public class VendorPromotionController {
     
     // Form tạo khuyến mãi mới
     @GetMapping("/create")
-    public String createPromotionForm(HttpSession session, Model model) {
+    public String createPromotionForm(@RequestParam(required = false) Long shopId,
+                                     HttpSession session, 
+                                     Model model) {
         User vendor = UserUtils.getCurrentUser(session);
         if (vendor == null || !UserUtils.isVendor(vendor)) {
             return "redirect:/login";
@@ -136,11 +138,20 @@ public class VendorPromotionController {
             return "redirect:/vendor/shops";
         }
         
-        Long shopId = shopIds.get(0);
+        // Nếu không có shopId từ param, lấy shop đầu tiên
+        if (shopId == null) {
+            shopId = shopIds.get(0);
+        }
+        
+        // Kiểm tra shop có thuộc vendor không
+        if (!shopIds.contains(shopId)) {
+            return "redirect:/vendor/shops";
+        }
+        
         Shop shop = shopService.findById(shopId).orElse(null);
         
         VendorPromotionForm form = new VendorPromotionForm();
-        form.setStartDate(LocalDateTime.now().plusDays(1));
+        form.setStartDate(LocalDateTime.now());
         form.setEndDate(LocalDateTime.now().plusDays(30));
         form.setUsageLimit(100);
         form.setMinimumOrderAmount(java.math.BigDecimal.valueOf(0));
@@ -148,7 +159,13 @@ public class VendorPromotionController {
         
         model.addAttribute("promotionForm", form);
         model.addAttribute("shop", shop);
-        model.addAttribute("promotionTypes", Promotion.PromotionType.values());
+        model.addAttribute("shopId", shopId);
+        model.addAttribute("promotionTypes", new Promotion.PromotionType[]{
+                Promotion.PromotionType.PERCENTAGE,
+                Promotion.PromotionType.FIXED_AMOUNT,
+                Promotion.PromotionType.FREE_SHIPPING,
+                Promotion.PromotionType.BUY_X_GET_Y
+        });
         
         return "vendor/promotions/form";
     }
@@ -157,6 +174,7 @@ public class VendorPromotionController {
     @PostMapping("/create")
     public String createPromotion(@Valid @ModelAttribute("promotionForm") VendorPromotionForm form,
                                  BindingResult result,
+                                 @RequestParam(required = false) Long shopId,
                                  HttpSession session,
                                  RedirectAttributes redirectAttributes,
                                  Model model) {
@@ -171,7 +189,16 @@ public class VendorPromotionController {
             return "redirect:/vendor/shops";
         }
         
-        Long shopId = shopIds.get(0);
+        // Nếu không có shopId từ param, lấy shop đầu tiên
+        if (shopId == null) {
+            shopId = shopIds.get(0);
+        }
+        
+        // Kiểm tra shop có thuộc vendor không
+        if (!shopIds.contains(shopId)) {
+            return "redirect:/vendor/shops";
+        }
+        
         Shop shop = shopService.findById(shopId).orElse(null);
         
         // Trim và validate promotion code
@@ -182,7 +209,13 @@ public class VendorPromotionController {
         // Validation
         if (result.hasErrors()) {
             model.addAttribute("shop", shop);
-            model.addAttribute("promotionTypes", Promotion.PromotionType.values());
+            model.addAttribute("shopId", shopId);
+            model.addAttribute("promotionTypes", new Promotion.PromotionType[]{
+                    Promotion.PromotionType.PERCENTAGE,
+                    Promotion.PromotionType.FIXED_AMOUNT,
+                    Promotion.PromotionType.FREE_SHIPPING,
+                    Promotion.PromotionType.BUY_X_GET_Y
+            });
             return "vendor/promotions/form";
         }
         
@@ -190,15 +223,41 @@ public class VendorPromotionController {
         if (!promotionService.validatePromotionCodeForShop(shopId, form.getPromotionCode())) {
             result.rejectValue("promotionCode", "error.promotionCode", "Mã khuyến mãi đã tồn tại trong shop này");
             model.addAttribute("shop", shop);
-            model.addAttribute("promotionTypes", Promotion.PromotionType.values());
+            model.addAttribute("shopId", shopId);
+            model.addAttribute("promotionTypes", new Promotion.PromotionType[]{
+                    Promotion.PromotionType.PERCENTAGE,
+                    Promotion.PromotionType.FIXED_AMOUNT,
+                    Promotion.PromotionType.FREE_SHIPPING,
+                    Promotion.PromotionType.BUY_X_GET_Y
+            });
             return "vendor/promotions/form";
         }
         
+        // Kiểm tra mã khuyến mãi trùng lặp toàn hệ thống (tránh lỗi UNIQUE ở DB)
+        if (!promotionService.validatePromotionCode(form.getPromotionCode())) {
+            result.rejectValue("promotionCode", "error.promotionCode", "Mã khuyến mãi đã tồn tại");
+            model.addAttribute("shop", shop);
+            model.addAttribute("shopId", shopId);
+            model.addAttribute("promotionTypes", new Promotion.PromotionType[]{
+                    Promotion.PromotionType.PERCENTAGE,
+                    Promotion.PromotionType.FIXED_AMOUNT,
+                    Promotion.PromotionType.FREE_SHIPPING,
+                    Promotion.PromotionType.BUY_X_GET_Y
+            });
+            return "vendor/promotions/form";
+        }
+
         // Kiểm tra ngày tháng
         if (!form.isValidDateRange()) {
             result.rejectValue("endDate", "error.endDate", "Ngày kết thúc phải sau ngày bắt đầu");
             model.addAttribute("shop", shop);
-            model.addAttribute("promotionTypes", Promotion.PromotionType.values());
+            model.addAttribute("shopId", shopId);
+            model.addAttribute("promotionTypes", new Promotion.PromotionType[]{
+                    Promotion.PromotionType.PERCENTAGE,
+                    Promotion.PromotionType.FIXED_AMOUNT,
+                    Promotion.PromotionType.FREE_SHIPPING,
+                    Promotion.PromotionType.BUY_X_GET_Y
+            });
             return "vendor/promotions/form";
         }
         
@@ -206,23 +265,32 @@ public class VendorPromotionController {
         if (!form.isValidDiscountAmounts()) {
             result.rejectValue("discountValue", "error.discountValue", "Giá trị giảm giá không hợp lệ");
             model.addAttribute("shop", shop);
-            model.addAttribute("promotionTypes", Promotion.PromotionType.values());
+            model.addAttribute("shopId", shopId);
+            model.addAttribute("promotionTypes", new Promotion.PromotionType[]{
+                    Promotion.PromotionType.PERCENTAGE,
+                    Promotion.PromotionType.FIXED_AMOUNT,
+                    Promotion.PromotionType.FREE_SHIPPING,
+                    Promotion.PromotionType.BUY_X_GET_Y
+            });
             return "vendor/promotions/form";
         }
         
         try {
             promotionService.createPromotionForShop(shopId, form, vendor);
             redirectAttributes.addFlashAttribute("success", "Tạo khuyến mãi thành công!");
-            return "redirect:/vendor/promotions";
+            return "redirect:/vendor/promotions?shopId=" + shopId;
         } catch (Exception e) {
+            e.printStackTrace();
+            System.err.println("Error creating promotion: " + e.getMessage());
             redirectAttributes.addFlashAttribute("error", "Có lỗi xảy ra: " + e.getMessage());
-            return "redirect:/vendor/promotions/create";
+            return "redirect:/vendor/promotions/create?shopId=" + shopId;
         }
     }
     
     // Form chỉnh sửa khuyến mãi
     @GetMapping("/edit/{id}")
     public String editPromotionForm(@PathVariable Long id,
+                                   @RequestParam(required = false) Long shopId,
                                    HttpSession session,
                                    Model model) {
         
@@ -236,7 +304,13 @@ public class VendorPromotionController {
             return "redirect:/vendor/shops";
         }
         
-        Long shopId = shopIds.get(0);
+        if (shopId == null) {
+            shopId = shopIds.get(0);
+        }
+        if (!shopIds.contains(shopId)) {
+            return "redirect:/vendor/promotions";
+        }
+
         Optional<Promotion> promotionOpt = promotionService.getPromotionByShopAndId(shopId, id);
         
         if (promotionOpt.isEmpty()) {
@@ -262,7 +336,13 @@ public class VendorPromotionController {
         model.addAttribute("promotionForm", form);
         model.addAttribute("promotion", promotion);
         model.addAttribute("shop", shop);
-        model.addAttribute("promotionTypes", Promotion.PromotionType.values());
+        model.addAttribute("shopId", shopId);
+        model.addAttribute("promotionTypes", new Promotion.PromotionType[]{
+                Promotion.PromotionType.PERCENTAGE,
+                Promotion.PromotionType.FIXED_AMOUNT,
+                Promotion.PromotionType.FREE_SHIPPING,
+                Promotion.PromotionType.BUY_X_GET_Y
+        });
         model.addAttribute("isEdit", true);
         
         return "vendor/promotions/form";
@@ -273,6 +353,7 @@ public class VendorPromotionController {
     public String editPromotion(@PathVariable Long id,
                                @Valid @ModelAttribute("promotionForm") VendorPromotionForm form,
                                BindingResult result,
+                               @RequestParam(required = false) Long shopId,
                                HttpSession session,
                                RedirectAttributes redirectAttributes,
                                Model model) {
@@ -287,7 +368,12 @@ public class VendorPromotionController {
             return "redirect:/vendor/shops";
         }
         
-        Long shopId = shopIds.get(0);
+        if (shopId == null) {
+            shopId = shopIds.get(0);
+        }
+        if (!shopIds.contains(shopId)) {
+            return "redirect:/vendor/promotions";
+        }
         Optional<Promotion> promotionOpt = promotionService.getPromotionByShopAndId(shopId, id);
         
         if (promotionOpt.isEmpty()) {
@@ -307,7 +393,13 @@ public class VendorPromotionController {
         if (result.hasErrors()) {
             model.addAttribute("promotion", promotion);
             model.addAttribute("shop", shop);
-            model.addAttribute("promotionTypes", Promotion.PromotionType.values());
+            model.addAttribute("shopId", shopId);
+            model.addAttribute("promotionTypes", new Promotion.PromotionType[]{
+                    Promotion.PromotionType.PERCENTAGE,
+                    Promotion.PromotionType.FIXED_AMOUNT,
+                    Promotion.PromotionType.FREE_SHIPPING,
+                    Promotion.PromotionType.BUY_X_GET_Y
+            });
             model.addAttribute("isEdit", true);
             return "vendor/promotions/form";
         }
@@ -318,7 +410,13 @@ public class VendorPromotionController {
             result.rejectValue("promotionCode", "error.promotionCode", "Mã khuyến mãi đã tồn tại trong shop này");
             model.addAttribute("promotion", promotion);
             model.addAttribute("shop", shop);
-            model.addAttribute("promotionTypes", Promotion.PromotionType.values());
+            model.addAttribute("shopId", shopId);
+            model.addAttribute("promotionTypes", new Promotion.PromotionType[]{
+                    Promotion.PromotionType.PERCENTAGE,
+                    Promotion.PromotionType.FIXED_AMOUNT,
+                    Promotion.PromotionType.FREE_SHIPPING,
+                    Promotion.PromotionType.BUY_X_GET_Y
+            });
             model.addAttribute("isEdit", true);
             return "vendor/promotions/form";
         }
@@ -328,7 +426,13 @@ public class VendorPromotionController {
             result.rejectValue("endDate", "error.endDate", "Ngày kết thúc phải sau ngày bắt đầu");
             model.addAttribute("promotion", promotion);
             model.addAttribute("shop", shop);
-            model.addAttribute("promotionTypes", Promotion.PromotionType.values());
+            model.addAttribute("shopId", shopId);
+            model.addAttribute("promotionTypes", new Promotion.PromotionType[]{
+                    Promotion.PromotionType.PERCENTAGE,
+                    Promotion.PromotionType.FIXED_AMOUNT,
+                    Promotion.PromotionType.FREE_SHIPPING,
+                    Promotion.PromotionType.BUY_X_GET_Y
+            });
             model.addAttribute("isEdit", true);
             return "vendor/promotions/form";
         }
@@ -338,7 +442,13 @@ public class VendorPromotionController {
             result.rejectValue("discountValue", "error.discountValue", "Giá trị giảm giá không hợp lệ");
             model.addAttribute("promotion", promotion);
             model.addAttribute("shop", shop);
-            model.addAttribute("promotionTypes", Promotion.PromotionType.values());
+            model.addAttribute("shopId", shopId);
+            model.addAttribute("promotionTypes", new Promotion.PromotionType[]{
+                    Promotion.PromotionType.PERCENTAGE,
+                    Promotion.PromotionType.FIXED_AMOUNT,
+                    Promotion.PromotionType.FREE_SHIPPING,
+                    Promotion.PromotionType.BUY_X_GET_Y
+            });
             model.addAttribute("isEdit", true);
             return "vendor/promotions/form";
         }
@@ -346,16 +456,17 @@ public class VendorPromotionController {
         try {
             promotionService.updatePromotionForShop(shopId, id, form, vendor);
             redirectAttributes.addFlashAttribute("success", "Cập nhật khuyến mãi thành công!");
-            return "redirect:/vendor/promotions";
+            return "redirect:/vendor/promotions?shopId=" + shopId;
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Có lỗi xảy ra: " + e.getMessage());
-            return "redirect:/vendor/promotions/edit/" + id;
+            return "redirect:/vendor/promotions/edit/" + id + "?shopId=" + shopId;
         }
     }
     
     // Xóa khuyến mãi
     @PostMapping("/delete/{id}")
     public String deletePromotion(@PathVariable Long id,
+                                 @RequestParam(required = false) Long shopId,
                                  HttpSession session,
                                  RedirectAttributes redirectAttributes) {
         
@@ -369,7 +480,12 @@ public class VendorPromotionController {
             return "redirect:/vendor/shops";
         }
         
-        Long shopId = shopIds.get(0);
+        if (shopId == null) {
+            shopId = shopIds.get(0);
+        }
+        if (!shopIds.contains(shopId)) {
+            return "redirect:/vendor/promotions";
+        }
         
         try {
             promotionService.deletePromotionFromShop(shopId, id);
@@ -378,12 +494,13 @@ public class VendorPromotionController {
             redirectAttributes.addFlashAttribute("error", "Có lỗi xảy ra: " + e.getMessage());
         }
         
-        return "redirect:/vendor/promotions";
+        return "redirect:/vendor/promotions?shopId=" + shopId;
     }
     
     // Toggle trạng thái khuyến mãi
     @PostMapping("/toggle/{id}")
     public String togglePromotionStatus(@PathVariable Long id,
+                                       @RequestParam(required = false) Long shopId,
                                        HttpSession session,
                                        RedirectAttributes redirectAttributes) {
         
@@ -397,7 +514,12 @@ public class VendorPromotionController {
             return "redirect:/vendor/shops";
         }
         
-        Long shopId = shopIds.get(0);
+        if (shopId == null) {
+            shopId = shopIds.get(0);
+        }
+        if (!shopIds.contains(shopId)) {
+            return "redirect:/vendor/promotions";
+        }
         
         try {
             Promotion promotion = promotionService.togglePromotionStatusForShop(shopId, id);
@@ -407,12 +529,13 @@ public class VendorPromotionController {
             redirectAttributes.addFlashAttribute("error", "Có lỗi xảy ra: " + e.getMessage());
         }
         
-        return "redirect:/vendor/promotions";
+        return "redirect:/vendor/promotions?shopId=" + shopId;
     }
     
     // Chi tiết khuyến mãi
     @GetMapping("/detail/{id}")
     public String promotionDetail(@PathVariable Long id,
+                                 @RequestParam(required = false) Long shopId,
                                  HttpSession session,
                                  Model model) {
         
@@ -426,7 +549,12 @@ public class VendorPromotionController {
             return "redirect:/vendor/shops";
         }
         
-        Long shopId = shopIds.get(0);
+        if (shopId == null) {
+            shopId = shopIds.get(0);
+        }
+        if (!shopIds.contains(shopId)) {
+            return "redirect:/vendor/promotions";
+        }
         Optional<Promotion> promotionOpt = promotionService.getPromotionByShopAndId(shopId, id);
         
         if (promotionOpt.isEmpty()) {
@@ -448,6 +576,7 @@ public class VendorPromotionController {
     @PostMapping("/bulk-action")
     public String bulkAction(@RequestParam("action") String action,
                              @RequestParam(value = "ids", required = false) List<Long> ids,
+                             @RequestParam(required = false) Long shopId,
                              HttpSession session,
                              RedirectAttributes redirectAttributes) {
 
@@ -467,7 +596,13 @@ public class VendorPromotionController {
             return "redirect:/vendor/promotions";
         }
 
-        Long shopId = shopIds.get(0);
+        if (shopId == null) {
+            shopId = shopIds.get(0);
+        }
+        if (!shopIds.contains(shopId)) {
+            redirectAttributes.addFlashAttribute("error", "Shop không hợp lệ");
+            return "redirect:/vendor/promotions";
+        }
 
         try {
             switch (action) {
@@ -490,6 +625,6 @@ public class VendorPromotionController {
             redirectAttributes.addFlashAttribute("error", "Có lỗi xảy ra: " + e.getMessage());
         }
 
-        return "redirect:/vendor/promotions";
+        return "redirect:/vendor/promotions?shopId=" + shopId;
     }
 }

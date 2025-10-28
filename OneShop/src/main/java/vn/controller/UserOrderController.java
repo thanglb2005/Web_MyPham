@@ -201,9 +201,35 @@ public class UserOrderController {
 
         List<Object[]> orderDetails = orderDetailRepository.findOrderDetailsByOrderId(orderId);
 
+        // Tính toán phí vận chuyển thực tế (đã trừ shipping voucher)
+        double actualShippingFee = order.getShippingFee() != null ? order.getShippingFee() : 0.0;
+        
+        // Kiểm tra xem có shipping voucher discount trong note không
+        if (order.getNote() != null && order.getNote().contains("Voucher ship:")) {
+            // Parse shipping voucher discount từ note
+            String note = order.getNote();
+            String[] lines = note.split("\n");
+            for (String line : lines) {
+                if (line.contains("Voucher ship:") && line.contains("- Giảm:")) {
+                    try {
+                        // Extract discount amount từ line như "Voucher ship: WEEKEND - Giảm: 30000.0 VNĐ"
+                        String discountPart = line.substring(line.indexOf("- Giảm:") + 8);
+                        String discountStr = discountPart.split(" ")[0]; // Lấy số trước "VNĐ"
+                        double shippingDiscount = Double.parseDouble(discountStr);
+                        actualShippingFee = Math.max(0, actualShippingFee - shippingDiscount);
+                        break;
+                    } catch (Exception e) {
+                        // Nếu parse lỗi, giữ nguyên shipping fee
+                        System.out.println("Error parsing shipping voucher discount: " + e.getMessage());
+                    }
+                }
+            }
+        }
+
         model.addAttribute("user", user);
         model.addAttribute("order", order);
         model.addAttribute("orderDetails", orderDetails);
+        model.addAttribute("actualShippingFee", actualShippingFee);
 
         return "web/order-detail-simple";
     }

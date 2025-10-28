@@ -429,8 +429,9 @@
         <div style="
             background: white;
             width: 90%;
-            max-width: 1000px;
-            height: 80%;
+            max-width: 1200px;
+            height: 95%;
+            max-height: 900px;
             border-radius: 12px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
             display: flex;
@@ -439,14 +440,15 @@
         ">
             <!-- Modal Header -->
             <div style="
-                padding: 20px 24px;
+                padding: 16px 20px;
                 border-bottom: 1px solid #e0e0e0;
                 display: flex;
                 align-items: center;
                 justify-content: space-between;
                 background: #f8f9fa;
+                flex-shrink: 0;
             ">
-                <h4 style="margin: 0; color: #333; font-size: 18px; font-weight: 600;">
+                <h4 style="margin: 0; color: #333; font-size: 17px; font-weight: 600;">
                     <i class="fas fa-map-marker-alt" style="color: #33a3cc; margin-right: 8px;"></i>
                     Chọn vị trí giao hàng
                 </h4>
@@ -465,9 +467,9 @@
             </div>
             
             <!-- Modal Body -->
-            <div style="flex: 1; display: flex; flex-direction: column; padding: 20px;">
+            <div style="flex: 1; display: flex; flex-direction: column; padding: 16px; overflow: hidden; min-height: 0;">
                 <!-- Search Bar -->
-                <div style="margin-bottom: 15px;">
+                <div style="margin-bottom: 12px; flex-shrink: 0;">
                     <div style="position: relative;">
                         <input type="text" id="mapSearchInput" placeholder="Tìm kiếm địa điểm..." style="
                             width: 100%;
@@ -498,34 +500,34 @@
                 </div>
                 
                 <!-- Map Container -->
-                <div style="flex: 1; border: 2px solid #e0e0e0; border-radius: 8px; overflow: hidden;">
+                <div style="border: 2px solid #e0e0e0; border-radius: 8px; overflow: hidden; flex: 1; min-height: 0;">
                     <div id="checkoutMap" style="width: 100%; height: 100%;"></div>
                 </div>
                 
-                <!-- Address Info -->
-                <div style="margin-top: 15px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
-                    <div style="display: flex; align-items: center; margin-bottom: 10px;">
-                        <i class="fas fa-info-circle" style="color: #33a3cc; margin-right: 8px;"></i>
-                        <span style="font-weight: 600; color: #333;">Địa chỉ đã chọn:</span>
+                <!-- Address Info - Scrollable Section -->
+                <div style="margin-top: 12px; padding: 12px; background: #f8f9fa; border-radius: 8px; flex-shrink: 0; max-height: 140px; overflow-y: auto;">
+                    <div style="display: flex; align-items: center; margin-bottom: 8px;">
+                        <i class="fas fa-info-circle" style="color: #33a3cc; margin-right: 8px; font-size: 14px;"></i>
+                        <span style="font-weight: 600; color: #333; font-size: 14px;">Địa chỉ đã chọn:</span>
                     </div>
                     <input type="text" id="selectedAddress" readonly style="
                         width: 100%;
-                        padding: 10px;
+                        padding: 8px 10px;
                         border: 1px solid #ddd;
                         border-radius: 6px;
                         background: white;
-                        font-size: 14px;
+                        font-size: 13px;
                         color: #333;
                     ">
-                    <div style="margin-top: 10px; display: flex; gap: 10px;">
+                    <div style="margin-top: 8px; display: flex; gap: 8px;">
                         <input type="hidden" id="latitude">
                         <input type="hidden" id="longitude">
                         <input type="text" id="specificAddress" placeholder="Số nhà, tên đường cụ thể..." style="
                             flex: 1;
-                            padding: 10px;
+                            padding: 8px 10px;
                             border: 1px solid #ddd;
                             border-radius: 6px;
-                            font-size: 14px;
+                            font-size: 13px;
                         ">
                     </div>
                 </div>
@@ -533,12 +535,13 @@
             
             <!-- Modal Footer -->
             <div style="
-                padding: 20px 24px;
+                padding: 14px 20px;
                 border-top: 1px solid #e0e0e0;
                 display: flex;
                 justify-content: flex-end;
                 gap: 12px;
                 background: #f8f9fa;
+                flex-shrink: 0;
             ">
                 <button type="button" id="cancelLocationBtn" style="
                     padding: 10px 20px;
@@ -1546,9 +1549,9 @@
         <!-- Goong Maps JavaScript -->
         <script>
             // Goong Maps Configuration
-            // API keys từ shoe_shop_web-main (tạm thời)
-            goongjs.accessToken = '4pXmjW7ligFfpjNVlkIx7pvbzKHU3KCkhFRZKRR2'; // Map tiles key
-            const GOONG_API_KEY = 'xaYvtvHWHGQswPol8J4GZX1LFRcC5pCsJmCfOcOU'; // API key for geocoding (không dùng nữa vì đã chuyển sang backend)
+            // API keys từ OneShop project
+            goongjs.accessToken = 'PVRZvPGYSqHHNDX37QkVsiLJmFr8Z2Ph8S4Kh9qZ'; // Map tiles key
+            const GOONG_API_KEY = 'AJTEkRCJMaOxFphKjrCIlE8DrYU3FNiw341JsQU3'; // API key for geocoding (không dùng nữa vì đã chuyển sang backend)
             
             let map;
             let marker;
@@ -1557,27 +1560,13 @@
             function initMap() {
                 console.log('🗺️ Initializing Goong Map...');
                 
-                // Get selected province and commune
-                const selectedProvince = document.getElementById('province').value;
-                const selectedCommune = document.getElementById('commune').value;
+                // Use stored coordinates or default
+                let center = window.selectedCityCoords || [106.6297, 10.8231]; // [lng, lat]
                 
-                // Default center (Ho Chi Minh City)
-                let center = [106.6297, 10.8231]; // [lng, lat]
+                console.log('📍 Using coordinates:', center);
                 
-                // If province and commune are selected, try to geocode
-                if (selectedProvince && selectedCommune) {
-                    const provinceName = document.getElementById('province').options[document.getElementById('province').selectedIndex].textContent;
-                    const communeName = document.getElementById('commune').options[document.getElementById('commune').selectedIndex].textContent;
-                    const address = communeName + ', ' + provinceName + ', Vietnam';
-                    geocodeAddress(address, (result) => {
-                        if (result) {
-                            center = [result.lng, result.lat];
-                        }
-                        createMap(center);
-                    });
-                } else {
-                    createMap(center);
-                }
+                // Create map with selected city coordinates
+                createMap(center);
             }
             
             function createMap(center) {
@@ -1587,7 +1576,7 @@
                         container: 'checkoutMap',
                         style: 'https://tiles.goong.io/assets/goong_map_web.json',
                         center: center,
-                        zoom: 15,
+                        zoom: 13,
                         attributionControl: false
                     });
                     
@@ -1598,6 +1587,10 @@
                     });
                     
                     marker.setLngLat(center).addTo(map);
+                    
+                    // Store initial coordinates
+                    document.getElementById('latitude').value = center[1];
+                    document.getElementById('longitude').value = center[0];
                     
                     // Handle map click
                     map.on('click', (e) => {
@@ -1612,9 +1605,6 @@
                         const lngLat = marker.getLngLat();
                         reverseGeocode(lngLat.lat, lngLat.lng);
                     });
-                    
-                    // Initial reverse geocode
-                    reverseGeocode(center[1], center[0]);
                     
                     console.log('✅ Goong Map initialized successfully!');
                     
@@ -1714,10 +1704,95 @@
                     });
             }
             
+            // Coordinates for 34 provinces/cities in db.json
+            const cityCoordinates = {
+                'hà nội': [105.8342, 21.0278],
+                'cao bằng': [106.2522, 22.6662],
+                'tuyên quang': [105.2280, 21.8237],
+                'điện biên': [103.0165, 21.3833],
+                'lai châu': [103.4702, 22.3864],
+                'sơn la': [103.9138, 21.3256],
+                'lào cai': [103.9707, 22.4809],
+                'thái nguyên': [105.8252, 21.5671],
+                'lạng sơn': [106.7613, 21.8533],
+                'quảng ninh': [107.0784, 20.9509],
+                'bắc ninh': [106.0522, 21.1214],
+                'phú thọ': [105.2045, 21.4208],
+                'hải phòng': [106.6881, 20.8449],
+                'hưng yên': [106.0511, 20.6464],
+                'ninh bình': [105.9745, 20.2506],
+                'thanh hóa': [105.7851, 19.8067],
+                'nghệ an': [105.6836, 18.6792],
+                'hà tĩnh': [105.9019, 18.3419],
+                'quảng trị': [107.1846, 16.7467],
+                'huế': [107.5905, 16.4637],
+                'đà nẵng': [108.2022, 16.0544],
+                'quảng ngãi': [108.8044, 15.1214],
+                'gia lai': [108.0004, 13.8078],
+                'khánh hòa': [109.1967, 12.2585],
+                'đắk lắk': [108.1429, 12.6656],
+                'lâm đồng': [108.4265, 11.9404],
+                'đồng nai': [107.1676, 11.0686],
+                'hồ chí minh': [106.6297, 10.8231],
+                'tây ninh': [106.1111, 11.3351],
+                'đồng tháp': [105.6382, 10.4938],
+                'vĩnh long': [105.9572, 10.2395],
+                'an giang': [105.4258, 10.5215],
+                'cần thơ': [105.7843, 10.0452],
+                'cà mau': [105.1960, 9.1526]
+            };
+            
             // Modal event handlers
             document.getElementById('openMapBtn').addEventListener('click', () => {
                 document.getElementById('mapModal').style.display = 'flex';
-                // Initialize map after a short delay to ensure modal is visible
+                
+                // Get selected province and commune
+                const provinceSelect = document.getElementById('province');
+                const communeSelect = document.getElementById('commune');
+                const provinceName = provinceSelect.options[provinceSelect.selectedIndex]?.textContent || '';
+                const communeName = communeSelect.options[communeSelect.selectedIndex]?.textContent || '';
+                
+                // Build clean display address
+                let displayAddress = '';
+                let searchKey = '';
+                
+                if (communeName && communeName !== '-- Chọn Quận/Huyện/Xã/Phường --') {
+                    const cleanCommune = communeName.replace(/^(Phường|Quận|Huyện|Xã|Thị xã|Thị trấn|Thành phố)\s+/i, '');
+                    displayAddress = cleanCommune;
+                    
+                    if (provinceName && provinceName !== '-- Chọn Tỉnh/Thành phố --') {
+                        const cleanProvince = provinceName.replace(/^(Tỉnh|Thành phố)\s+/i, '');
+                        displayAddress += ', ' + cleanProvince;
+                        searchKey = cleanProvince.toLowerCase();
+                    }
+                } else if (provinceName && provinceName !== '-- Chọn Tỉnh/Thành phố --') {
+                    const cleanProvince = provinceName.replace(/^(Tỉnh|Thành phố)\s+/i, '');
+                    displayAddress = cleanProvince;
+                    searchKey = cleanProvince.toLowerCase();
+                }
+                
+                // Set display address immediately
+                if (displayAddress) {
+                    document.getElementById('selectedAddress').value = displayAddress;
+                    document.getElementById('mapSearchInput').value = displayAddress;
+                    
+                    // Find coordinates for the city
+                    let coords = [106.6297, 10.8231]; // Default HCM
+                    for (let city in cityCoordinates) {
+                        if (searchKey.includes(city)) {
+                            coords = cityCoordinates[city];
+                            break;
+                        }
+                    }
+                    
+                    // Store coordinates
+                    window.selectedCityCoords = coords;
+                } else {
+                    document.getElementById('mapSearchInput').value = '';
+                    window.selectedCityCoords = [106.6297, 10.8231];
+                }
+                
+                // Initialize map after a short delay
                 setTimeout(() => {
                     if (typeof goongjs !== 'undefined') {
                         initMap();
@@ -1729,10 +1804,12 @@
             
             document.getElementById('closeMapModal').addEventListener('click', () => {
                 document.getElementById('mapModal').style.display = 'none';
+                document.getElementById('specificAddress').value = '';
             });
             
             document.getElementById('cancelLocationBtn').addEventListener('click', () => {
                 document.getElementById('mapModal').style.display = 'none';
+                document.getElementById('specificAddress').value = '';
             });
             
             document.getElementById('confirmLocationBtn').addEventListener('click', () => {
@@ -1750,6 +1827,9 @@
                     
                     // Update the main address input
                     document.getElementById('address').value = finalAddress;
+                    
+                    // Clear specific address for next time
+                    document.getElementById('specificAddress').value = '';
                     
                     // Close modal
                     document.getElementById('mapModal').style.display = 'none';
