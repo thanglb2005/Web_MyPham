@@ -1956,3 +1956,13 @@ CREATE INDEX IX_blog_comments_post_id ON dbo.blog_comments(post_id);
 CREATE INDEX IX_blog_views_post_id ON dbo.blog_views(post_id);
 GO
 
+
+UPDATE shops
+SET shop_banner = 'banner_1.jpg,banner_2.jpg,banner_3.jpg'
+WHERE shop_slug = 'my-pham-an-nguyen';
+
+
+UPDATE shops
+SET shop_banner = 'banner_4.jpg,banner_5.jpg,banner_6.jpg'
+WHERE shop_id = 2;
+GO
