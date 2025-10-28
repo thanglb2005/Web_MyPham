@@ -67,7 +67,7 @@
                 <td>
                   <c:choose>
                     <c:when test="${not empty brand.brandImage}">
-                      <img src="/brands/${brand.brandImage}" class="brand-image" alt="Brand Image" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+                      <img src="${fn:startsWith(brand.brandImage, 'http') ? brand.brandImage : '/brands/'.concat(brand.brandImage)}" class="brand-image" alt="Brand Image" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
                       <div class="no-image" style="display:none"><i class="fas fa-image"></i></div>
                     </c:when>
                     <c:otherwise>
@@ -85,6 +85,7 @@
                 <td>
                   <div class="d-flex" style="gap:8px">
                     <form method="post" action="/admin/toggleBrandStatus/${brand.brandId}" style="display:inline">
+                      <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}" />
                       <button type="submit" class="btn btn-sm btn-secondary"><i class="fas fa-toggle-on"></i></button>
                     </form>
                     <button type="button" class="btn btn-sm btn-info" data-id="${brand.brandId}" data-name="${fn:escapeXml(brand.brandName)}" onclick="openEditBrand(this.dataset.id, this.dataset.name)"><i class="fas fa-edit"></i></button>
@@ -130,6 +131,7 @@
         <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
       </div>
       <form id="addBrandForm" method="post" action="/admin/addBrand" enctype="multipart/form-data">
+        <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}" />
         <div class="modal-body">
           <div class="form-group">
             <label for="brandName">Tên thương hiệu <span class="text-danger">*</span></label>
@@ -159,6 +161,7 @@
       </div>
       <form id="editBrandForm" method="post" action="/admin/updateBrand" enctype="multipart/form-data">
         <div class="modal-body">
+          <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}" />
           <input type="hidden" name="brandId" id="editBrandId" />
           <div class="form-group">
             <label for="editBrandName">Tên thương hiệu <span class="text-danger">*</span></label>
@@ -200,6 +203,12 @@ function confirmDeleteBrand(id, name) {
       const form = document.createElement('form');
       form.method = 'POST';
       form.action = '/admin/deleteBrand/' + id;
+      // CSRF token
+      const csrf = document.createElement('input');
+      csrf.type = 'hidden';
+      csrf.name = '${_csrf.parameterName}';
+      csrf.value = '${_csrf.token}';
+      form.appendChild(csrf);
       document.body.appendChild(form);
       form.submit();
     }
