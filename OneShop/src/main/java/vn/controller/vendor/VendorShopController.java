@@ -139,6 +139,7 @@ public class VendorShopController {
                                  BindingResult bindingResult,
                                  @RequestParam(value = "logo", required = false) MultipartFile logoFile,
                                  @RequestParam(value = "banner", required = false) MultipartFile bannerFile,
+                                 @RequestParam(value = "banners", required = false) MultipartFile[] bannerFiles,
                                  HttpSession session,
                                  RedirectAttributes redirectAttributes,
                                  Model model) {
@@ -191,7 +192,20 @@ public class VendorShopController {
                 String logoName = imageStorageService.store(logoFile, form.getShopName() + "-logo");
                 shop.setShopLogo(logoName);
             }
-            if (bannerFile != null && !bannerFile.isEmpty()) {
+            // New: support multi-banner upload (CSV string stored in shopBanner)
+            if (bannerFiles != null && bannerFiles.length > 0) {
+                java.util.List<String> names = new java.util.ArrayList<>();
+                int idx = 1;
+                for (MultipartFile f : bannerFiles) {
+                    if (f != null && !f.isEmpty()) {
+                        String stored = imageStorageService.store(f, form.getShopName() + "-banner-" + (idx++));
+                        names.add(stored);
+                    }
+                }
+                if (!names.isEmpty()) {
+                    shop.setShopBanner(String.join(",", names));
+                }
+            } else if (bannerFile != null && !bannerFile.isEmpty()) {
                 String bannerName = imageStorageService.store(bannerFile, form.getShopName() + "-banner");
                 shop.setShopBanner(bannerName);
             }

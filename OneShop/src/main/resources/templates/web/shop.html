@@ -26,11 +26,105 @@
     <link rel="stylesheet" href="/vendor/niceselect/nice-select.min.css" />
     <link rel="stylesheet" href="/vendor/bootstrap/bootstrap.min.css" />
     <link rel="stylesheet" href="/css/main.css" />
+    <link rel="stylesheet" href="/css/index.css" />
+    <style>
+      .shop-banner-full {
+        margin: 0;
+        padding: 0;
+        display: block;
+        overflow: hidden;
+      }
+
+      @media (max-width: 768px) {
+        .shop-banner-full {
+          min-height: 40vh !important;
+          background-attachment: scroll !important;
+        }
+      }
+
+      /* Shop hero slider overrides for better readability and larger image */
+      .shop-hero-slider .banner-content {
+        color: #1f2937;
+        text-shadow: none;
+      }
+      .shop-hero-slider .banner-content h1 {
+        color: #111827;
+        text-shadow: none;
+      }
+      .shop-hero-slider .banner-content p {
+        color: #4b5563;
+        text-shadow: none;
+      }
+      .shop-hero-slider .banner-btn .btn-inline {
+        background: #007bff;
+        color: #fff;
+        border: none;
+      }
+      .shop-hero-slider .banner-btn .btn-inline:hover {
+        background: #0056b3;
+        color: #fff;
+      }
+      .shop-hero-slider .banner-img img {
+        max-width: 100%;
+        height: auto;
+        max-height: 62vh;
+        object-fit: cover;
+        border-radius: 16px;
+      }
+      .shop-hero-slider .banner-part {
+        min-height: 64vh;
+      }
+    </style>
   </head>
   <body>
     <header th:replace="~{/web/fragments/header :: header}"></header>
 
+    <!-- Shop banners: mimic homepage slider (Slick) -->
+    <th:block
+      th:if="${shop.shopBanner != null and !#strings.isEmpty(shop.shopBanner)}"
+    >
+      <section
+        class="home-index-slider slider-arrow slider-dots shop-hero-slider"
+      >
+        <div
+          class="banner-part"
+          th:each="img : ${#strings.listSplit(shop.shopBanner, ',')}"
+          th:if="${!#strings.isEmpty(#strings.trim(img))}"
+        >
+          <div class="container">
+            <div class="row align-items-center">
+              <div class="col-md-5 col-lg-5 col-text">
+                <div class="banner-content">
+                  <h1 th:text="${shop.shopName}">Tên shop</h1>
+                  <p th:text="${shop.shopDescription}">Mô tả shop</p>
+                  <div class="banner-btn">
+                    <a
+                      class="btn btn-inline"
+                      th:href="@{/shop/{slug}(slug=${shop.shopSlug})}"
+                    >
+                      <i class="fas fa-shopping-basket"></i>
+                      <span>Mua sắm ngay</span>
+                    </a>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-7 col-lg-7 col-image">
+                <div class="banner-img">
+                  <img
+                    th:src="@{'/loadImage?imageName=' + ${#strings.trim(img)} + '&w=1920'}"
+                    alt="Shop banner"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </th:block>
+
+    <!-- Default banner when no shop banner -->
     <section
+      th:if="${shop.shopBanner == null or #strings.isEmpty(shop.shopBanner)}"
       class="inner-section single-banner"
       style="background: url(/images/single-banner.jpg) no-repeat center"
     >
@@ -150,7 +244,11 @@
                       </label>
                     </a>
                   </div>
-                  <span class="shop-widget-number" th:text="'(' + ${brand.productCount} + ')'">(0)</span>
+                  <span
+                    class="shop-widget-number"
+                    th:text="'(' + ${brand.productCount} + ')'"
+                    >(0)</span
+                  >
                 </li>
               </ul>
             </div>
@@ -161,42 +259,66 @@
               <ul class="shop-widget-list">
                 <li>
                   <div class="shop-widget-content">
-                    <a href="javascript:void(0);" class="price-filter" data-min="" data-max="">
+                    <a
+                      href="javascript:void(0);"
+                      class="price-filter"
+                      data-min=""
+                      data-max=""
+                    >
                       <label style="cursor: pointer">Tất cả</label>
                     </a>
                   </div>
                 </li>
                 <li>
                   <div class="shop-widget-content">
-                    <a href="javascript:void(0);" class="price-filter" data-min="0" data-max="100000">
+                    <a
+                      href="javascript:void(0);"
+                      class="price-filter"
+                      data-min="0"
+                      data-max="100000"
+                    >
                       <label style="cursor: pointer">Dưới 100.000đ</label>
                     </a>
                   </div>
                 </li>
                 <li>
                   <div class="shop-widget-content">
-                    <a href="javascript:void(0);" class="price-filter" data-min="100000" data-max="300000">
+                    <a
+                      href="javascript:void(0);"
+                      class="price-filter"
+                      data-min="100000"
+                      data-max="300000"
+                    >
                       <label style="cursor: pointer">100.000đ - 300.000đ</label>
                     </a>
                   </div>
                 </li>
                 <li>
                   <div class="shop-widget-content">
-                    <a href="javascript:void(0);" class="price-filter" data-min="300000" data-max="500000">
+                    <a
+                      href="javascript:void(0);"
+                      class="price-filter"
+                      data-min="300000"
+                      data-max="500000"
+                    >
                       <label style="cursor: pointer">300.000đ - 500.000đ</label>
                     </a>
                   </div>
                 </li>
                 <li>
                   <div class="shop-widget-content">
-                    <a href="javascript:void(0);" class="price-filter" data-min="500000" data-max="">
+                    <a
+                      href="javascript:void(0);"
+                      class="price-filter"
+                      data-min="500000"
+                      data-max=""
+                    >
                       <label style="cursor: pointer">Trên 500.000đ</label>
                     </a>
                   </div>
                 </li>
               </ul>
             </div>
-
 
             <!-- Hot Products Widget -->
             <div class="shop-widget">
@@ -230,16 +352,35 @@
                         [[${item.productName}]]
                       </a>
                     </h6>
-                    <div class="product-rating" th:with="avg=${sidebarAvgMap != null ? sidebarAvgMap[item.productId] : 0}">
-                      <i class="icofont-star" th:classappend="${avg} >= 1 ? ' active' : ''"></i>
-                      <i class="icofont-star" th:classappend="${avg} >= 2 ? ' active' : ''"></i>
-                      <i class="icofont-star" th:classappend="${avg} >= 3 ? ' active' : ''"></i>
-                      <i class="icofont-star" th:classappend="${avg} >= 4 ? ' active' : ''"></i>
-                      <i class="icofont-star" th:classappend="${avg} >= 5 ? ' active' : ''"></i>
+                    <div
+                      class="product-rating"
+                      th:with="avg=${sidebarAvgMap != null ? sidebarAvgMap[item.productId] : 0}"
+                    >
+                      <i
+                        class="icofont-star"
+                        th:classappend="${avg} >= 1 ? ' active' : ''"
+                      ></i>
+                      <i
+                        class="icofont-star"
+                        th:classappend="${avg} >= 2 ? ' active' : ''"
+                      ></i>
+                      <i
+                        class="icofont-star"
+                        th:classappend="${avg} >= 3 ? ' active' : ''"
+                      ></i>
+                      <i
+                        class="icofont-star"
+                        th:classappend="${avg} >= 4 ? ' active' : ''"
+                      ></i>
+                      <i
+                        class="icofont-star"
+                        th:classappend="${avg} >= 5 ? ' active' : ''"
+                      ></i>
                     </div>
                     <h6 class="product-price">
                       <del th:if="${item.discount > 0}">
-                        [[${#numbers.formatDecimal(item.price, 1, 'DEFAULT', 0, 'DEFAULT')}]] đ
+                        [[${#numbers.formatDecimal(item.price, 1, 'DEFAULT', 0,
+                        'DEFAULT')}]] đ
                       </del>
                       <span>
                         [[${#numbers.formatDecimal(item.price * (1 -
@@ -409,13 +550,34 @@
                     </div>
                   </div>
                   <div class="product-content">
-                    <div class="product-rating" th:with="avg=${avgMap != null ? avgMap[item.productId] : 0}">
-                      <i class="icofont-star" th:classappend="${avg} >= 1 ? ' active' : ''"></i>
-                      <i class="icofont-star" th:classappend="${avg} >= 2 ? ' active' : ''"></i>
-                      <i class="icofont-star" th:classappend="${avg} >= 3 ? ' active' : ''"></i>
-                      <i class="icofont-star" th:classappend="${avg} >= 4 ? ' active' : ''"></i>
-                      <i class="icofont-star" th:classappend="${avg} >= 5 ? ' active' : ''"></i>
-                      <a href="javascript:void(0);" th:text="'(' + ${#numbers.formatDecimal(avg, 1, 'DEFAULT', 1, 'DEFAULT')} + ')'"></a>
+                    <div
+                      class="product-rating"
+                      th:with="avg=${avgMap != null ? avgMap[item.productId] : 0}"
+                    >
+                      <i
+                        class="icofont-star"
+                        th:classappend="${avg} >= 1 ? ' active' : ''"
+                      ></i>
+                      <i
+                        class="icofont-star"
+                        th:classappend="${avg} >= 2 ? ' active' : ''"
+                      ></i>
+                      <i
+                        class="icofont-star"
+                        th:classappend="${avg} >= 3 ? ' active' : ''"
+                      ></i>
+                      <i
+                        class="icofont-star"
+                        th:classappend="${avg} >= 4 ? ' active' : ''"
+                      ></i>
+                      <i
+                        class="icofont-star"
+                        th:classappend="${avg} >= 5 ? ' active' : ''"
+                      ></i>
+                      <a
+                        href="javascript:void(0);"
+                        th:text="'(' + ${#numbers.formatDecimal(avg, 1, 'DEFAULT', 1, 'DEFAULT')} + ')'"
+                      ></a>
                     </div>
                     <h6 class="product-name">
                       <a th:href="@{/productDetail(id=${item.productId})}"
@@ -533,7 +695,6 @@
           window.location.href = currentUrl.toString();
         });
 
-
         // Price range filters -> update URL minPrice/maxPrice
         $(document).on("click", ".price-filter", function (e) {
           e.preventDefault();
@@ -571,7 +732,10 @@
             if (String(min ?? "") === aMin && String(max ?? "") === aMax) {
               $a.find("label").css({ "font-weight": "600", color: "#0d6efd" });
             } else {
-              $a.find("label").css({ "font-weight": "normal", color: "#212529" });
+              $a.find("label").css({
+                "font-weight": "normal",
+                color: "#212529",
+              });
             }
           });
         })();
@@ -604,12 +768,20 @@
         const shopId = document.getElementById("shopSelector").value;
         const selectEl = document.getElementById("shopSelector");
         const selectedOption = selectEl.options[selectEl.selectedIndex];
-        const selectedSlug = selectedOption ? selectedOption.getAttribute("data-slug") : null;
+        const selectedSlug = selectedOption
+          ? selectedOption.getAttribute("data-slug")
+          : null;
         const currentUrl = new URL(window.location.href);
         const path = currentUrl.pathname || "";
 
         // Preserve common query params when navigating
-        const keepParams = ["size", "sort", "minPrice", "maxPrice", "categoryId"];
+        const keepParams = [
+          "size",
+          "sort",
+          "minPrice",
+          "maxPrice",
+          "categoryId",
+        ];
         const preserved = new URLSearchParams();
         keepParams.forEach((k) => {
           const v = currentUrl.searchParams.get(k);
@@ -622,7 +794,9 @@
         if (path.startsWith("/shop/")) {
           // On shop page: navigate by slug; blank -> back to /products
           if (shopId && selectedSlug) {
-            const next = new URL(window.location.origin + "/shop/" + selectedSlug);
+            const next = new URL(
+              window.location.origin + "/shop/" + selectedSlug
+            );
             next.search = preserved.toString();
             window.location.href = next.toString();
           } else {

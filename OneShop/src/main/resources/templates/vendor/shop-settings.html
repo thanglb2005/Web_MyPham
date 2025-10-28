@@ -180,26 +180,43 @@
           </div>
 
           <div class="col-md-6">
-            <label class="form-label" for="banner">Cập nhật banner</label>
+            <label class="form-label" for="banners"
+              >Cập nhật banner (chọn nhiều)</label
+            >
             <input
-              id="banner"
+              id="banners"
               type="file"
               class="form-control"
-              name="banner"
+              name="banners"
               accept="image/*"
+              multiple
             />
           </div>
-
-          <div class="col-md-6" th:if="${shop.shopBanner != null}">
+          <div class="col-md-6">
             <label class="form-label">Banner hiện tại</label>
             <div>
-              <img
-                class="banner-preview"
-                th:src="@{'/loadImage?imageName=' + ${shop.shopBanner}}"
-                alt="Banner shop"
-              />
+              <div
+                th:if="${shop.shopBanner != null and !#strings.isEmpty(shop.shopBanner)}"
+              >
+                <div class="d-flex flex-wrap gap-2">
+                  <img
+                    th:each="img : ${#strings.listSplit(shop.shopBanner, ',')}"
+                    th:if="${!#strings.isEmpty(#strings.trim(img))}"
+                    th:src="@{'/loadImage?imageName=' + ${#strings.trim(img)} + '&w=400'}"
+                    class="banner-preview mb-2"
+                    alt="Banner"
+                  />
+                </div>
+              </div>
+              <div
+                th:if="${shop.shopBanner == null or #strings.isEmpty(shop.shopBanner)}"
+                class="text-muted"
+              >
+                Chưa có banner
+              </div>
             </div>
           </div>
+
           <div class="col-md-6">
             <label class="form-label" for="preparationDays"
               >Thời gian chuẩn bị (ngày) *</label
@@ -256,6 +273,8 @@
           });
         }
       })();
+
+      // (Đã gỡ module quản lý banner riêng; dùng input nhiều file trong form chính)
 
       // Phone number validation for Vietnam
       document.addEventListener("DOMContentLoaded", function () {
