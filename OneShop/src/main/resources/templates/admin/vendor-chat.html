@@ -1972,6 +1972,39 @@
           }
         });
 
+        // Quick reply buttons: send predefined messages immediately
+        window.sendQuickReply = function (message) {
+          try {
+            const text = String(message || "").trim();
+            if (!text) return;
+            if (!currentRoom) {
+              alert("Vui lòng chọn phòng chat trước.");
+              return;
+            }
+            if (stompClient && stompClient.connected) {
+              stompClient.send(
+                "/app/chat.send",
+                {},
+                JSON.stringify({
+                  roomId: currentRoom,
+                  messageContent: text,
+                  messageType: "TEXT",
+                  userType: isCskh || isAdmin ? "cskh" : "vendor",
+                  senderName: vendorName,
+                })
+              );
+            } else {
+              // Fallback: fill input and trigger submit (in case reconnecting)
+              const inp = document.getElementById("messageInput");
+              if (inp) inp.value = text;
+              const form = document.getElementById("chatForm");
+              if (form) form.dispatchEvent(new Event("submit"));
+            }
+          } catch (e) {
+            console.warn("sendQuickReply failed", e);
+          }
+        };
+
         // Image upload
         (function () {
           const btn = document.getElementById("imageButton");

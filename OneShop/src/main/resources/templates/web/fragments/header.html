@@ -1965,6 +1965,7 @@
 
         /* Scope .message for chat popup only, not chatbot AI */
         #floatingChatButton ~ #floatingChatPopup .message,
+        #chatPopup .message,
         .chat-container .message {
           margin-bottom: 20px;
           display: flex;
@@ -1982,11 +1983,13 @@
 
         /* Scope .message.sent/.received for chat popup only */
         #floatingChatButton ~ #floatingChatPopup .message.sent,
+        #chatPopup .message.sent,
         .chat-container .message.sent {
           justify-content: flex-end;
         }
 
         #floatingChatButton ~ #floatingChatPopup .message.received,
+        #chatPopup .message.received,
         .chat-container .message.received {
           justify-content: flex-start;
         }
@@ -1995,6 +1998,7 @@
 
         /* Scope .message-bubble for chat popup only */
         #floatingChatButton ~ #floatingChatPopup .message-bubble,
+        #chatPopup .message-bubble,
         .chat-container .message-bubble {
           max-width: 70%;
           padding: 15px 20px;
@@ -2007,6 +2011,7 @@
         }
 
         #floatingChatButton ~ #floatingChatPopup .message.sent .message-bubble,
+        #chatPopup .message.sent .message-bubble,
         .chat-container .message.sent .message-bubble {
           background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
           color: white;
@@ -2015,6 +2020,7 @@
         }
 
         #floatingChatButton ~ #floatingChatPopup .message.received .message-bubble,
+        #chatPopup .message.received .message-bubble,
         .chat-container .message.received .message-bubble {
           background: #ffffff;
           color: #1e293b;
@@ -2026,9 +2032,9 @@
 
 
         .message-text {
-
           margin-bottom: 5px;
-
+          white-space: pre-wrap; /* Keep line breaks */
+          color: inherit;       /* Inherit bubble color */
         }
 
 
@@ -3422,7 +3428,7 @@
 
             messageContent = `
 
-              <div class="message-text">${content}</div>
+              <div class="message-text">${escapeHtml(content)}</div>
 
               <div class="message-time">${time}</div>
 
@@ -3688,7 +3694,7 @@
 
               messageContent = `
 
-                <div class="message-text">${content}</div>
+                <div class="message-text">${escapeHtml(content)}</div>
 
                 <div class="message-time">${time}</div>
 
@@ -3970,6 +3976,13 @@
 
           return date.toLocaleDateString("vi-VN");
 
+        }
+
+        // Escape HTML to prevent XSS and ensure plain text renders correctly
+        function escapeHtml(text) {
+          const div = document.createElement('div');
+          div.textContent = text == null ? '' : String(text);
+          return div.innerHTML;
         }
 
 

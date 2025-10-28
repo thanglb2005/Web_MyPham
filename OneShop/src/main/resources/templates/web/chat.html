@@ -1274,7 +1274,11 @@
             Xóa lịch sử
           </button>
 
-          <a href="javascript:void(0);" onclick="jwtAuth.logout()" class="btn btn-outline-danger btn-sm">
+          <a
+            href="javascript:void(0);"
+            onclick="jwtAuth.logout()"
+            class="btn btn-outline-danger btn-sm"
+          >
             <i class="fas fa-sign-out-alt"></i>
 
             &#272;&#258;NG XU&#7844;T
@@ -1744,16 +1748,21 @@
               minute: "2-digit",
             });
 
-            const isImage = (msg.messageType || "").toUpperCase() === "IMAGE";
+            const type = (msg.messageType || msg.type || "").toUpperCase();
+            const isImage = type === "IMAGE";
+            const rawContent =
+              msg.messageContent || msg.content || msg.message || "";
 
             const contentHtml = isImage
-              ? `<a href="${msg.messageContent}" target="_blank"><img src="${msg.messageContent}" style="max-width:240px;border-radius:8px"/></a>`
+              ? `<a href="${rawContent}" target="_blank"><img src="${rawContent}" style="max-width:240px;border-radius:8px"/></a>`
               : `${
-                  !isMe ? `<div class="message-sender">${msg.sender}</div>` : ""
+                  !isMe
+                    ? `<div class=\"message-sender\">${msg.sender}</div>`
+                    : ""
                 }
 
-                 <div class="message-content">${escapeHtml(
-                   msg.messageContent || ""
+                 <div class=\"message-content\">${escapeHtml(
+                   rawContent
                  )}</div>`;
 
             messageEl.innerHTML = `
