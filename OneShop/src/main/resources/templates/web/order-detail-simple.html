@@ -319,7 +319,7 @@
                     </div>
                     <div class="summary-row">
                         <span>Phí vận chuyển:</span>
-                        <span th:text="${order?.shippingFee != null and order.shippingFee > 0 ? #numbers.formatDecimal(order.shippingFee, 1, 'DEFAULT', 0, 'DEFAULT') + ' ₫' : '0 ₫'}">0 ₫</span>
+                        <span th:text="${actualShippingFee != null and actualShippingFee > 0 ? #numbers.formatDecimal(actualShippingFee, 1, 'DEFAULT', 0, 'DEFAULT') + ' ₫' : '0 ₫'}">0 ₫</span>
                     </div>
                     <div class="summary-row total">
                         <span>Tổng cộng:</span>
@@ -381,7 +381,7 @@
                 }
             });
             
-            // Lấy giảm giá và phí vận chuyển
+            // Lấy giảm giá và phí vận chuyển thực tế
             const discountElement = document.querySelector('.summary-row:nth-child(2) span:last-child');
             const shippingElement = document.querySelector('.summary-row:nth-child(3) span:last-child');
             
@@ -400,7 +400,7 @@
                 if (isNaN(shipping)) shipping = 0;
             }
             
-            // Tính tổng cộng: Tiền hàng - Giảm giá + Phí vận chuyển
+            // Tính tổng cộng: Tiền hàng - Giảm giá + Phí vận chuyển (đã trừ shipping voucher)
             const total = subtotal - discount + shipping;
             
             // Cập nhật tiền hàng
