@@ -35,6 +35,9 @@ public class AdminShopController {
 
     @GetMapping
     public String listShops(@RequestParam(value = "status", required = false) Shop.ShopStatus status,
+                            @RequestParam(value = "q", required = false) String query,
+                            @RequestParam(value = "page", defaultValue = "0") int page,
+                            @RequestParam(value = "size", defaultValue = "10") int size,
                             HttpSession session,
                             Model model) {
         User user = (User) session.getAttribute("user");
@@ -47,6 +50,17 @@ public class AdminShopController {
             shops = shopService.findByStatus(status);
         } else {
             shops = shopService.findAll();
+        }
+
+        // Search filter: restrict to shop name only
+        if (query != null && !query.trim().isEmpty()) {
+            final String q = query.trim().toLowerCase();
+            shops = shops.stream()
+                    .filter(s -> {
+                        try { return s.getShopName() != null && s.getShopName().toLowerCase().contains(q); }
+                        catch (Exception ignored) { return false; }
+                    })
+                    .toList();
         }
 
         // Sync revenue: use delivered orders only for consistency across views
@@ -64,10 +78,29 @@ public class AdminShopController {
         long rejectedShops = shopService.findByStatus(Shop.ShopStatus.REJECTED).size();
 
         model.addAttribute("user", user);
-        model.addAttribute("shops", shops);
+        // Pagination
+        if (size <= 0) size = 10;
+        int totalItems = shops.size();
+        int totalPages = (int) Math.ceil((double) totalItems / size);
+        if (page < 0) page = 0;
+        if (page >= totalPages && totalPages > 0) page = totalPages - 1;
+        int startIndex = page * size;
+        int endIndex = Math.min(startIndex + size, totalItems);
+        List<Shop> paginated = shops.subList(Math.min(startIndex, totalItems), Math.min(endIndex, totalItems));
+
+        model.addAttribute("shops", paginated);
         model.addAttribute("selectedStatus", Optional.ofNullable(status).map(Enum::name).orElse("ALL"));
         model.addAttribute("statuses", Arrays.asList(Shop.ShopStatus.values()));
         model.addAttribute("pageTitle", "Quản lý shop");
+        model.addAttribute("searchTerm", query);
+        model.addAttribute("currentPage", page);
+        model.addAttribute("currentSize", size);
+        model.addAttribute("totalPages", totalPages);
+        model.addAttribute("totalItems", totalItems);
+        model.addAttribute("hasPrev", page > 0);
+        model.addAttribute("hasNext", page < totalPages - 1);
+        model.addAttribute("startIndex", Math.min(startIndex + 1, totalItems));
+        model.addAttribute("endIndex", endIndex);
         
         // Add statistics
         model.addAttribute("totalShops", totalShops);
