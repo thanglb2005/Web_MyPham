@@ -52,6 +52,18 @@
                          style="background-color: #fff3cd; border-color: #ffeaa7; color: #856404; padding: 15px; border-radius: 5px; margin-bottom: 20px;">
                         <strong>Chú ý:</strong> Vui lòng chọn ít nhất một sản phẩm để thanh toán!
                     </div>
+                    
+                    <!-- Error message from flash attributes -->
+                    <div class="alert alert-danger" th:if="${error != null}" 
+                         style="background-color: #f8d7da; border-color: #f5c6cb; color: #721c24; padding: 15px; border-radius: 5px; margin-bottom: 20px;">
+                        <strong>Lỗi:</strong> <span th:text="${error}"></span>
+                    </div>
+                    
+                    <!-- Success message from flash attributes -->
+                    <div class="alert alert-success" th:if="${success != null}" 
+                         style="background-color: #d4edda; border-color: #c3e6cb; color: #155724; padding: 15px; border-radius: 5px; margin-bottom: 20px;">
+                        <strong>Thành công:</strong> <span th:text="${success}"></span>
+                    </div>
                 </div>
                 <div class="col-lg-12">
                     <div class="cart-header-row" style="background: #fff; padding: 12px 16px; border-radius: 8px; margin-bottom: 12px; border: 1px solid #e5e5e5; box-shadow: 0 1px 2px rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: space-between;">
@@ -145,9 +157,9 @@
                                                     <div class="quantity-controls" style="display: inline-flex; align-items: center; border: 1px solid #e5e5e5; border-radius: 4px;">
                                                         <button type="button" class="quantity-btn minus" onclick="changeQuantity(this, -1)" 
                                                                 style="width: 28px; height: 32px; border: none; background: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #757575; border-radius: 4px 0 0 4px;">-</button>
-                                                        <input type="number" name="quantity" th:value="${item.quantity}" min="1" class="quantity-input" 
+                                                        <input type="number" name="quantity" th:value="${item.quantity}" min="1" th:max="${item.product.quantity}" class="quantity-input" 
                                                                style="width: 45px; height: 32px; text-align: center; border: none; border-left: 1px solid #e5e5e5; border-right: 1px solid #e5e5e5; font-size: 14px; font-weight: 500; -moz-appearance: textfield; -webkit-appearance: none; appearance: none;"
-                                                               onchange="this.form.submit()">
+                                                               onchange="validateQuantity(this)" title="Tối đa: [[${item.product.quantity}]] sản phẩm">
                                                         <button type="button" class="quantity-btn plus" onclick="changeQuantity(this, 1)" 
                                                                 style="width: 28px; height: 32px; border: none; background: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #757575; border-radius: 0 4px 4px 0;">+</button>
                                                     </div>
@@ -334,14 +346,36 @@
         function changeQuantity(button, change) {
             const form = button.closest('.quantity-form');
             const input = form.querySelector('.quantity-input');
+            const maxQuantity = parseInt(input.getAttribute('max'));
             let newQuantity = parseInt(input.value) + change;
             
             if (newQuantity < 1) {
                 newQuantity = 1;
             }
             
+            if (newQuantity > maxQuantity) {
+                alert('Số lượng không được vượt quá tồn kho (' + maxQuantity + ')');
+                newQuantity = maxQuantity;
+            }
+            
             input.value = newQuantity;
             form.submit();
+        }
+        
+        function validateQuantity(input) {
+            const maxQuantity = parseInt(input.getAttribute('max'));
+            const quantity = parseInt(input.value);
+            
+            if (quantity > maxQuantity) {
+                alert('Số lượng không được vượt quá tồn kho (' + maxQuantity + ')');
+                input.value = maxQuantity;
+            }
+            
+            if (quantity < 1) {
+                input.value = 1;
+            }
+            
+            input.closest('form').submit();
         }
 
         function showConfigModalDialog(id, name) {

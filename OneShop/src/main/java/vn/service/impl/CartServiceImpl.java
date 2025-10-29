@@ -32,11 +32,26 @@ public class CartServiceImpl implements CartService {
     
     @Override
     public CartItemEntity addToCart(User user, Product product, Integer quantity) {
+        // Validate quantity against stock
+        if (quantity <= 0) {
+            throw new IllegalArgumentException("Số lượng phải lớn hơn 0");
+        }
+        if (quantity > product.getQuantity()) {
+            throw new IllegalArgumentException("Số lượng không được vượt quá tồn kho (" + product.getQuantity() + ")");
+        }
+        
         Optional<CartItemEntity> existingItem = cartItemRepository.findByUserAndProduct(user, product);
         
         if (existingItem.isPresent()) {
             CartItemEntity item = existingItem.get();
-            item.setQuantity(item.getQuantity() + quantity);
+            int newQuantity = item.getQuantity() + quantity;
+            
+            // Validate total quantity against stock
+            if (newQuantity > product.getQuantity()) {
+                throw new IllegalArgumentException("Tổng số lượng không được vượt quá tồn kho (" + product.getQuantity() + ")");
+            }
+            
+            item.setQuantity(newQuantity);
             return cartItemRepository.save(item);
         } else {
             CartItemEntity newItem = new CartItemEntity();
@@ -54,6 +69,11 @@ public class CartServiceImpl implements CartService {
     
     @Override
     public CartItemEntity updateCartItemQuantity(User user, Product product, Integer quantity) {
+        // Validate quantity against stock
+        if (quantity > product.getQuantity()) {
+            throw new IllegalArgumentException("Số lượng không được vượt quá tồn kho (" + product.getQuantity() + ")");
+        }
+        
         Optional<CartItemEntity> existingItem = cartItemRepository.findByUserAndProduct(user, product);
         
         if (existingItem.isPresent()) {

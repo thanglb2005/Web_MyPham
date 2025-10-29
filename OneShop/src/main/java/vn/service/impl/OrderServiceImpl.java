@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import vn.entity.CartItem;
 import vn.entity.Order;
 import vn.entity.OrderDetail;
+import vn.entity.Product;
 import vn.entity.Shop;
 import vn.entity.User;
 import vn.repository.OrderDetailRepository;
@@ -15,6 +16,7 @@ import vn.repository.OrderRepository;
 import vn.repository.ProductRepository;
 import vn.service.OrderService;
 import vn.service.OneXuService;
+import vn.service.ProductService;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -38,6 +40,9 @@ public class OrderServiceImpl implements OrderService {
     
     @Autowired
     private OneXuService oneXuService;
+    
+    @Autowired
+    private ProductService productService;
 
     @Override
     @Transactional
@@ -261,6 +266,33 @@ public class OrderServiceImpl implements OrderService {
             throw new IllegalStateException("Chỉ có thể xác nhận đơn hàng ở trạng thái 'Chờ xác nhận'.");
         }
 
+        // Validate stock availability before confirming
+        if (order.getOrderDetails() != null && !order.getOrderDetails().isEmpty()) {
+            for (OrderDetail orderDetail : order.getOrderDetails()) {
+                Product product = orderDetail.getProduct();
+                if (product.getQuantity() < orderDetail.getQuantity()) {
+                    throw new IllegalStateException(
+                        "Sản phẩm '" + product.getProductName() + "' không đủ tồn kho. " +
+                        "Cần: " + orderDetail.getQuantity() + ", Có: " + product.getQuantity()
+                    );
+                }
+            }
+        }
+
+        // Deduct stock for each order detail
+        if (order.getOrderDetails() != null && !order.getOrderDetails().isEmpty()) {
+            for (OrderDetail orderDetail : order.getOrderDetails()) {
+                Product product = orderDetail.getProduct();
+                int oldQuantity = product.getQuantity();
+                int newQuantity = product.getQuantity() - orderDetail.getQuantity();
+                product.setQuantity(newQuantity);
+                productService.save(product);
+                System.out.println("Deducted " + orderDetail.getQuantity() + " units of product '" + 
+                    product.getProductName() + "' (ID: " + product.getProductId() + ") from stock. " +
+                    "Old stock: " + oldQuantity + ", New stock: " + newQuantity);
+            }
+        }
+
         order.setStatus(Order.OrderStatus.CONFIRMED);
         orderRepository.save(order);
     }
@@ -276,9 +308,22 @@ public class OrderServiceImpl implements OrderService {
             throw new IllegalStateException("Bạn không có quyền hủy đơn hàng này.");
         }
 
-        // Business Logic Check: Only PENDING orders can be cancelled by vendor
-        if (order.getStatus() != Order.OrderStatus.PENDING) {
-            throw new IllegalStateException("Chỉ có thể hủy đơn hàng khi ở trạng thái 'Chờ xác nhận'.");
+        // Business Logic Check: Only PENDING or CONFIRMED orders can be cancelled by vendor
+        if (order.getStatus() != Order.OrderStatus.PENDING && order.getStatus() != Order.OrderStatus.CONFIRMED) {
+            throw new IllegalStateException("Chỉ có thể hủy đơn hàng khi ở trạng thái 'Chờ xác nhận' hoặc 'Đã xác nhận'.");
+        }
+
+        // Restore stock for each order detail (always restore when cancelling)
+        if (order.getOrderDetails() != null && !order.getOrderDetails().isEmpty()) {
+            for (OrderDetail orderDetail : order.getOrderDetails()) {
+                Product product = orderDetail.getProduct();
+                int newQuantity = product.getQuantity() + orderDetail.getQuantity();
+                product.setQuantity(newQuantity);
+                productService.save(product);
+                System.out.println("Restored " + orderDetail.getQuantity() + " units of product '" + 
+                    product.getProductName() + "' (ID: " + product.getProductId() + ") to stock. " +
+                    "New stock: " + newQuantity);
+            }
         }
 
         order.setStatus(Order.OrderStatus.CANCELLED);

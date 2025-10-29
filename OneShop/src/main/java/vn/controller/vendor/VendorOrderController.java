@@ -453,7 +453,7 @@ public class VendorOrderController {
      */
     @PostMapping("/{orderId}/cancel")
     public String cancelOrder(@PathVariable Long orderId, 
-                             @RequestParam String reason,
+                             @RequestParam(value = "reason", defaultValue = "Hủy bởi người bán") String reason,
                              HttpSession session, RedirectAttributes redirectAttributes) {
         User vendor = ensureVendor(session);
         if (vendor == null) {

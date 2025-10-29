@@ -300,10 +300,10 @@
                       <div
                         class="d-flex justify-content-end align-items-center gap-2"
                       >
-                        <!-- Các nút hành động chỉ hiển thị khi trạng thái là PENDING -->
-                        <div th:if="${order.status.name() == 'PENDING'}">
+                        <!-- Các nút hành động chỉ hiển thị khi trạng thái là PENDING hoặc CONFIRMED -->
+                        <div th:if="${order.status.name() == 'PENDING' or order.status.name() == 'CONFIRMED'}">
                           <!-- Express orders: open modal to select shipper -->
-                          <div th:if="${order.deliveryType != null && order.deliveryType.name() == 'EXPRESS'}">
+                          <div th:if="${order.deliveryType != null && order.deliveryType.name() == 'EXPRESS' && order.status.name() == 'PENDING'}">
                             <button
                               type="button"
                               class="btn btn-sm btn-success btn-confirm-express"
@@ -316,7 +316,7 @@
                           </div>
                           
                           <!-- Standard orders: open modal to select shipping provider -->
-                          <div th:if="${order.deliveryType == null || order.deliveryType.name() != 'EXPRESS'}">
+                          <div th:if="${(order.deliveryType == null || order.deliveryType.name() != 'EXPRESS') && order.status.name() == 'PENDING'}">
                             <button
                               type="button"
                               class="btn btn-sm btn-success btn-confirm-standard"

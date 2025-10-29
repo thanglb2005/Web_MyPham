@@ -443,20 +443,13 @@
                                 <i class="fas fa-check me-2"></i>Confirm order
                             </button>
                         </form>
-                        <form th:if="${order.status == T(vn.entity.Order.OrderStatus).PENDING}"
+                        <form th:if="${order.status == T(vn.entity.Order.OrderStatus).PENDING or order.status == T(vn.entity.Order.OrderStatus).CONFIRMED}"
                               th:action="@{/vendor/orders/{id}/cancel(id=${order.orderId})}"
                               method="post">
                             <button class="btn btn-outline-danger" type="submit">
                                 <i class="fas fa-times me-2"></i>Cancel order
                             </button>
                         </form>
-                        <button type="button"
-                                class="btn btn-outline-secondary"
-                                data-bs-toggle="modal"
-                                data-bs-target="#cancelModal"
-                                th:if="${order.status == T(vn.entity.Order.OrderStatus).CONFIRMED}">
-                            <i class="fas fa-times-circle me-2"></i>Cancel order
-                        </button>
                         <!-- Standard orders: Mark delivered/failed buttons for CONFIRMED or SHIPPING status -->
                         <!-- Only show for STANDARD delivery orders -->
                         <div th:if="${order.deliveryType != null && order.deliveryType.name() == 'STANDARD' && 

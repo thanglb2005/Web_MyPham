@@ -74,6 +74,8 @@ public class CartController {
             try {
                 cartService.addToCart(user, product, quantity);
                 redirectAttributes.addFlashAttribute("success", "Đã thêm sản phẩm vào giỏ hàng.");
+            } catch (IllegalArgumentException e) {
+                redirectAttributes.addFlashAttribute("error", e.getMessage());
             } catch (Exception e) {
                 redirectAttributes.addFlashAttribute("error", "Có lỗi xảy ra khi thêm sản phẩm vào giỏ hàng.");
             }
@@ -188,7 +190,8 @@ public class CartController {
     @PostMapping("/cart/update")
     public String updateQuantity(@RequestParam("productId") Long productId,
                                  @RequestParam("quantity") Integer quantity,
-                                 HttpServletRequest request) {
+                                 HttpServletRequest request,
+                                 RedirectAttributes redirectAttributes) {
 
         User user = (User) request.getSession().getAttribute("user");
         if (user == null) {
@@ -197,7 +200,11 @@ public class CartController {
 
         Product product = productService.findById(productId).orElse(null);
         if (product != null) {
-            cartService.updateCartItemQuantity(user, product, quantity);
+            try {
+                cartService.updateCartItemQuantity(user, product, quantity);
+            } catch (IllegalArgumentException e) {
+                redirectAttributes.addFlashAttribute("error", e.getMessage());
+            }
         }
 
         return "redirect:/cart";
