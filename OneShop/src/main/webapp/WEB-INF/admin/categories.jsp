@@ -7,89 +7,89 @@
   <h2 class="page-title">Danh mục sản phẩm</h2>
 </div>
 
-<div class="page-inner">
+    <div class="page-inner">
       <div class="d-flex align-items-center justify-content-between mb-3">
         <form method="get" class="d-flex align-items-center" style="gap:12px">
-          <input type="hidden" name="page" value="0" />
-          <input type="hidden" name="sortBy" value="${sortBy}" />
-          <input type="hidden" name="sortDir" value="${sortDir}" />
+            <input type="hidden" name="page" value="0" />
+            <input type="hidden" name="sortBy" value="${sortBy}" />
+            <input type="hidden" name="sortDir" value="${sortDir}" />
           <div class="input-group" style="min-width:300px">
             <span class="input-group-text"><i class="fas fa-search"></i></span>
             <input class="form-control" type="text" name="search" value="${param.search}" placeholder="Tìm kiếm danh mục..." />
-          </div>
-          <select name="size" class="form-control form-control-sm" style="width:auto" onchange="this.form.submit()">
+            </div>
+            <select name="size" class="form-control form-control-sm" style="width:auto" onchange="this.form.submit()">
             <option value="5"  ${pageSize==5? 'selected': ''}>5 dòng</option>
             <option value="10" ${pageSize==10? 'selected': ''}>10 dòng</option>
             <option value="20" ${pageSize==20? 'selected': ''}>20 dòng</option>
             <option value="50" ${pageSize==50? 'selected': ''}>50 dòng</option>
-          </select>
-        </form>
+            </select>
+          </form>
         <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addCategoryModal"><i class="fas fa-plus"></i> Thêm danh mục mới</button>
-      </div>
+        </div>
 
-      <div class="card">
+          <div class="card">
         <div class="card-header"><i class="fas fa-list"></i> Danh sách danh mục</div>
         <div class="card-body p-0">
-          <div class="table-responsive">
+              <div class="table-responsive">
             <table class="table table-hover mb-0" id="categoriesTable">
-              <thead>
-                <tr>
+                  <thead>
+                    <tr>
                   <th style="width:120px"><a href="?page=${currentPage}&size=${pageSize}&search=${param.search}&sortBy=categoryId&sortDir=${sortBy=='categoryId' && sortDir=='asc' ? 'desc' : 'asc'}">ID</a></th>
                   <th style="width:120px">Ảnh</th>
                   <th>Tên danh mục</th>
                   <th style="width:160px">Thao tác</th>
-                </tr>
-              </thead>
-              <tbody>
-                <c:forEach var="category" items="${categories}">
-                  <tr>
-                    <td><span class="badge badge-primary">${category.categoryId}</span></td>
-                    <td>
-                      <c:choose>
-                        <c:when test="${not empty category.categoryImage}">
-                          <img src="/loadImage?imageName=${category.categoryImage}" class="category-image" alt="Category Image" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
-                          <div class="no-image" style="display:none"><i class="fas fa-image"></i></div>
-                        </c:when>
-                        <c:otherwise>
-                          <div class="no-image"><i class="fas fa-image"></i></div>
-                        </c:otherwise>
-                      </c:choose>
-                    </td>
-                    <td><strong>${category.categoryName}</strong></td>
-                    <td>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <c:forEach var="category" items="${categories}">
+                      <tr>
+                        <td><span class="badge badge-primary">${category.categoryId}</span></td>
+                        <td>
+                          <c:choose>
+                            <c:when test="${not empty category.categoryImage}">
+                              <img src="/loadImage?imageName=${category.categoryImage}" class="category-image" alt="Category Image" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+                              <div class="no-image" style="display:none"><i class="fas fa-image"></i></div>
+                            </c:when>
+                            <c:otherwise>
+                              <div class="no-image"><i class="fas fa-image"></i></div>
+                            </c:otherwise>
+                          </c:choose>
+                        </td>
+                        <td><strong>${category.categoryName}</strong></td>
+                        <td>
                       <div class="d-flex" style="gap:8px">
                         <button type="button" class="btn btn-sm btn-info" data-id="${category.categoryId}" data-name="${fn:escapeXml(category.categoryName)}" onclick="openEditModal(this.dataset.id, this.dataset.name)"><i class="fas fa-edit"></i></button>
                         <button type="button" class="btn btn-sm btn-danger" data-id="${category.categoryId}" data-name="${fn:escapeXml(category.categoryName)}" onclick="confirmDelete(this.dataset.id, this.dataset.name)"><i class="fas fa-trash"></i></button>
-                      </div>
-                    </td>
-                  </tr>
-                </c:forEach>
-                <c:if test="${empty categories}">
-                  <tr>
+                          </div>
+                        </td>
+                      </tr>
+                    </c:forEach>
+                    <c:if test="${empty categories}">
+                      <tr>
                     <td colspan="4" class="text-center p-4">
-                      <i class="fas fa-inbox"></i>
+                          <i class="fas fa-inbox"></i>
                       <h5 class="mt-2 mb-0">Chưa có danh mục nào</h5>
                       <small>Hãy thêm danh mục đầu tiên để bắt đầu quản lý</small>
-                    </td>
-                  </tr>
-                </c:if>
-              </tbody>
-            </table>
+                        </td>
+                      </tr>
+                    </c:if>
+                  </tbody>
+                </table>
+            </div>
           </div>
         </div>
-      </div>
 
-      <c:if test="${totalPages > 1}">
+        <c:if test="${totalPages > 1}">
         <nav class="mt-3" aria-label="Pagination">
-          <ul class="pagination">
+            <ul class="pagination">
             <li class="page-item ${currentPage==0?'disabled':''}"><a class="page-link" href="?page=${currentPage-1}&size=${pageSize}&search=${param.search}&sortBy=${sortBy}&sortDir=${sortDir}">Trước</a></li>
-            <c:forEach var="i" begin="0" end="${totalPages-1}">
+              <c:forEach var="i" begin="0" end="${totalPages-1}">
               <li class="page-item ${i==currentPage?'active':''}"><a class="page-link" href="?page=${i}&size=${pageSize}&search=${param.search}&sortBy=${sortBy}&sortDir=${sortDir}">${i+1}</a></li>
-            </c:forEach>
+              </c:forEach>
             <li class="page-item ${currentPage==totalPages-1?'disabled':''}"><a class="page-link" href="?page=${currentPage+1}&size=${pageSize}&search=${param.search}&sortBy=${sortBy}&sortDir=${sortDir}">Sau</a></li>
-          </ul>
-        </nav>
-      </c:if>
+            </ul>
+          </nav>
+        </c:if>
 </div>
 
 <!-- Add Category Modal -->

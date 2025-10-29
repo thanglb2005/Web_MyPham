@@ -306,7 +306,7 @@
         }
         
         /* Add subtle hover effects for table rows */
-        .revenue-row:hover, .orders-row:hover, .avg-row:hover {
+        .revenue-row:hover, .orders-row:hover {
             background-color: #f8fcff;
         }
         
@@ -392,29 +392,7 @@
                                     <!-- Thêm bộ lọc theo khoảng thời gian và shop -->
                                     <form id="date-filter-form" class="mb-3" method="get" action="">
                                         <div class="row">
-                                            <div class="col-md-3">
-                                                <div class="form-group">
-                                                    <label><i class="fas fa-calendar"></i> Từ ngày:</label>
-                                                    <div class="input-group">
-                                                        <div class="input-group-prepend">
-                                                            <span class="input-group-text bg-primary text-white"><i class="fas fa-calendar-alt"></i></span>
-                                                        </div>
-                                                        <input type="date" class="form-control" name="startDate" id="startDate" th:value="${startDate}">
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="col-md-3">
-                                                <div class="form-group">
-                                                    <label><i class="fas fa-calendar-check"></i> Đến ngày:</label>
-                                                    <div class="input-group">
-                                                        <div class="input-group-prepend">
-                                                            <span class="input-group-text bg-primary text-white"><i class="fas fa-calendar-alt"></i></span>
-                                                        </div>
-                                                        <input type="date" class="form-control" name="endDate" id="endDate" th:value="${endDate}">
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="col-md-3">
+                                            <div class="col-md-4 col-lg-3">
                                                 <div class="form-group">
                                                     <label><i class="fas fa-store"></i> Chọn Shop:</label>
                                                     <div class="input-group">
@@ -694,13 +672,7 @@
                                                                                 <td class="text-right" id="orders-diff">0</td>
                                                                                 <td class="text-center" id="orders-rate">0%</td>
                                                                             </tr>
-                                                                            <tr class="avg-row">
-                                                                                <td><i class="fas fa-calculator text-warning mr-1"></i> <strong>Giá trị trung bình mỗi đơn</strong></td>
-                                                                                <td class="text-right font-weight-bold" id="current-avg">0 ₫</td>
-                                                                                <td class="text-right" id="previous-avg">0 ₫</td>
-                                                                                <td class="text-right" id="avg-diff">0 ₫</td>
-                                                                                <td class="text-center" id="avg-rate">0%</td>
-                                                                            </tr>
+                                                                            
                                                                         </tbody>
                                                                     </table>
                                                                 </div>
@@ -871,27 +843,7 @@
                                             </div>
                                         </div>
                                         
-                                        <!-- Giá trung bình -->
-                                        <div class="col-lg-3 col-md-6 col-sm-6 dashboard-item">
-                                            <div class="card card-stats card-warning card-round animate__animated animate__fadeIn animate__delay-3s">
-                                                <div class="card-body pb-0">
-                                                    <div class="d-flex align-items-center">
-                                                        <div class="icon-big text-center icon-warning bubble-shadow-small">
-                                                            <i class="fas fa-tag"></i>
-                                                        </div>
-                                                        <div class="ml-3 w-100">
-                                                            <h5 class="card-title fw-bold">Giá trung bình</h5>
-                                                            <h2 class="dashboard-stats mb-0" id="summary-avg-price">0 ₫</h2>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div class="card-footer">
-                                                    <div class="text-center pt-1">
-                                                        <small class="text-muted"><i class="fas fa-calculator"></i> Giá trị trung bình mỗi đơn hàng</small>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
+                                        
                                     </div>
                                     
                                     <div class="table-responsive">
@@ -908,9 +860,6 @@
                                                     <th th:if="${reportType == 'quarters'}">Quý</th>
                                                     <th>Số lượng bán ra</th>
                                                     <th>Doanh thu</th>
-                                                    <th>Giá trung bình</th>
-                                                    <th>Giá thấp nhất</th>
-                                                    <th>Giá cao nhất</th>
                                                 </tr>
                                                 
                                                 <!-- Default headers when no report type is specified -->
@@ -919,7 +868,6 @@
                                                     <th>Mục</th>
                                                     <th>Số lượng</th>
                                                     <th>Doanh thu</th>
-                                                    <th>Giá trung bình</th>
                                                 </tr>
                                                 
                                                 <!-- Headers for user report -->
@@ -928,7 +876,6 @@
                                                     <th>Khách hàng</th>
                                                     <th>Số đơn hàng</th>
                                                     <th>Tổng chi tiêu</th>
-                                                    <th>Giá trị trung bình/đơn</th>
                                                     <th>Lần mua gần nhất</th>
                                                     <th>Trạng thái</th>
                                                 </tr>
@@ -941,9 +888,7 @@
                                                     <td th:text="${item[1]}"></td> <!-- Product name -->
                                                     <td th:text="${item[2]}"></td> <!-- Quantity -->
                                                     <td th:text="${#numbers.formatDecimal(item[3], 1, 'DEFAULT', 0, 'DEFAULT')} + ' ₫'"></td> <!-- Revenue -->
-                                                    <td th:text="${#numbers.formatDecimal(item[4], 1, 'DEFAULT', 0, 'DEFAULT')} + ' ₫'"></td> <!-- Avg price -->
-                                                    <td th:text="${#numbers.formatDecimal(item[5], 1, 'DEFAULT', 0, 'DEFAULT')} + ' ₫'"></td> <!-- Min price -->
-                                                    <td th:text="${#numbers.formatDecimal(item[6], 1, 'DEFAULT', 0, 'DEFAULT')} + ' ₫'"></td> <!-- Max price -->
+                                                    
                                                 </tr>
                                                 
                                                 <!-- User report - item[0]=user_id, item[1]=name, item[2]=email, item[3]=total_orders, 
@@ -953,7 +898,6 @@
                                                     <td th:text="${item[1]}"></td> <!-- Customer name -->
                                                     <td th:text="${item[3]}"></td> <!-- Total orders -->
                                                     <td th:text="${#numbers.formatDecimal(item[4], 1, 'DEFAULT', 0, 'DEFAULT')} + ' ₫'"></td> <!-- Total spent -->
-                                                    <td th:text="${#numbers.formatDecimal(item[5], 1, 'DEFAULT', 0, 'DEFAULT')} + ' ₫'"></td> <!-- Avg order value -->
                                                     <td th:text="${#temporals.format(item[6], 'dd/MM/yyyy HH:mm')}"></td> <!-- Last purchase date -->
                                                     <td>
                                                         <span th:class="${
@@ -971,9 +915,6 @@
                                                     <td th:text="${item[0]}"></td> <!-- Name -->
                                                     <td th:text="${item[1]}"></td> <!-- Quantity -->
                                                     <td th:text="${#numbers.formatDecimal(item[2], 1, 'DEFAULT', 0, 'DEFAULT')} + ' ₫'"></td> <!-- Revenue -->
-                                                    <td th:text="${#numbers.formatDecimal(item[3], 1, 'DEFAULT', 0, 'DEFAULT')} + ' ₫'"></td> <!-- Avg -->
-                                                    <td th:text="${#numbers.formatDecimal(item[4], 1, 'DEFAULT', 0, 'DEFAULT')} + ' ₫'"></td> <!-- Min -->
-                                                    <td th:text="${#numbers.formatDecimal(item[5], 1, 'DEFAULT', 0, 'DEFAULT')} + ' ₫'"></td> <!-- Max -->
                                                 </tr>
                                                 
                                                 <!-- Months: year, month, quantity, revenue, avg, min, max -->
@@ -982,9 +923,6 @@
                                                     <td th:text="'Tháng ' + ${item[1]} + '/' + ${item[0]}"></td> <!-- Format: Tháng M/YYYY -->
                                                     <td th:text="${item[2]}"></td> <!-- Quantity -->
                                                     <td th:text="${#numbers.formatDecimal(item[3], 1, 'DEFAULT', 0, 'DEFAULT')} + ' ₫'"></td> <!-- Revenue -->
-                                                    <td th:text="${#numbers.formatDecimal(item[4], 1, 'DEFAULT', 0, 'DEFAULT')} + ' ₫'"></td> <!-- Avg -->
-                                                    <td th:text="${#numbers.formatDecimal(item[5], 1, 'DEFAULT', 0, 'DEFAULT')} + ' ₫'"></td> <!-- Min -->
-                                                    <td th:text="${#numbers.formatDecimal(item[6], 1, 'DEFAULT', 0, 'DEFAULT')} + ' ₫'"></td> <!-- Max -->
                                                 </tr>
                                                 
                                                 <!-- Quarters: year, quarter, quantity, revenue, avg, min, max -->
@@ -993,9 +931,6 @@
                                                     <td th:text="'Quý ' + ${item[1]} + '/' + ${item[0]}"></td> <!-- Format: Quý Q/YYYY -->
                                                     <td th:text="${item[2]}"></td> <!-- Quantity -->
                                                     <td th:text="${#numbers.formatDecimal(item[3], 1, 'DEFAULT', 0, 'DEFAULT')} + ' ₫'"></td> <!-- Revenue -->
-                                                    <td th:text="${#numbers.formatDecimal(item[4], 1, 'DEFAULT', 0, 'DEFAULT')} + ' ₫'"></td> <!-- Avg -->
-                                                    <td th:text="${#numbers.formatDecimal(item[5], 1, 'DEFAULT', 0, 'DEFAULT')} + ' ₫'"></td> <!-- Min -->
-                                                    <td th:text="${#numbers.formatDecimal(item[6], 1, 'DEFAULT', 0, 'DEFAULT')} + ' ₫'"></td> <!-- Max -->
                                                 </tr>
                                                 
                                                 <!-- Years: year, quantity, revenue, avg, min, max -->
@@ -1004,63 +939,47 @@
                                                     <td th:text="'Năm ' + ${item[0]}"></td> <!-- Format: Năm YYYY -->
                                                     <td th:text="${item[1]}"></td> <!-- Quantity -->
                                                     <td th:text="${#numbers.formatDecimal(item[2], 1, 'DEFAULT', 0, 'DEFAULT')} + ' ₫'"></td> <!-- Revenue -->
-                                                    <td th:text="${#numbers.formatDecimal(item[3], 1, 'DEFAULT', 0, 'DEFAULT')} + ' ₫'"></td> <!-- Avg -->
-                                                    <td th:text="${#numbers.formatDecimal(item[4], 1, 'DEFAULT', 0, 'DEFAULT')} + ' ₫'"></td> <!-- Min -->
-                                                    <td th:text="${#numbers.formatDecimal(item[5], 1, 'DEFAULT', 0, 'DEFAULT')} + ' ₫'"></td> <!-- Max -->
                                                 </tr>
                                                 
                                                 <!-- Default data when no report is loaded - MUST match column structure! -->
-                                                <!-- For products (7 columns) -->
+                                                <!-- For products (4 columns) -->
                                                 <tr th:if="${(reportData == null or #lists.isEmpty(reportData)) and reportType == 'products'}">
                                                     <td>1</td>
                                                     <td>Sản phẩm mẫu</td>
                                                     <td>10</td>
                                                     <td>1,000,000 ₫</td>
-                                                    <td>100,000 ₫</td>
-                                                    <td>50,000 ₫</td>
-                                                    <td>150,000 ₫</td>
                                                 </tr>
                                                 
-                                                <!-- For categories/brands (7 columns) -->
+                                                <!-- For categories/brands (4 columns) -->
                                                 <tr th:if="${(reportData == null or #lists.isEmpty(reportData)) and (reportType == 'categories' or reportType == 'brands')}">
                                                     <td>1</td>
                                                     <td>Dữ liệu mẫu</td>
                                                     <td>10</td>
                                                     <td>1,000,000 ₫</td>
-                                                    <td>100,000 ₫</td>
-                                                    <td>50,000 ₫</td>
-                                                    <td>150,000 ₫</td>
                                                 </tr>
                                                 
-                                                <!-- For months/quarters (7 columns) -->
+                                                <!-- For months/quarters (4 columns) -->
                                                 <tr th:if="${(reportData == null or #lists.isEmpty(reportData)) and (reportType == 'months' or reportType == 'quarters')}">
                                                     <td>1</td>
                                                     <td>Dữ liệu mẫu</td>
                                                     <td>10</td>
                                                     <td>1,000,000 ₫</td>
-                                                    <td>100,000 ₫</td>
-                                                    <td>50,000 ₫</td>
-                                                    <td>150,000 ₫</td>
                                                 </tr>
                                                 
-                                                <!-- For years (7 columns) -->
+                                                <!-- For years (4 columns) -->
                                                 <tr th:if="${(reportData == null or #lists.isEmpty(reportData)) and reportType == 'years'}">
                                                     <td>1</td>
                                                     <td>Năm mẫu</td>
                                                     <td>10</td>
                                                     <td>1,000,000 ₫</td>
-                                                    <td>100,000 ₫</td>
-                                                    <td>50,000 ₫</td>
-                                                    <td>150,000 ₫</td>
                                                 </tr>
                                                 
-                                                <!-- For users (7 columns) -->
+                                                <!-- For users (6 columns) -->
                                                 <tr th:if="${(reportData == null or #lists.isEmpty(reportData)) and reportType == 'users'}">
                                                     <td>1</td>
                                                     <td>Khách hàng mẫu</td>
                                                     <td>10</td>
                                                     <td>1,000,000 ₫</td>
-                                                    <td>100,000 ₫</td>
                                                     <td>01/10/2025</td>
                                                     <td><span class="badge badge-info">Khách hàng mới</span></td>
                                                 </tr>
@@ -1775,7 +1694,6 @@
             document.getElementById('summary-total-items').textContent = totalItems.toLocaleString('vi-VN');
             document.getElementById('summary-total-revenue').textContent = totalRevenue.toLocaleString('vi-VN') + ' ₫';
             document.getElementById('summary-total-quantity').textContent = totalQuantity.toLocaleString('vi-VN');
-            document.getElementById('summary-avg-price').textContent = avgPrice.toLocaleString('vi-VN') + ' ₫';
             
             console.log('=== Summary Statistics ===');
             console.log('Total Items:', totalItems);

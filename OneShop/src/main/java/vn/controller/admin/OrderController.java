@@ -325,8 +325,18 @@ public class OrderController {
         long cancelledOrders = allOrders.stream().filter(o -> o.getStatus() == Order.OrderStatus.CANCELLED).count();
         
         double totalRevenue = allOrders.stream()
-            .filter(o -> o.getStatus() == Order.OrderStatus.DELIVERED) // Only delivered orders
-            .mapToDouble(Order::getTotalAmount)
+            .filter(o -> o.getStatus() == Order.OrderStatus.DELIVERED)
+            .mapToDouble(o -> {
+                try {
+                    Double f = o.getFinalAmount();
+                    if (f != null && f > 0) return f;
+                } catch (Exception ignored) {}
+                try {
+                    Double t = o.getTotalAmount();
+                    return t != null ? t : 0.0;
+                } catch (Exception ignored) {}
+                return 0.0;
+            })
             .sum();
         
         model.addAttribute("totalOrders", totalOrders);

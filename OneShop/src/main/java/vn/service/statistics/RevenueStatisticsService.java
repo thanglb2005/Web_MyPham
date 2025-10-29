@@ -38,6 +38,24 @@ public class RevenueStatisticsService {
     }
 
     /**
+     * Return the effective order amount for revenue reporting.
+     * Prefer finalAmount when available and positive; otherwise fall back to totalAmount.
+     */
+    private double effectiveAmount(Order order) {
+        try {
+            Double finalAmt = order.getFinalAmount();
+            if (finalAmt != null && finalAmt > 0) {
+                return finalAmt;
+            }
+        } catch (Exception ignored) {}
+        try {
+            Double total = order.getTotalAmount();
+            return total != null ? total : 0.0;
+        } catch (Exception ignored) {}
+        return 0.0;
+    }
+
+    /**
      * Get today's revenue statistics - Đã sửa để chỉ lọc đơn hàng theo ngày được chọn
      * @return Map containing orders count and revenue
      */
@@ -76,9 +94,7 @@ public class RevenueStatisticsService {
                     if (orderDate.get(Calendar.YEAR) == today.get(Calendar.YEAR) &&
                         orderDate.get(Calendar.DAY_OF_YEAR) == today.get(Calendar.DAY_OF_YEAR)) {
                         todayOrders.add(order);
-                        if (order.getTotalAmount() != null) {
-                            revenue += order.getTotalAmount();
-                        }
+                        revenue += effectiveAmount(order);
                         System.out.println("[Đơn hàng hôm nay] ID: " + order.getOrderId() + ", Ngày: " + order.getOrderDate() + ", Giá trị: " + order.getTotalAmount());
                     }
                 }
@@ -140,14 +156,14 @@ public class RevenueStatisticsService {
             double previousMonthRevenue = 0.0;
             
             for (Order order : allOrders) {
-                if (order.getOrderDate() != null && order.getTotalAmount() != null && order.getShop() != null && order.getShop().getShopId().equals(shopId)) {
+                if (order.getOrderDate() != null && order.getShop() != null && order.getShop().getShopId().equals(shopId)) {
                     Calendar orderDate = Calendar.getInstance();
                     orderDate.setTime(java.sql.Timestamp.valueOf(order.getOrderDate()));
                     int orderMonth = orderDate.get(Calendar.MONTH) + 1;
                     int orderYear = orderDate.get(Calendar.YEAR);
                     
                     if (orderMonth == month && orderYear == year) {
-                        currentMonthRevenue += order.getTotalAmount();
+                        currentMonthRevenue += effectiveAmount(order);
                     }
                     
                     int localPrevMonth = month - 1;
@@ -157,7 +173,7 @@ public class RevenueStatisticsService {
                         localPrevYear = year - 1;
                     }
                     if (orderMonth == localPrevMonth && orderYear == localPrevYear) {
-                        previousMonthRevenue += order.getTotalAmount();
+                        previousMonthRevenue += effectiveAmount(order);
                     }
                 }
             }
@@ -212,9 +228,7 @@ public class RevenueStatisticsService {
                     if (orderDate.get(Calendar.YEAR) == today.get(Calendar.YEAR) &&
                         orderDate.get(Calendar.DAY_OF_YEAR) == today.get(Calendar.DAY_OF_YEAR)) {
                         orderCount++;
-                        if (order.getTotalAmount() != null) {
-                            revenue += order.getTotalAmount();
-                        }
+                        revenue += effectiveAmount(order);
                     }
                 }
             }
@@ -253,7 +267,7 @@ public class RevenueStatisticsService {
             double previousMonthRevenue = 0.0;
             
             for (Order order : allOrders) {
-                if (order.getOrderDate() != null && order.getTotalAmount() != null) {
+                if (order.getOrderDate() != null) {
                     Calendar orderDate = Calendar.getInstance();
                     orderDate.setTime(java.sql.Timestamp.valueOf(order.getOrderDate()));
                     int orderMonth = orderDate.get(Calendar.MONTH) + 1; // Chuyển sang 1-based (1-12)
@@ -261,7 +275,7 @@ public class RevenueStatisticsService {
                     
                     // Lọc đơn hàng của tháng được chọn
                     if (orderMonth == month && orderYear == year) {
-                        currentMonthRevenue += order.getTotalAmount();
+                        currentMonthRevenue += effectiveAmount(order);
                         System.out.println("[Đơn hàng - Tháng " + month + "/" + year + "] ID: " + order.getOrderId() + 
                                            ", Tháng: " + orderMonth + "/" + orderYear + 
                                            ", Giá trị: " + order.getTotalAmount());
@@ -275,7 +289,7 @@ public class RevenueStatisticsService {
                         localPrevYear = year - 1;
                     }
                     if (orderMonth == localPrevMonth && orderYear == localPrevYear) {
-                        previousMonthRevenue += order.getTotalAmount();
+                        previousMonthRevenue += effectiveAmount(order);
                     }
                 }
             }
@@ -329,14 +343,14 @@ public class RevenueStatisticsService {
             int endMonth = quarter * 3;
             
             for (Order order : allOrders) {
-                if (order.getOrderDate() != null && order.getTotalAmount() != null) {
+                if (order.getOrderDate() != null) {
                     Calendar orderDate = Calendar.getInstance();
                     orderDate.setTime(java.sql.Timestamp.valueOf(order.getOrderDate()));
                     int orderMonth = orderDate.get(Calendar.MONTH) + 1; // Chuyển sang 1-based (1-12)
                     int orderYear = orderDate.get(Calendar.YEAR);
                     
                     if (orderYear == year && orderMonth >= startMonth && orderMonth <= endMonth) {
-                        quarterRevenue += order.getTotalAmount();
+                        quarterRevenue += effectiveAmount(order);
                         System.out.println("[Đơn hàng - Quý " + quarter + "/" + year + "] ID: " + order.getOrderId() + 
                                           ", Tháng: " + orderMonth + "/" + orderYear + 
                                           ", Giá trị: " + order.getTotalAmount());
@@ -401,7 +415,7 @@ public class RevenueStatisticsService {
                     }
                     
                     for (Order order : allOrders) {
-                        if (order.getOrderDate() != null && order.getTotalAmount() != null) {
+                        if (order.getOrderDate() != null) {
                             // Lọc theo tháng và năm đã chọn
                             Calendar orderDate = Calendar.getInstance();
                             orderDate.setTime(java.sql.Timestamp.valueOf(order.getOrderDate()));
@@ -409,7 +423,7 @@ public class RevenueStatisticsService {
                             int orderYear = orderDate.get(Calendar.YEAR);
                             
                             if (orderYear == year && orderMonth == month) {
-                                revenue += order.getTotalAmount();
+                                revenue += effectiveAmount(order);
                                 System.out.println("ID: " + order.getOrderId() + 
                                                   ", Ngày: " + order.getOrderDate() + 
                                                   ", Tháng: " + orderMonth + "/" + orderYear + 
@@ -431,7 +445,7 @@ public class RevenueStatisticsService {
                     System.out.println("------------------------------------");
                     
                     for (Order order : allOrders) {
-                        if (order.getOrderDate() != null && order.getTotalAmount() != null) {
+                        if (order.getOrderDate() != null) {
                             // Sử dụng Calendar thay vì toInstant()
                             Calendar cal = Calendar.getInstance();
                             cal.setTime(java.sql.Timestamp.valueOf(order.getOrderDate()));
@@ -439,7 +453,7 @@ public class RevenueStatisticsService {
                             int orderYear = cal.get(Calendar.YEAR);
                             
                             if (orderYear == year && orderMonth >= startMonth && orderMonth <= endMonth) {
-                                revenue += order.getTotalAmount();
+                                revenue += effectiveAmount(order);
                                 System.out.println("ID: " + order.getOrderId() + 
                                                   ", Ngày: " + order.getOrderDate() + 
                                                   ", Tháng: " + orderMonth + "/" + orderYear + 
@@ -459,14 +473,14 @@ public class RevenueStatisticsService {
                     System.out.println("------------------------------------");
                     
                     for (Order order : allOrders) {
-                        if (order.getOrderDate() != null && order.getTotalAmount() != null) {
+                        if (order.getOrderDate() != null) {
                             // Sử dụng Calendar thay vì toInstant()
                             Calendar cal = Calendar.getInstance();
                             cal.setTime(java.sql.Timestamp.valueOf(order.getOrderDate()));
                             int orderYear = cal.get(Calendar.YEAR);
                             
                             if (orderYear == year) {
-                                revenue += order.getTotalAmount();
+                                revenue += effectiveAmount(order);
                                 System.out.println("ID: " + order.getOrderId() + 
                                                   ", Ngày: " + order.getOrderDate() + 
                                                   ", Tháng: " + (cal.get(Calendar.MONTH) + 1) + "/" + orderYear + 
