@@ -32,10 +32,13 @@
         </c:forEach>
       </select>
       <select name="orderStatus" class="form-control form-control-sm" style="width:auto" onchange="this.form.submit()">
-        <option value="">Tất cả trạng thái</option>
-        <c:forEach var="s" items="${allStatuses}">
-          <option value="${s}" ${selectedStatus == s ? 'selected' : ''}>${s}</option>
-        </c:forEach>
+        <option value="" ${empty selectedStatusStr ? 'selected' : ''}>Tất cả</option>
+        <option value="PENDING"   ${selectedStatusStr == 'PENDING'   ? 'selected' : ''}>PENDING</option>
+        <option value="CONFIRMED" ${selectedStatusStr == 'CONFIRMED' ? 'selected' : ''}>CONFIRMED</option>
+        <option value="SHIPPING"  ${selectedStatusStr == 'SHIPPING'  ? 'selected' : ''}>SHIPPING</option>
+        <option value="DELIVERED" ${selectedStatusStr == 'DELIVERED' ? 'selected' : ''}>DELIVERED</option>
+        <option value="CANCELLED" ${selectedStatusStr == 'CANCELLED' ? 'selected' : ''}>CANCELLED</option>
+        <option value="RETURNED"  ${selectedStatusStr == 'RETURNED'  ? 'selected' : ''}>RETURNED</option>
       </select>
       <select name="size" class="form-control form-control-sm" style="width:auto" onchange="this.form.submit()">
         <option value="5"  ${currentSize==5? 'selected': ''}>5 dòng</option>
@@ -79,7 +82,7 @@
                 </td>
               </tr>
             </c:forEach>
-            <c:if test="${empty orders}">
+            <c:if test="${empty orderDetails}">
               <tr>
                 <td colspan="6" class="text-center p-4">
                   <i class="fas fa-inbox"></i>

@@ -63,6 +63,21 @@ uri="jakarta.tags.functions" %>
 </div>
 
 <div class="page-inner">
+  <form method="get" class="d-flex align-items-center mb-3" style="gap:12px">
+    <input type="hidden" name="page" value="0" />
+    <div class="input-group" style="min-width:300px">
+      <span class="input-group-text"><i class="fas fa-search"></i></span>
+      <input class="form-control" type="text" name="q" value="${searchTerm}" placeholder="Tìm theo tên hoặc email shipper..." />
+    </div>
+    <select name="size" class="form-control form-control-sm" style="width:auto">
+      <option value="5"  ${currentSize==5? 'selected': ''}>5 dòng</option>
+      <option value="10" ${currentSize==10? 'selected': ''}>10 dòng</option>
+      <option value="20" ${currentSize==20? 'selected': ''}>20 dòng</option>
+      <option value="50" ${currentSize==50? 'selected': ''}>50 dòng</option>
+    </select>
+    <button class="btn btn-primary" type="submit"><i class="fas fa-search"></i> Tìm</button>
+    <a class="btn btn-outline-secondary" href="/admin/shippers-list">Đặt lại</a>
+  </form>
   <div class="row text-center mb-3">
     <div class="col-sm-3">
       <h4>${totalShippers}</h4>
@@ -158,6 +173,24 @@ uri="jakarta.tags.functions" %>
       </div>
     </div>
   </c:forEach>
+
+  <c:if test="${totalPages > 1}">
+    <nav class="mt-3" aria-label="Pagination">
+      <ul class="pagination">
+        <li class="page-item ${hasPrev? '': 'disabled'}">
+          <a class="page-link" href="?page=${currentPage-1}&size=${currentSize}&q=${searchTerm}">Trước</a>
+        </li>
+        <c:forEach var="i" begin="0" end="${totalPages-1}">
+          <li class="page-item ${i==currentPage?'active':''}">
+            <a class="page-link" href="?page=${i}&size=${currentSize}&q=${searchTerm}">${i+1}</a>
+          </li>
+        </c:forEach>
+        <li class="page-item ${hasNext? '': 'disabled'}">
+          <a class="page-link" href="?page=${currentPage+1}&size=${currentSize}&q=${searchTerm}">Sau</a>
+        </li>
+      </ul>
+    </nav>
+  </c:if>
 </div>
 
 <!-- Add Shipper Modal -->

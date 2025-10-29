@@ -32,14 +32,44 @@ public class UserController {
      * Hiển thị danh sách tất cả khách hàng
      */
     @GetMapping("/admin/users")
-    public String users(HttpSession session, Model model) {
+    public String users(HttpSession session,
+                        @RequestParam(value = "q", required = false) String query,
+                        @RequestParam(value = "page", defaultValue = "0") int page,
+                        @RequestParam(value = "size", defaultValue = "10") int size,
+                        Model model) {
         User adminUser = (User) session.getAttribute("user");
         if (adminUser == null) {
             return "redirect:/login";
         }
         
-        List<User> users = userService.findAll();
-        model.addAttribute("users", users);
+        List<User> users;
+        String q = (query != null) ? query.trim() : "";
+        if (!q.isEmpty()) {
+            users = userService.searchUsers(q);
+        } else {
+            users = userService.findAll();
+        }
+
+        // Pagination
+        if (size <= 0) size = 10;
+        int totalItems = users.size();
+        int totalPages = (int) Math.ceil((double) totalItems / size);
+        if (page < 0) page = 0;
+        if (page >= totalPages && totalPages > 0) page = totalPages - 1;
+        int startIndex = page * size;
+        int endIndex = Math.min(startIndex + size, totalItems);
+        List<User> paginated = users.subList(Math.min(startIndex, totalItems), Math.min(endIndex, totalItems));
+
+        model.addAttribute("users", paginated);
+        model.addAttribute("searchTerm", q);
+        model.addAttribute("currentPage", page);
+        model.addAttribute("currentSize", size);
+        model.addAttribute("totalPages", totalPages);
+        model.addAttribute("totalItems", totalItems);
+        model.addAttribute("hasPrev", page > 0);
+        model.addAttribute("hasNext", page < totalPages - 1);
+        model.addAttribute("startIndex", Math.min(startIndex + 1, totalItems));
+        model.addAttribute("endIndex", endIndex);
         model.addAttribute("user", adminUser);
         
         return "admin/users";
@@ -49,13 +79,43 @@ public class UserController {
      * Trang quản lý tài khoản: cấp role và tạo tài khoản
      */
     @GetMapping("/admin/accounts")
-    public String accounts(HttpSession session, Model model) {
+    public String accounts(HttpSession session,
+                           @RequestParam(value = "q", required = false) String query,
+                           @RequestParam(value = "page", defaultValue = "0") int page,
+                           @RequestParam(value = "size", defaultValue = "10") int size,
+                           Model model) {
         User adminUser = (User) session.getAttribute("user");
         if (adminUser == null) {
             return "redirect:/login";
         }
         model.addAttribute("user", adminUser);
-        model.addAttribute("users", userService.findAll());
+        List<User> list = null;
+        String q = (query != null) ? query.trim() : "";
+        if (!q.isEmpty()) {
+            list = userService.searchUsers(q);
+        } else {
+            list = userService.findAll();
+        }
+
+        if (size <= 0) size = 10;
+        int totalItems = list.size();
+        int totalPages = (int) Math.ceil((double) totalItems / size);
+        if (page < 0) page = 0;
+        if (page >= totalPages && totalPages > 0) page = totalPages - 1;
+        int startIndex = page * size;
+        int endIndex = Math.min(startIndex + size, totalItems);
+        List<User> paginated = list.subList(Math.min(startIndex, totalItems), Math.min(endIndex, totalItems));
+
+        model.addAttribute("users", paginated);
+        model.addAttribute("searchTerm", q);
+        model.addAttribute("currentPage", page);
+        model.addAttribute("currentSize", size);
+        model.addAttribute("totalPages", totalPages);
+        model.addAttribute("totalItems", totalItems);
+        model.addAttribute("hasPrev", page > 0);
+        model.addAttribute("hasNext", page < totalPages - 1);
+        model.addAttribute("startIndex", Math.min(startIndex + 1, totalItems));
+        model.addAttribute("endIndex", endIndex);
         model.addAttribute("roles", roleRepository.findAll());
         return "admin/accounts";
     }

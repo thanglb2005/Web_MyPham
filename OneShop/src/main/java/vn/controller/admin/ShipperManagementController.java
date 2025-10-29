@@ -73,12 +73,25 @@ public class ShipperManagementController {
      */
     @GetMapping("/shippers-list")
     @Transactional
-    public String shippersList(Model model) {
+    public String shippersList(Model model,
+                               @RequestParam(value = "q", required = false) String query,
+                               @RequestParam(value = "page", defaultValue = "0") int page,
+                               @RequestParam(value = "size", defaultValue = "10") int size) {
         // Lấy tất cả shipper (user có role SHIPPER)
         List<User> allShippers = userRepository.findAll().stream()
             .filter(user -> user.getRoles().stream()
                 .anyMatch(role -> "ROLE_SHIPPER".equals(role.getName())))
             .collect(Collectors.toList());
+        
+        // Search filter by name/email/phone
+        if (query != null && !query.trim().isEmpty()) {
+            final String q = query.trim().toLowerCase();
+            allShippers = allShippers.stream().filter(u -> {
+                try { if (u.getName() != null && u.getName().toLowerCase().contains(q)) return true; } catch (Exception ignored) {}
+                try { if (u.getEmail() != null && u.getEmail().toLowerCase().contains(q)) return true; } catch (Exception ignored) {}
+                return false;
+            }).collect(Collectors.toList());
+        }
         
         // Đếm shipper theo trạng thái
         long approvedShippers = allShippers.stream()
@@ -101,7 +114,17 @@ public class ShipperManagementController {
             shipper.setAssignedShops(shops.stream().collect(Collectors.toSet()));
         });
         
-        model.addAttribute("shippers", allShippers);
+        // Pagination
+        if (size <= 0) size = 10;
+        int totalItems = allShippers.size();
+        int totalPages = (int) Math.ceil((double) totalItems / size);
+        if (page < 0) page = 0;
+        if (page >= totalPages && totalPages > 0) page = totalPages - 1;
+        int startIndex = page * size;
+        int endIndex = Math.min(startIndex + size, totalItems);
+        List<User> paginated = allShippers.subList(Math.min(startIndex, totalItems), Math.min(endIndex, totalItems));
+        
+        model.addAttribute("shippers", paginated);
         model.addAttribute("totalShippers", allShippers.size());
         model.addAttribute("approvedShippers", approvedShippers);
         model.addAttribute("pendingShippers", pendingShippers);
@@ -109,6 +132,16 @@ public class ShipperManagementController {
         model.addAttribute("unassignedShippers", unassignedShippers);
         // Provide all shops for assignment modal
         model.addAttribute("shops", shopRepository.findAll());
+        // Search & pagination context
+        model.addAttribute("searchTerm", query);
+        model.addAttribute("currentPage", page);
+        model.addAttribute("currentSize", size);
+        model.addAttribute("totalPages", totalPages);
+        model.addAttribute("totalItems", totalItems);
+        model.addAttribute("hasPrev", page > 0);
+        model.addAttribute("hasNext", page < totalPages - 1);
+        model.addAttribute("startIndex", Math.min(startIndex + 1, totalItems));
+        model.addAttribute("endIndex", endIndex);
         
         return "admin/shippers-list";
     }

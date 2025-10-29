@@ -56,7 +56,7 @@ public class OrderController {
     // List all orders with pagination support
     @GetMapping(value = "/orders")
     public String orders(Model model, Principal principal,
-                        @RequestParam(value = "orderStatus", required = false) Order.OrderStatus orderStatus,
+                        @RequestParam(value = "orderStatus", required = false) String orderStatusParam,
                         @RequestParam(value = "shopId", required = false) Long shopId,
                         @RequestParam(value = "search", required = false) String search,
                         @RequestParam(value = "page", defaultValue = "0") int page,
@@ -67,12 +67,26 @@ public class OrderController {
             size = 10;
         }
         
+        // Parse status param safely (tolerate empty/invalid values)
+        Order.OrderStatus orderStatus = null;
+        if (orderStatusParam != null) {
+            String raw = orderStatusParam.trim();
+            if (!raw.isEmpty() && !raw.equalsIgnoreCase("null")) {
+                try {
+                    orderStatus = Order.OrderStatus.valueOf(raw.toUpperCase());
+                } catch (IllegalArgumentException ignored) {
+                    orderStatus = null; // unknown status => treat as no filter
+                }
+            }
+        }
+
         List<Order> allOrders = orderRepository.findAll();
         
         // Filter by status if provided
-        if (orderStatus != null) {
+        final Order.OrderStatus statusFilter = orderStatus;
+        if (statusFilter != null) {
             allOrders = allOrders.stream()
-                .filter(order -> order.getStatus() == orderStatus)
+                .filter(order -> order.getStatus() == statusFilter)
                 .collect(Collectors.toList());
         }
         
@@ -83,31 +97,17 @@ public class OrderController {
                 .collect(Collectors.toList());
         }
         
-        // Filter by search term if provided
+        // Filter by search term (only orderId or customerName)
         if (search != null && !search.trim().isEmpty()) {
-            String searchTerm = search.trim().toLowerCase();
+            String searchTerm = search.trim();
+            String searchTermLower = searchTerm.toLowerCase();
             allOrders = allOrders.stream()
                 .filter(order -> {
-                    // Search by customer name
                     boolean matchesName = order.getCustomerName() != null &&
-                                            order.getCustomerName().toLowerCase().contains(searchTerm);
-
-                    // Search by customer email
-                    boolean matchesEmail = order.getCustomerEmail() != null &&
-                                             order.getCustomerEmail().toLowerCase().contains(searchTerm);
-                    
-                    // Search by phone number
-                    boolean matchesPhone = order.getCustomerPhone() != null && 
-                                         order.getCustomerPhone().contains(search);
-                    
-                    // Search by order ID
-                    boolean matchesOrderId = order.getOrderId().toString().contains(search);
-                    
-                    // Search by address
-                    boolean matchesAddress = order.getShippingAddress() != null && 
-                                           order.getShippingAddress().toLowerCase().contains(searchTerm);
-                    
-                    return matchesName || matchesEmail || matchesPhone || matchesOrderId || matchesAddress;
+                            order.getCustomerName().toLowerCase().contains(searchTermLower);
+                    boolean matchesOrderId = order.getOrderId() != null &&
+                            order.getOrderId().toString().contains(searchTerm);
+                    return matchesName || matchesOrderId;
                 })
                 .collect(Collectors.toList());
         }
@@ -153,10 +153,13 @@ public class OrderController {
         
         // Get all shops for filter dropdown
         List<Shop> allShops = shopRepository.findAll();
+        // Provide all statuses for JSP (orders.jsp) dropdown
+        model.addAttribute("allStatuses", Order.OrderStatus.values());
         
         // Add pagination attributes
         model.addAttribute("orderDetails", paginatedOrders);
         model.addAttribute("selectedStatus", orderStatus);
+        model.addAttribute("selectedStatusStr", orderStatus != null ? orderStatus.name() : "");
         model.addAttribute("selectedShopId", shopId);
         model.addAttribute("allShops", allShops);
         model.addAttribute("searchTerm", search);
