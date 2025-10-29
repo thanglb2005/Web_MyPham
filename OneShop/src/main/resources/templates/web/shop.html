@@ -81,7 +81,7 @@
 
     <!-- Shop banners: mimic homepage slider (Slick) -->
     <th:block
-      th:if="${shop.shopBanner != null and !#strings.isEmpty(shop.shopBanner)}"
+      th:if="${shop != null and shop.shopBanner != null and !#strings.isEmpty(shop.shopBanner)}"
     >
       <section
         class="home-index-slider slider-arrow slider-dots shop-hero-slider"
@@ -124,7 +124,7 @@
 
     <!-- Default banner when no shop banner -->
     <section
-      th:if="${shop.shopBanner == null or #strings.isEmpty(shop.shopBanner)}"
+      th:if="${shop == null or shop.shopBanner == null or #strings.isEmpty(shop.shopBanner)}"
       class="inner-section single-banner"
       style="background: url(/images/single-banner.jpg) no-repeat center"
     >
