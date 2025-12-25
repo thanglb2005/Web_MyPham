@@ -39,16 +39,16 @@ public class VendorDashboardController {
 
     @GetMapping({"/dashboard", ""})
     public String dashboard(@RequestParam(value = "shopId", required = false) Long shopId,
-                           HttpSession session, 
-                           Model model, 
-                           RedirectAttributes redirectAttributes) {
+                            HttpSession session,
+                            Model model,
+                            RedirectAttributes redirectAttributes) {
         return handleDashboard(shopId, session, model, redirectAttributes);
     }
 
     private String handleDashboard(Long shopId,
-                                  HttpSession session, 
-                                  Model model, 
-                                  RedirectAttributes redirectAttributes) {
+                                   HttpSession session,
+                                   Model model,
+                                   RedirectAttributes redirectAttributes) {
         User vendor = ensureVendor(session);
         if (vendor == null) {
             return "redirect:/login";
@@ -75,8 +75,12 @@ public class VendorDashboardController {
         Long shippingOrders = orderDetailRepository.countDistinctOrdersByShopAndStatus(shopIdFinal, Order.OrderStatus.SHIPPING);
         Long deliveredOrders = orderDetailRepository.countDistinctOrdersByShopAndStatus(shopIdFinal, Order.OrderStatus.DELIVERED);
         Long cancelledOrders = orderDetailRepository.countDistinctOrdersByShopAndStatus(shopIdFinal, Order.OrderStatus.CANCELLED);
-        // Doanh thu đã giao: cộng từ bảng orders theo trạng thái DELIVERED (khớp trang doanh thu)
+
         Double totalRevenue = orderRepository.sumDeliveredRevenueByShopId(shopIdFinal);
+
+        Double shippingRevenue = orderRepository.sumRevenueByShopIdAndStatus(shopIdFinal, Order.OrderStatus.SHIPPING);
+        Double confirmedRevenue = orderRepository.sumRevenueByShopIdAndStatus(shopIdFinal, Order.OrderStatus.CONFIRMED);
+        // ==============================================================
 
         // Lấy danh sách sản phẩm để hiển thị trong dashboard
         List<Product> products = productService.findByShopId(shopIdFinal);
@@ -94,6 +98,10 @@ public class VendorDashboardController {
         model.addAttribute("deliveredOrders", defaultZero(deliveredOrders));
         model.addAttribute("cancelledOrders", defaultZero(cancelledOrders));
         model.addAttribute("totalRevenue", totalRevenue != null ? totalRevenue : 0.0);
+        model.addAttribute("shippingRevenue", shippingRevenue != null ? shippingRevenue : 0.0);
+        model.addAttribute("confirmedRevenue", confirmedRevenue != null ? confirmedRevenue : 0.0);
+        // ======================================================
+
         model.addAttribute("pageTitle", "Bảng điều khiển shop");
 
         return "vendor/dashboard";
@@ -158,4 +166,3 @@ public class VendorDashboardController {
         return isVendor ? user : null;
     }
 }
-

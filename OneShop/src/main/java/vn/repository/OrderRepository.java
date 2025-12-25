@@ -472,4 +472,21 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
            "AND o.estimatedDeliveryDate < :currentTime " +
            "ORDER BY o.estimatedDeliveryDate ASC")
     List<Order> findOrdersToMarkOverdue(@Param("currentTime") java.time.LocalDateTime currentTime);
+
+    /**
+     * Tính tổng doanh thu theo shopId và trạng thái đơn hàng
+     * @param shopId ID của shop
+     * @param status Trạng thái đơn hàng (SHIPPING, CONFIRMED, etc.)
+     * @return Tổng doanh thu hoặc null nếu không có
+     */
+//    @Query("SELECT SUM(o.totalAmount) FROM Order o " +
+//            "JOIN o.orderDetails od " +
+//            "WHERE od.product.shop.shopId = :shopId " +
+//            "AND o.status = :status")
+//    Double sumRevenueByShopIdAndStatus(@Param("shopId") Long shopId,
+//                                       @Param("status") Order.OrderStatus status);
+    @Query("SELECT COALESCE(SUM(CASE WHEN o.finalAmount IS NOT NULL AND o.finalAmount > 0 THEN o.finalAmount ELSE o.totalAmount END), 0) " +
+            "FROM Order o WHERE o.status = :status AND o.shop.shopId = :shopId")
+    Double sumRevenueByShopIdAndStatus(@Param("shopId") Long shopId,
+                                       @Param("status") Order.OrderStatus status);
 }
