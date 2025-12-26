@@ -472,7 +472,9 @@
                                th:if="${#lists.size(rv.commentMedia.?[mediaType == 'IMAGE'])} > 0">
                             <img th:each="m : ${rv.commentMedia}" th:if="${m.mediaType == 'IMAGE'}"
                                  th:src="@{'/loadImage?imageName=' + ${m.url}}" alt="review image"
-                                 style="width:80px;height:80px;object-fit:cover;border-radius:4px;border:1px solid #dee2e6;"/>
+                                 style="width:80px;height:80px;object-fit:cover;border-radius:4px;border:1px solid #dee2e6;cursor:pointer;"
+                                 onclick="openImageModal(this.src, this.alt)"
+                                 title="Click để phóng to ảnh"/>
                           </div>
                           <!-- Hiển thị video ở dưới -->
                           <div th:if="${#lists.size(rv.commentMedia.?[mediaType == 'VIDEO'])} > 0">
@@ -486,70 +488,35 @@
                       </div>
                     </div>
 
-                    <form class="review-form" th:action="@{/reviews/product}" method="post" enctype="multipart/form-data">
-                      <input type="hidden" name="productId" th:value="${product.productId}" />
-                      <input type="hidden" id="ratingInput" name="rating" value="5" />
-                      <input type="hidden" name="redirect" th:value="@{'/productDetail?id=' + ${product.productId}}" />
-                      
-                      <!-- Hiển thị thông tin user từ session -->
-                      <div th:if="${user != null}" class="mb-3 p-3 bg-light rounded">
-                        <div class="d-flex align-items-center">
-                          <i class="fas fa-user-circle text-primary me-2" style="font-size: 24px;"></i>
-                          <div>
-                            <div class="fw-bold text-primary" th:text="${user.name}">Tên người dùng</div>
-                            <small class="text-muted" th:text="${user.email}">email@example.com</small>
-                          </div>
-                        </div>
+                    <!-- Thông báo chỉ cho phép đánh giá sau khi mua -->
+                    <div th:if="${user != null}" class="review-notice text-center py-4">
+                      <div class="notice-card">
+                        <i class="fas fa-shopping-cart text-primary mb-3" style="font-size: 48px;"></i>
+                        <h5>Chỉ khách hàng đã mua sản phẩm mới có thể đánh giá</h5>
+                        <p class="text-muted mb-3">
+                          Để đánh giá sản phẩm này, bạn cần mua sản phẩm trước.
+                        </p>
+                        <a href="#" class="btn btn-primary" onclick="scrollToProduct()">
+                          <i class="fas fa-shopping-cart"></i>
+                          Mua ngay để đánh giá
+                        </a>
                       </div>
-                      
-                      <div class="row">
-                        <div class="col-lg-12">
-                          <div class="form-group">
-                            <label>Đánh giá của bạn *</label>
-                            <div class="stars" id="product-stars">
-                              <i class="icofont-star"></i>
-                              <i class="icofont-star"></i>
-                              <i class="icofont-star"></i>
-                              <i class="icofont-star"></i>
-                              <i class="icofont-star"></i>
-                            </div>
-                          </div>
-                        </div>
-                        <div class="col-lg-12">
-                          <div class="form-group">
-                            <label>Nội dung đánh giá *</label>
-                            <textarea name="content"
-                              class="form-control"
-                              rows="5"
-                              required
-                              th:text="${userReview != null ? userReview.content : ''}"
-                              placeholder="Chia sẻ trải nghiệm của bạn về sản phẩm này..."
-                            ></textarea>
-                          </div>
-                        </div>
-                        <div class="col-lg-12">
-                          <div class="form-group">
-                            <label>Thêm ảnh (tối đa 5)</label>
-                            <input type="file" name="images" accept="image/*" multiple class="form-control" />
-                          </div>
-                        </div>
-                        <div class="col-lg-12">
-                          <div class="form-group">
-                            <label>Thêm video (tối đa 2)</label>
-                            <input type="file" name="videos" accept="video/*" multiple class="form-control" />
-                          </div>
-                        </div>
-                        <div class="col-lg-12">
-                          <div class="d-flex gap-2">
-                            <!-- Nút gửi/cập nhật đánh giá -->
-                            <button type="submit" class="btn btn-inline">
-                              <i class="icofont-paper-plane"></i>
-                              <span th:text="${userReview != null ? 'Cập nhật đánh giá' : 'Gửi đánh giá'}">Gửi đánh giá</span>
-                            </button>
-                          </div>
-                        </div>
+                    </div>
+                    
+                    <!-- Thông báo cho user chưa đăng nhập -->
+                    <div th:if="${user == null}" class="review-notice text-center py-4">
+                      <div class="notice-card">
+                        <i class="fas fa-user-lock text-primary mb-3" style="font-size: 48px;"></i>
+                        <h5>Vui lòng đăng nhập để đánh giá</h5>
+                        <p class="text-muted mb-3">
+                          Bạn cần đăng nhập và mua sản phẩm để có thể đánh giá.
+                        </p>
+                        <a th:href="@{/login}" class="btn btn-primary">
+                          <i class="fas fa-sign-in-alt"></i>
+                          Đăng nhập
+                        </a>
                       </div>
-                    </form>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -904,6 +871,185 @@
         });
       });
     </script>
+    
+    <!-- Image Zoom Modal -->
+    <div id="imageModal" class="image-modal" onclick="closeImageModal()">
+      <div class="image-modal-content" onclick="event.stopPropagation()">
+        <span class="image-modal-close" onclick="closeImageModal()">&times;</span>
+        <img id="modalImage" src="" alt="" class="modal-image">
+        <div class="image-modal-caption" id="modalCaption"></div>
+      </div>
+    </div>
+
+    <style>
+      /* Review Notice Styles */
+      .review-notice {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-radius: 12px;
+        margin: 20px 0;
+      }
+      
+      .notice-card {
+        background: white;
+        padding: 40px 30px;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        border: 1px solid #e9ecef;
+        max-width: 500px;
+        margin: 0 auto;
+      }
+      
+      .notice-card h5 {
+        color: #495057;
+        font-weight: 600;
+        margin-bottom: 15px;
+      }
+      
+      .notice-card p {
+        font-size: 14px;
+        line-height: 1.6;
+      }
+      
+      .notice-card .btn {
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+      }
+      
+      .notice-card .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
+      }
+
+      /* Image Modal Styles */
+      .image-modal {
+        display: none;
+        position: fixed;
+        z-index: 9999;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.9);
+        animation: fadeIn 0.3s ease;
+      }
+
+      .image-modal-content {
+        position: relative;
+        margin: auto;
+        padding: 0;
+        width: 90%;
+        max-width: 1200px;
+        top: 50%;
+        transform: translateY(-50%);
+        animation: zoomIn 0.3s ease;
+      }
+
+      .modal-image {
+        width: 100%;
+        height: auto;
+        max-height: 80vh;
+        object-fit: contain;
+        border-radius: 8px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+      }
+
+      .image-modal-close {
+        position: absolute;
+        top: -40px;
+        right: 0;
+        color: #fff;
+        font-size: 40px;
+        font-weight: bold;
+        cursor: pointer;
+        z-index: 10000;
+        transition: color 0.3s ease;
+      }
+
+      .image-modal-close:hover {
+        color: #ff6b6b;
+      }
+
+      .image-modal-caption {
+        text-align: center;
+        color: #fff;
+        padding: 10px 0;
+        font-size: 16px;
+        background-color: rgba(0, 0, 0, 0.7);
+        border-radius: 0 0 8px 8px;
+      }
+
+      @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
+
+      @keyframes zoomIn {
+        from { transform: translateY(-50%) scale(0.8); opacity: 0; }
+        to { transform: translateY(-50%) scale(1); opacity: 1; }
+      }
+
+      /* Responsive */
+      @media (max-width: 768px) {
+        .image-modal-content {
+          width: 95%;
+          padding: 20px;
+        }
+        
+        .image-modal-close {
+          top: -30px;
+          font-size: 30px;
+        }
+        
+        .modal-image {
+          max-height: 70vh;
+        }
+      }
+    </style>
+
+    <script>
+      // Scroll to product section
+      function scrollToProduct() {
+        const productSection = document.querySelector('.inner-section');
+        if (productSection) {
+          productSection.scrollIntoView({ 
+            behavior: 'smooth',
+            block: 'start'
+          });
+        }
+      }
+
+      // Image Modal Functions
+      function openImageModal(src, alt) {
+        const modal = document.getElementById('imageModal');
+        const modalImg = document.getElementById('modalImage');
+        const caption = document.getElementById('modalCaption');
+        
+        modal.style.display = 'block';
+        modalImg.src = src;
+        caption.textContent = alt || 'Ảnh đánh giá';
+        
+        // Prevent body scroll when modal is open
+        document.body.style.overflow = 'hidden';
+      }
+
+      function closeImageModal() {
+        const modal = document.getElementById('imageModal');
+        modal.style.display = 'none';
+        
+        // Restore body scroll
+        document.body.style.overflow = 'auto';
+      }
+
+      // Close modal with Escape key
+      document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
+          closeImageModal();
+        }
+      });
+    </script>
+
     <script src="/js/favorite.js"></script>
   </body>
 </html>
