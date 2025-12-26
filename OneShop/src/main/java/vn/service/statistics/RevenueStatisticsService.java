@@ -178,17 +178,29 @@ public class RevenueStatisticsService {
                 }
             }
             
-            double growthRate = 0.0;
+            // Tính tỷ lệ tăng trưởng
+            String growthRateDisplay;
+            boolean isPositiveGrowth = true;
+            
             if (previousMonthRevenue > 0) {
-                growthRate = ((currentMonthRevenue - previousMonthRevenue) / previousMonthRevenue) * 100;
+                // Tháng trước có doanh thu, tính % tăng trưởng bình thường
+                double growthRate = ((currentMonthRevenue - previousMonthRevenue) / previousMonthRevenue) * 100;
+                growthRateDisplay = formatNumber(growthRate) + "%";
+                isPositiveGrowth = growthRate >= 0;
             } else if (currentMonthRevenue > 0) {
-                growthRate = 100.0;
+                // Tháng trước không có doanh thu, hiển thị "Mới" thay vì 100%
+                growthRateDisplay = "Mới";
+                isPositiveGrowth = true;
+            } else {
+                // Cả 2 tháng đều không có doanh thu
+                growthRateDisplay = "0%";
+                isPositiveGrowth = false;
             }
             
             result.put("revenue", currentMonthRevenue);
             result.put("formattedRevenue", formatCurrency(currentMonthRevenue));
-            result.put("growthRate", formatNumber(growthRate));
-            result.put("isPositiveGrowth", growthRate >= 0);
+            result.put("growthRate", growthRateDisplay);
+            result.put("isPositiveGrowth", isPositiveGrowth);
         } catch (Exception e) {
             result.put("revenue", 0.0);
             result.put("formattedRevenue", formatCurrency(0.0));
@@ -295,21 +307,35 @@ public class RevenueStatisticsService {
             }
             
             // Calculate growth rate
-            double growthRate = 0.0;
-            if (previousMonthRevenue > 0) {
-                growthRate = ((currentMonthRevenue - previousMonthRevenue) / previousMonthRevenue) * 100;
-            } else if (currentMonthRevenue > 0) {
-                growthRate = 100.0; // 100% tăng trưởng nếu tháng trước không có doanh thu
-            }
-            
+            System.out.println("=== TÍNH TOÁN TỶ LỆ TĂNG TRƯỞNG ===");
             System.out.println("Doanh thu tháng " + month + "/" + year + ": " + formatCurrency(currentMonthRevenue));
             System.out.println("Doanh thu tháng trước: " + formatCurrency(previousMonthRevenue));
-            System.out.println("Tăng trưởng: " + growthRate + "%");
+            
+            String growthRateDisplay;
+            boolean isPositiveGrowth = true;
+            
+            if (previousMonthRevenue > 0) {
+                // Tháng trước có doanh thu, tính % tăng trưởng bình thường
+                double growthRate = ((currentMonthRevenue - previousMonthRevenue) / previousMonthRevenue) * 100;
+                growthRateDisplay = formatNumber(growthRate) + "%";
+                isPositiveGrowth = growthRate >= 0;
+                System.out.println("Tăng trưởng: " + growthRateDisplay);
+            } else if (currentMonthRevenue > 0) {
+                // Tháng trước không có doanh thu, hiển thị "Mới" thay vì 100%
+                growthRateDisplay = "Mới";
+                isPositiveGrowth = true;
+                System.out.println("Trạng thái: Dữ liệu mới (tháng trước không có doanh thu)");
+            } else {
+                // Cả 2 tháng đều không có doanh thu
+                growthRateDisplay = "0%";
+                isPositiveGrowth = false;
+                System.out.println("Trạng thái: Không có dữ liệu cả 2 tháng");
+            }
             
             result.put("revenue", currentMonthRevenue);
             result.put("formattedRevenue", formatCurrency(currentMonthRevenue));
-            result.put("growthRate", formatNumber(growthRate));
-            result.put("isPositiveGrowth", growthRate >= 0);
+            result.put("growthRate", growthRateDisplay);
+            result.put("isPositiveGrowth", isPositiveGrowth);
         } catch (Exception e) {
             System.err.println("Lỗi khi lấy thống kê tháng hiện tại: " + e.getMessage());
             e.printStackTrace();

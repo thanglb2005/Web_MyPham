@@ -491,19 +491,19 @@
                                 <div class="card-body">
                                     <div class="row">
                                         <!-- KPIs -->
-                                        <div class="col-sm-6 col-md-3 dashboard-item animate__animated animate__fadeIn">
+                                        <div class="col-sm-12 col-md-4 dashboard-item animate__animated animate__fadeIn">
                                             <div class="card card-stats card-primary card-round">
                                                 <div class="card-body">
                                                     <div class="row">
                                                         <div class="col-5">
                                                             <div class="icon-big text-center">
-                                                                <i class="fas fa-shopping-cart"></i>
+                                                                <i class="fas fa-shopping-cart fa-2x"></i>
                                                             </div>
                                                         </div>
                                                         <div class="col-7 col-stats">
                                                             <div class="numbers">
                                                                 <p class="card-category">Đơn hàng hôm nay</p>
-                                                                <h4 class="card-title dashboard-stats" th:text="${todayOrders ?: '0'}">0</h4>
+                                                                <h4 class="card-title dashboard-stats" style="font-size: 2.5rem;" th:text="${todayOrders ?: '0'}">0</h4>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -515,19 +515,19 @@
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="col-sm-6 col-md-3 dashboard-item animate__animated animate__fadeIn animate__delay-1s">
+                                        <div class="col-sm-12 col-md-4 dashboard-item animate__animated animate__fadeIn animate__delay-1s">
                                             <div class="card card-stats card-success card-round">
                                                 <div class="card-body">
                                                     <div class="row">
                                                         <div class="col-5">
                                                             <div class="icon-big text-center">
-                                                                <i class="fas fa-dollar-sign"></i>
+                                                                <i class="fas fa-dollar-sign fa-2x"></i>
                                                             </div>
                                                         </div>
                                                         <div class="col-7 col-stats">
                                                             <div class="numbers">
                                                                 <p class="card-category">Doanh thu hôm nay</p>
-                                                                <h4 class="card-title dashboard-stats" th:text="${todayRevenue ?: '0 ₫'}">0 ₫</h4>
+                                                                <h4 class="card-title dashboard-stats" style="font-size: 2.5rem;" th:text="${todayRevenue ?: '0 ₫'}">0 ₫</h4>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -539,19 +539,19 @@
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="col-sm-6 col-md-3 dashboard-item animate__animated animate__fadeIn animate__delay-2s">
+                                        <div class="col-sm-12 col-md-4 dashboard-item animate__animated animate__fadeIn animate__delay-2s">
                                             <div class="card card-stats card-info card-round">
                                                 <div class="card-body">
                                                     <div class="row">
                                                         <div class="col-5">
                                                             <div class="icon-big text-center">
-                                                                <i class="fas fa-chart-bar"></i>
+                                                                <i class="fas fa-chart-bar fa-2x"></i>
                                                             </div>
                                                         </div>
                                                         <div class="col-7 col-stats">
                                                             <div class="numbers">
                                                                 <p class="card-category">Doanh thu tháng này</p>
-                                                                <h4 class="card-title dashboard-stats" th:text="${currentMonthRevenue ?: '0 ₫'}">0 ₫</h4>
+                                                                <h4 class="card-title dashboard-stats" style="font-size: 2.5rem;" th:text="${currentMonthRevenue ?: '0 ₫'}">0 ₫</h4>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -563,130 +563,6 @@
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="col-sm-6 col-md-3 dashboard-item animate__animated animate__fadeIn animate__delay-3s">
-                                            <div class="card card-stats card-warning card-round">
-                                                <div class="card-body">
-                                                    <div class="row">
-                                                        <div class="col-5">
-                                                            <div class="icon-big text-center">
-                                                                <i class="fas fa-chart-line"></i>
-                                                            </div>
-                                                        </div>
-                                                        <div class="col-7 col-stats">
-                                                            <div class="numbers">
-                                                                <p class="card-category">Tỷ lệ tăng trưởng</p>
-                                                                <h4 class="card-title dashboard-stats">
-                                                                    <span th:class="${isPositiveGrowth ? 'text-white' : 'text-white'}">
-                                                                        <i th:class="${isPositiveGrowth ? 'fas fa-arrow-up' : 'fas fa-arrow-down'}"></i>
-                                                                        <span th:text="${growthRate ?: '0%'}">0%</span>
-                                                                        <span class="trend-indicator" th:classappend="${isPositiveGrowth ? 'bg-success' : 'bg-danger'}">
-                                                                            <i th:class="${isPositiveGrowth ? 'fas fa-thumbs-up' : 'fas fa-thumbs-down'}"></i>
-                                                                        </span>
-                                                                    </span>
-                                                                </h4>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div class="card-footer p-2">
-                                                    <div class="text-center">
-                                                        <small class="text-muted"><i class="fas fa-sync-alt"></i> So với tháng trước</small>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    
-                                    <!-- So sánh doanh thu giữa các kỳ -->
-                                    <div class="row mb-4">
-                                        <div class="col-md-12">
-                                            <div class="card animate__animated animate__fadeIn animate__delay-1s">
-                                                <div class="card-header">
-                                                    <div class="d-flex align-items-center">
-                                                        <i class="fas fa-balance-scale fa-2x mr-2"></i>
-                                                        <h4 class="card-title mb-0">So sánh doanh thu giữa các kỳ</h4>
-                                                    </div>
-                                                </div>
-                                                <div class="card-body">
-                                                    <div class="row">
-                                                        <div class="col-md-4">
-                                                            <div class="form-group">
-                                                                <label><i class="fas fa-sliders-h"></i> Chọn loại so sánh:</label>
-                                                                <div class="input-group">
-                                                                    <div class="input-group-prepend">
-                                                                        <span class="input-group-text bg-primary text-white"><i class="fas fa-exchange-alt"></i></span>
-                                                                    </div>
-                                                                    <select class="form-control" id="comparison-type">
-                                                                        <option value="month">Tháng so với tháng trước</option>
-                                                                        <option value="quarter">Quý so với quý trước</option>
-                                                                        <option value="year">Năm so với năm trước</option>
-                                                                    </select>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                        <div class="col-md-4">
-                                                            <div class="form-group" id="period-selector">
-                                                                <label><i class="fas fa-calendar-check"></i> Chọn kỳ:</label>
-                                                                <div class="input-group">
-                                                                    <div class="input-group-prepend">
-                                                                        <span class="input-group-text bg-info text-white"><i class="fas fa-calendar"></i></span>
-                                                                    </div>
-                                                                    <select class="form-control" id="period-value">
-                                                                        <!-- Tùy chọn sẽ được tạo động bằng JavaScript -->
-                                                                    </select>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                        <div class="col-md-4 d-flex align-items-end">
-                                                            <button class="btn btn-primary btn-modern" id="compare-periods">
-                                                                <i class="fas fa-sync"></i> So sánh
-                                                            </button>
-                                                        </div>
-                                                    </div>
-                                                    <div class="row mt-4">
-                                                        <div class="col-md-12">
-                                                            <div id="comparison-result" style="display: none;" class="animate__animated animate__fadeIn">
-                                                                <div class="table-responsive">
-                                                                    <table class="table table-bordered table-hover comparison-table">
-                                                                        <thead class="bg-light">
-                                                                            <tr>
-                                                                                <th class="text-center"><i class="fas fa-chart-pie"></i> Chỉ tiêu</th>
-                                                                                <th class="text-center" id="current-period"><i class="fas fa-calendar-check"></i> Kỳ hiện tại</th>
-                                                                                <th class="text-center" id="previous-period"><i class="fas fa-calendar-minus"></i> Kỳ trước</th>
-                                                                                <th class="text-center"><i class="fas fa-exchange-alt"></i> Chênh lệch</th>
-                                                                                <th class="text-center"><i class="fas fa-percentage"></i> Tỷ lệ (%)</th>
-                                                                            </tr>
-                                                                        </thead>
-                                                                        <tbody>
-                                                                            <tr class="revenue-row">
-                                                                                <td><i class="fas fa-dollar-sign text-success mr-1"></i> <strong>Doanh thu</strong></td>
-                                                                                <td class="text-right font-weight-bold" id="current-revenue">0 ₫</td>
-                                                                                <td class="text-right" id="previous-revenue">0 ₫</td>
-                                                                                <td class="text-right" id="revenue-diff">0 ₫</td>
-                                                                                <td class="text-center" id="revenue-rate">0%</td>
-                                                                            </tr>
-                                                                            <tr class="orders-row">
-                                                                                <td><i class="fas fa-shopping-cart text-primary mr-1"></i> <strong>Số đơn hàng</strong></td>
-                                                                                <td class="text-right font-weight-bold" id="current-orders">0</td>
-                                                                                <td class="text-right" id="previous-orders">0</td>
-                                                                                <td class="text-right" id="orders-diff">0</td>
-                                                                                <td class="text-center" id="orders-rate">0%</td>
-                                                                            </tr>
-                                                                            
-                                                                        </tbody>
-                                                                    </table>
-                                                                </div>
-                                                            </div>
-                                                            <div id="comparison-placeholder" class="text-center py-4">
-                                                                <i class="fas fa-chart-bar fa-3x text-muted mb-3"></i>
-                                                                <p class="text-muted">Chọn loại so sánh và nhấn nút "So sánh" để xem kết quả</p>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
                                     </div>
 
                                     <!-- Chart Container -->
@@ -778,7 +654,7 @@
                                     <!-- Tóm tắt báo cáo - Thẻ thông tin -->
                                     <div class="row mb-4" id="report-summary">
                                         <!-- Tổng số mục -->
-                                        <div class="col-lg-3 col-md-6 col-sm-6 dashboard-item">
+                                        <div class="col-lg-4 col-md-6 col-sm-12 dashboard-item">
                                             <div class="card card-stats card-primary card-round animate__animated animate__fadeIn">
                                                 <div class="card-body pb-0">
                                                     <div class="d-flex align-items-center">
@@ -800,7 +676,7 @@
                                         </div>
                                         
                                         <!-- Tổng doanh thu -->
-                                        <div class="col-lg-3 col-md-6 col-sm-6 dashboard-item">
+                                        <div class="col-lg-4 col-md-6 col-sm-12 dashboard-item">
                                             <div class="card card-stats card-success card-round animate__animated animate__fadeIn animate__delay-1s">
                                                 <div class="card-body pb-0">
                                                     <div class="d-flex align-items-center">
@@ -822,7 +698,7 @@
                                         </div>
                                         
                                         <!-- Tổng số lượng -->
-                                        <div class="col-lg-3 col-md-6 col-sm-6 dashboard-item">
+                                        <div class="col-lg-4 col-md-6 col-sm-12 dashboard-item">
                                             <div class="card card-stats card-info card-round animate__animated animate__fadeIn animate__delay-2s">
                                                 <div class="card-body pb-0">
                                                     <div class="d-flex align-items-center">
