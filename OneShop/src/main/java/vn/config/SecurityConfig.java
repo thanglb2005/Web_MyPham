@@ -45,7 +45,7 @@ public class SecurityConfig {
                 .requestMatchers("/css/**", "/js/**", "/images/**", "/fonts/**", "/static/**", "/webjars/**", "/upload/**", "/brands/**", "/providers/**").permitAll()
                 .requestMatchers("/vendor/bootstrap/**", "/vendor/slickslider/**", "/vendor/venobox/**", "/vendor/niceselect/**", "/vendor/countdown/**").permitAll()
                 // Public pages
-                .requestMatchers("/oauth2/**", "/login/**", "/register/**", "/", "/forgotPassword/**", "/resetPassword/**", "/privacy", "/delete-data", "/delete-data-callback").permitAll()
+                .requestMatchers("/oauth2/**", "/login/**", "/register/**", "/", "/forgotPassword/**", "/resetPassword/**", "/privacy", "/terms-and-conditions", "/delete-data", "/delete-data-callback").permitAll()
                 // JWT API endpoints
                 .requestMatchers("/api/auth/**").permitAll()
                 // Role-based access

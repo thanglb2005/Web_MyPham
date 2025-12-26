@@ -177,6 +177,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                requestPath.startsWith("/resetPassword") ||
                requestPath.equals("/") ||
                requestPath.equals("/privacy") ||
+               requestPath.equals("/terms-and-conditions") ||
                requestPath.equals("/delete-data") ||
                requestPath.equals("/delete-data-callback") ||
                requestPath.startsWith("/api/auth/"); // Skip for auth endpoints

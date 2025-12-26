@@ -15,6 +15,11 @@ public class PublicController {
         return "privacy";
     }
 
+    @GetMapping("/terms-and-conditions")
+    public String termsAndConditions() {
+        return "terms-and-conditions";
+    }
+
     @GetMapping("/delete-data")
     public String deleteData() {
         return "delete-data";

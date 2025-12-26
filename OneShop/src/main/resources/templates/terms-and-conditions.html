@@ -1,0 +1,3175 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Điều khoản & Chính sách - OneShop</title>
+    <link rel="icon" href="/images/icon.png" />
+    <link rel="stylesheet" href="/vendor/bootstrap/bootstrap.min.css" />
+    <link rel="stylesheet" href="/fonts/fontawesome/fontawesome.min.css" />
+    <link rel="stylesheet" href="/css/main.css" />
+    <style>
+      :root {
+        --primary-color: #ee4d2d;
+        --primary-hover: #d73211;
+        --text-primary: #333;
+        --text-secondary: #666;
+        --border-color: #e0e0e0;
+        --bg-light: #f5f5f5;
+        --bg-white: #ffffff;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          "Helvetica Neue", Arial, sans-serif;
+        color: var(--text-primary);
+        line-height: 1.6;
+        background-color: #fafafa;
+      }
+
+      .terms-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+
+      .terms-header {
+        background: var(--bg-white);
+        padding: 30px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+
+      .terms-header h1 {
+        color: var(--primary-color);
+        font-size: 28px;
+        font-weight: 600;
+        margin-bottom: 10px;
+      }
+
+      .terms-header p {
+        color: var(--text-secondary);
+        margin: 0;
+      }
+
+      .terms-wrapper {
+        display: flex;
+        gap: 20px;
+        align-items: flex-start;
+      }
+
+      /* Left Sidebar Menu */
+      .terms-sidebar {
+        width: 280px;
+        background: var(--bg-white);
+        border-radius: 8px;
+        padding: 20px 0;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        position: sticky;
+        top: 20px;
+        max-height: calc(100vh - 40px);
+        overflow-y: auto;
+      }
+
+      .terms-sidebar::-webkit-scrollbar {
+        width: 6px;
+      }
+
+      .terms-sidebar::-webkit-scrollbar-track {
+        background: #f1f1f1;
+      }
+
+      .terms-sidebar::-webkit-scrollbar-thumb {
+        background: #ccc;
+        border-radius: 3px;
+      }
+
+      .sidebar-menu {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
+
+      .sidebar-menu li {
+        margin: 0;
+      }
+
+      .sidebar-menu a {
+        display: block;
+        padding: 12px 20px;
+        color: var(--text-primary);
+        text-decoration: none;
+        transition: all 0.2s;
+        border-left: 3px solid transparent;
+      }
+
+      .sidebar-menu a:hover {
+        background-color: var(--bg-light);
+        color: var(--primary-color);
+        border-left-color: var(--primary-color);
+      }
+
+      .sidebar-menu a.active {
+        background-color: #fff5f3;
+        color: var(--primary-color);
+        border-left-color: var(--primary-color);
+        font-weight: 500;
+      }
+
+      .sidebar-menu .submenu {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: none;
+      }
+
+      .sidebar-menu .submenu.active {
+        display: block;
+      }
+
+      .sidebar-menu .submenu a {
+        padding-left: 40px;
+        font-size: 14px;
+      }
+
+      /* Content Area */
+      .terms-content {
+        flex: 1;
+        background: var(--bg-white);
+        border-radius: 8px;
+        padding: 40px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+
+      .section {
+        margin-bottom: 40px;
+        scroll-margin-top: 100px;
+      }
+
+      .section-title {
+        font-size: 24px;
+        font-weight: 600;
+        color: var(--primary-color);
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid var(--primary-color);
+      }
+
+      .section-content {
+        font-size: 15px;
+        line-height: 1.8;
+        color: var(--text-primary);
+      }
+
+      .section-content h3 {
+        font-size: 18px;
+        font-weight: 600;
+        margin-top: 25px;
+        margin-bottom: 15px;
+        color: var(--text-primary);
+      }
+
+      .section-content h4 {
+        font-size: 16px;
+        font-weight: 600;
+        margin-top: 20px;
+        margin-bottom: 12px;
+        color: var(--text-primary);
+      }
+
+      .section-content p {
+        margin-bottom: 15px;
+        text-align: justify;
+      }
+
+      .section-content ul,
+      .section-content ol {
+        margin-bottom: 15px;
+        padding-left: 30px;
+      }
+
+      .section-content li {
+        margin-bottom: 10px;
+      }
+
+      .section-content strong {
+        color: var(--text-primary);
+        font-weight: 600;
+      }
+
+      .accordion-item {
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        margin-bottom: 15px;
+        overflow: hidden;
+      }
+
+      .accordion-header {
+        background: var(--bg-light);
+        padding: 15px 20px;
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: background 0.2s;
+      }
+
+      .accordion-header:hover {
+        background: #eeeeee;
+      }
+
+      .accordion-header h3 {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--text-primary);
+      }
+
+      .accordion-icon {
+        transition: transform 0.3s;
+        color: var(--text-secondary);
+      }
+
+      .accordion-item.active .accordion-icon {
+        transform: rotate(180deg);
+      }
+
+      .accordion-content {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease-out;
+      }
+
+      .accordion-item.active .accordion-content {
+        max-height: 5000px;
+      }
+
+      .accordion-body {
+        padding: 20px;
+        border-top: 1px solid var(--border-color);
+      }
+
+      /* Responsive */
+      @media (max-width: 992px) {
+        .terms-wrapper {
+          flex-direction: column;
+        }
+
+        .terms-sidebar {
+          width: 100%;
+          position: relative;
+          top: 0;
+          max-height: none;
+        }
+
+        .terms-content {
+          padding: 30px 20px;
+        }
+
+        .sidebar-menu {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 5px;
+        }
+
+        .sidebar-menu li {
+          flex: 1 1 auto;
+        }
+
+        .sidebar-menu a {
+          padding: 10px 15px;
+          font-size: 14px;
+          text-align: center;
+          border-left: none;
+          border-bottom: 3px solid transparent;
+        }
+
+        .sidebar-menu a.active {
+          border-left: none;
+          border-bottom-color: var(--primary-color);
+        }
+
+        .sidebar-menu .submenu {
+          position: absolute;
+          background: white;
+          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+          z-index: 100;
+          width: 100%;
+          margin-top: 5px;
+        }
+      }
+
+      @media (max-width: 768px) {
+        .terms-container {
+          padding: 10px;
+        }
+
+        .terms-header {
+          padding: 20px;
+        }
+
+        .terms-header h1 {
+          font-size: 24px;
+        }
+
+        .terms-content {
+          padding: 20px 15px;
+        }
+
+        .section-title {
+          font-size: 20px;
+        }
+
+        .section-content {
+          font-size: 14px;
+        }
+      }
+
+      .highlight-box {
+        background: #fff5f3;
+        border-left: 4px solid var(--primary-color);
+        padding: 15px 20px;
+        margin: 20px 0;
+        border-radius: 4px;
+      }
+
+      .contact-info {
+        background: var(--bg-light);
+        padding: 20px;
+        border-radius: 8px;
+        margin-top: 30px;
+      }
+
+      .contact-info h4 {
+        margin-top: 0;
+        color: var(--primary-color);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="terms-container">
+      <div class="terms-header">
+        <h1>Điều khoản & Chính sách</h1>
+        <p>Cập nhật lần cuối: Tháng 1, 2025</p>
+      </div>
+
+      <div class="terms-wrapper">
+        <!-- Left Sidebar Menu -->
+        <nav class="terms-sidebar">
+          <ul class="sidebar-menu">
+            <li>
+              <a href="#mua-sam" class="menu-link active"
+                >Mua Sắm Cùng OneShop</a
+              >
+            </li>
+            <li>
+              <a href="#khuyen-mai" class="menu-link">Khuyến Mãi & Ưu Đãi</a>
+            </li>
+            <li><a href="#thanh-toan" class="menu-link">Thanh Toán</a></li>
+            <li>
+              <a href="#don-hang" class="menu-link">Đơn Hàng & Vận Chuyển</a>
+            </li>
+            <li>
+              <a href="#tra-hang" class="menu-link">Trả Hàng & Hoàn Tiền</a>
+            </li>
+            <li>
+              <a href="#thong-tin-chung" class="menu-link">Thông Tin Chung</a>
+              <ul class="submenu" id="thong-tin-submenu">
+                <li>
+                  <a href="#chinh-sach-bao-mat" class="menu-link"
+                    >Chính sách bảo mật</a
+                  >
+                </li>
+                <li><a href="#tai-khoan" class="menu-link">Tài khoản</a></li>
+                <li><a href="#huong-dan" class="menu-link">Hướng dẫn</a></li>
+                <li>
+                  <a href="#giai-quyet-tranh-chap" class="menu-link"
+                    >Giải quyết tranh chấp</a
+                  >
+                </li>
+              </ul>
+            </li>
+          </ul>
+        </nav>
+
+        <!-- Main Content -->
+        <div class="terms-content">
+          <!-- Section 1: Mua Sắm Cùng OneShop -->
+          <section id="mua-sam" class="section">
+            <h2 class="section-title">1. Mua Sắm Cùng OneShop</h2>
+            <div class="section-content">
+              <div class="highlight-box">
+                <strong>OneShop</strong> là nền tảng thương mại điện tử kết nối
+                người mua và người bán, tạo điều kiện thuận lợi cho việc mua bán
+                hàng hóa trực tuyến một cách an toàn và tiện lợi.
+              </div>
+
+              <h3>1.1. Giới thiệu về OneShop</h3>
+              <p>
+                OneShop là sàn thương mại điện tử (E-commerce Platform) được vận
+                hành và quản lý bởi OneShop, một nền tảng công nghệ kết nối
+                người mua và người bán trên phạm vi toàn quốc. Chúng tôi cung
+                cấp một môi trường mua sắm trực tuyến an toàn, tiện lợi và đáng
+                tin cậy, nơi người bán có thể đăng bán sản phẩm và người mua có
+                thể tìm kiếm, so sánh giá cả, đọc đánh giá và mua sắm các sản
+                phẩm một cách dễ dàng thông qua website và ứng dụng di động của
+                chúng tôi.
+              </p>
+              <p>
+                OneShop hoạt động theo mô hình Marketplace (Sàn giao dịch thương
+                mại điện tử), trong đó chúng tôi đóng vai trò là đơn vị trung
+                gian cung cấp nền tảng công nghệ, kết nối người mua và người
+                bán, hỗ trợ thanh toán, vận chuyển và giải quyết tranh chấp.
+                OneShop không trực tiếp bán hàng, không sở hữu hàng hóa được
+                đăng bán trên nền tảng, và không chịu trách nhiệm về chất lượng,
+                tính pháp lý của sản phẩm do người bán cung cấp (trừ các trường
+                hợp được quy định cụ thể trong điều khoản này).
+              </p>
+              <p>
+                Bằng việc truy cập, đăng ký tài khoản, hoặc sử dụng bất kỳ dịch
+                vụ nào của OneShop, bạn (người dùng) xác nhận rằng bạn đã đọc,
+                hiểu và đồng ý tuân thủ tất cả các điều khoản và chính sách được
+                quy định trong tài liệu này, bao gồm nhưng không giới hạn: Điều
+                khoản Dịch vụ, Chính sách Bảo mật, Chính sách Trả hàng & Hoàn
+                tiền, Chính sách Vận chuyển, và các quy định khác được công bố
+                trên nền tảng. Nếu bạn không đồng ý với bất kỳ điều khoản nào,
+                vui lòng ngừng sử dụng dịch vụ của chúng tôi ngay lập tức.
+              </p>
+              <p>
+                OneShop có quyền cập nhật, sửa đổi các điều khoản này bất cứ lúc
+                nào mà không cần thông báo trước. Việc bạn tiếp tục sử dụng dịch
+                vụ sau khi có thay đổi được coi là bạn đã chấp nhận các điều
+                khoản mới. Do đó, chúng tôi khuyến nghị bạn thường xuyên xem lại
+                các điều khoản này để cập nhật thông tin mới nhất.
+              </p>
+
+              <h3>1.2. Định nghĩa & Phạm vi áp dụng</h3>
+              <h4>1.2.1. Định nghĩa các thuật ngữ</h4>
+              <p>
+                Trong các điều khoản này, các thuật ngữ sau đây được hiểu như
+                sau:
+              </p>
+              <ul>
+                <li>
+                  <strong>"OneShop"</strong>, <strong>"Chúng tôi"</strong>,
+                  <strong>"Nền tảng"</strong>, <strong>"Sàn"</strong>: Chỉ công
+                  ty vận hành sàn thương mại điện tử OneShop, bao gồm website,
+                  ứng dụng di động, hệ thống thanh toán, hệ thống vận chuyển, và
+                  tất cả các dịch vụ, tính năng, công cụ được cung cấp trên nền
+                  tảng này.
+                </li>
+                <li>
+                  <strong>"Người dùng"</strong>, <strong>"Bạn"</strong>,
+                  <strong>"User"</strong>: Chỉ bất kỳ cá nhân, tổ chức, doanh
+                  nghiệp nào truy cập, đăng ký tài khoản, hoặc sử dụng bất kỳ
+                  dịch vụ nào của OneShop, bao gồm cả người mua và người bán.
+                </li>
+                <li>
+                  <strong>"Người mua"</strong>, <strong>"Khách hàng"</strong>,
+                  <strong>"Buyer"</strong>, <strong>"Customer"</strong>: Chỉ
+                  người dùng có tài khoản trên OneShop và thực hiện các giao
+                  dịch mua sản phẩm trên nền tảng.
+                </li>
+                <li>
+                  <strong>"Người bán"</strong>, <strong>"Vendor"</strong>,
+                  <strong>"Shop"</strong>, <strong>"Seller"</strong>,
+                  <strong>"Merchant"</strong>: Chỉ người dùng đã đăng ký và được
+                  OneShop phê duyệt để đăng bán sản phẩm trên nền tảng, bao gồm
+                  cả cá nhân kinh doanh và doanh nghiệp.
+                </li>
+                <li>
+                  <strong>"Sản phẩm"</strong>, <strong>"Hàng hóa"</strong>,
+                  <strong>"Product"</strong>, <strong>"Item"</strong>: Chỉ hàng
+                  hóa, dịch vụ, hoặc bất kỳ thứ gì được đăng bán, quảng cáo,
+                  hoặc cung cấp trên nền tảng OneShop bởi người bán.
+                </li>
+                <li>
+                  <strong>"Đơn hàng"</strong>, <strong>"Order"</strong>: Chỉ
+                  giao dịch mua bán được thực hiện giữa Người mua và Người bán
+                  thông qua nền tảng OneShop, bao gồm thông tin sản phẩm, số
+                  lượng, giá cả, phương thức thanh toán, địa chỉ giao hàng, và
+                  các điều kiện khác được thỏa thuận.
+                </li>
+                <li>
+                  <strong>"Dịch vụ"</strong>, <strong>"Service"</strong>: Chỉ
+                  tất cả các dịch vụ được cung cấp bởi OneShop, bao gồm nhưng
+                  không giới hạn: dịch vụ nền tảng thương mại điện tử, dịch vụ
+                  thanh toán, dịch vụ vận chuyển, dịch vụ hỗ trợ khách hàng,
+                  dịch vụ quảng cáo, và các dịch vụ khác được công bố trên
+                  website hoặc ứng dụng di động.
+                </li>
+                <li>
+                  <strong>"Tài khoản"</strong>, <strong>"Account"</strong>: Chỉ
+                  tài khoản người dùng được tạo trên nền tảng OneShop, bao gồm
+                  thông tin đăng nhập, thông tin cá nhân, lịch sử giao dịch, và
+                  các dữ liệu liên quan.
+                </li>
+                <li>
+                  <strong>"Giao dịch"</strong>, <strong>"Transaction"</strong>:
+                  Chỉ mọi hoạt động mua bán, thanh toán, vận chuyển, trả hàng,
+                  hoàn tiền được thực hiện trên nền tảng OneShop.
+                </li>
+                <li>
+                  <strong>"Nội dung"</strong>, <strong>"Content"</strong>: Chỉ
+                  tất cả thông tin, văn bản, hình ảnh, video, âm thanh, dữ liệu
+                  được đăng tải, chia sẻ, hoặc truyền tải trên nền tảng OneShop
+                  bởi người dùng hoặc OneShop.
+                </li>
+                <li>
+                  <strong>"Tranh chấp"</strong>, <strong>"Dispute"</strong>: Chỉ
+                  bất kỳ mâu thuẫn, khiếu nại, hoặc bất đồng nào phát sinh giữa
+                  người mua và người bán liên quan đến giao dịch trên nền tảng
+                  OneShop.
+                </li>
+              </ul>
+
+              <h4>1.2.2. Phạm vi áp dụng</h4>
+              <p>Các điều khoản này áp dụng cho:</p>
+              <ul>
+                <li>Tất cả người dùng truy cập và sử dụng nền tảng OneShop</li>
+                <li>
+                  Tất cả các giao dịch được thực hiện trên nền tảng OneShop
+                </li>
+                <li>Tất cả các dịch vụ được cung cấp bởi OneShop</li>
+                <li>
+                  Các hoạt động liên quan đến việc mua bán, thanh toán, vận
+                  chuyển, trả hàng và hoàn tiền
+                </li>
+              </ul>
+
+              <h3>1.3. Quy định sử dụng dịch vụ</h3>
+              <h4>1.3.1. Điều kiện sử dụng dịch vụ</h4>
+              <p>
+                Để được phép sử dụng các dịch vụ của OneShop, bạn phải đáp ứng
+                và cam kết tuân thủ các điều kiện sau đây:
+              </p>
+              <ul>
+                <li>
+                  <strong>Độ tuổi và năng lực pháp luật:</strong> Bạn phải đủ 18
+                  tuổi trở lên và có đầy đủ năng lực hành vi dân sự theo quy
+                  định của pháp luật Việt Nam. Nếu bạn dưới 18 tuổi, bạn chỉ
+                  được sử dụng dịch vụ với sự đồng ý và giám sát của người giám
+                  hộ hợp pháp (cha, mẹ, hoặc người được tòa án chỉ định). Người
+                  giám hộ sẽ chịu trách nhiệm về mọi hoạt động của bạn trên nền
+                  tảng.
+                </li>
+                <li>
+                  <strong>Thông tin chính xác:</strong> Bạn phải cung cấp thông
+                  tin chính xác, đầy đủ, trung thực và cập nhật khi đăng ký tài
+                  khoản, bao gồm nhưng không giới hạn: họ tên, số điện thoại,
+                  email, địa chỉ, số CMND/CCCD/Hộ chiếu (nếu được yêu cầu), và
+                  các thông tin khác theo yêu cầu của OneShop. Việc cung cấp
+                  thông tin sai lệch, giả mạo có thể dẫn đến việc tài khoản của
+                  bạn bị khóa vĩnh viễn và bạn có thể phải chịu trách nhiệm pháp
+                  lý.
+                </li>
+                <li>
+                  <strong>Trách nhiệm về tài khoản:</strong> Bạn hoàn toàn chịu
+                  trách nhiệm về mọi hoạt động diễn ra dưới tài khoản của bạn,
+                  bao gồm các giao dịch mua bán, đánh giá, bình luận, và bất kỳ
+                  hành vi nào khác được thực hiện thông qua tài khoản của bạn.
+                  OneShop sẽ coi mọi hoạt động được thực hiện từ tài khoản của
+                  bạn là do chính bạn thực hiện, trừ khi bạn có thể chứng minh
+                  được tài khoản của bạn đã bị xâm nhập trái phép và bạn đã
+                  thông báo kịp thời cho OneShop.
+                </li>
+                <li>
+                  <strong>Tuân thủ pháp luật:</strong> Bạn phải tuân thủ tất cả
+                  các quy định pháp luật hiện hành của Việt Nam và quốc tế khi
+                  sử dụng dịch vụ của OneShop, bao gồm nhưng không giới hạn:
+                  Luật Bảo vệ quyền lợi người tiêu dùng, Luật Thương mại điện
+                  tử, Luật An ninh mạng, và các quy định về thuế, hải quan, xuất
+                  nhập khẩu (nếu có).
+                </li>
+                <li>
+                  <strong>Mục đích sử dụng hợp pháp:</strong> Bạn chỉ được sử
+                  dụng dịch vụ của OneShop cho mục đích hợp pháp và không được
+                  sử dụng dịch vụ để thực hiện bất kỳ hoạt động bất hợp pháp
+                  nào, bao gồm nhưng không giới hạn: buôn bán hàng cấm, lừa đảo,
+                  gian lận, vi phạm quyền sở hữu trí tuệ, hoặc vi phạm quyền của
+                  bên thứ ba.
+                </li>
+                <li>
+                  <strong>Không can thiệp vào hệ thống:</strong> Bạn không được
+                  thực hiện bất kỳ hành động nào nhằm can thiệp, phá hoại, hoặc
+                  làm gián đoạn hoạt động bình thường của nền tảng OneShop, bao
+                  gồm nhưng không giới hạn: tấn công DDoS, hack, phát tán virus,
+                  malware, hoặc sử dụng các công cụ tự động (bot, script) để
+                  thao tác trên nền tảng mà không được OneShop cho phép.
+                </li>
+              </ul>
+
+              <h4>1.3.2. Tài khoản người dùng</h4>
+              <p>
+                Khi đăng ký và sử dụng tài khoản trên OneShop, bạn cam kết và
+                đồng ý với các quy định sau:
+              </p>
+              <ul>
+                <li>
+                  <strong>Một người một tài khoản:</strong> Mỗi người dùng chỉ
+                  được phép tạo và sử dụng một tài khoản duy nhất trên OneShop.
+                  Việc tạo nhiều tài khoản với mục đích gian lận, lạm dụng
+                  khuyến mãi, hoặc vi phạm các quy định khác sẽ dẫn đến việc tất
+                  cả các tài khoản của bạn bị khóa vĩnh viễn.
+                </li>
+                <li>
+                  <strong>Bảo mật thông tin đăng nhập:</strong> Bạn có trách
+                  nhiệm bảo mật tuyệt đối thông tin đăng nhập của mình (tên đăng
+                  nhập, mật khẩu, mã OTP, v.v.) và không được chia sẻ, tiết lộ
+                  thông tin này cho bất kỳ ai, kể cả nhân viên của OneShop.
+                  OneShop sẽ không bao giờ yêu cầu bạn cung cấp mật khẩu qua
+                  email, tin nhắn, hoặc điện thoại. Nếu bạn nhận được yêu cầu
+                  như vậy, đó có thể là hành vi lừa đảo.
+                </li>
+                <li>
+                  <strong>Mật khẩu mạnh:</strong> Bạn phải sử dụng mật khẩu
+                  mạnh, bao gồm ít nhất 8 ký tự, kết hợp chữ hoa, chữ thường, số
+                  và ký tự đặc biệt. Bạn nên thay đổi mật khẩu định kỳ (khuyến
+                  nghị 3-6 tháng một lần) và không sử dụng lại mật khẩu cũ.
+                </li>
+                <li>
+                  <strong>Thông báo bảo mật:</strong> Bạn phải thông báo ngay
+                  lập tức cho OneShop qua email hoặc hotline nếu phát hiện bất
+                  kỳ hoạt động đăng nhập trái phép, giao dịch bất thường, hoặc
+                  bất kỳ dấu hiệu nào cho thấy tài khoản của bạn đã bị xâm nhập.
+                  OneShop sẽ hỗ trợ bạn khôi phục và bảo vệ tài khoản, nhưng bạn
+                  vẫn phải chịu trách nhiệm về các giao dịch được thực hiện
+                  trước khi bạn thông báo cho OneShop.
+                </li>
+                <li>
+                  <strong>Trách nhiệm về hoạt động:</strong> Bạn hoàn toàn chịu
+                  trách nhiệm về mọi hoạt động được thực hiện thông qua tài
+                  khoản của bạn, bao gồm các giao dịch mua bán, thanh toán, đánh
+                  giá sản phẩm, bình luận, và bất kỳ hành vi nào khác. OneShop
+                  có quyền từ chối, hủy bỏ, hoặc khóa tài khoản của bạn nếu phát
+                  hiện các hoạt động vi phạm điều khoản hoặc pháp luật.
+                </li>
+                <li>
+                  <strong>Xác thực tài khoản:</strong> OneShop có thể yêu cầu
+                  bạn xác thực danh tính của mình bằng cách cung cấp các giấy tờ
+                  tùy thân (CMND, CCCD, Hộ chiếu) hoặc các tài liệu khác. Việc
+                  từ chối cung cấp thông tin xác thực có thể dẫn đến việc tài
+                  khoản của bạn bị hạn chế quyền sử dụng hoặc bị khóa.
+                </li>
+                <li>
+                  <strong>Chuyển nhượng tài khoản:</strong> Tài khoản của bạn là
+                  tài sản cá nhân và không được phép chuyển nhượng, cho mượn,
+                  hoặc cho thuê cho bất kỳ ai. Việc chuyển nhượng tài khoản sẽ
+                  dẫn đến việc tài khoản bị khóa vĩnh viễn.
+                </li>
+              </ul>
+            </div>
+          </section>
+
+          <!-- Section 2: Khuyến Mãi & Ưu Đãi -->
+          <section id="khuyen-mai" class="section">
+            <h2 class="section-title">2. Khuyến Mãi & Ưu Đãi</h2>
+            <div class="section-content">
+              <h3>2.1. Chương trình khuyến mãi và ưu đãi</h3>
+              <p>
+                OneShop thường xuyên tổ chức các chương trình khuyến mãi, giảm
+                giá, ưu đãi đặc biệt và các sự kiện mua sắm lớn (như Flash Sale,
+                Deal sốc, Ngày hội mua sắm, v.v.) nhằm mang lại trải nghiệm mua
+                sắm tốt nhất và giá trị tốt nhất cho người dùng. Tất cả các
+                chương trình khuyến mãi này được áp dụng theo các điều kiện,
+                điều khoản và quy định cụ thể được công bố công khai trên
+                website, ứng dụng di động, hoặc các kênh truyền thông chính thức
+                của OneShop tại thời điểm diễn ra chương trình.
+              </p>
+              <p>
+                OneShop bảo lưu quyền thay đổi, điều chỉnh, hủy bỏ, hoặc kéo dài
+                bất kỳ chương trình khuyến mãi nào mà không cần thông báo trước,
+                đặc biệt trong các trường hợp phát hiện hành vi gian lận, lạm
+                dụng, hoặc do các yếu tố khách quan (thiên tai, dịch bệnh, thay
+                đổi chính sách, v.v.). Người dùng được khuyến nghị đọc kỹ điều
+                kiện và điều khoản của từng chương trình khuyến mãi trước khi
+                tham gia.
+              </p>
+
+              <h4>2.1.1. Mã giảm giá (Voucher/Coupon)</h4>
+              <p>
+                Mã giảm giá là một hình thức khuyến mãi phổ biến trên OneShop,
+                cho phép người dùng được giảm giá một phần hoặc toàn bộ giá trị
+                đơn hàng khi sử dụng mã hợp lệ. Các quy định về mã giảm giá được
+                áp dụng như sau:
+              </p>
+              <ul>
+                <li>
+                  <strong>Nguồn cung cấp mã:</strong> Mã giảm giá có thể được
+                  cung cấp bởi OneShop (mã của sàn) hoặc bởi các shop/vendor
+                  trên nền tảng (mã của shop). Mã của sàn có thể áp dụng cho
+                  nhiều shop, trong khi mã của shop chỉ áp dụng cho các sản phẩm
+                  của shop đó. Mã giảm giá có thể được phân phối qua nhiều kênh:
+                  email, SMS, thông báo trên ứng dụng, chương trình tích điểm,
+                  sự kiện đặc biệt, hoặc các chương trình hợp tác với đối tác.
+                </li>
+                <li>
+                  <strong>Điều kiện sử dụng:</strong> Mỗi mã giảm giá có các
+                  điều kiện sử dụng riêng được quy định rõ ràng, bao gồm nhưng
+                  không giới hạn: giá trị đơn hàng tối thiểu (ví dụ: đơn hàng từ
+                  100.000đ trở lên), danh mục sản phẩm áp dụng (ví dụ: chỉ áp
+                  dụng cho mỹ phẩm), shop áp dụng (ví dụ: chỉ áp dụng cho shop
+                  cụ thể), thời hạn sử dụng (ngày bắt đầu và ngày kết thúc), số
+                  lượng mã có hạn, và các điều kiện khác. Người dùng phải đọc kỹ
+                  và tuân thủ tất cả các điều kiện này khi sử dụng mã.
+                </li>
+                <li>
+                  <strong>Tính không chuyển nhượng:</strong> Mã giảm giá là tài
+                  sản kỹ thuật số gắn liền với tài khoản của người dùng và không
+                  thể chuyển nhượng, bán, cho mượn, hoặc trao đổi cho người
+                  khác. Mã giảm giá không thể đổi lấy tiền mặt, không thể hoàn
+                  tiền, và không có giá trị quy đổi thành tiền. Việc cố gắng
+                  chuyển nhượng hoặc bán mã giảm giá có thể dẫn đến việc mã bị
+                  vô hiệu hóa và tài khoản của bạn bị xử lý kỷ luật.
+                </li>
+                <li>
+                  <strong>Quyền hủy và thu hồi:</strong> OneShop có quyền hủy,
+                  vô hiệu hóa, hoặc thu hồi bất kỳ mã giảm giá nào mà không cần
+                  thông báo trước nếu phát hiện: (i) mã được sử dụng để gian
+                  lận, lạm dụng, hoặc vi phạm điều khoản; (ii) mã được tạo ra
+                  hoặc phân phối trái phép; (iii) mã được sử dụng bởi tài khoản
+                  vi phạm hoặc bị khóa; (iv) mã hết hạn hoặc không còn hiệu lực;
+                  (v) có thay đổi về chính sách hoặc điều kiện của chương trình
+                  khuyến mãi.
+                </li>
+                <li>
+                  <strong>Giới hạn sử dụng:</strong> Mỗi mã giảm giá chỉ có thể
+                  sử dụng một lần duy nhất cho một đơn hàng. Sau khi sử dụng, mã
+                  sẽ tự động vô hiệu hóa và không thể sử dụng lại, kể cả khi đơn
+                  hàng bị hủy hoặc trả hàng. Một số mã có thể có giới hạn số lần
+                  sử dụng trên toàn hệ thống (ví dụ: chỉ 1000 người đầu tiên sử
+                  dụng), và khi đạt giới hạn, mã sẽ tự động hết hiệu lực.
+                </li>
+                <li>
+                  <strong>Kết hợp với khuyến mãi khác:</strong> Nhìn chung, mã
+                  giảm giá không thể kết hợp với các chương trình khuyến mãi
+                  khác (như giảm giá sản phẩm, Flash Sale, Deal sốc, v.v.) trên
+                  cùng một đơn hàng, trừ khi có quy định rõ ràng cho phép kết
+                  hợp trong điều kiện của chương trình. Trong trường hợp có
+                  nhiều mã giảm giá khả dụng, hệ thống sẽ tự động áp dụng mã có
+                  giá trị ưu đãi cao nhất cho người dùng.
+                </li>
+                <li>
+                  <strong>Xử lý khi đơn hàng bị hủy hoặc trả hàng:</strong> Nếu
+                  đơn hàng sử dụng mã giảm giá bị hủy hoặc trả hàng, mã giảm giá
+                  sẽ không được hoàn lại và không thể sử dụng lại. Tuy nhiên,
+                  nếu đơn hàng bị hủy do lỗi của OneShop hoặc người bán, OneShop
+                  có thể cấp lại mã giảm giá tương đương cho người dùng (tùy
+                  theo từng trường hợp cụ thể).
+                </li>
+              </ul>
+
+              <h4>2.1.2. Chương trình tích điểm (OneXu)</h4>
+              <p>
+                OneShop cung cấp chương trình tích điểm OneXu nhằm tri ân và
+                khuyến khích người dùng sử dụng dịch vụ. Chương trình này cho
+                phép người dùng tích lũy điểm thưởng từ các hoạt động mua sắm và
+                sử dụng điểm để thanh toán cho các đơn hàng tiếp theo. Các quy
+                định về chương trình tích điểm được áp dụng như sau:
+              </p>
+              <ul>
+                <li>
+                  <strong>Cách tích điểm:</strong> Người dùng có thể tích điểm
+                  OneXu thông qua các hoạt động sau: (i) Mua sắm: tích điểm theo
+                  tỷ lệ phần trăm giá trị đơn hàng (ví dụ: 1% giá trị đơn hàng,
+                  tùy theo từng chương trình); (ii) Đánh giá sản phẩm: tích điểm
+                  khi đánh giá và chia sẻ trải nghiệm mua hàng; (iii) Tham gia
+                  các hoạt động, sự kiện, khảo sát do OneShop tổ chức; (iv) Giới
+                  thiệu bạn bè đăng ký và mua hàng thành công; (v) Các hoạt động
+                  khác được OneShop công bố.
+                </li>
+                <li>
+                  <strong>Tỷ lệ quy đổi:</strong> Điểm tích lũy OneXu được quy
+                  đổi theo tỷ lệ do OneShop quy định và có thể thay đổi theo
+                  từng thời kỳ. Tỷ lệ quy đổi hiện tại là: 1 OneXu = 1 VNĐ (một
+                  điểm tương đương một đồng). Tỷ lệ này có thể được điều chỉnh
+                  bởi OneShop và sẽ được thông báo trước ít nhất 30 ngày. Điểm
+                  tích lũy có thể được sử dụng để thanh toán tối đa một phần giá
+                  trị đơn hàng (ví dụ: tối đa 50% giá trị đơn hàng), phần còn
+                  lại phải thanh toán bằng tiền mặt hoặc các phương thức thanh
+                  toán khác.
+                </li>
+                <li>
+                  <strong>Thời hạn sử dụng điểm:</strong> Điểm tích lũy OneXu có
+                  thời hạn sử dụng nhất định (thường là 12 tháng kể từ ngày tích
+                  lũy) và sẽ tự động hết hạn nếu không được sử dụng trong thời
+                  hạn quy định. Khi điểm hết hạn, điểm sẽ tự động bị hủy và
+                  không thể khôi phục. OneShop sẽ gửi thông báo nhắc nhở trước
+                  khi điểm hết hạn (thường là 30 ngày và 7 ngày trước khi hết
+                  hạn) qua email hoặc thông báo trên ứng dụng.
+                </li>
+                <li>
+                  <strong>Tính không chuyển nhượng:</strong> Điểm tích lũy OneXu
+                  là tài sản kỹ thuật số gắn liền với tài khoản của người dùng
+                  và không thể chuyển nhượng, bán, cho mượn, hoặc trao đổi cho
+                  người khác. Điểm không thể đổi lấy tiền mặt trực tiếp, không
+                  thể rút ra khỏi hệ thống, và chỉ có thể sử dụng để thanh toán
+                  trên nền tảng OneShop.
+                </li>
+                <li>
+                  <strong>Điều kiện sử dụng điểm:</strong> Điểm OneXu có thể
+                  được sử dụng để thanh toán cho hầu hết các sản phẩm trên nền
+                  tảng, tuy nhiên một số sản phẩm hoặc chương trình khuyến mãi
+                  đặc biệt có thể không cho phép sử dụng điểm. Điểm không thể sử
+                  dụng để thanh toán phí vận chuyển (trừ khi có quy định khác).
+                  Khi sử dụng điểm, người dùng phải có đủ số điểm trong tài
+                  khoản tại thời điểm thanh toán.
+                </li>
+                <li>
+                  <strong>Xử lý điểm khi hủy đơn hàng hoặc trả hàng:</strong>
+                  Nếu đơn hàng sử dụng điểm OneXu bị hủy hoặc trả hàng, điểm đã
+                  sử dụng sẽ được hoàn lại vào tài khoản của người dùng trong
+                  vòng 3-5 ngày làm việc. Tuy nhiên, nếu điểm đã hết hạn trong
+                  thời gian chờ hoàn lại, điểm sẽ không được hoàn lại. Nếu đơn
+                  hàng chỉ được hoàn tiền một phần, điểm cũng sẽ được hoàn lại
+                  tương ứng với tỷ lệ hoàn tiền.
+                </li>
+                <li>
+                  <strong>Quyền điều chỉnh và chấm dứt chương trình:</strong>
+                  OneShop có quyền điều chỉnh tỷ lệ tích điểm, tỷ lệ quy đổi,
+                  thời hạn sử dụng, hoặc các điều kiện khác của chương trình
+                  tích điểm bất cứ lúc nào. OneShop cũng có quyền tạm ngưng hoặc
+                  chấm dứt chương trình tích điểm, và trong trường hợp đó, điểm
+                  còn lại trong tài khoản của người dùng sẽ có thời hạn sử dụng
+                  được gia hạn thêm một khoảng thời gian hợp lý (thường là 6
+                  tháng) để người dùng có thể sử dụng hết điểm.
+                </li>
+              </ul>
+
+              <h4>2.1.3. Flash Sale & Deal sốc</h4>
+              <p>
+                Flash Sale và Deal sốc là các chương trình khuyến mãi đặc biệt
+                với mức giảm giá rất lớn trong thời gian ngắn, thường diễn ra
+                trong vài giờ hoặc vài ngày. Các chương trình này được thiết kế
+                để mang lại cơ hội mua sắm với giá tốt nhất cho người dùng. Các
+                quy định về Flash Sale và Deal sốc được áp dụng như sau:
+              </p>
+              <ul>
+                <li>
+                  <strong>Số lượng sản phẩm giới hạn:</strong> Các chương trình
+                  Flash Sale và Deal sốc thường có số lượng sản phẩm giới hạn
+                  (Limited Stock) và được bán với giá ưu đãi đặc biệt. Số lượng
+                  sản phẩm có sẵn sẽ được hiển thị rõ ràng trên trang sản phẩm.
+                  Khi hết hàng, sản phẩm sẽ tự động chuyển về giá bán thường
+                  hoặc không còn khả dụng. OneShop không đảm bảo tất cả người
+                  dùng đều có thể mua được sản phẩm trong chương trình Flash
+                  Sale.
+                </li>
+                <li>
+                  <strong>Nguyên tắc "Ai đặt trước được phục vụ trước":</strong>
+                  Các đơn hàng trong chương trình Flash Sale và Deal sốc được xử
+                  lý theo nguyên tắc "First Come, First Served" (Ai đặt trước
+                  được phục vụ trước). Điều này có nghĩa là đơn hàng được đặt và
+                  thanh toán thành công sớm nhất sẽ được ưu tiên xử lý và giao
+                  hàng. Nếu số lượng sản phẩm không đủ để đáp ứng tất cả các đơn
+                  hàng, các đơn hàng đặt sau có thể bị hủy và được hoàn tiền đầy
+                  đủ.
+                </li>
+                <li>
+                  <strong>Giới hạn số lượng mua:</strong> Để đảm bảo công bằng
+                  và ngăn chặn hành vi mua hàng số lượng lớn để bán lại
+                  (reselling), OneShop có thể áp dụng giới hạn số lượng sản phẩm
+                  mà mỗi người dùng có thể mua trong một chương trình Flash Sale
+                  (ví dụ: tối đa 2 sản phẩm/người dùng/chương trình). Giới hạn
+                  này sẽ được hiển thị rõ ràng trên trang sản phẩm.
+                </li>
+                <li>
+                  <strong>Chống gian lận và lạm dụng:</strong> OneShop có quyền
+                  hủy, từ chối, hoặc không xử lý bất kỳ đơn hàng nào trong
+                  chương trình Flash Sale nếu phát hiện: (i) hành vi gian lận,
+                  lạm dụng, hoặc vi phạm điều khoản; (ii) mua hàng với số lượng
+                  bất thường hoặc vượt quá giới hạn cho phép; (iii) sử dụng
+                  nhiều tài khoản để mua cùng một sản phẩm; (iv) sử dụng công cụ
+                  tự động (bot, script) để đặt hàng; (v) các hành vi khác được
+                  OneShop xác định là không phù hợp. Trong các trường hợp này,
+                  OneShop có quyền khóa tài khoản và từ chối cung cấp dịch vụ
+                  cho người dùng vi phạm.
+                </li>
+                <li>
+                  <strong>Không áp dụng kết hợp khuyến mãi:</strong> Các sản
+                  phẩm trong chương trình Flash Sale và Deal sốc thường không
+                  thể kết hợp với các mã giảm giá, voucher, hoặc chương trình
+                  khuyến mãi khác. Giá hiển thị trong chương trình Flash Sale là
+                  giá cuối cùng mà người dùng phải thanh toán (đã bao gồm giảm
+                  giá).
+                </li>
+                <li>
+                  <strong>Chính sách trả hàng:</strong> Các sản phẩm mua trong
+                  chương trình Flash Sale và Deal sốc vẫn được áp dụng chính
+                  sách trả hàng và hoàn tiền bình thường theo quy định của
+                  OneShop, trừ khi có thông báo khác trong điều kiện của chương
+                  trình. Tuy nhiên, nếu trả hàng do lỗi của người mua (không phù
+                  hợp, đổi ý), người mua sẽ nhận lại số tiền đã thanh toán,
+                  không phải giá gốc của sản phẩm.
+                </li>
+                <li>
+                  <strong>Thay đổi và hủy bỏ chương trình:</strong> OneShop bảo
+                  lưu quyền thay đổi thời gian, số lượng sản phẩm, mức giảm giá,
+                  hoặc hủy bỏ bất kỳ chương trình Flash Sale nào mà không cần
+                  thông báo trước do các yếu tố khách quan (thiên tai, dịch
+                  bệnh, lỗi hệ thống, v.v.) hoặc phát hiện hành vi gian lận.
+                  Trong trường hợp chương trình bị hủy, các đơn hàng đã đặt sẽ
+                  được xử lý theo quy định chung hoặc được hoàn tiền đầy đủ.
+                </li>
+              </ul>
+
+              <h3>2.2. Quy định chung về khuyến mãi</h3>
+              <ul>
+                <li>
+                  Tất cả các chương trình khuyến mãi đều có điều kiện và điều
+                  khoản riêng
+                </li>
+                <li>
+                  OneShop có quyền thay đổi, hủy bỏ hoặc kéo dài chương trình
+                  khuyến mãi mà không cần thông báo trước
+                </li>
+                <li>
+                  Không áp dụng khuyến mãi cho các sản phẩm đã được giảm giá
+                  hoặc đang trong chương trình khuyến mãi khác (trừ khi có quy
+                  định khác)
+                </li>
+                <li>
+                  OneShop có quyền từ chối áp dụng khuyến mãi nếu phát hiện hành
+                  vi gian lận, lạm dụng hoặc vi phạm điều khoản
+                </li>
+              </ul>
+            </div>
+          </section>
+
+          <!-- Section 3: Thanh Toán -->
+          <section id="thanh-toan" class="section">
+            <h2 class="section-title">3. Thanh Toán</h2>
+            <div class="section-content">
+              <h3>3.1. Phương thức thanh toán</h3>
+              <p>
+                OneShop hỗ trợ đa dạng các phương thức thanh toán an toàn, tiện
+                lợi và phổ biến tại Việt Nam, nhằm đáp ứng nhu cầu thanh toán
+                của mọi người dùng. Tất cả các phương thức thanh toán đều được
+                tích hợp với các đối tác uy tín và tuân thủ các tiêu chuẩn bảo
+                mật quốc tế để đảm bảo an toàn cho giao dịch của người dùng.
+              </p>
+
+              <h4>3.1.1. Thanh toán khi nhận hàng (COD - Cash On Delivery)</h4>
+              <p>
+                Thanh toán khi nhận hàng (COD) là phương thức thanh toán phổ
+                biến và được ưa chuộng tại Việt Nam, cho phép người mua thanh
+                toán bằng tiền mặt khi nhận được hàng. Các quy định về thanh
+                toán COD được áp dụng như sau:
+              </p>
+              <ul>
+                <li>
+                  <strong>Quy trình thanh toán:</strong> Khi chọn phương thức
+                  COD, người mua sẽ thanh toán toàn bộ giá trị đơn hàng (bao gồm
+                  giá sản phẩm và phí vận chuyển) bằng tiền mặt cho nhân viên
+                  giao hàng của đơn vị vận chuyển tại thời điểm nhận hàng. Người
+                  mua cần chuẩn bị đúng số tiền theo giá trị đơn hàng đã được
+                  thông báo. Nhân viên giao hàng sẽ cung cấp hóa đơn hoặc biên
+                  lai thanh toán cho người mua.
+                </li>
+                <li>
+                  <strong>Quyền kiểm tra hàng hóa:</strong> Người mua có quyền
+                  kiểm tra hàng hóa trước khi thanh toán, bao gồm: kiểm tra số
+                  lượng, kiểm tra tình trạng bên ngoài của bao bì, kiểm tra xem
+                  có đúng sản phẩm đã đặt hay không. Tuy nhiên, người mua không
+                  được mở niêm phong hoặc sử dụng sản phẩm trước khi thanh toán.
+                  Nếu phát hiện hàng hóa không đúng, bị hư hỏng, hoặc thiếu,
+                  người mua có quyền từ chối nhận hàng và không phải thanh toán.
+                </li>
+                <li>
+                  <strong>Phí vận chuyển:</strong> Phí vận chuyển được tính theo
+                  quy định của đơn vị vận chuyển, dựa trên trọng lượng, kích
+                  thước, khoảng cách vận chuyển, và loại dịch vụ vận chuyển được
+                  chọn. Phí vận chuyển có thể được miễn phí trong các chương
+                  trình khuyến mãi hoặc do người bán chịu (Free Ship). Phí vận
+                  chuyển sẽ được hiển thị rõ ràng trong quá trình đặt hàng và
+                  được tính vào tổng giá trị đơn hàng.
+                </li>
+                <li>
+                  <strong>Từ chối nhận hàng:</strong> Nếu người mua từ chối nhận
+                  hàng sau khi đơn hàng đã được giao cho đơn vị vận chuyển,
+                  người mua có thể phải chịu phí vận chuyển theo quy định của
+                  đơn vị vận chuyển và chính sách của OneShop. Tuy nhiên, nếu từ
+                  chối nhận hàng do lỗi của người bán (sản phẩm không đúng, bị
+                  hư hỏng, thiếu hàng) hoặc lỗi của đơn vị vận chuyển (giao nhầm
+                  địa chỉ, làm hư hỏng hàng), người mua không phải chịu bất kỳ
+                  chi phí nào.
+                </li>
+                <li>
+                  <strong>Giới hạn giá trị đơn hàng:</strong> Một số đơn vị vận
+                  chuyển có thể áp dụng giới hạn giá trị đơn hàng tối đa cho
+                  phương thức COD (ví dụ: tối đa 10.000.000 VNĐ) để đảm bảo an
+                  toàn cho nhân viên giao hàng. Đối với các đơn hàng có giá trị
+                  cao hơn, người mua có thể được yêu cầu sử dụng phương thức
+                  thanh toán trực tuyến hoặc thanh toán trước một phần.
+                </li>
+                <li>
+                  <strong>Thời gian thanh toán cho người bán:</strong> Sau khi
+                  nhân viên giao hàng thu tiền thành công, tiền sẽ được chuyển
+                  đến người bán thông qua hệ thống thanh toán của OneShop. Thời
+                  gian chuyển tiền thường là 3-7 ngày làm việc sau khi giao hàng
+                  thành công, tùy theo đơn vị vận chuyển và quy trình xử lý của
+                  OneShop. Trong trường hợp có tranh chấp hoặc khiếu nại, việc
+                  chuyển tiền có thể bị tạm hoãn cho đến khi vấn đề được giải
+                  quyết.
+                </li>
+              </ul>
+
+              <h4>3.1.2. Thanh toán trực tuyến (Online Payment)</h4>
+              <p>
+                Thanh toán trực tuyến là phương thức thanh toán hiện đại, nhanh
+                chóng và tiện lợi, cho phép người mua thanh toán trước khi nhận
+                hàng thông qua các kênh thanh toán điện tử. OneShop hỗ trợ các
+                phương thức thanh toán trực tuyến sau:
+              </p>
+              <ul>
+                <li>
+                  <strong>Ví điện tử MoMo:</strong> Người mua có thể thanh toán
+                  qua ứng dụng MoMo bằng cách quét mã QR hoặc nhập thông tin
+                  thanh toán. MoMo hỗ trợ thanh toán từ tài khoản MoMo hoặc liên
+                  kết với thẻ ngân hàng. Giao dịch được xử lý tức thời và an
+                  toàn thông qua hệ thống bảo mật của MoMo. OneShop không lưu
+                  trữ thông tin tài khoản MoMo của người dùng.
+                </li>
+                <li>
+                  <strong>Chuyển khoản ngân hàng:</strong> Người mua có thể
+                  thanh toán qua chuyển khoản trực tuyến từ tài khoản ngân hàng
+                  của mình đến tài khoản ngân hàng của OneShop hoặc đối tác
+                  thanh toán. OneShop hỗ trợ chuyển khoản từ hầu hết các ngân
+                  hàng tại Việt Nam. Người mua cần thực hiện chuyển khoản trong
+                  thời gian quy định (thường là 15-30 phút) sau khi đặt hàng, và
+                  cung cấp mã tham chiếu giao dịch để xác nhận thanh toán. Sau
+                  khi xác nhận thanh toán thành công, đơn hàng sẽ được xử lý.
+                </li>
+                <li>
+                  <strong>Thẻ tín dụng/Ghi nợ quốc tế:</strong> OneShop có thể
+                  hỗ trợ thanh toán bằng thẻ tín dụng hoặc thẻ ghi nợ quốc tế
+                  (Visa, Mastercard, JCB) thông qua các cổng thanh toán quốc tế
+                  uy tín. Giao dịch được xử lý an toàn với công nghệ mã hóa SSL
+                  và tuân thủ tiêu chuẩn PCI DSS. Phí giao dịch (nếu có) sẽ được
+                  thông báo rõ ràng trước khi thanh toán.
+                </li>
+                <li>
+                  <strong>OneXu (Điểm tích lũy):</strong> Người mua có thể sử
+                  dụng điểm tích lũy OneXu để thanh toán một phần hoặc toàn bộ
+                  giá trị đơn hàng (tùy theo quy định của chương trình). Điểm
+                  OneXu được quy đổi theo tỷ lệ: 1 OneXu = 1 VNĐ. Người mua có
+                  thể kết hợp sử dụng OneXu với các phương thức thanh toán khác
+                  để thanh toán đơn hàng. Chi tiết về chương trình OneXu được
+                  quy định trong mục 2.1.2.
+                </li>
+                <li>
+                  <strong>Các phương thức khác:</strong> OneShop có thể bổ sung
+                  thêm các phương thức thanh toán mới trong tương lai (ví dụ: ví
+                  điện tử khác, thanh toán qua ứng dụng ngân hàng, v.v.) và sẽ
+                  thông báo cho người dùng khi có phương thức mới.
+                </li>
+              </ul>
+              <p>
+                <strong>Lưu ý quan trọng về thanh toán trực tuyến:</strong> Tất
+                cả các giao dịch thanh toán trực tuyến đều được xử lý thông qua
+                các đối tác thanh toán uy tín và tuân thủ các tiêu chuẩn bảo mật
+                quốc tế. Thông tin thẻ tín dụng, tài khoản ngân hàng của người
+                dùng không được lưu trữ trên hệ thống của OneShop. OneShop chỉ
+                lưu trữ thông tin giao dịch cần thiết để xử lý đơn hàng và giải
+                quyết tranh chấp (nếu có).
+              </p>
+
+              <h3>3.2. Quy trình thanh toán</h3>
+              <h4>3.2.1. Thanh toán trực tuyến</h4>
+              <ol>
+                <li>Người mua chọn sản phẩm và thêm vào giỏ hàng</li>
+                <li>Tiến hành thanh toán bằng phương thức đã chọn</li>
+                <li>Hệ thống xác nhận thanh toán thành công</li>
+                <li>
+                  Người bán nhận được thông báo và tiến hành xử lý đơn hàng
+                </li>
+              </ol>
+
+              <h4>3.2.2. Thanh toán COD</h4>
+              <ol>
+                <li>Người mua đặt hàng và chọn phương thức COD</li>
+                <li>
+                  Người bán xác nhận đơn hàng và giao cho đơn vị vận chuyển
+                </li>
+                <li>Đơn vị vận chuyển giao hàng và thu tiền từ người mua</li>
+                <li>
+                  Tiền được chuyển đến người bán sau khi hoàn tất giao hàng
+                </li>
+              </ol>
+
+              <h3>3.3. Bảo mật thanh toán</h3>
+              <ul>
+                <li>
+                  OneShop sử dụng các công nghệ bảo mật tiên tiến để bảo vệ
+                  thông tin thanh toán của người dùng
+                </li>
+                <li>
+                  Thông tin thẻ tín dụng/ghi nợ được mã hóa và không được lưu
+                  trữ trên hệ thống của OneShop
+                </li>
+                <li>
+                  Người dùng chịu trách nhiệm bảo mật thông tin đăng nhập và
+                  không chia sẻ với bên thứ ba
+                </li>
+              </ul>
+
+              <h3>3.4. Hoàn tiền</h3>
+              <ul>
+                <li>
+                  Trong trường hợp hủy đơn hàng hoặc trả hàng, tiền sẽ được hoàn
+                  lại theo phương thức thanh toán ban đầu
+                </li>
+                <li>
+                  Thời gian hoàn tiền: 3-7 ngày làm việc đối với thanh toán trực
+                  tuyến, 7-14 ngày đối với COD
+                </li>
+                <li>
+                  OneShop có quyền kiểm tra và xác minh trước khi hoàn tiền
+                </li>
+              </ul>
+            </div>
+          </section>
+
+          <!-- Section 4: Đơn Hàng & Vận Chuyển -->
+          <section id="don-hang" class="section">
+            <h2 class="section-title">4. Đơn Hàng & Vận Chuyển</h2>
+            <div class="section-content">
+              <h3>4.1. Quy trình đặt hàng</h3>
+              <h4>4.1.1. Tạo đơn hàng</h4>
+              <ol>
+                <li>Người mua chọn sản phẩm và thêm vào giỏ hàng</li>
+                <li>Kiểm tra thông tin sản phẩm, số lượng, giá cả</li>
+                <li>Điền thông tin giao hàng (tên, địa chỉ, số điện thoại)</li>
+                <li>Chọn phương thức thanh toán và vận chuyển</li>
+                <li>Xác nhận đơn hàng</li>
+              </ol>
+
+              <h4>4.1.2. Xác nhận đơn hàng</h4>
+              <ul>
+                <li>
+                  Sau khi đặt hàng thành công, người mua sẽ nhận được email/xác
+                  nhận đơn hàng
+                </li>
+                <li>
+                  Người bán có trách nhiệm xác nhận đơn hàng trong vòng 24-48
+                  giờ
+                </li>
+                <li>
+                  Nếu người bán không xác nhận trong thời hạn quy định, đơn hàng
+                  có thể bị hủy tự động
+                </li>
+              </ul>
+
+              <h3>4.2. Trạng thái đơn hàng</h3>
+              <ul>
+                <li>
+                  <strong>Đơn hàng mới (Pending):</strong> Đơn hàng vừa được
+                  tạo, chờ người bán xác nhận
+                </li>
+                <li>
+                  <strong>Đã xác nhận (Confirmed):</strong> Người bán đã xác
+                  nhận và đang chuẩn bị hàng
+                </li>
+                <li>
+                  <strong>Đang giao (Shipping):</strong> Đơn hàng đã được giao
+                  cho đơn vị vận chuyển
+                </li>
+                <li>
+                  <strong>Đã giao (Delivered):</strong> Đơn hàng đã được giao
+                  đến người mua
+                </li>
+                <li><strong>Đã hủy (Cancelled):</strong> Đơn hàng đã bị hủy</li>
+                <li>
+                  <strong>Đang xử lý hoàn trả (Return Requested):</strong> Người
+                  mua đã yêu cầu trả hàng
+                </li>
+                <li>
+                  <strong>Trả hàng (Returned):</strong> Đơn hàng đã được trả lại
+                  người bán
+                </li>
+              </ul>
+
+              <h3>4.3. Vận chuyển và giao hàng</h3>
+              <p>
+                OneShop hợp tác với các đơn vị vận chuyển uy tín hàng đầu tại
+                Việt Nam để đảm bảo hàng hóa được giao đến tay người mua một
+                cách an toàn, nhanh chóng và tiện lợi. Chúng tôi cam kết cung
+                cấp dịch vụ vận chuyển chất lượng cao với nhiều lựa chọn phù hợp
+                với nhu cầu và ngân sách của người dùng.
+              </p>
+
+              <h4>4.3.1. Đơn vị vận chuyển đối tác</h4>
+              <p>
+                OneShop hợp tác chiến lược với các đơn vị vận chuyển uy tín, có
+                mạng lưới rộng khắp và dịch vụ chuyên nghiệp, bao gồm:
+              </p>
+              <ul>
+                <li>
+                  <strong>Viettel Post:</strong> Dịch vụ bưu chính và chuyển
+                  phát nhanh của Tập đoàn Viettel, có mạng lưới phủ sóng toàn
+                  quốc với hơn 1.000 điểm giao dịch và đội ngũ shipper chuyên
+                  nghiệp. Viettel Post cung cấp dịch vụ giao hàng nhanh (1-2
+                  ngày) và giao hàng tiêu chuẩn (3-5 ngày) với giá cả cạnh
+                  tranh.
+                </li>
+                <li>
+                  <strong>VNPost (Bưu điện Việt Nam):</strong> Đơn vị bưu chính
+                  quốc gia với mạng lưới rộng khắp, đặc biệt mạnh ở các vùng
+                  nông thôn và vùng sâu vùng xa. VNPost cung cấp dịch vụ giao
+                  hàng đáng tin cậy với giá cả hợp lý, phù hợp cho các đơn hàng
+                  có giá trị thấp đến trung bình.
+                </li>
+                <li>
+                  <strong>Giao Hàng Nhanh (GHN):</strong> Một trong những đơn vị
+                  vận chuyển hàng đầu tại Việt Nam, chuyên về dịch vụ giao hàng
+                  nhanh (1-2 ngày) và giao hàng siêu tốc (trong ngày) tại các
+                  thành phố lớn. GHN có công nghệ theo dõi đơn hàng tiên tiến và
+                  dịch vụ khách hàng chuyên nghiệp.
+                </li>
+                <li>
+                  <strong>Giao Hàng Tiết Kiệm (GHTK):</strong> Đơn vị vận chuyển
+                  với mức giá cạnh tranh, phù hợp cho các đơn hàng có giá trị
+                  thấp. GHTK có mạng lưới rộng và dịch vụ giao hàng tiêu chuẩn
+                  (3-5 ngày) với giá cả hợp lý.
+                </li>
+                <li>
+                  <strong>J&T Express:</strong> Đơn vị vận chuyển quốc tế với
+                  mạng lưới rộng khắp Việt Nam, chuyên về dịch vụ giao hàng
+                  nhanh và giao hàng quốc tế. J&T Express có công nghệ hiện đại
+                  và dịch vụ khách hàng 24/7.
+                </li>
+              </ul>
+              <p>
+                OneShop có quyền thay đổi, bổ sung, hoặc ngừng hợp tác với bất
+                kỳ đơn vị vận chuyển nào mà không cần thông báo trước. Trong
+                trường hợp đơn vị vận chuyển được chọn không còn khả dụng,
+                OneShop sẽ tự động chuyển sang đơn vị vận chuyển khác hoặc thông
+                báo cho người mua để lựa chọn phương án thay thế.
+              </p>
+
+              <h4>4.3.2. Phí vận chuyển và cách tính</h4>
+              <p>
+                Phí vận chuyển được tính dựa trên nhiều yếu tố và có thể thay
+                đổi tùy theo đơn vị vận chuyển, loại dịch vụ, và các điều kiện
+                cụ thể:
+              </p>
+              <ul>
+                <li>
+                  <strong>Các yếu tố tính phí:</strong> Phí vận chuyển được tính
+                  dựa trên: (i) Trọng lượng thực tế hoặc trọng lượng quy đổi
+                  (nếu hàng cồng kềnh) của đơn hàng; (ii) Kích thước và thể tích
+                  của kiện hàng; (iii) Khoảng cách vận chuyển (từ kho/điểm lấy
+                  hàng đến địa chỉ giao hàng); (iv) Loại dịch vụ vận chuyển được
+                  chọn (giao hàng nhanh, giao hàng tiêu chuẩn, giao hàng siêu
+                  tốc); (v) Giá trị đơn hàng (một số đơn vị tính phí bảo hiểm
+                  dựa trên giá trị); (vi) Địa điểm giao hàng (nội thành, ngoại
+                  thành, vùng sâu vùng xa có mức phí khác nhau).
+                </li>
+                <li>
+                  <strong>Miễn phí vận chuyển (Free Ship):</strong> Phí vận
+                  chuyển có thể được miễn phí trong các trường hợp sau: (i)
+                  Chương trình khuyến mãi Free Ship của OneShop hoặc shop (ví
+                  dụ: Free Ship cho đơn hàng từ 200.000đ); (ii) Sản phẩm được
+                  đánh dấu "Miễn phí vận chuyển" bởi người bán; (iii) Các sự
+                  kiện đặc biệt do OneShop tổ chức (ví dụ: Ngày hội mua sắm,
+                  Flash Sale); (iv) Chương trình tích điểm hoặc thành viên VIP.
+                  Điều kiện miễn phí vận chuyển sẽ được hiển thị rõ ràng trên
+                  trang sản phẩm và trong quá trình đặt hàng.
+                </li>
+                <li>
+                  <strong>Người chịu phí vận chuyển:</strong> Phí vận chuyển có
+                  thể được thanh toán bởi người mua hoặc người bán tùy theo thỏa
+                  thuận và chính sách của từng shop. Thông thường, người mua sẽ
+                  chịu phí vận chuyển, trừ khi có chương trình Free Ship. Trong
+                  một số trường hợp đặc biệt (ví dụ: sản phẩm lỗi, giao nhầm
+                  hàng), phí vận chuyển có thể được hoàn lại hoặc do người bán
+                  chịu.
+                </li>
+                <li>
+                  <strong>Phí vận chuyển khi trả hàng:</strong> Khi trả hàng,
+                  phí vận chuyển trả hàng sẽ được xử lý theo quy định: (i) Nếu
+                  trả hàng do lỗi của người bán (sản phẩm lỗi, không đúng mô tả,
+                  thiếu hàng): người bán chịu phí vận chuyển trả hàng; (ii) Nếu
+                  trả hàng do lỗi của người mua (không phù hợp, đổi ý): người
+                  mua có thể phải chịu phí vận chuyển trả hàng (tùy theo chính
+                  sách của shop); (iii) Trong một số trường hợp, OneShop có thể
+                  hỗ trợ một phần hoặc toàn bộ phí vận chuyển trả hàng.
+                </li>
+                <li>
+                  <strong>Thay đổi phí vận chuyển:</strong> Phí vận chuyển được
+                  hiển thị tại thời điểm đặt hàng là phí cuối cùng mà người mua
+                  phải thanh toán. Tuy nhiên, trong một số trường hợp đặc biệt
+                  (ví dụ: địa chỉ giao hàng thay đổi, trọng lượng thực tế khác
+                  với ước tính), phí vận chuyển có thể được điều chỉnh. OneShop
+                  sẽ thông báo cho người mua nếu có thay đổi về phí vận chuyển
+                  và người mua có quyền chấp nhận hoặc từ chối.
+                </li>
+              </ul>
+
+              <h4>4.3.3. Thời gian giao hàng</h4>
+              <p>
+                Thời gian giao hàng là một trong những yếu tố quan trọng ảnh
+                hưởng đến trải nghiệm mua sắm của người dùng. OneShop cam kết
+                cung cấp thông tin thời gian giao hàng chính xác và minh bạch:
+              </p>
+              <ul>
+                <li>
+                  <strong>Thời gian giao hàng dự kiến:</strong> Thời gian giao
+                  hàng dự kiến thường là 2-7 ngày làm việc (không tính thứ 7,
+                  Chủ nhật và các ngày lễ) tùy theo: (i) Địa điểm giao hàng (nội
+                  thành thường nhanh hơn ngoại thành và vùng sâu vùng xa); (ii)
+                  Loại dịch vụ vận chuyển được chọn (giao hàng nhanh: 1-2 ngày,
+                  giao hàng tiêu chuẩn: 3-5 ngày, giao hàng siêu tốc: trong
+                  ngày); (iii) Thời gian xử lý đơn hàng của người bán (thường là
+                  1-2 ngày làm việc sau khi xác nhận đơn hàng); (iv) Đơn vị vận
+                  chuyển được chọn. Thời gian giao hàng dự kiến sẽ được hiển thị
+                  rõ ràng trong quá trình đặt hàng và trong email xác nhận đơn
+                  hàng.
+                </li>
+                <li>
+                  <strong>Yếu tố ảnh hưởng đến thời gian giao hàng:</strong>
+                  Thời gian giao hàng có thể bị ảnh hưởng bởi các yếu tố khách
+                  quan sau: (i) Thiên tai, bão lũ, mưa lớn, đường sá bị cản trở;
+                  (ii) Dịch bệnh, các biện pháp phòng chống dịch của chính phủ;
+                  (iii) Các ngày lễ, Tết, thời điểm cao điểm (Black Friday,
+                  11/11, v.v.); (iv) Địa chỉ giao hàng khó tìm, không có người
+                  nhận; (v) Lỗi hệ thống hoặc sự cố kỹ thuật của đơn vị vận
+                  chuyển; (vi) Các yếu tố bất khả kháng khác. Trong các trường
+                  hợp này, thời gian giao hàng có thể bị kéo dài và OneShop sẽ
+                  thông báo cho người mua càng sớm càng tốt.
+                </li>
+                <li>
+                  <strong>Thông báo thay đổi thời gian giao hàng:</strong>
+                  OneShop và người bán có trách nhiệm thông báo kịp thời cho
+                  người mua nếu có thay đổi về thời gian giao hàng dự kiến.
+                  Thông báo sẽ được gửi qua email, SMS, hoặc thông báo trên ứng
+                  dụng. Người mua có quyền yêu cầu hủy đơn hàng và hoàn tiền nếu
+                  thời gian giao hàng bị kéo dài quá mức chấp nhận được (thường
+                  là quá 7 ngày so với thời gian dự kiến ban đầu) mà không có lý
+                  do chính đáng.
+                </li>
+                <li>
+                  <strong>Theo dõi đơn hàng:</strong> Người mua có thể theo dõi
+                  trạng thái đơn hàng và vị trí hàng hóa trong thời gian thực
+                  thông qua: (i) Trang "Đơn hàng của tôi" trên website hoặc ứng
+                  dụng OneShop; (ii) Mã vận đơn (Tracking Number) được cung cấp
+                  sau khi đơn hàng được giao cho đơn vị vận chuyển; (iii)
+                  Website hoặc ứng dụng của đơn vị vận chuyển. Thông tin theo
+                  dõi sẽ được cập nhật liên tục trong suốt quá trình vận chuyển.
+                </li>
+                <li>
+                  <strong>Giao hàng thất bại:</strong> Nếu giao hàng thất bại do
+                  các lý do: (i) Không có người nhận tại địa chỉ giao hàng; (ii)
+                  Địa chỉ giao hàng không chính xác hoặc không tìm thấy; (iii)
+                  Người nhận từ chối nhận hàng; (iv) Số điện thoại người nhận
+                  không liên lạc được; đơn vị vận chuyển sẽ cố gắng giao lại
+                  trong 2-3 lần tiếp theo (thường là trong vòng 3-5 ngày). Nếu
+                  vẫn không giao được, đơn hàng sẽ được trả về người bán và
+                  người mua có thể phải chịu phí vận chuyển hoặc đơn hàng sẽ bị
+                  hủy với hoàn tiền đầy đủ (tùy theo từng trường hợp cụ thể).
+                </li>
+              </ul>
+
+              <h3>4.4. Nhận hàng</h3>
+              <ul>
+                <li>
+                  Người mua có quyền kiểm tra hàng hóa trước khi nhận hàng
+                </li>
+                <li>
+                  Nếu hàng hóa không đúng với mô tả, bị hư hỏng hoặc thiếu,
+                  người mua có quyền từ chối nhận hàng
+                </li>
+                <li>
+                  Người mua cần ký xác nhận khi nhận hàng để hoàn tất quy trình
+                  giao hàng
+                </li>
+                <li>
+                  Nếu người mua vắng mặt khi giao hàng, đơn vị vận chuyển sẽ
+                  liên hệ để sắp xếp giao lại
+                </li>
+              </ul>
+
+              <h3>4.5. Hủy đơn hàng</h3>
+              <h4>4.5.1. Hủy đơn hàng bởi người mua</h4>
+              <ul>
+                <li>
+                  Người mua có thể hủy đơn hàng trước khi người bán xác nhận
+                </li>
+                <li>
+                  Sau khi người bán xác nhận, việc hủy đơn hàng cần được sự đồng
+                  ý của người bán
+                </li>
+                <li>
+                  Nếu đơn hàng đã được giao cho đơn vị vận chuyển, người mua có
+                  thể từ chối nhận hàng
+                </li>
+              </ul>
+
+              <h4>4.5.2. Hủy đơn hàng bởi người bán</h4>
+              <ul>
+                <li>
+                  Người bán có thể hủy đơn hàng nếu không thể cung cấp sản phẩm
+                </li>
+                <li>
+                  Người bán cần thông báo và giải thích lý do hủy đơn hàng cho
+                  người mua
+                </li>
+                <li>
+                  Tiền sẽ được hoàn lại cho người mua trong trường hợp hủy đơn
+                  hàng
+                </li>
+              </ul>
+            </div>
+          </section>
+
+          <!-- Section 5: Trả Hàng & Hoàn Tiền -->
+          <section id="tra-hang" class="section">
+            <h2 class="section-title">5. Trả Hàng & Hoàn Tiền</h2>
+            <div class="section-content">
+              <h3>5.1. Điều kiện và quyền trả hàng</h3>
+              <p>
+                OneShop cam kết bảo vệ quyền lợi của người mua và đảm bảo người
+                mua được quyền trả hàng trong các trường hợp hợp lý. Chính sách
+                trả hàng của chúng tôi được xây dựng dựa trên Luật Bảo vệ quyền
+                lợi người tiêu dùng và các quy định pháp luật hiện hành, đồng
+                thời đảm bảo công bằng cho cả người mua và người bán.
+              </p>
+              <p>
+                Người mua có quyền yêu cầu trả hàng và hoàn tiền trong các
+                trường hợp sau đây:
+              </p>
+              <ul>
+                <li>
+                  <strong>Sản phẩm không đúng với mô tả:</strong> Sản phẩm nhận
+                  được khác biệt đáng kể so với mô tả, hình ảnh, hoặc thông tin
+                  được công bố trên website, bao gồm: màu sắc, kích thước, kiểu
+                  dáng, thương hiệu, model, tính năng, thông số kỹ thuật, hoặc
+                  các đặc điểm quan trọng khác. Ví dụ: đặt mua áo màu đỏ nhưng
+                  nhận được màu xanh, đặt mua size L nhưng nhận được size M, đặt
+                  mua sản phẩm chính hãng nhưng nhận được hàng nhái.
+                </li>
+                <li>
+                  <strong
+                    >Sản phẩm bị lỗi, hư hỏng, hoặc không đạt chất
+                    lượng:</strong
+                  >
+                  Sản phẩm có lỗi sản xuất, bị hư hỏng trong quá trình vận
+                  chuyển, không hoạt động đúng chức năng, hoặc không đạt chất
+                  lượng như cam kết. Ví dụ: mỹ phẩm bị vỡ, rò rỉ, hết hạn sử
+                  dụng; thiết bị điện tử không hoạt động; quần áo bị rách, bung
+                  chỉ, lỗi may; sản phẩm có mùi hôi, ẩm mốc, hoặc dấu hiệu bất
+                  thường khác.
+                </li>
+                <li>
+                  <strong>Sản phẩm bị thiếu phụ kiện hoặc không đầy đủ:</strong>
+                  Sản phẩm nhận được thiếu các phụ kiện, linh kiện, hoặc tài
+                  liệu đi kèm được quảng cáo hoặc cam kết, khiến sản phẩm không
+                  thể sử dụng được hoặc không đầy đủ như đã cam kết. Ví dụ: điện
+                  thoại thiếu sạc, tai nghe; máy ảnh thiếu thẻ nhớ, pin; sản
+                  phẩm thiếu hướng dẫn sử dụng, phiếu bảo hành.
+                </li>
+                <li>
+                  <strong>Giao nhầm sản phẩm:</strong> Người mua nhận được sản
+                  phẩm hoàn toàn khác với sản phẩm đã đặt hàng. Ví dụ: đặt mua
+                  kem dưỡng da nhưng nhận được son môi; đặt mua sản phẩm của
+                  thương hiệu A nhưng nhận được thương hiệu B.
+                </li>
+                <li>
+                  <strong>Sản phẩm không phù hợp với nhu cầu (Đổi ý):</strong>
+                  Người mua có quyền trả hàng do không phù hợp với nhu cầu, sở
+                  thích, hoặc mong đợi của mình, với điều kiện: (i) Sản phẩm còn
+                  nguyên vẹn, chưa sử dụng, chưa làm mất giá trị sản phẩm; (ii)
+                  Còn đầy đủ bao bì, nhãn mác, phụ kiện; (iii) Trong thời hạn
+                  trả hàng cho phép (thường là 7 ngày kể từ ngày nhận hàng);
+                  (iv) Tuân thủ các điều kiện cụ thể của từng shop/vendor (một
+                  số shop có thể không cho phép trả hàng do đổi ý).
+                </li>
+                <li>
+                  <strong>Các trường hợp đặc biệt khác:</strong> Một số trường
+                  hợp đặc biệt khác có thể được xem xét trả hàng tùy theo từng
+                  tình huống cụ thể và quyết định của OneShop hoặc người bán, ví
+                  dụ: sản phẩm bị thu hồi do lỗi an toàn, sản phẩm vi phạm quy
+                  định pháp luật, hoặc các trường hợp khác được quy định trong
+                  chính sách của shop.
+                </li>
+              </ul>
+
+              <h3>5.2. Thời hạn trả hàng</h3>
+              <p>
+                Thời hạn trả hàng là một yếu tố quan trọng trong chính sách trả
+                hàng, đảm bảo quyền lợi của người mua đồng thời bảo vệ lợi ích
+                hợp pháp của người bán. Thời hạn trả hàng được quy định như sau:
+              </p>
+              <ul>
+                <li>
+                  <strong>Thời hạn yêu cầu trả hàng chung:</strong> Người mua có
+                  quyền yêu cầu trả hàng trong vòng
+                  <strong>7 ngày kể từ ngày nhận hàng</strong> (tính theo ngày
+                  giao hàng thành công được xác nhận bởi đơn vị vận chuyển).
+                  Thời hạn này áp dụng cho hầu hết các sản phẩm và trường hợp
+                  trả hàng do đổi ý hoặc không phù hợp. Người mua cần gửi yêu
+                  cầu trả hàng thông qua hệ thống OneShop hoặc liên hệ trực tiếp
+                  với người bán trong thời hạn này.
+                </li>
+                <li>
+                  <strong>Sản phẩm lỗi hoặc không đúng mô tả:</strong> Đối với
+                  sản phẩm bị lỗi, hư hỏng, hoặc không đúng với mô tả, người mua
+                  có quyền yêu cầu trả hàng
+                  <strong
+                    >không giới hạn thời gian trong thời hạn bảo hành</strong
+                  >
+                  của sản phẩm (thường là 12-24 tháng tùy theo loại sản phẩm và
+                  chính sách của nhà sản xuất). Tuy nhiên, người mua vẫn được
+                  khuyến nghị thông báo sớm nhất có thể để việc giải quyết được
+                  nhanh chóng và thuận lợi.
+                </li>
+                <li>
+                  <strong>Sản phẩm không phù hợp:</strong> Đối với trường hợp
+                  trả hàng do không phù hợp hoặc đổi ý, thời hạn trả hàng có thể
+                  khác nhau tùy theo chính sách của từng shop/vendor. Một số
+                  shop có thể cho phép trả hàng trong 7 ngày, một số shop có thể
+                  cho phép 15 ngày, và một số shop có thể không cho phép trả
+                  hàng do đổi ý. Chính sách trả hàng của từng shop sẽ được hiển
+                  thị rõ ràng trên trang sản phẩm và trong quá trình đặt hàng.
+                </li>
+                <li>
+                  <strong>Sản phẩm đặc biệt:</strong> Một số loại sản phẩm đặc
+                  biệt có thể có thời hạn trả hàng ngắn hơn hoặc không được phép
+                  trả hàng do đổi ý, bao gồm: (i) Thực phẩm, đồ uống, sản phẩm
+                  dễ hỏng (thường không được trả hàng do đổi ý); (ii) Mỹ phẩm,
+                  sản phẩm chăm sóc cá nhân đã mở niêm phong (thường không được
+                  trả hàng do đổi ý); (iii) Sản phẩm được sản xuất theo đơn đặt
+                  hàng riêng, tùy chỉnh; (iv) Sản phẩm có giá trị cao, đồ trang
+                  sức, đồng hồ (có thể có thời hạn trả hàng ngắn hơn, thường là
+                  3 ngày).
+                </li>
+                <li>
+                  <strong>Tính toán thời hạn:</strong> Thời hạn trả hàng được
+                  tính từ 00:00:00 của ngày tiếp theo sau ngày nhận hàng thành
+                  công. Ví dụ: nếu nhận hàng vào ngày 1/1/2025, thời hạn trả
+                  hàng sẽ bắt đầu từ 00:00:00 ngày 2/1/2025 và kết thúc vào
+                  23:59:59 ngày 8/1/2025 (7 ngày). Ngày nhận hàng được xác định
+                  dựa trên xác nhận giao hàng thành công của đơn vị vận chuyển
+                  hoặc chữ ký xác nhận của người nhận.
+                </li>
+                <li>
+                  <strong>Gia hạn thời hạn:</strong> Trong một số trường hợp đặc
+                  biệt (ví dụ: thiên tai, dịch bệnh, các ngày lễ dài), OneShop
+                  có thể gia hạn thời hạn trả hàng để đảm bảo quyền lợi của
+                  người mua. Thông báo về việc gia hạn sẽ được gửi đến người mua
+                  qua email hoặc thông báo trên ứng dụng.
+                </li>
+              </ul>
+
+              <h3>5.3. Điều kiện sản phẩm trả hàng</h3>
+              <p>
+                Để được chấp nhận trả hàng, sản phẩm phải đáp ứng các điều kiện
+                sau:
+              </p>
+              <ul>
+                <li>
+                  Còn nguyên vẹn, chưa sử dụng hoặc chưa làm mất giá trị sản
+                  phẩm
+                </li>
+                <li>Còn đầy đủ bao bì, nhãn mác, phụ kiện đi kèm (nếu có)</li>
+                <li>Không bị hư hỏng do lỗi của người mua</li>
+                <li>Có hóa đơn hoặc chứng từ mua hàng</li>
+              </ul>
+
+              <h3>5.4. Quy trình trả hàng</h3>
+              <ol>
+                <li>
+                  Người mua gửi yêu cầu trả hàng thông qua hệ thống OneShop hoặc
+                  liên hệ trực tiếp với người bán
+                </li>
+                <li>Người bán xem xét và phản hồi yêu cầu trả hàng</li>
+                <li>
+                  Nếu được chấp nhận, người mua đóng gói và gửi hàng về địa chỉ
+                  của người bán
+                </li>
+                <li>Người bán kiểm tra hàng hóa sau khi nhận được</li>
+                <li>
+                  Nếu hàng hóa đáp ứng điều kiện, người bán tiến hành hoàn tiền
+                </li>
+              </ol>
+
+              <h3>5.5. Chi phí trả hàng</h3>
+              <ul>
+                <li>
+                  Nếu sản phẩm lỗi hoặc không đúng mô tả: Người bán chịu chi phí
+                  vận chuyển
+                </li>
+                <li>
+                  Nếu người mua đổi ý hoặc không phù hợp: Người mua có thể phải
+                  chịu chi phí vận chuyển (tùy theo chính sách của shop)
+                </li>
+                <li>
+                  Chi phí vận chuyển được thỏa thuận giữa người mua và người bán
+                </li>
+              </ul>
+
+              <h3>5.6. Hoàn tiền</h3>
+              <h4>5.6.1. Phương thức hoàn tiền</h4>
+              <ul>
+                <li>
+                  Hoàn tiền vào tài khoản thanh toán ban đầu (ví điện tử, tài
+                  khoản ngân hàng)
+                </li>
+                <li>
+                  Hoàn tiền vào OneXu (điểm tích lũy) nếu người mua yêu cầu
+                </li>
+                <li>Hoàn tiền mặt (đối với đơn hàng COD)</li>
+              </ul>
+
+              <h4>5.6.2. Thời gian hoàn tiền</h4>
+              <ul>
+                <li>
+                  Sau khi người bán xác nhận nhận được hàng trả về và kiểm tra:
+                  3-7 ngày làm việc
+                </li>
+                <li>Đối với thanh toán trực tuyến: 3-5 ngày làm việc</li>
+                <li>Đối với COD: 7-14 ngày làm việc</li>
+                <li>
+                  Thời gian có thể thay đổi tùy theo ngân hàng hoặc đơn vị thanh
+                  toán
+                </li>
+              </ul>
+
+              <h4>5.6.3. Số tiền hoàn lại</h4>
+              <ul>
+                <li>
+                  Hoàn lại 100% giá trị sản phẩm nếu sản phẩm lỗi hoặc không
+                  đúng mô tả
+                </li>
+                <li>
+                  Hoàn lại giá trị sản phẩm trừ phí vận chuyển (nếu người mua
+                  đổi ý)
+                </li>
+                <li>
+                  Phí vận chuyển ban đầu không được hoàn lại (trừ khi có thỏa
+                  thuận khác)
+                </li>
+              </ul>
+
+              <h3>5.7. Trường hợp không được trả hàng</h3>
+              <p>Một số sản phẩm không được phép trả hàng:</p>
+              <ul>
+                <li>Sản phẩm đã qua sử dụng, có dấu hiệu hao mòn</li>
+                <li>Sản phẩm đã hết thời hạn trả hàng</li>
+                <li>Sản phẩm bị hư hỏng do lỗi của người mua</li>
+                <li>Sản phẩm không còn đầy đủ bao bì, phụ kiện</li>
+                <li>
+                  Sản phẩm đặc biệt (thực phẩm, mỹ phẩm đã mở, v.v.) - tùy theo
+                  chính sách của shop
+                </li>
+              </ul>
+            </div>
+          </section>
+
+          <!-- Section 6: Thông Tin Chung -->
+          <section id="thong-tin-chung" class="section">
+            <h2 class="section-title">6. Thông Tin Chung</h2>
+            <div class="section-content">
+              <!-- 6.1 Chính sách bảo mật -->
+              <div id="chinh-sach-bao-mat">
+                <h3>6.1. Chính sách bảo mật</h3>
+                <h4>6.1.1. Thu thập thông tin</h4>
+                <p>
+                  OneShop cam kết thu thập, sử dụng và bảo vệ thông tin cá nhân
+                  của người dùng một cách minh bạch, hợp pháp và tuân thủ Luật
+                  An toàn thông tin mạng và các quy định pháp luật hiện hành.
+                  Chúng tôi chỉ thu thập những thông tin cần thiết để cung cấp
+                  dịch vụ tốt nhất cho người dùng và không thu thập thông tin
+                  quá mức cần thiết.
+                </p>
+                <p>OneShop thu thập các loại thông tin sau từ người dùng:</p>
+                <ul>
+                  <li>
+                    <strong>Thông tin cá nhân cơ bản:</strong> Khi đăng ký tài
+                    khoản, người dùng cần cung cấp: họ tên, email, số điện
+                    thoại, địa chỉ, ngày sinh, giới tính (tùy chọn). Đối với
+                    người bán, chúng tôi có thể yêu cầu thêm: số CMND/CCCD/Hộ
+                    chiếu, địa chỉ kinh doanh, mã số thuế, thông tin tài khoản
+                    ngân hàng để nhận thanh toán.
+                  </li>
+                  <li>
+                    <strong>Thông tin thanh toán:</strong> Khi thực hiện thanh
+                    toán, người dùng có thể cung cấp: số thẻ tín dụng/ghi nợ,
+                    thông tin tài khoản ngân hàng, thông tin ví điện tử. Tuy
+                    nhiên, các thông tin nhạy cảm này được xử lý và lưu trữ bởi
+                    các đối tác thanh toán uy tín (Payment Gateway) với công
+                    nghệ mã hóa tiên tiến. OneShop không lưu trữ số thẻ đầy đủ,
+                    CVV, hoặc mật khẩu thanh toán trên hệ thống của mình.
+                  </li>
+                  <li>
+                    <strong>Thông tin giao dịch:</strong> OneShop lưu trữ lịch
+                    sử giao dịch của người dùng, bao gồm: danh sách đơn hàng,
+                    sản phẩm đã mua, giá cả, phương thức thanh toán, địa chỉ
+                    giao hàng, đánh giá sản phẩm, bình luận, khiếu nại, và các
+                    tương tác khác với nền tảng.
+                  </li>
+                  <li>
+                    <strong>Thông tin kỹ thuật và hành vi:</strong> OneShop tự
+                    động thu thập một số thông tin kỹ thuật khi người dùng truy
+                    cập website hoặc ứng dụng, bao gồm: địa chỉ IP, loại trình
+                    duyệt, hệ điều hành, thiết bị sử dụng (máy tính, điện thoại,
+                    tablet), thời gian truy cập, trang web đã truy cập trước đó,
+                    các trang đã xem trên OneShop, thời gian ở lại trang, và các
+                    hành vi tương tác khác. Thông tin này được thu thập thông
+                    qua cookies, log files, và các công nghệ theo dõi tương tự.
+                  </li>
+                  <li>
+                    <strong>Thông tin từ bên thứ ba:</strong> OneShop có thể
+                    nhận thông tin về người dùng từ các nguồn bên thứ ba, ví dụ:
+                    khi người dùng đăng nhập bằng tài khoản mạng xã hội
+                    (Facebook, Google), thông tin từ đối tác marketing, hoặc
+                    thông tin từ các dịch vụ xác thực danh tính.
+                  </li>
+                  <li>
+                    <strong>Thông tin từ giao tiếp:</strong> Khi người dùng liên
+                    hệ với OneShop qua email, điện thoại, chat, hoặc các kênh hỗ
+                    trợ khác, chúng tôi có thể lưu trữ nội dung cuộc trò chuyện,
+                    email, và các thông tin liên quan để phục vụ hỗ trợ và cải
+                    thiện dịch vụ.
+                  </li>
+                </ul>
+                <p>
+                  <strong>Lưu ý:</strong> Người dùng có quyền từ chối cung cấp
+                  một số thông tin, tuy nhiên điều này có thể ảnh hưởng đến khả
+                  năng sử dụng một số tính năng của dịch vụ. Ví dụ: nếu không
+                  cung cấp địa chỉ, người dùng không thể đặt hàng để giao đến
+                  nhà.
+                </p>
+
+                <h4>6.1.2. Mục đích sử dụng thông tin</h4>
+                <p>
+                  Thông tin thu thập được sử dụng cho các mục đích sau đây, và
+                  OneShop cam kết chỉ sử dụng thông tin trong phạm vi các mục
+                  đích này:
+                </p>
+                <ul>
+                  <li>
+                    <strong>Xử lý đơn hàng và giao dịch:</strong> Sử dụng thông
+                    tin để xử lý đơn hàng, thanh toán, vận chuyển, giao hàng,
+                    trả hàng, hoàn tiền, và các giao dịch khác trên nền tảng.
+                    Thông tin này cần thiết để đảm bảo đơn hàng được xử lý chính
+                    xác và giao đến đúng địa chỉ.
+                  </li>
+                  <li>
+                    <strong>Cung cấp dịch vụ và hỗ trợ khách hàng:</strong> Sử
+                    dụng thông tin để cung cấp các dịch vụ trên nền tảng, xử lý
+                    yêu cầu, khiếu nại, giải quyết tranh chấp, và cung cấp hỗ
+                    trợ kỹ thuật cho người dùng. Thông tin này giúp chúng tôi
+                    hiểu vấn đề của người dùng và cung cấp giải pháp phù hợp.
+                  </li>
+                  <li>
+                    <strong>Cải thiện trải nghiệm người dùng:</strong> Sử dụng
+                    thông tin để phân tích hành vi, sở thích, và nhu cầu của
+                    người dùng, từ đó cải thiện giao diện, tính năng, và trải
+                    nghiệm sử dụng. Chúng tôi có thể sử dụng thông tin để cá
+                    nhân hóa nội dung, đề xuất sản phẩm phù hợp, và tối ưu hóa
+                    trải nghiệm mua sắm.
+                  </li>
+                  <li>
+                    <strong>Marketing và khuyến mãi:</strong> Với sự đồng ý của
+                    người dùng, OneShop có thể sử dụng thông tin để gửi email,
+                    SMS, thông báo về các chương trình khuyến mãi, sản phẩm mới,
+                    sự kiện đặc biệt, và các thông tin liên quan đến dịch vụ.
+                    Người dùng có quyền từ chối nhận các thông tin marketing này
+                    bất cứ lúc nào bằng cách cập nhật cài đặt tài khoản hoặc bấm
+                    "Hủy đăng ký" trong email/SMS.
+                  </li>
+                  <li>
+                    <strong>Phòng chống gian lận và bảo mật:</strong> Sử dụng
+                    thông tin để phát hiện, ngăn chặn, và xử lý các hành vi gian
+                    lận, lạm dụng, vi phạm điều khoản, hoặc các hoạt động bất
+                    hợp pháp. Chúng tôi có thể sử dụng công nghệ phân tích dữ
+                    liệu và machine learning để nhận diện các mẫu hành vi bất
+                    thường và bảo vệ người dùng khỏi các rủi ro.
+                  </li>
+                  <li>
+                    <strong>Tuân thủ pháp luật và yêu cầu pháp lý:</strong> Sử
+                    dụng thông tin để tuân thủ các quy định pháp luật, thực hiện
+                    các nghĩa vụ pháp lý, phản hồi các yêu cầu từ cơ quan nhà
+                    nước có thẩm quyền, hoặc bảo vệ quyền và lợi ích hợp pháp
+                    của OneShop và người dùng.
+                  </li>
+                  <li>
+                    <strong>Nghiên cứu và phát triển:</strong> Sử dụng thông tin
+                    đã được ẩn danh hóa (anonymized) để nghiên cứu, phân tích xu
+                    hướng, và phát triển các tính năng, dịch vụ mới. Thông tin
+                    được sử dụng cho mục đích này sẽ được xử lý để không thể
+                    nhận diện được danh tính của người dùng.
+                  </li>
+                </ul>
+
+                <h4>6.1.3. Bảo mật và bảo vệ thông tin</h4>
+                <p>
+                  OneShop coi trọng việc bảo mật thông tin của người dùng và áp
+                  dụng các biện pháp bảo mật tiên tiến để bảo vệ thông tin khỏi
+                  việc truy cập, sử dụng, tiết lộ, thay đổi, hoặc phá hủy trái
+                  phép:
+                </p>
+                <ul>
+                  <li>
+                    <strong>Công nghệ bảo mật:</strong> OneShop sử dụng các công
+                    nghệ bảo mật tiên tiến, bao gồm: (i) Mã hóa SSL/TLS (Secure
+                    Sockets Layer/Transport Layer Security) để bảo vệ dữ liệu
+                    trong quá trình truyền tải giữa trình duyệt/ứng dụng và
+                    server; (ii) Mã hóa dữ liệu (Encryption) để bảo vệ thông tin
+                    nhạy cảm được lưu trữ trên server; (iii) Firewall và hệ
+                    thống phát hiện xâm nhập (Intrusion Detection System) để
+                    ngăn chặn các cuộc tấn công từ bên ngoài; (iv) Hệ thống xác
+                    thực đa yếu tố (Multi-Factor Authentication) cho các tài
+                    khoản quan trọng; (v) Công nghệ chống gian lận và machine
+                    learning để phát hiện các hoạt động bất thường.
+                  </li>
+                  <li>
+                    <strong>Kiểm soát truy cập:</strong> Thông tin được lưu trữ
+                    trên hệ thống an toàn và chỉ được truy cập bởi nhân viên
+                    được ủy quyền, những người cần thông tin đó để thực hiện
+                    công việc của mình. Tất cả nhân viên đều được đào tạo về bảo
+                    mật thông tin và ký cam kết bảo mật. OneShop áp dụng nguyên
+                    tắc "Need to Know" - chỉ cấp quyền truy cập cho những người
+                    thực sự cần thiết.
+                  </li>
+                  <li>
+                    <strong>Chia sẻ thông tin với bên thứ ba:</strong> OneShop
+                    không bán, cho thuê, hoặc chia sẻ thông tin cá nhân của
+                    người dùng với bên thứ ba vì mục đích thương mại. Chúng tôi
+                    chỉ chia sẻ thông tin trong các trường hợp sau: (i) Có sự
+                    đồng ý rõ ràng của người dùng; (ii) Yêu cầu pháp lý từ cơ
+                    quan nhà nước có thẩm quyền; (iii) Chia sẻ với các đối tác
+                    dịch vụ cần thiết để cung cấp dịch vụ (ví dụ: đơn vị vận
+                    chuyển cần địa chỉ giao hàng, đối tác thanh toán cần thông
+                    tin thanh toán) - các đối tác này đều được yêu cầu bảo mật
+                    thông tin và chỉ sử dụng cho mục đích cung cấp dịch vụ; (iv)
+                    Trong trường hợp khẩn cấp để bảo vệ quyền, tài sản, hoặc an
+                    toàn của OneShop, người dùng, hoặc công chúng.
+                  </li>
+                  <li>
+                    <strong>Lưu trữ và xóa dữ liệu:</strong> Thông tin được lưu
+                    trữ trên các server an toàn tại Việt Nam hoặc các trung tâm
+                    dữ liệu đáng tin cậy. OneShop lưu trữ thông tin trong thời
+                    gian cần thiết để cung cấp dịch vụ và tuân thủ các yêu cầu
+                    pháp lý. Khi thông tin không còn cần thiết, chúng tôi sẽ xóa
+                    hoặc ẩn danh hóa thông tin đó một cách an toàn. Người dùng
+                    có quyền yêu cầu xóa thông tin cá nhân của mình, trừ các
+                    thông tin mà OneShop có nghĩa vụ pháp lý phải lưu trữ.
+                  </li>
+                  <li>
+                    <strong>Bảo vệ khỏi rò rỉ dữ liệu:</strong> OneShop có kế
+                    hoạch ứng phó sự cố (Incident Response Plan) để xử lý nhanh
+                    chóng và hiệu quả trong trường hợp xảy ra rò rỉ dữ liệu. Nếu
+                    phát hiện rò rỉ dữ liệu có thể ảnh hưởng đến quyền lợi của
+                    người dùng, OneShop sẽ thông báo cho người dùng và cơ quan
+                    có thẩm quyền trong vòng 72 giờ theo quy định pháp luật.
+                  </li>
+                  <li>
+                    <strong>Quyền của người dùng:</strong> Người dùng có các
+                    quyền sau đối với thông tin cá nhân của mình: (i) Quyền truy
+                    cập: xem thông tin cá nhân đã được lưu trữ; (ii) Quyền chỉnh
+                    sửa: cập nhật, sửa đổi thông tin không chính xác; (iii)
+                    Quyền xóa: yêu cầu xóa thông tin cá nhân (trừ các trường hợp
+                    pháp luật yêu cầu lưu trữ); (iv) Quyền phản đối: phản đối
+                    việc xử lý thông tin cho mục đích marketing; (v) Quyền rút
+                    lại đồng ý: rút lại sự đồng ý đã cung cấp trước đó. Người
+                    dùng có thể thực hiện các quyền này bằng cách liên hệ với
+                    OneShop qua email hoặc cập nhật trong phần cài đặt tài
+                    khoản.
+                  </li>
+                </ul>
+              </div>
+
+              <!-- 6.2 Tài khoản -->
+              <div id="tai-khoan">
+                <h3>6.2. Tài khoản</h3>
+                <h4>6.2.1. Đăng ký tài khoản</h4>
+                <ul>
+                  <li>
+                    Người dùng có thể đăng ký tài khoản miễn phí trên OneShop
+                  </li>
+                  <li>
+                    Cần cung cấp thông tin chính xác và đầy đủ khi đăng ký
+                  </li>
+                  <li>Mỗi người chỉ được đăng ký một tài khoản</li>
+                  <li>
+                    OneShop có quyền từ chối hoặc xóa tài khoản nếu phát hiện vi
+                    phạm
+                  </li>
+                </ul>
+
+                <h4>6.2.2. Bảo mật tài khoản</h4>
+                <ul>
+                  <li>
+                    Người dùng chịu trách nhiệm bảo mật thông tin đăng nhập
+                  </li>
+                  <li>Không chia sẻ tài khoản với người khác</li>
+                  <li>
+                    Thông báo ngay cho OneShop nếu phát hiện hoạt động đăng nhập
+                    bất thường
+                  </li>
+                  <li>Sử dụng mật khẩu mạnh và thay đổi định kỳ</li>
+                </ul>
+
+                <h4>6.2.3. Đóng tài khoản</h4>
+                <ul>
+                  <li>
+                    Người dùng có quyền yêu cầu đóng tài khoản bất cứ lúc nào
+                  </li>
+                  <li>
+                    OneShop sẽ xóa tài khoản sau khi xác minh và hoàn tất các
+                    giao dịch còn lại
+                  </li>
+                  <li>
+                    Một số thông tin có thể được lưu trữ theo yêu cầu pháp lý
+                  </li>
+                </ul>
+              </div>
+
+              <!-- 6.3 Hướng dẫn -->
+              <div id="huong-dan">
+                <h3>6.3. Hướng dẫn sử dụng</h3>
+                <h4>6.3.1. Hướng dẫn mua hàng</h4>
+                <ol>
+                  <li>Tìm kiếm sản phẩm bằng từ khóa hoặc duyệt danh mục</li>
+                  <li>Xem chi tiết sản phẩm, đọc mô tả và đánh giá</li>
+                  <li>Thêm sản phẩm vào giỏ hàng</li>
+                  <li>Kiểm tra giỏ hàng và tiến hành thanh toán</li>
+                  <li>
+                    Điền thông tin giao hàng và chọn phương thức thanh toán
+                  </li>
+                  <li>Xác nhận đơn hàng và chờ nhận hàng</li>
+                </ol>
+
+                <h4>6.3.2. Hướng dẫn bán hàng</h4>
+                <ol>
+                  <li>Đăng ký tài khoản vendor/shop</li>
+                  <li>Xác thực thông tin và hoàn tất hồ sơ shop</li>
+                  <li>Đăng sản phẩm với hình ảnh và mô tả đầy đủ</li>
+                  <li>Quản lý đơn hàng và xử lý yêu cầu của khách hàng</li>
+                  <li>Đóng gói và giao hàng cho đơn vị vận chuyển</li>
+                  <li>Nhận thanh toán và quản lý doanh thu</li>
+                </ol>
+              </div>
+
+              <!-- 6.4 Giải quyết tranh chấp -->
+              <div id="giai-quyet-tranh-chap">
+                <h3>6.4. Giải quyết tranh chấp</h3>
+                <h4>6.4.1. Nguyên tắc giải quyết</h4>
+                <ul>
+                  <li>
+                    OneShop đóng vai trò trung gian hỗ trợ giải quyết tranh chấp
+                    giữa người mua và người bán
+                  </li>
+                  <li>
+                    Ưu tiên giải quyết thông qua thương lượng và thỏa thuận
+                  </li>
+                  <li>Áp dụng công bằng, minh bạch và tuân thủ pháp luật</li>
+                </ul>
+
+                <h4>6.4.2. Quy trình giải quyết</h4>
+                <ol>
+                  <li>
+                    Người mua hoặc người bán gửi yêu cầu giải quyết tranh chấp
+                  </li>
+                  <li>
+                    OneShop xem xét và yêu cầu cung cấp bằng chứng từ cả hai bên
+                  </li>
+                  <li>Tiến hành điều tra và đánh giá tình huống</li>
+                  <li>
+                    Đưa ra quyết định giải quyết dựa trên bằng chứng và chính
+                    sách
+                  </li>
+                  <li>Thực hiện quyết định (hoàn tiền, trả hàng, v.v.)</li>
+                </ol>
+
+                <h4>6.4.3. Quyền và trách nhiệm</h4>
+                <ul>
+                  <li>
+                    Người mua và người bán có trách nhiệm cung cấp bằng chứng
+                    đầy đủ và chính xác
+                  </li>
+                  <li>
+                    OneShop có quyền đưa ra quyết định cuối cùng dựa trên chính
+                    sách và điều khoản
+                  </li>
+                  <li>
+                    Quyết định của OneShop là bắt buộc và không thể kháng cáo
+                    (trừ trường hợp có bằng chứng mới)
+                  </li>
+                </ul>
+              </div>
+
+              <!-- 6.5 Quyền và nghĩa vụ -->
+              <h3>6.5. Quyền và nghĩa vụ của các bên</h3>
+              <h4>6.5.1. Quyền và nghĩa vụ của Người mua</h4>
+              <p>
+                Người mua là một trong những đối tác quan trọng của OneShop, và
+                chúng tôi cam kết bảo vệ quyền lợi hợp pháp của người mua đồng
+                thời yêu cầu người mua tuân thủ các nghĩa vụ để đảm bảo môi
+                trường mua sắm công bằng và minh bạch.
+              </p>
+              <p><strong>Quyền của Người mua:</strong></p>
+              <ul>
+                <li>
+                  <strong>Quyền được thông tin:</strong> Người mua có quyền được
+                  cung cấp thông tin đầy đủ, chính xác, trung thực về sản phẩm,
+                  bao gồm: tên sản phẩm, thương hiệu, xuất xứ, thành phần, tính
+                  năng, thông số kỹ thuật, giá cả, phí vận chuyển, chính sách
+                  trả hàng, thời hạn bảo hành, và các thông tin quan trọng khác.
+                  Người mua có quyền yêu cầu người bán cung cấp thêm thông tin
+                  nếu cần thiết trước khi quyết định mua hàng.
+                </li>
+                <li>
+                  <strong>Quyền được nhận hàng đúng cam kết:</strong> Người mua
+                  có quyền nhận được hàng hóa đúng với mô tả, hình ảnh, thông
+                  tin đã được công bố, đúng chất lượng, số lượng, chủng loại như
+                  đã đặt hàng. Hàng hóa phải được đóng gói cẩn thận, an toàn, và
+                  giao đến đúng địa chỉ, đúng thời gian đã thỏa thuận.
+                </li>
+                <li>
+                  <strong>Quyền trả hàng và hoàn tiền:</strong> Người mua có
+                  quyền yêu cầu trả hàng và hoàn tiền trong các trường hợp được
+                  quy định trong chính sách trả hàng của OneShop (xem mục 5).
+                  Quyền này được bảo vệ bởi Luật Bảo vệ quyền lợi người tiêu
+                  dùng và các quy định pháp luật hiện hành.
+                </li>
+                <li>
+                  <strong>Quyền được bảo vệ:</strong> Người mua có quyền được
+                  bảo vệ quyền lợi khi mua sắm trên nền tảng OneShop, bao gồm:
+                  quyền được bảo vệ khỏi hàng giả, hàng nhái, hàng kém chất
+                  lượng; quyền được bảo vệ khỏi các hành vi lừa đảo, gian lận;
+                  quyền được hỗ trợ giải quyết tranh chấp một cách công bằng; và
+                  quyền được bồi thường thiệt hại nếu bị thiệt hại do lỗi của
+                  người bán hoặc OneShop.
+                </li>
+                <li>
+                  <strong>Quyền đánh giá và phản hồi:</strong> Người mua có
+                  quyền đánh giá, bình luận, chia sẻ trải nghiệm về sản phẩm và
+                  dịch vụ một cách trung thực, khách quan. Người mua có quyền
+                  phản hồi, khiếu nại về chất lượng sản phẩm, dịch vụ, hoặc bất
+                  kỳ vấn đề nào phát sinh trong quá trình mua sắm.
+                </li>
+                <li>
+                  <strong>Quyền riêng tư và bảo mật:</strong> Người mua có quyền
+                  được bảo vệ thông tin cá nhân, quyền riêng tư, và quyền kiểm
+                  soát việc sử dụng thông tin cá nhân của mình theo quy định
+                  trong Chính sách Bảo mật (xem mục 6.1).
+                </li>
+                <li>
+                  <strong>Quyền khiếu nại và tố cáo:</strong> Người mua có quyền
+                  khiếu nại, tố cáo các hành vi vi phạm của người bán, OneShop,
+                  hoặc các bên liên quan đến cơ quan nhà nước có thẩm quyền hoặc
+                  các tổ chức bảo vệ người tiêu dùng.
+                </li>
+              </ul>
+              <p><strong>Nghĩa vụ của Người mua:</strong></p>
+              <ul>
+                <li>
+                  <strong>Nghĩa vụ cung cấp thông tin chính xác:</strong> Người
+                  mua có nghĩa vụ cung cấp thông tin chính xác, đầy đủ, trung
+                  thực khi đăng ký tài khoản, đặt hàng, và sử dụng dịch vụ.
+                  Thông tin sai lệch có thể dẫn đến việc không nhận được hàng,
+                  giao hàng nhầm địa chỉ, hoặc các vấn đề khác, và người mua
+                  phải chịu trách nhiệm về hậu quả.
+                </li>
+                <li>
+                  <strong>Nghĩa vụ thanh toán:</strong> Người mua có nghĩa vụ
+                  thanh toán đầy đủ, đúng hạn giá trị đơn hàng (bao gồm giá sản
+                  phẩm, phí vận chuyển, và các loại phí khác nếu có) theo phương
+                  thức thanh toán đã chọn. Việc không thanh toán hoặc thanh toán
+                  không đầy đủ có thể dẫn đến việc đơn hàng bị hủy và người mua
+                  có thể bị xử lý kỷ luật.
+                </li>
+                <li>
+                  <strong>Nghĩa vụ nhận hàng:</strong> Người mua có nghĩa vụ
+                  nhận hàng đúng thời gian, địa điểm đã thỏa thuận, và hợp tác
+                  với đơn vị vận chuyển trong quá trình giao hàng. Nếu người mua
+                  vắng mặt hoặc không thể nhận hàng, người mua cần thông báo
+                  trước và sắp xếp thời gian giao lại. Việc từ chối nhận hàng
+                  không có lý do chính đáng có thể dẫn đến việc người mua phải
+                  chịu phí vận chuyển.
+                </li>
+                <li>
+                  <strong>Nghĩa vụ kiểm tra hàng hóa:</strong> Người mua có
+                  nghĩa vụ kiểm tra hàng hóa trước khi nhận hàng (đối với COD)
+                  hoặc ngay sau khi nhận hàng (đối với thanh toán trực tuyến) để
+                  phát hiện các vấn đề như: hàng không đúng, bị hư hỏng, thiếu
+                  hàng, hoặc các vấn đề khác. Người mua cần phản hồi kịp thời
+                  (trong vòng 24-48 giờ) nếu phát hiện vấn đề để được giải quyết
+                  nhanh chóng.
+                </li>
+                <li>
+                  <strong>Nghĩa vụ sử dụng sản phẩm đúng cách:</strong> Người
+                  mua có nghĩa vụ sử dụng sản phẩm đúng theo hướng dẫn sử dụng,
+                  mục đích sử dụng, và các cảnh báo an toàn được cung cấp. Việc
+                  sử dụng sai cách có thể dẫn đến hư hỏng sản phẩm và người mua
+                  sẽ không được bảo hành hoặc trả hàng.
+                </li>
+                <li>
+                  <strong>Nghĩa vụ tuân thủ điều khoản:</strong> Người mua có
+                  nghĩa vụ tuân thủ tất cả các quy định, điều khoản, chính sách
+                  của OneShop, bao gồm Điều khoản Dịch vụ này, Chính sách Bảo
+                  mật, Chính sách Trả hàng, và các quy định khác được công bố
+                  trên nền tảng.
+                </li>
+                <li>
+                  <strong>Nghĩa vụ đánh giá trung thực:</strong> Người mua có
+                  nghĩa vụ đánh giá sản phẩm một cách trung thực, khách quan,
+                  dựa trên trải nghiệm thực tế. Người mua không được đánh giá
+                  giả, đánh giá sai sự thật, hoặc sử dụng đánh giá để tống tiền,
+                  đe dọa người bán.
+                </li>
+                <li>
+                  <strong>Nghĩa vụ bảo mật tài khoản:</strong> Người mua có
+                  nghĩa vụ bảo mật thông tin đăng nhập, không chia sẻ tài khoản
+                  với người khác, và thông báo ngay cho OneShop nếu phát hiện
+                  hoạt động bất thường trên tài khoản của mình.
+                </li>
+              </ul>
+
+              <h4>6.5.2. Quyền và nghĩa vụ của Người bán</h4>
+              <p>
+                Người bán là đối tác quan trọng của OneShop, đóng vai trò cung
+                cấp sản phẩm và dịch vụ cho người mua. OneShop cam kết hỗ trợ
+                người bán phát triển kinh doanh đồng thời yêu cầu người bán tuân
+                thủ các quy định để đảm bảo chất lượng dịch vụ và bảo vệ quyền
+                lợi của người mua.
+              </p>
+              <p><strong>Quyền của Người bán:</strong></p>
+              <ul>
+                <li>
+                  <strong>Quyền đăng bán sản phẩm:</strong> Người bán có quyền
+                  đăng bán sản phẩm hợp pháp trên nền tảng OneShop sau khi đã
+                  đăng ký tài khoản vendor/shop và được OneShop phê duyệt. Người
+                  bán có quyền quản lý danh mục sản phẩm, cập nhật thông tin,
+                  giá cả, số lượng tồn kho, và các thông tin khác liên quan đến
+                  sản phẩm của mình.
+                </li>
+                <li>
+                  <strong>Quyền nhận thanh toán:</strong> Người bán có quyền
+                  nhận thanh toán đầy đủ, đúng hạn cho các đơn hàng đã giao
+                  thành công. Tiền sẽ được chuyển đến tài khoản ngân hàng hoặc
+                  ví điện tử của người bán theo chu kỳ thanh toán đã thỏa thuận
+                  (thường là 3-7 ngày làm việc sau khi giao hàng thành công).
+                  Người bán có quyền yêu cầu OneShop giải thích về bất kỳ khoản
+                  khấu trừ, phí dịch vụ, hoặc các khoản phí khác.
+                </li>
+                <li>
+                  <strong>Quyền quản lý shop và sản phẩm:</strong> Người bán có
+                  quyền quản lý toàn bộ hoạt động của shop trên nền tảng, bao
+                  gồm: quản lý thông tin shop, logo, banner, mô tả shop; quản lý
+                  danh mục sản phẩm, thêm mới, chỉnh sửa, xóa sản phẩm; quản lý
+                  đơn hàng, xác nhận, hủy đơn hàng (theo quy định); quản lý kho
+                  hàng, cập nhật số lượng tồn kho; quản lý giá cả, chương trình
+                  khuyến mãi; và các hoạt động quản lý khác.
+                </li>
+                <li>
+                  <strong>Quyền được hỗ trợ:</strong> Người bán có quyền được hỗ
+                  trợ từ OneShop trong quá trình kinh doanh, bao gồm: hỗ trợ kỹ
+                  thuật về sử dụng nền tảng; hỗ trợ về quy trình, chính sách; hỗ
+                  trợ giải quyết tranh chấp; hỗ trợ marketing, quảng bá sản phẩm
+                  (thông qua các chương trình khuyến mãi, banner quảng cáo); và
+                  các hỗ trợ khác theo quy định.
+                </li>
+                <li>
+                  <strong>Quyền phản hồi và giải quyết tranh chấp:</strong>
+                  Người bán có quyền phản hồi, giải thích, cung cấp bằng chứng
+                  trong các trường hợp tranh chấp với người mua. Người bán có
+                  quyền yêu cầu OneShop can thiệp và giải quyết tranh chấp một
+                  cách công bằng, minh bạch. Người bán có quyền kháng cáo quyết
+                  định của OneShop nếu có bằng chứng mới hoặc phát hiện sai sót
+                  trong quá trình giải quyết.
+                </li>
+                <li>
+                  <strong>Quyền bảo vệ khỏi hành vi lạm dụng:</strong> Người bán
+                  có quyền được bảo vệ khỏi các hành vi lạm dụng của người mua,
+                  bao gồm: đánh giá giả, đánh giá sai sự thật, tống tiền, đe
+                  dọa; đặt hàng giả, hủy đơn hàng không có lý do; và các hành vi
+                  vi phạm khác. OneShop sẽ xử lý nghiêm các hành vi này.
+                </li>
+                <li>
+                  <strong>Quyền truy cập dữ liệu và báo cáo:</strong> Người bán
+                  có quyền truy cập dữ liệu về doanh số, đơn hàng, khách hàng,
+                  đánh giá, và các báo cáo phân tích khác để hỗ trợ việc quản lý
+                  và phát triển kinh doanh.
+                </li>
+              </ul>
+              <p><strong>Nghĩa vụ của Người bán:</strong></p>
+              <ul>
+                <li>
+                  <strong>Nghĩa vụ cung cấp thông tin chính xác:</strong> Người
+                  bán có nghĩa vụ cung cấp thông tin sản phẩm chính xác, đầy đủ,
+                  trung thực, bao gồm: tên sản phẩm, thương hiệu, xuất xứ, thành
+                  phần, tính năng, thông số kỹ thuật, kích thước, màu sắc, giá
+                  cả, số lượng tồn kho, hình ảnh sản phẩm (phải là hình ảnh thực
+                  tế của sản phẩm, không được sử dụng hình ảnh từ nguồn khác
+                  không được phép), và các thông tin quan trọng khác. Thông tin
+                  sai lệch có thể dẫn đến khiếu nại, trả hàng, và xử lý kỷ luật.
+                </li>
+                <li>
+                  <strong>Nghĩa vụ giao hàng đúng cam kết:</strong> Người bán có
+                  nghĩa vụ giao hàng đúng chất lượng, số lượng, chủng loại, và
+                  thời gian đã cam kết. Hàng hóa phải được đóng gói cẩn thận, an
+                  toàn, đảm bảo không bị hư hỏng trong quá trình vận chuyển.
+                  Người bán phải hợp tác với đơn vị vận chuyển để đảm bảo hàng
+                  được giao đúng địa chỉ và đúng thời gian.
+                </li>
+                <li>
+                  <strong>Nghĩa vụ xử lý đơn hàng kịp thời:</strong> Người bán
+                  có nghĩa vụ xử lý đơn hàng một cách nhanh chóng và kịp thời:
+                  (i) Xác nhận đơn hàng trong vòng 24-48 giờ sau khi nhận được
+                  đơn hàng; (ii) Chuẩn bị hàng và giao cho đơn vị vận chuyển
+                  trong thời gian đã cam kết (thường là 1-2 ngày làm việc sau
+                  khi xác nhận); (iii) Cập nhật trạng thái đơn hàng, mã vận đơn
+                  cho người mua; (iv) Phản hồi các câu hỏi, yêu cầu của khách
+                  hàng trong vòng 24 giờ.
+                </li>
+                <li>
+                  <strong>Nghĩa vụ chịu trách nhiệm về chất lượng:</strong>
+                  Người bán hoàn toàn chịu trách nhiệm về chất lượng, tính pháp
+                  lý, an toàn của sản phẩm do mình cung cấp. Người bán phải đảm
+                  bảo sản phẩm: (i) Hợp pháp, không vi phạm quy định pháp luật;
+                  (ii) Đạt chất lượng, tiêu chuẩn như đã cam kết; (iii) An toàn
+                  cho người sử dụng; (iv) Có đầy đủ giấy tờ, chứng nhận cần
+                  thiết (nếu có); (v) Không vi phạm quyền sở hữu trí tuệ của bên
+                  thứ ba.
+                </li>
+                <li>
+                  <strong>Nghĩa vụ tuân thủ pháp luật:</strong> Người bán có
+                  nghĩa vụ tuân thủ tất cả các quy định pháp luật hiện hành, bao
+                  gồm: Luật Thương mại điện tử, Luật Bảo vệ quyền lợi người tiêu
+                  dùng, Luật Thuế, Luật Hải quan, Luật Sở hữu trí tuệ, và các
+                  quy định khác. Người bán phải có đầy đủ giấy phép kinh doanh,
+                  giấy chứng nhận đăng ký kinh doanh (nếu được yêu cầu), và thực
+                  hiện đầy đủ các nghĩa vụ thuế, báo cáo theo quy định.
+                </li>
+                <li>
+                  <strong>Nghĩa vụ xử lý trả hàng và hoàn tiền:</strong> Người
+                  bán có nghĩa vụ xử lý các yêu cầu trả hàng và hoàn tiền theo
+                  chính sách của OneShop (xem mục 5). Người bán phải: (i) Xem
+                  xét và phản hồi yêu cầu trả hàng trong vòng 24-48 giờ; (ii)
+                  Chấp nhận trả hàng nếu đáp ứng điều kiện; (iii) Kiểm tra hàng
+                  trả về và xác nhận trong vòng 3-5 ngày; (iv) Hoàn tiền đầy đủ,
+                  đúng hạn sau khi xác nhận nhận được hàng trả về; (v) Chịu chi
+                  phí vận chuyển trả hàng nếu trả hàng do lỗi của người bán.
+                </li>
+                <li>
+                  <strong>Nghĩa vụ bảo hành và hỗ trợ sau bán:</strong> Người
+                  bán có nghĩa vụ cung cấp dịch vụ bảo hành, hỗ trợ kỹ thuật, và
+                  chăm sóc khách hàng sau khi bán hàng theo cam kết và quy định.
+                  Người bán phải xử lý các yêu cầu bảo hành, sửa chữa, đổi trả
+                  trong thời hạn bảo hành một cách nhanh chóng và hiệu quả.
+                </li>
+                <li>
+                  <strong>Nghĩa vụ bảo mật thông tin khách hàng:</strong> Người
+                  bán có nghĩa vụ bảo mật thông tin cá nhân của khách hàng được
+                  cung cấp trong quá trình giao dịch, không được tiết lộ, chia
+                  sẻ, hoặc sử dụng thông tin này cho mục đích khác ngoài việc
+                  thực hiện đơn hàng, trừ khi có sự đồng ý của khách hàng hoặc
+                  yêu cầu pháp lý.
+                </li>
+                <li>
+                  <strong>Nghĩa vụ tuân thủ quy định của OneShop:</strong> Người
+                  bán có nghĩa vụ tuân thủ tất cả các quy định, điều khoản,
+                  chính sách của OneShop, bao gồm: Điều khoản Dịch vụ, Chính
+                  sách Đăng bán sản phẩm, Chính sách Giá cả, Chính sách Vận
+                  chuyển, Chính sách Trả hàng, và các quy định khác. Vi phạm có
+                  thể dẫn đến cảnh báo, phạt tiền, hạn chế quyền, hoặc khóa tài
+                  khoản.
+                </li>
+                <li>
+                  <strong>Nghĩa vụ thanh toán phí dịch vụ:</strong> Người bán có
+                  nghĩa vụ thanh toán đầy đủ, đúng hạn các loại phí dịch vụ (nếu
+                  có) theo thỏa thuận với OneShop, bao gồm: phí đăng bán sản
+                  phẩm, phí giao dịch, phí quảng cáo, và các loại phí khác. Mức
+                  phí và phương thức thanh toán sẽ được thông báo rõ ràng cho
+                  người bán.
+                </li>
+              </ul>
+
+              <h4>6.5.3. Quyền và nghĩa vụ của OneShop</h4>
+              <p>
+                OneShop, với tư cách là đơn vị vận hành nền tảng thương mại điện
+                tử, có các quyền và nghĩa vụ được quy định rõ ràng để đảm bảo
+                hoạt động hiệu quả, công bằng, và tuân thủ pháp luật.
+              </p>
+              <p><strong>Quyền của OneShop:</strong></p>
+              <ul>
+                <li>
+                  <strong>Quyền quản lý và vận hành nền tảng:</strong> OneShop
+                  có quyền quản lý, vận hành, phát triển, và cải tiến nền tảng
+                  thương mại điện tử theo hướng phù hợp với mục tiêu kinh doanh
+                  và lợi ích của người dùng. OneShop có quyền quyết định về tính
+                  năng, giao diện, quy trình, và cách thức hoạt động của nền
+                  tảng.
+                </li>
+                <li>
+                  <strong>Quyền kiểm tra và giám sát:</strong> OneShop có quyền
+                  kiểm tra, giám sát, đánh giá hoạt động của tất cả người dùng
+                  (người mua và người bán) trên nền tảng để đảm bảo tuân thủ
+                  điều khoản, phát hiện hành vi vi phạm, gian lận, hoặc bất
+                  thường. OneShop có quyền truy cập, xem xét, phân tích dữ liệu
+                  giao dịch, đánh giá, bình luận, và các thông tin khác trên nền
+                  tảng (trong phạm vi quy định pháp luật và chính sách bảo mật).
+                </li>
+                <li>
+                  <strong>Quyền xử lý vi phạm:</strong> OneShop có quyền xử lý
+                  các hành vi vi phạm điều khoản, chính sách, hoặc pháp luật
+                  bằng các biện pháp kỷ luật phù hợp, bao gồm: (i) Cảnh báo,
+                  nhắc nhở; (ii) Yêu cầu chỉnh sửa, gỡ bỏ nội dung vi phạm;
+                  (iii) Tạm ngưng hoặc hạn chế quyền sử dụng một số tính năng;
+                  (iv) Khóa tài khoản tạm thời hoặc vĩnh viễn; (v) Từ chối cung
+                  cấp dịch vụ trong tương lai; (vi) Yêu cầu bồi thường thiệt
+                  hại; (vii) Báo cáo cho cơ quan nhà nước có thẩm quyền trong
+                  các trường hợp vi phạm pháp luật nghiêm trọng.
+                </li>
+                <li>
+                  <strong>Quyền thay đổi điều khoản và chính sách:</strong>
+                  OneShop có quyền thay đổi, cập nhật, bổ sung, hoặc sửa đổi các
+                  điều khoản, chính sách, quy định bất cứ lúc nào để phù hợp với
+                  sự phát triển của nền tảng, thay đổi pháp luật, hoặc cải thiện
+                  dịch vụ. OneShop sẽ thông báo cho người dùng về các thay đổi
+                  quan trọng, và việc tiếp tục sử dụng dịch vụ sau khi có thay
+                  đổi được coi là chấp nhận các điều khoản mới.
+                </li>
+                <li>
+                  <strong>Quyền tạm ngưng hoặc chấm dứt dịch vụ:</strong>
+                  OneShop có quyền tạm ngưng, giới hạn, hoặc chấm dứt cung cấp
+                  dịch vụ cho một hoặc tất cả người dùng trong các trường hợp:
+                  (i) Bảo trì, nâng cấp hệ thống; (ii) Phát hiện hành vi vi phạm
+                  nghiêm trọng; (iii) Yêu cầu từ cơ quan nhà nước có thẩm quyền;
+                  (iv) Sự cố kỹ thuật, bảo mật; (v) Các trường hợp bất khả
+                  kháng; (vi) Quyết định kinh doanh của OneShop. OneShop sẽ
+                  thông báo trước khi có thể (trừ trường hợp khẩn cấp).
+                </li>
+                <li>
+                  <strong>Quyền từ chối cung cấp dịch vụ:</strong> OneShop có
+                  quyền từ chối đăng ký, phê duyệt, hoặc cung cấp dịch vụ cho
+                  bất kỳ người dùng nào mà không cần giải thích lý do, đặc biệt
+                  trong các trường hợp: nghi ngờ vi phạm, không đáp ứng điều
+                  kiện, hoặc vì lý do bảo mật, pháp lý.
+                </li>
+                <li>
+                  <strong>Quyền thu phí dịch vụ:</strong> OneShop có quyền thu
+                  các loại phí dịch vụ từ người bán hoặc người dùng theo thỏa
+                  thuận, bao gồm: phí đăng bán, phí giao dịch, phí quảng cáo,
+                  phí thành viên VIP, và các loại phí khác. Mức phí và phương
+                  thức thanh toán sẽ được thông báo rõ ràng.
+                </li>
+                <li>
+                  <strong>Quyền sở hữu trí tuệ:</strong> OneShop có quyền sở hữu
+                  trí tuệ đối với nền tảng, website, ứng dụng, logo, thương
+                  hiệu, và tất cả các tài sản trí tuệ khác của OneShop. Người
+                  dùng không được sử dụng, sao chép, hoặc khai thác các tài sản
+                  này mà không có sự đồng ý của OneShop.
+                </li>
+              </ul>
+              <p><strong>Nghĩa vụ của OneShop:</strong></p>
+              <ul>
+                <li>
+                  <strong>Nghĩa vụ cung cấp nền tảng ổn định:</strong> OneShop
+                  có nghĩa vụ cung cấp và duy trì nền tảng thương mại điện tử ổn
+                  định, an toàn, tiện lợi, và hoạt động liên tục. OneShop phải
+                  đầu tư vào hạ tầng công nghệ, bảo mật, và nhân lực để đảm bảo
+                  dịch vụ chất lượng cao. OneShop sẽ thông báo trước về các lần
+                  bảo trì, nâng cấp có thể ảnh hưởng đến hoạt động của người
+                  dùng.
+                </li>
+                <li>
+                  <strong>Nghĩa vụ bảo vệ thông tin và quyền lợi:</strong>
+                  OneShop có nghĩa vụ bảo vệ thông tin cá nhân, dữ liệu, và
+                  quyền lợi hợp pháp của người dùng theo quy định trong Chính
+                  sách Bảo mật (xem mục 6.1). OneShop phải áp dụng các biện pháp
+                  bảo mật tiên tiến, xử lý vi phạm bảo mật kịp thời, và thông
+                  báo cho người dùng nếu có rò rỉ dữ liệu.
+                </li>
+                <li>
+                  <strong>Nghĩa vụ hỗ trợ giải quyết tranh chấp:</strong>
+                  OneShop có nghĩa vụ hỗ trợ giải quyết tranh chấp giữa người
+                  mua và người bán một cách công bằng, minh bạch, và kịp thời.
+                  OneShop sẽ: (i) Xem xét kỹ lưỡng các khiếu nại, bằng chứng từ
+                  cả hai bên; (ii) Đưa ra quyết định dựa trên điều khoản, chính
+                  sách, và pháp luật; (iii) Thực hiện quyết định (hoàn tiền, trả
+                  hàng, v.v.) một cách nhanh chóng; (iv) Giải thích rõ ràng lý
+                  do quyết định cho các bên liên quan.
+                </li>
+                <li>
+                  <strong>Nghĩa vụ tuân thủ pháp luật:</strong> OneShop có nghĩa
+                  vụ tuân thủ tất cả các quy định pháp luật hiện hành về thương
+                  mại điện tử, bảo vệ quyền lợi người tiêu dùng, an toàn thông
+                  tin mạng, thuế, và các quy định khác. OneShop phải có đầy đủ
+                  giấy phép, chứng nhận cần thiết để vận hành nền tảng thương
+                  mại điện tử.
+                </li>
+                <li>
+                  <strong>Nghĩa vụ thông báo thay đổi:</strong> OneShop có nghĩa
+                  vụ thông báo kịp thời, rõ ràng cho người dùng về các thay đổi
+                  quan trọng ảnh hưởng đến quyền lợi của người dùng, bao gồm:
+                  thay đổi điều khoản, chính sách; thay đổi phí dịch vụ; thay
+                  đổi tính năng, quy trình; sự cố, bảo trì hệ thống; và các thay
+                  đổi khác. Thông báo sẽ được gửi qua email, thông báo trên ứng
+                  dụng, hoặc đăng tải trên website.
+                </li>
+                <li>
+                  <strong>Nghĩa vụ minh bạch:</strong> OneShop có nghĩa vụ hoạt
+                  động minh bạch, công khai các chính sách, quy định, phí dịch
+                  vụ, và các thông tin quan trọng khác. OneShop phải cung cấp
+                  thông tin đầy đủ, chính xác về dịch vụ, quy trình, và các vấn
+                  đề liên quan để người dùng có thể đưa ra quyết định sáng suốt.
+                </li>
+                <li>
+                  <strong>Nghĩa vụ hỗ trợ khách hàng:</strong> OneShop có nghĩa
+                  vụ cung cấp dịch vụ hỗ trợ khách hàng chất lượng cao, bao gồm:
+                  hotline, email, chat trực tuyến, và các kênh hỗ trợ khác.
+                  OneShop phải phản hồi các yêu cầu, khiếu nại của người dùng
+                  trong thời gian hợp lý (thường là 24-48 giờ) và giải quyết các
+                  vấn đề một cách hiệu quả.
+                </li>
+                <li>
+                  <strong>Nghĩa vụ bảo vệ môi trường mua sắm:</strong> OneShop
+                  có nghĩa vụ tạo ra và duy trì môi trường mua sắm an toàn, lành
+                  mạnh, công bằng cho tất cả người dùng. OneShop phải ngăn chặn,
+                  xử lý các hành vi gian lận, lừa đảo, vi phạm, và các hoạt động
+                  bất hợp pháp trên nền tảng.
+                </li>
+                <li>
+                  <strong>Nghĩa vụ giới hạn trách nhiệm:</strong> OneShop có
+                  nghĩa vụ làm rõ phạm vi trách nhiệm của mình. OneShop chỉ là
+                  nền tảng kết nối người mua và người bán, không phải là bên
+                  trong giao dịch mua bán. OneShop không chịu trách nhiệm về
+                  chất lượng, tính pháp lý của sản phẩm do người bán cung cấp,
+                  trừ các trường hợp được quy định cụ thể trong điều khoản hoặc
+                  pháp luật yêu cầu.
+                </li>
+              </ul>
+
+              <!-- 6.6 Nội dung bị cấm -->
+              <h3>6.6. Nội dung và hàng hóa bị cấm</h3>
+              <p>
+                Để đảm bảo môi trường mua sắm an toàn, lành mạnh và tuân thủ
+                pháp luật, OneShop nghiêm cấm người dùng đăng bán, quảng cáo,
+                chia sẻ, hoặc thực hiện bất kỳ hoạt động nào liên quan đến các
+                nội dung và hàng hóa sau đây trên nền tảng:
+              </p>
+              <ul>
+                <li>
+                  <strong
+                    >Hàng hóa cấm kinh doanh theo quy định pháp luật:</strong
+                  >
+                  Bao gồm nhưng không giới hạn: vũ khí, đạn dược, chất nổ, công
+                  cụ hỗ trợ; ma túy, chất gây nghiện, tiền chất ma túy; thuốc
+                  lá, rượu bia không có giấy phép; động vật hoang dã, các loài
+                  động vật quý hiếm, sản phẩm từ động vật hoang dã; các loại
+                  thuốc không được phép lưu hành, thuốc giả, thuốc không rõ
+                  nguồn gốc; các chất độc hại, hóa chất nguy hiểm; các sản phẩm
+                  vi phạm quy định về an toàn thực phẩm, mỹ phẩm; và bất kỳ hàng
+                  hóa nào khác bị cấm theo quy định của pháp luật Việt Nam và
+                  quốc tế.
+                </li>
+                <li>
+                  <strong
+                    >Hàng giả, hàng nhái, hàng vi phạm quyền sở hữu trí
+                    tuệ:</strong
+                  >
+                  Bao gồm: hàng giả, hàng nhái thương hiệu, hàng sao chép không
+                  được phép; sản phẩm vi phạm bản quyền, nhãn hiệu, sáng chế,
+                  kiểu dáng công nghiệp; phần mềm, phim, nhạc, sách bị sao chép
+                  trái phép; sản phẩm có logo, hình ảnh, thiết kế vi phạm quyền
+                  sở hữu trí tuệ của bên thứ ba; và bất kỳ sản phẩm nào khác vi
+                  phạm quyền sở hữu trí tuệ.
+                </li>
+                <li>
+                  <strong
+                    >Sản phẩm nguy hiểm, độc hại, hoặc không đảm bảo an
+                    toàn:</strong
+                  >
+                  Bao gồm: sản phẩm có thể gây nguy hiểm cho sức khỏe, tính mạng
+                  con người; sản phẩm không có nhãn mác, không rõ nguồn gốc xuất
+                  xứ; sản phẩm đã hết hạn sử dụng, bị thu hồi; sản phẩm không
+                  đạt tiêu chuẩn chất lượng, an toàn; thiết bị y tế, thuốc không
+                  được phép lưu hành; và các sản phẩm khác có thể gây nguy hiểm.
+                </li>
+                <li>
+                  <strong>Nội dung khiêu dâm, bạo lực, kỳ thị:</strong> Bao gồm:
+                  hình ảnh, video, văn bản khiêu dâm, đồi trụy; nội dung bạo
+                  lực, khủng bố, cực đoan; nội dung kỳ thị chủng tộc, tôn giáo,
+                  giới tính, xu hướng tính dục; nội dung xúc phạm, lăng mạ, đe
+                  dọa; và các nội dung khác vi phạm đạo đức xã hội và thuần
+                  phong mỹ tục.
+                </li>
+                <li>
+                  <strong>Thông tin sai sự thật, lừa đảo, gian lận:</strong> Bao
+                  gồm: thông tin sản phẩm sai lệch, cường điệu, đánh lừa người
+                  mua; quảng cáo gian dối, không trung thực; các hoạt động lừa
+                  đảo, lừa đảo trực tuyến; tạo tài khoản giả, đánh giá giả, bình
+                  luận giả; và các hoạt động gian lận khác.
+                </li>
+                <li>
+                  <strong>Spam, quảng cáo không được phép:</strong> Bao gồm: gửi
+                  tin nhắn spam, email spam; quảng cáo sản phẩm, dịch vụ không
+                  liên quan đến OneShop; quảng cáo đa cấp, lừa đảo đa cấp; quảng
+                  cáo không được phép trong đánh giá, bình luận; và các hoạt
+                  động spam khác.
+                </li>
+                <li>
+                  <strong>Nội dung vi phạm quyền riêng tư:</strong> Bao gồm:
+                  công khai thông tin cá nhân của người khác không được phép; sử
+                  dụng hình ảnh, video của người khác không có sự đồng ý; xâm
+                  phạm quyền riêng tư, danh dự, nhân phẩm của người khác; và các
+                  hành vi vi phạm quyền riêng tư khác.
+                </li>
+                <li>
+                  <strong>Các hàng hóa và nội dung khác:</strong> OneShop bảo
+                  lưu quyền cấm bất kỳ hàng hóa, dịch vụ, hoặc nội dung nào khác
+                  mà chúng tôi xác định là không phù hợp với giá trị, chính
+                  sách, hoặc có thể gây hại cho người dùng, cộng đồng, hoặc danh
+                  tiếng của OneShop.
+                </li>
+              </ul>
+              <p>
+                <strong>Hậu quả vi phạm:</strong> OneShop có quyền và sẽ áp dụng
+                các biện pháp kỷ luật sau đối với người dùng vi phạm: (i) Xóa,
+                gỡ bỏ nội dung, sản phẩm vi phạm ngay lập tức; (ii) Cảnh báo,
+                nhắc nhở người dùng; (iii) Tạm ngưng hoặc hạn chế quyền sử dụng
+                một số tính năng; (iv) Khóa tài khoản tạm thời hoặc vĩnh viễn;
+                (v) Từ chối cung cấp dịch vụ trong tương lai; (vi) Yêu cầu bồi
+                thường thiệt hại (nếu có); (vii) Báo cáo cho cơ quan nhà nước có
+                thẩm quyền trong các trường hợp vi phạm pháp luật nghiêm trọng.
+                Mức độ xử lý sẽ tùy thuộc vào mức độ nghiêm trọng và tần suất vi
+                phạm.
+              </p>
+              <p>
+                <strong>Báo cáo vi phạm:</strong> Người dùng có thể báo cáo nội
+                dung, sản phẩm, hoặc hành vi vi phạm thông qua: (i) Nút "Báo
+                cáo" trên trang sản phẩm, đánh giá, hoặc bình luận; (ii) Email
+                gửi đến bộ phận hỗ trợ của OneShop; (iii) Hotline hoặc chat trực
+                tuyến. OneShop sẽ xem xét và xử lý các báo cáo một cách nghiêm
+                túc và kịp thời.
+              </p>
+
+              <!-- 6.7 Điều kiện đăng sản phẩm -->
+              <h3>6.7. Điều kiện & Cách thức đăng sản phẩm</h3>
+              <p>
+                Để đảm bảo chất lượng sản phẩm và trải nghiệm mua sắm tốt nhất
+                cho người mua, OneShop đặt ra các điều kiện và yêu cầu nghiêm
+                ngặt đối với việc đăng bán sản phẩm trên nền tảng. Người bán
+                phải tuân thủ đầy đủ các quy định này.
+              </p>
+
+              <h4>6.7.1. Điều kiện đăng bán sản phẩm</h4>
+              <p>
+                Để được phép đăng bán sản phẩm trên OneShop, người bán phải đáp
+                ứng các điều kiện sau:
+              </p>
+              <ul>
+                <li>
+                  <strong>Tài khoản vendor/shop đã được xác thực:</strong> Người
+                  bán phải có tài khoản vendor/shop đã được đăng ký, xác thực
+                  danh tính, và được OneShop phê duyệt. Quá trình xác thực bao
+                  gồm: (i) Cung cấp thông tin cá nhân/doanh nghiệp đầy đủ, chính
+                  xác; (ii) Xác thực số điện thoại, email; (iii) Cung cấp giấy
+                  tờ tùy thân (CMND/CCCD/Hộ chiếu) hoặc giấy phép kinh doanh
+                  (đối với doanh nghiệp); (iv) Xác thực tài khoản ngân hàng để
+                  nhận thanh toán; (v) Hoàn tất hồ sơ shop, bao gồm thông tin
+                  shop, logo, mô tả, chính sách. OneShop có quyền từ chối hoặc
+                  yêu cầu bổ sung thông tin nếu cần thiết.
+                </li>
+                <li>
+                  <strong>Sản phẩm hợp pháp:</strong> Sản phẩm phải hợp pháp,
+                  được phép kinh doanh theo quy định pháp luật Việt Nam và quốc
+                  tế. Sản phẩm không được nằm trong danh mục hàng hóa cấm kinh
+                  doanh (xem mục 6.6). Người bán phải có đầy đủ giấy phép, chứng
+                  nhận cần thiết để kinh doanh sản phẩm (nếu được yêu cầu bởi
+                  pháp luật), ví dụ: giấy phép nhập khẩu, giấy chứng nhận chất
+                  lượng, giấy phép lưu hành sản phẩm.
+                </li>
+                <li>
+                  <strong>Tuân thủ quy định pháp luật:</strong> Sản phẩm và hoạt
+                  động kinh doanh phải tuân thủ tất cả các quy định pháp luật
+                  hiện hành, bao gồm: Luật Thương mại điện tử, Luật Bảo vệ quyền
+                  lợi người tiêu dùng, Luật Sở hữu trí tuệ, Luật An toàn thực
+                  phẩm, Luật Dược, và các quy định khác liên quan đến loại sản
+                  phẩm cụ thể.
+                </li>
+                <li>
+                  <strong>Thông tin sản phẩm chính xác và đầy đủ:</strong> Người
+                  bán phải cung cấp thông tin sản phẩm chính xác, đầy đủ, trung
+                  thực, không được cường điệu, đánh lừa, hoặc cung cấp thông tin
+                  sai lệch. Thông tin phải bao gồm tất cả các chi tiết quan
+                  trọng mà người mua cần biết để đưa ra quyết định mua hàng.
+                </li>
+                <li>
+                  <strong>Hình ảnh sản phẩm chất lượng:</strong> Hình ảnh sản
+                  phẩm phải rõ ràng, chất lượng tốt, thể hiện đúng sản phẩm thực
+                  tế. Người bán không được sử dụng hình ảnh từ nguồn khác không
+                  được phép, hình ảnh chỉnh sửa quá mức làm sai lệch sản phẩm,
+                  hoặc hình ảnh vi phạm quyền sở hữu trí tuệ. OneShop yêu cầu
+                  tối thiểu 3-5 hình ảnh cho mỗi sản phẩm, bao gồm hình ảnh tổng
+                  thể, chi tiết, và các góc nhìn khác nhau.
+                </li>
+                <li>
+                  <strong>Giá cả công khai và minh bạch:</strong> Giá sản phẩm
+                  phải được công khai, minh bạch, bao gồm tất cả các loại phí
+                  (nếu có). Người bán không được ẩn phí, tính phí bổ sung không
+                  được thông báo trước, hoặc có hành vi định giá gian dối. Giá
+                  sản phẩm phải hợp lý, không được định giá quá cao so với giá
+                  trị thực tế nhằm lừa đảo người mua.
+                </li>
+                <li>
+                  <strong>Số lượng tồn kho chính xác:</strong> Người bán phải
+                  cập nhật số lượng tồn kho chính xác, kịp thời. Người bán không
+                  được đăng bán sản phẩm không có sẵn hoặc số lượng không đủ để
+                  đáp ứng đơn hàng. Nếu hết hàng, người bán phải cập nhật trạng
+                  thái "Hết hàng" hoặc tạm ẩn sản phẩm.
+                </li>
+                <li>
+                  <strong>Chính sách rõ ràng:</strong> Người bán phải công bố rõ
+                  ràng các chính sách liên quan đến sản phẩm và dịch vụ của
+                  mình, bao gồm: chính sách vận chuyển, chính sách trả hàng,
+                  chính sách bảo hành, thời gian xử lý đơn hàng, và các chính
+                  sách khác. Chính sách phải nhất quán và được thực hiện đúng
+                  như đã cam kết.
+                </li>
+              </ul>
+
+              <h4>6.7.2. Yêu cầu chi tiết về thông tin sản phẩm</h4>
+              <p>
+                OneShop yêu cầu người bán cung cấp đầy đủ các thông tin sau cho
+                mỗi sản phẩm:
+              </p>
+              <ul>
+                <li>
+                  <strong>Tên sản phẩm:</strong> Tên sản phẩm phải rõ ràng, mô
+                  tả chính xác sản phẩm, bao gồm thương hiệu, model, loại sản
+                  phẩm, và các đặc điểm quan trọng. Tên không được chứa từ khóa
+                  spam, thông tin sai lệch, hoặc vi phạm quyền sở hữu trí tuệ.
+                  Ví dụ: "Kem dưỡng ẩm La Roche-Posay Toleriane Ultra 40ml" thay
+                  vì "Kem dưỡng ẩm tốt nhất thế giới giá rẻ".
+                </li>
+                <li>
+                  <strong>Mô tả sản phẩm:</strong> Mô tả phải đầy đủ, chi tiết,
+                  bao gồm: (i) Thông tin cơ bản: thương hiệu, xuất xứ, hãng sản
+                  xuất; (ii) Thành phần, công thức (đối với mỹ phẩm, thực phẩm);
+                  (iii) Tính năng, công dụng, lợi ích; (iv) Thông số kỹ thuật,
+                  kích thước, trọng lượng, dung tích; (v) Hướng dẫn sử dụng,
+                  cách bảo quản; (vi) Thời hạn sử dụng, hạn sử dụng; (vii) Cảnh
+                  báo, chống chỉ định (nếu có); (viii) Thông tin bảo hành, đổi
+                  trả. Mô tả phải được viết bằng tiếng Việt, rõ ràng, dễ hiểu,
+                  không được sao chép từ nguồn khác vi phạm bản quyền.
+                </li>
+                <li>
+                  <strong>Hình ảnh sản phẩm:</strong> Hình ảnh phải đáp ứng các
+                  yêu cầu sau: (i) Chất lượng tốt, độ phân giải tối thiểu
+                  800x800px, rõ nét, không bị mờ, nhòe; (ii) Thể hiện đúng sản
+                  phẩm thực tế, không được chỉnh sửa quá mức làm sai lệch màu
+                  sắc, kích thước, hoặc đặc điểm của sản phẩm; (iii) Hình ảnh
+                  chính (ảnh đầu tiên) phải là hình ảnh tổng thể, rõ ràng nhất
+                  của sản phẩm; (iv) Các hình ảnh khác nên thể hiện các góc nhìn
+                  khác nhau, chi tiết, bao bì, nhãn mác, và các thông tin quan
+                  trọng; (v) Không được sử dụng hình ảnh từ website, catalog của
+                  nhà sản xuất hoặc nguồn khác mà không có sự cho phép; (vi)
+                  Không được chứa watermark, logo của shop khác, hoặc thông tin
+                  liên hệ trong hình ảnh sản phẩm (trừ logo thương hiệu sản
+                  phẩm); (vii) Không được chứa nội dung khiêu dâm, bạo lực, hoặc
+                  vi phạm đạo đức.
+                </li>
+                <li>
+                  <strong>Giá sản phẩm:</strong> Giá phải được công khai, minh
+                  bạch, bao gồm: (i) Giá gốc (giá niêm yết); (ii) Giá khuyến mãi
+                  (nếu có); (iii) Phí vận chuyển (hoặc thông báo "Miễn phí vận
+                  chuyển"); (iv) Các loại phí khác (nếu có). Giá phải được hiển
+                  thị bằng đồng Việt Nam (VNĐ) và phải nhất quán trên toàn bộ
+                  nền tảng. Người bán không được thay đổi giá sau khi đã có đơn
+                  hàng (trừ khi được người mua đồng ý).
+                </li>
+                <li>
+                  <strong>Danh mục sản phẩm:</strong> Sản phẩm phải được phân
+                  loại đúng danh mục, loại sản phẩm trên nền tảng. Việc phân
+                  loại sai có thể dẫn đến sản phẩm bị gỡ bỏ hoặc người mua không
+                  tìm thấy sản phẩm. Người bán nên chọn danh mục phù hợp nhất và
+                  có thể chọn thêm các danh mục phụ nếu sản phẩm thuộc nhiều
+                  danh mục.
+                </li>
+                <li>
+                  <strong>Thẻ (Tags) và từ khóa:</strong> Người bán có thể thêm
+                  các thẻ, từ khóa liên quan đến sản phẩm để giúp người mua dễ
+                  dàng tìm thấy sản phẩm. Tuy nhiên, từ khóa phải liên quan thực
+                  sự đến sản phẩm, không được spam từ khóa, hoặc sử dụng từ khóa
+                  của thương hiệu, sản phẩm khác.
+                </li>
+                <li>
+                  <strong>Video sản phẩm (tùy chọn):</strong> Người bán có thể
+                  thêm video giới thiệu, hướng dẫn sử dụng sản phẩm để tăng tính
+                  hấp dẫn và cung cấp thông tin đầy đủ hơn cho người mua. Video
+                  phải có chất lượng tốt, nội dung phù hợp, và không vi phạm
+                  quyền sở hữu trí tuệ.
+                </li>
+                <li>
+                  <strong>Thông tin bổ sung:</strong> Tùy theo loại sản phẩm,
+                  người bán có thể cần cung cấp thêm các thông tin như: mã vạch
+                  (barcode), mã sản phẩm (SKU), trọng lượng, kích thước đóng
+                  gói, đơn vị tính, và các thông tin khác theo yêu cầu của
+                  OneShop hoặc quy định pháp luật.
+                </li>
+              </ul>
+              <p>
+                <strong>Quy trình đăng sản phẩm:</strong> (i) Người bán đăng
+                nhập vào tài khoản vendor/shop; (ii) Chọn "Thêm sản phẩm mới";
+                (iii) Điền đầy đủ thông tin sản phẩm theo yêu cầu; (iv) Tải lên
+                hình ảnh sản phẩm; (v) Xem trước và kiểm tra lại thông tin; (vi)
+                Gửi để OneShop xem xét và phê duyệt; (vii) Sau khi được phê
+                duyệt, sản phẩm sẽ được hiển thị trên nền tảng. Thời gian phê
+                duyệt thường là 1-3 ngày làm việc. OneShop có quyền từ chối phê
+                duyệt hoặc yêu cầu chỉnh sửa nếu sản phẩm không đáp ứng yêu cầu.
+              </p>
+
+              <!-- 6.8 Cập nhật điều khoản -->
+              <h3>6.8. Cập nhật và sửa đổi điều khoản</h3>
+              <p>
+                OneShop có quyền và có thể cập nhật, sửa đổi, bổ sung, hoặc thay
+                đổi các điều khoản, chính sách, quy định này bất cứ lúc nào để
+                phù hợp với sự phát triển của nền tảng, thay đổi pháp luật, cải
+                thiện dịch vụ, hoặc các lý do hợp lý khác. Việc cập nhật điều
+                khoản là cần thiết để đảm bảo nền tảng luôn hoạt động hiệu quả,
+                an toàn, và tuân thủ pháp luật.
+              </p>
+              <ul>
+                <li>
+                  <strong>Quyền cập nhật:</strong> OneShop có quyền cập nhật,
+                  sửa đổi các điều khoản và chính sách này bất cứ lúc nào mà
+                  không cần thông báo trước, tuy nhiên đối với các thay đổi quan
+                  trọng ảnh hưởng đến quyền lợi của người dùng, OneShop sẽ cố
+                  gắng thông báo trước ít nhất 30 ngày. Các thay đổi có thể bao
+                  gồm: bổ sung điều khoản mới, sửa đổi điều khoản hiện có, thay
+                  đổi chính sách, quy trình, phí dịch vụ, và các thay đổi khác.
+                </li>
+                <li>
+                  <strong>Thông báo thay đổi:</strong> Thông báo về các thay đổi
+                  quan trọng sẽ được gửi đến người dùng thông qua: (i) Email
+                  đăng ký trong tài khoản; (ii) Thông báo trên website hoặc ứng
+                  dụng di động; (iii) Banner, popup thông báo khi đăng nhập;
+                  (iv) Đăng tải trên trang "Điều khoản & Chính sách" với ngày
+                  cập nhật mới nhất. Người dùng được khuyến nghị thường xuyên
+                  kiểm tra email và cập nhật thông tin liên hệ để nhận được
+                  thông báo kịp thời.
+                </li>
+                <li>
+                  <strong>Đồng ý với điều khoản mới:</strong> Việc người dùng
+                  tiếp tục truy cập, sử dụng dịch vụ của OneShop sau khi các
+                  điều khoản được cập nhật được coi là người dùng đã đọc, hiểu,
+                  và đồng ý với các điều khoản, chính sách mới. Nếu người dùng
+                  không đồng ý với các thay đổi, người dùng có quyền ngừng sử
+                  dụng dịch vụ và yêu cầu đóng tài khoản. Tuy nhiên, các giao
+                  dịch đã được thực hiện trước khi thay đổi vẫn được điều chỉnh
+                  bởi điều khoản cũ.
+                </li>
+                <li>
+                  <strong>Trách nhiệm của người dùng:</strong> Người dùng có
+                  trách nhiệm thường xuyên xem lại các điều khoản và chính sách
+                  để cập nhật thông tin mới nhất. OneShop khuyến nghị người dùng
+                  xem lại điều khoản ít nhất mỗi 3-6 tháng một lần hoặc khi có
+                  thông báo về thay đổi. Người dùng không thể viện lý do không
+                  biết về thay đổi điều khoản để tránh trách nhiệm tuân thủ.
+                </li>
+                <li>
+                  <strong>Lưu trữ phiên bản cũ:</strong> OneShop có thể lưu trữ
+                  các phiên bản cũ của điều khoản để tham khảo, tuy nhiên phiên
+                  bản hiện tại trên website là phiên bản có hiệu lực và được áp
+                  dụng. Người dùng có thể yêu cầu xem phiên bản cũ nếu cần thiết
+                  cho mục đích pháp lý hoặc giải quyết tranh chấp.
+                </li>
+                <li>
+                  <strong>Thời điểm có hiệu lực:</strong> Các thay đổi điều
+                  khoản sẽ có hiệu lực kể từ thời điểm được công bố trên
+                  website, trừ khi có quy định khác về thời điểm có hiệu lực
+                  trong thông báo. Đối với các thay đổi quan trọng, OneShop có
+                  thể quy định thời điểm có hiệu lực sau một khoảng thời gian
+                  nhất định (ví dụ: 30 ngày sau khi thông báo) để người dùng có
+                  thời gian chuẩn bị.
+                </li>
+                <li>
+                  <strong>Quyền không chấp nhận thay đổi:</strong> Nếu người
+                  dùng không đồng ý với các thay đổi điều khoản, người dùng có
+                  quyền: (i) Ngừng sử dụng dịch vụ ngay lập tức; (ii) Yêu cầu
+                  đóng tài khoản và xóa dữ liệu cá nhân (theo quy định trong
+                  Chính sách Bảo mật); (iii) Hoàn tất các giao dịch đang diễn ra
+                  trước khi ngừng sử dụng. Tuy nhiên, người dùng vẫn phải tuân
+                  thủ các nghĩa vụ phát sinh từ các giao dịch đã thực hiện trước
+                  đó.
+                </li>
+              </ul>
+
+              <!-- 6.9 Điều khoản pháp lý -->
+              <h3>6.9. Điều khoản pháp lý khác</h3>
+              <p>
+                Các điều khoản pháp lý này quy định về luật áp dụng, giới hạn
+                trách nhiệm, quyền sở hữu trí tuệ, và các vấn đề pháp lý quan
+                trọng khác liên quan đến việc sử dụng dịch vụ của OneShop. Người
+                dùng cần đọc kỹ và hiểu rõ các điều khoản này.
+              </p>
+
+              <h4>6.9.1. Luật áp dụng và thẩm quyền giải quyết tranh chấp</h4>
+              <p>
+                Các điều khoản này được điều chỉnh, giải thích, và thực thi theo
+                pháp luật nước Cộng hòa Xã hội Chủ nghĩa Việt Nam, bao gồm nhưng
+                không giới hạn: Bộ luật Dân sự, Luật Thương mại, Luật Thương mại
+                điện tử, Luật Bảo vệ quyền lợi người tiêu dùng, Luật An toàn
+                thông tin mạng, và các văn bản pháp luật liên quan khác.
+              </p>
+              <p><strong>Thẩm quyền giải quyết tranh chấp:</strong></p>
+              <ul>
+                <li>
+                  <strong>Thương lượng và hòa giải:</strong> Trước khi khởi kiện
+                  ra tòa, các bên (người mua, người bán, OneShop) được khuyến
+                  nghị thương lượng, hòa giải để giải quyết tranh chấp một cách
+                  nhanh chóng và tiết kiệm chi phí. OneShop sẵn sàng đóng vai
+                  trò trung gian hỗ trợ quá trình thương lượng và hòa giải.
+                </li>
+                <li>
+                  <strong>Trọng tài thương mại:</strong> Các bên có thể thỏa
+                  thuận giải quyết tranh chấp thông qua Trọng tài thương mại
+                  theo quy định của pháp luật về Trọng tài thương mại. Quyết
+                  định của Trọng tài là chung thẩm và có giá trị pháp lý bắt
+                  buộc.
+                </li>
+                <li>
+                  <strong>Tòa án có thẩm quyền:</strong> Mọi tranh chấp phát
+                  sinh từ hoặc liên quan đến các điều khoản này, dịch vụ của
+                  OneShop, hoặc các giao dịch trên nền tảng, nếu không thể giải
+                  quyết thông qua thương lượng, hòa giải, hoặc trọng tài, sẽ
+                  được giải quyết tại Tòa án nhân dân có thẩm quyền tại Việt
+                  Nam. Thẩm quyền cụ thể được xác định theo quy định của Bộ luật
+                  Tố tụng dân sự, thường là Tòa án nhân dân nơi OneShop có trụ
+                  sở chính hoặc nơi người dùng cư trú, có trụ sở.
+                </li>
+                <li>
+                  <strong>Thời hiệu khởi kiện:</strong> Thời hiệu khởi kiện được
+                  áp dụng theo quy định của pháp luật Việt Nam. Người dùng cần
+                  lưu ý về thời hiệu để đảm bảo quyền lợi của mình được bảo vệ.
+                </li>
+              </ul>
+
+              <h4>6.9.2. Miễn trừ và giới hạn trách nhiệm</h4>
+              <p>
+                OneShop hoạt động theo mô hình Marketplace (Sàn giao dịch thương
+                mại điện tử), trong đó OneShop chỉ cung cấp nền tảng công nghệ
+                để kết nối người mua và người bán, không phải là bên trong giao
+                dịch mua bán. Do đó, phạm vi trách nhiệm của OneShop được giới
+                hạn như sau:
+              </p>
+              <ul>
+                <li>
+                  <strong>Vai trò của OneShop:</strong> OneShop chỉ là nền tảng
+                  kết nối người mua và người bán, cung cấp công nghệ, dịch vụ
+                  thanh toán, vận chuyển, và hỗ trợ giải quyết tranh chấp.
+                  OneShop không phải là bên trong giao dịch mua bán, không sở
+                  hữu hàng hóa được đăng bán, không tham gia vào quá trình đàm
+                  phán, thỏa thuận giá cả, và không chịu trách nhiệm như người
+                  bán hoặc người mua trong giao dịch.
+                </li>
+                <li>
+                  <strong>Chất lượng và tính pháp lý của sản phẩm:</strong>
+                  OneShop không chịu trách nhiệm về chất lượng, tính pháp lý, an
+                  toàn, hiệu quả, hoặc bất kỳ đặc tính nào khác của sản phẩm do
+                  người bán cung cấp. Trách nhiệm về sản phẩm thuộc về người
+                  bán, nhà sản xuất, hoặc nhà phân phối. Tuy nhiên, OneShop sẽ
+                  hỗ trợ người mua trong việc giải quyết tranh chấp với người
+                  bán và có thể áp dụng các biện pháp kỷ luật đối với người bán
+                  vi phạm.
+                </li>
+                <li>
+                  <strong>Thông tin do người dùng cung cấp:</strong> OneShop
+                  không đảm bảo tính chính xác, đầy đủ, đúng đắn, hoặc cập nhật
+                  của thông tin do người dùng (người mua, người bán) cung cấp
+                  trên nền tảng, bao gồm: thông tin sản phẩm, mô tả, hình ảnh,
+                  giá cả, đánh giá, bình luận, và các thông tin khác. Người dùng
+                  chịu trách nhiệm về tính chính xác của thông tin do mình cung
+                  cấp. OneShop có quyền nhưng không có nghĩa vụ kiểm tra, xác
+                  minh, hoặc chỉnh sửa thông tin do người dùng cung cấp.
+                </li>
+                <li>
+                  <strong>Thiệt hại gián tiếp:</strong> OneShop không chịu trách
+                  nhiệm về các thiệt hại gián tiếp, hậu quả, hoặc thiệt hại phát
+                  sinh từ việc sử dụng hoặc không thể sử dụng dịch vụ, bao gồm
+                  nhưng không giới hạn: mất lợi nhuận, mất cơ hội kinh doanh,
+                  mất dữ liệu, thiệt hại về danh tiếng, hoặc các thiệt hại vô
+                  hình khác. OneShop chỉ chịu trách nhiệm về các thiệt hại trực
+                  tiếp, thực tế, và có thể chứng minh được phát sinh do lỗi cố ý
+                  hoặc lỗi nghiêm trọng của OneShop, và chỉ trong phạm vi giới
+                  hạn theo quy định pháp luật.
+                </li>
+                <li>
+                  <strong>Sự cố kỹ thuật và gián đoạn dịch vụ:</strong> OneShop
+                  không đảm bảo rằng dịch vụ sẽ hoạt động liên tục, không bị
+                  gián đoạn, không có lỗi, hoặc hoàn toàn an toàn. OneShop không
+                  chịu trách nhiệm về các sự cố kỹ thuật, lỗi hệ thống, tấn công
+                  mạng, hoặc các vấn đề khác dẫn đến việc không thể truy cập
+                  hoặc sử dụng dịch vụ, trừ khi sự cố do lỗi cố ý hoặc lỗi
+                  nghiêm trọng của OneShop.
+                </li>
+                <li>
+                  <strong>Hành vi của người dùng:</strong> OneShop không chịu
+                  trách nhiệm về hành vi, hoạt động, hoặc nội dung do người dùng
+                  thực hiện hoặc đăng tải trên nền tảng. Người dùng chịu trách
+                  nhiệm về mọi hành vi của mình và phải bồi thường thiệt hại cho
+                  OneShop hoặc bên thứ ba nếu hành vi của mình gây ra thiệt hại.
+                </li>
+                <li>
+                  <strong>Liên kết đến website khác:</strong> Nền tảng OneShop
+                  có thể chứa liên kết đến các website, dịch vụ của bên thứ ba.
+                  OneShop không chịu trách nhiệm về nội dung, chính sách, hoặc
+                  hoạt động của các website, dịch vụ này. Người dùng truy cập
+                  các website, dịch vụ bên thứ ba với rủi ro của chính mình.
+                </li>
+                <li>
+                  <strong>Giới hạn trách nhiệm tài chính:</strong> Trong mọi
+                  trường hợp, trách nhiệm tài chính tối đa của OneShop đối với
+                  một sự kiện hoặc một loạt sự kiện liên quan sẽ không vượt quá
+                  số tiền mà người dùng đã thanh toán cho OneShop trong 12 tháng
+                  trước đó, hoặc 10.000.000 VNĐ, tùy theo mức nào thấp hơn (trừ
+                  các trường hợp pháp luật yêu cầu khác).
+                </li>
+              </ul>
+
+              <h4>6.9.3. Bảo lưu quyền và quyền sở hữu trí tuệ</h4>
+              <ul>
+                <li>
+                  <strong>Bảo lưu quyền của OneShop:</strong> OneShop bảo lưu
+                  tất cả các quyền không được quy định rõ ràng trong các điều
+                  khoản này. OneShop có quyền: (i) Từ chối cung cấp dịch vụ cho
+                  bất kỳ người dùng nào mà không cần giải thích lý do; (ii) Tạm
+                  ngưng, hạn chế, hoặc chấm dứt tài khoản, quyền sử dụng dịch vụ
+                  của người dùng vi phạm điều khoản hoặc pháp luật; (iii) Thay
+                  đổi, điều chỉnh, ngừng cung cấp một phần hoặc toàn bộ dịch vụ
+                  mà không cần thông báo trước (trừ các trường hợp được quy định
+                  khác); (iv) Xóa, gỡ bỏ, hoặc từ chối hiển thị bất kỳ nội dung
+                  nào mà OneShop xác định là vi phạm, không phù hợp, hoặc có thể
+                  gây hại; (v) Áp dụng các biện pháp kỹ thuật, pháp lý để bảo vệ
+                  nền tảng và người dùng.
+                </li>
+                <li>
+                  <strong>Quyền sở hữu trí tuệ của OneShop:</strong> Tất cả các
+                  quyền sở hữu trí tuệ đối với nền tảng OneShop, bao gồm nhưng
+                  không giới hạn: website, ứng dụng di động, phần mềm, mã nguồn,
+                  thiết kế, giao diện, logo, thương hiệu "OneShop", tên miền,
+                  nội dung, tài liệu, và tất cả các tài sản trí tuệ khác, đều
+                  thuộc sở hữu của OneShop hoặc được OneShop cấp phép sử dụng.
+                  Người dùng không được sao chép, sử dụng, khai thác, hoặc phân
+                  phối bất kỳ phần nào của nền tảng mà không có sự đồng ý bằng
+                  văn bản của OneShop.
+                </li>
+                <li>
+                  <strong>Quyền sở hữu trí tuệ của người dùng:</strong> Người
+                  dùng giữ quyền sở hữu đối với nội dung, thông tin, hình ảnh,
+                  video, và các tài sản trí tuệ khác do mình tạo ra và đăng tải
+                  trên nền tảng. Tuy nhiên, bằng việc đăng tải nội dung lên nền
+                  tảng, người dùng cấp cho OneShop quyền sử dụng, hiển thị, phân
+                  phối, và chỉnh sửa nội dung đó (trong phạm vi cần thiết để vận
+                  hành nền tảng) trên toàn thế giới, miễn phí, và không có thời
+                  hạn. Người dùng đảm bảo rằng mình có quyền cấp phép như vậy và
+                  nội dung không vi phạm quyền của bên thứ ba.
+                </li>
+                <li>
+                  <strong>Báo cáo vi phạm quyền sở hữu trí tuệ:</strong> Nếu
+                  người dùng cho rằng nội dung trên nền tảng vi phạm quyền sở
+                  hữu trí tuệ của mình, người dùng có thể gửi thông báo vi phạm
+                  (DMCA Notice) đến OneShop kèm theo bằng chứng. OneShop sẽ xem
+                  xét và xử lý thông báo theo quy trình quy định và có thể gỡ bỏ
+                  nội dung vi phạm nếu được xác nhận.
+                </li>
+              </ul>
+
+              <h4>6.9.4. Liên hệ và hỗ trợ</h4>
+              <div class="contact-info">
+                <h4>Thông tin liên hệ OneShop</h4>
+                <p>
+                  Nếu bạn có bất kỳ câu hỏi, thắc mắc, khiếu nại, hoặc yêu cầu
+                  nào liên quan đến các điều khoản, chính sách, dịch vụ của
+                  OneShop, vui lòng liên hệ với chúng tôi thông qua các kênh
+                  sau:
+                </p>
+                <ul>
+                  <li>
+                    <strong>Email hỗ trợ:</strong>
+                    <a href="mailto:oneshop123vn@gmail.com"
+                      >oneshop123vn@gmail.com</a
+                    >
+                    - Chúng tôi sẽ phản hồi trong vòng 24-48 giờ làm việc.
+                  </li>
+                  <li>
+                    <strong>Hotline hỗ trợ:</strong> 1900-xxxx (miễn phí) hoặc
+                    0xxx-xxx-xxx - Thời gian phục vụ: 8:00 - 22:00 hàng ngày (kể
+                    cả thứ 7, Chủ nhật và ngày lễ).
+                  </li>
+                  <li>
+                    <strong>Chat trực tuyến:</strong> Truy cập website OneShop
+                    và sử dụng tính năng chat trực tuyến - Thời gian phục vụ:
+                    8:00 - 22:00 hàng ngày.
+                  </li>
+                  <li>
+                    <strong>Địa chỉ văn phòng:</strong> [Địa chỉ văn phòng
+                    OneShop] - Thời gian làm việc: Thứ 2 - Thứ 6, 8:00 - 17:30.
+                  </li>
+                  <li>
+                    <strong>Trang hỗ trợ trực tuyến:</strong> Truy cập trang
+                    "Trung tâm hỗ trợ" trên website OneShop để xem các câu hỏi
+                    thường gặp (FAQ), hướng dẫn sử dụng, và các tài liệu hỗ trợ
+                    khác.
+                  </li>
+                </ul>
+                <p>
+                  <strong>Thời gian hỗ trợ:</strong> 8:00 - 22:00 hàng ngày (kể
+                  cả thứ 7, Chủ nhật và ngày lễ). Đối với các vấn đề khẩn cấp
+                  hoặc nghiêm trọng, vui lòng gọi hotline hoặc gửi email với
+                  tiêu đề "KHẨN CẤP" để được ưu tiên xử lý.
+                </p>
+                <p>
+                  <strong>Cam kết phản hồi:</strong> OneShop cam kết phản hồi
+                  tất cả các yêu cầu, khiếu nại của người dùng một cách kịp
+                  thời, chuyên nghiệp, và hiệu quả. Chúng tôi sẽ cố gắng giải
+                  quyết các vấn đề trong thời gian ngắn nhất có thể và thông báo
+                  kết quả cho người dùng.
+                </p>
+                <p>
+                  <strong>Bảo mật thông tin liên hệ:</strong> Thông tin liên hệ
+                  của bạn sẽ được bảo mật và chỉ được sử dụng để phản hồi yêu
+                  cầu, khiếu nại của bạn. Chúng tôi không chia sẻ thông tin này
+                  với bên thứ ba trừ khi có yêu cầu pháp lý hoặc được bạn đồng
+                  ý.
+                </p>
+              </div>
+
+              <h4>6.9.5. Điều khoản cuối cùng</h4>
+              <ul>
+                <li>
+                  <strong>Tính độc lập của các điều khoản:</strong> Nếu bất kỳ
+                  điều khoản nào trong tài liệu này bị tòa án hoặc cơ quan có
+                  thẩm quyền tuyên bố là vô hiệu, không thể thực thi, hoặc bất
+                  hợp pháp, các điều khoản còn lại vẫn tiếp tục có hiệu lực đầy
+                  đủ. Điều khoản bị tuyên bố vô hiệu sẽ được thay thế bằng điều
+                  khoản hợp lệ, hợp pháp gần nhất với ý định ban đầu.
+                </li>
+                <li>
+                  <strong>Không từ bỏ quyền:</strong> Việc OneShop không thực
+                  thi hoặc chậm trễ trong việc thực thi bất kỳ quyền nào được
+                  quy định trong các điều khoản này không được coi là từ bỏ
+                  quyền đó. OneShop vẫn có quyền thực thi quyền đó trong tương
+                  lai.
+                </li>
+                <li>
+                  <strong>Chuyển nhượng:</strong> Người dùng không được phép
+                  chuyển nhượng, ủy quyền, hoặc chuyển giao bất kỳ quyền hoặc
+                  nghĩa vụ nào phát sinh từ các điều khoản này cho bên thứ ba mà
+                  không có sự đồng ý bằng văn bản của OneShop. OneShop có quyền
+                  chuyển nhượng, ủy quyền, hoặc chuyển giao các quyền và nghĩa
+                  vụ của mình cho bên thứ ba trong trường hợp sáp nhập, mua lại,
+                  hoặc chuyển giao tài sản.
+                </li>
+                <li>
+                  <strong>Toàn bộ thỏa thuận:</strong> Các điều khoản này, cùng
+                  với Chính sách Bảo mật và các chính sách khác được tham chiếu
+                  trong đây, tạo thành toàn bộ thỏa thuận giữa người dùng và
+                  OneShop về việc sử dụng dịch vụ, và thay thế tất cả các thỏa
+                  thuận, đàm phán, hoặc thảo luận trước đó giữa các bên về chủ
+                  đề này.
+                </li>
+                <li>
+                  <strong>Ngôn ngữ:</strong> Các điều khoản này được soạn thảo
+                  bằng tiếng Việt và là phiên bản chính thức, có hiệu lực pháp
+                  lý. Trong trường hợp có bản dịch sang ngôn ngữ khác, phiên bản
+                  tiếng Việt sẽ được ưu tiên trong việc giải thích và áp dụng.
+                </li>
+                <li>
+                  <strong>Hiệu lực:</strong> Các điều khoản này có hiệu lực kể
+                  từ ngày được công bố trên website OneShop và sẽ tiếp tục có
+                  hiệu lực cho đến khi bị thay thế bởi các điều khoản mới. Người
+                  dùng sử dụng dịch vụ sau ngày công bố được coi là đã chấp nhận
+                  các điều khoản này.
+                </li>
+              </ul>
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+
+    <script src="/vendor/bootstrap/jquery-1.12.4.min.js"></script>
+    <script src="/vendor/bootstrap/bootstrap.min.js"></script>
+    <script>
+      // Smooth scroll for menu links
+      document.querySelectorAll(".menu-link").forEach((link) => {
+        link.addEventListener("click", function (e) {
+          e.preventDefault();
+          const targetId = this.getAttribute("href");
+          const targetElement = document.querySelector(targetId);
+
+          if (targetElement) {
+            const offsetTop = targetElement.offsetTop - 100;
+            window.scrollTo({
+              top: offsetTop,
+              behavior: "smooth",
+            });
+
+            // Update active menu item
+            document
+              .querySelectorAll(".menu-link")
+              .forEach((l) => l.classList.remove("active"));
+            this.classList.add("active");
+          }
+        });
+      });
+
+      // Scroll spy for menu
+      const sections = document.querySelectorAll(".section");
+      const menuLinks = document.querySelectorAll(".menu-link");
+
+      window.addEventListener("scroll", () => {
+        let current = "";
+        sections.forEach((section) => {
+          const sectionTop = section.offsetTop;
+          const sectionHeight = section.clientHeight;
+          if (window.pageYOffset >= sectionTop - 150) {
+            current = section.getAttribute("id");
+          }
+        });
+
+        menuLinks.forEach((link) => {
+          link.classList.remove("active");
+          if (link.getAttribute("href") === "#" + current) {
+            link.classList.add("active");
+          }
+        });
+
+        // Show submenu if in thong-tin-chung section
+        if (current === "thong-tin-chung") {
+          document.getElementById("thong-tin-submenu").classList.add("active");
+        } else {
+          document
+            .getElementById("thong-tin-submenu")
+            .classList.remove("active");
+        }
+      });
+
+      // Accordion functionality (if needed for sub-sections)
+      document.querySelectorAll(".accordion-header").forEach((header) => {
+        header.addEventListener("click", function () {
+          const item = this.parentElement;
+          const isActive = item.classList.contains("active");
+
+          // Close all accordions
+          document.querySelectorAll(".accordion-item").forEach((i) => {
+            i.classList.remove("active");
+          });
+
+          // Open clicked one if it wasn't active
+          if (!isActive) {
+            item.classList.add("active");
+          }
+        });
+      });
+    </script>
+  </body>
+</html>
