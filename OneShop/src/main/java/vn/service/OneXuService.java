@@ -58,6 +58,9 @@ public interface OneXuService {
     // Đồng bộ hóa số dư user với transactions
     void syncUserBalance(Long userId);
     
+    // Hoàn tiền vào OneXu (1 VNĐ = 1 OneXu)
+    OneXuTransaction refundToOneXu(Long userId, Long orderId, Double amount);
+    
     // DTO cho thống kê
     class OneXuStats {
         private Double currentBalance;

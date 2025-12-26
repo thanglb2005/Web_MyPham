@@ -140,7 +140,8 @@ public class Order {
         DELIVERED,              // Da giao
         OVERDUE,                // Giao muon - qua han
         CANCELLED,              // Huy (chuan - 2 chu L)
-        RETURNED                // Tra hang - hoan tien
+        RETURN_REQUESTED,       // Dang xu ly hoan tra (khach hang da yeu cau tra hang, cho vendor duyet)
+        RETURNED                // Tra hang - hoan tien (vendor da duyet)
     }
 
     public enum PaymentMethod {

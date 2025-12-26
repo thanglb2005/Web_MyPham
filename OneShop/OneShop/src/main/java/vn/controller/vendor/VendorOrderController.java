@@ -70,7 +70,6 @@ public class VendorOrderController {
             Order.OrderStatus.SHIPPING,
             Order.OrderStatus.DELIVERED,
             Order.OrderStatus.CANCELLED,
-            Order.OrderStatus.RETURN_REQUESTED,
             Order.OrderStatus.RETURNED
     };
 
@@ -104,7 +103,6 @@ public class VendorOrderController {
                 model.addAttribute("shippingCount", 0L);
                 model.addAttribute("deliveredCount", 0L);
                 model.addAttribute("cancelledCount", 0L);
-                model.addAttribute("returnRequestedCount", 0L);
                 model.addAttribute("returnedCount", 0L);
                 return "vendor/orders/list";
             }
@@ -144,14 +142,12 @@ public class VendorOrderController {
             Long shippingCount = orderService.countByShopIdInAndStatus(targetShopIds, Order.OrderStatus.SHIPPING);
             Long deliveredCount = orderService.countByShopIdInAndStatus(targetShopIds, Order.OrderStatus.DELIVERED);
             Long cancelledCount = orderService.countByShopIdInAndStatus(targetShopIds, Order.OrderStatus.CANCELLED);
-            Long returnRequestedCount = orderService.countByShopIdInAndStatus(targetShopIds, Order.OrderStatus.RETURN_REQUESTED);
             Long returnedCount = orderService.countByShopIdInAndStatus(targetShopIds, Order.OrderStatus.RETURNED);
             
             // Debug: Log số lượng đơn hàng theo từng trạng thái
             System.out.println("DEBUG - Total: " + totalOrders + ", Pending: " + pendingCount + ", Confirmed: " + confirmedCount + 
                               ", Shipping: " + shippingCount + ", Delivered: " + deliveredCount + 
-                              ", Cancelled: " + cancelledCount + ", Return Requested: " + returnRequestedCount + 
-                              ", Returned: " + returnedCount);
+                              ", Cancelled: " + cancelledCount + ", Returned: " + returnedCount);
             
             model.addAttribute("orders", orders);
             model.addAttribute("currentStatus", status != null ? status.name() : null);
@@ -161,7 +157,6 @@ public class VendorOrderController {
             model.addAttribute("shippingCount", shippingCount != null ? shippingCount : 0L);
             model.addAttribute("deliveredCount", deliveredCount != null ? deliveredCount : 0L);
             model.addAttribute("cancelledCount", cancelledCount != null ? cancelledCount : 0L);
-            model.addAttribute("returnRequestedCount", returnRequestedCount != null ? returnRequestedCount : 0L);
             model.addAttribute("returnedCount", returnedCount != null ? returnedCount : 0L);
             model.addAttribute("search", search != null ? search : "");
             model.addAttribute("vendor", vendor);
@@ -215,7 +210,6 @@ public class VendorOrderController {
             model.addAttribute("shippingCount", 0L);
             model.addAttribute("deliveredCount", 0L);
             model.addAttribute("cancelledCount", 0L);
-            model.addAttribute("returnRequestedCount", 0L);
             model.addAttribute("returnedCount", 0L);
             return "vendor/orders/list";
         }
@@ -382,15 +376,23 @@ public class VendorOrderController {
         
         // Load refund information if order is RETURNED, RETURN_REQUESTED or DELIVERED (user đã yêu cầu trả hàng)
         vn.entity.Refund refund = null;
-        if (order.getStatus() != null && 
-            (order.getStatus() == Order.OrderStatus.RETURNED || 
-             order.getStatus() == Order.OrderStatus.RETURN_REQUESTED || 
-             order.getStatus() == Order.OrderStatus.DELIVERED)) {
+        if (order.getStatus() == Order.OrderStatus.RETURNED || 
+            order.getStatus() == Order.OrderStatus.RETURN_REQUESTED || 
+            (order.getStatus() == Order.OrderStatus.DELIVERED && order.getCancellationReason() != null && !order.getCancellationReason().trim().isEmpty())) {
             try {
                 refund = refundService.getRefundByOrderId(orderId);
+                if (refund != null) {
+                    System.out.println("DEBUG: Loaded refund for order #" + orderId + 
+                                     " - Refund ID: " + refund.getRefundId() + 
+                                     ", Status: " + (refund.getRefundStatus() != null ? refund.getRefundStatus().name() : "NULL") +
+                                     ", Method: " + (refund.getRefundMethod() != null ? refund.getRefundMethod().name() : "NULL") +
+                                     ", Bank Name: " + (refund.getBankName() != null ? refund.getBankName() : "NULL"));
+                } else {
+                    System.out.println("DEBUG: No refund found for order #" + orderId);
+                }
             } catch (Exception e) {
-                System.err.println("Error loading refund for order " + orderId + ": " + e.getMessage());
-                refund = null; // Ensure refund is null on error
+                System.err.println("ERROR: Failed to load refund for order " + orderId + ": " + e.getMessage());
+                e.printStackTrace();
             }
         }
         
@@ -411,19 +413,25 @@ public class VendorOrderController {
                 refund.getBankName() != null && !refund.getBankName().trim().isEmpty() &&
                 refund.getBankAccountNumber() != null && !refund.getBankAccountNumber().trim().isEmpty()) {
                 refundStatusName = "PROCESSING";
-                System.out.println("DEBUG: Refund has bank info but status is PENDING, treating as PROCESSING for order #" + orderId);
+                System.out.println("DEBUG: Refund has bank info but status is PENDING, treating as PROCESSING");
             }
+            
+            System.out.println("DEBUG: Using refund status from refund object: " + refundStatusName);
         } else if (order.getStatus() == Order.OrderStatus.RETURNED) {
             // If order is RETURNED but refund status is null, assume PROCESSING
             refundStatusName = "PROCESSING";
+            System.out.println("DEBUG: Order is RETURNED but refund status is null, defaulting to PROCESSING");
         } else if (order.getStatus() == Order.OrderStatus.RETURN_REQUESTED) {
             // If order is RETURN_REQUESTED but refund status is null, assume PENDING
             refundStatusName = "PENDING";
+            System.out.println("DEBUG: Order is RETURN_REQUESTED but refund status is null, defaulting to PENDING");
         } else {
             refundStatusName = "UNKNOWN";
+            System.out.println("DEBUG: Could not determine refund status, defaulting to UNKNOWN");
         }
         
         String refundMethodName = (refund != null && refund.getRefundMethod() != null) ? refund.getRefundMethod().name() : "UNKNOWN";
+        System.out.println("DEBUG: Final refundStatusName: " + refundStatusName + ", refundMethodName: " + refundMethodName);
         
         model.addAttribute("order", order);
         model.addAttribute("orderDetails", orderDetails);
@@ -562,14 +570,7 @@ public class VendorOrderController {
                 return "redirect:/vendor/orders/" + orderId;
             }
             
-            // Kiểm tra xem khách hàng đã yêu cầu trả hàng chưa
-            if (order.getCancellationReason() == null || order.getCancellationReason().trim().isEmpty()) {
-                redirectAttributes.addFlashAttribute("error", "Khách hàng chưa yêu cầu trả hàng cho đơn hàng này");
-                return "redirect:/vendor/orders/" + orderId;
-            }
-            
             // Tính finalAmount (số tiền khách hàng thực sự đã thanh toán)
-            // Sử dụng finalAmount từ order nếu có, nếu không thì tính từ totalAmount + shippingFee - discountAmount
             double finalAmount;
             if (order.getFinalAmount() != null && order.getFinalAmount() > 0) {
                 finalAmount = order.getFinalAmount();
@@ -587,7 +588,82 @@ public class VendorOrderController {
                 return "redirect:/vendor/orders/" + orderId;
             }
             
+            // Cập nhật order status sang RETURNED
             orderService.updateOrderStatus(orderId, Order.OrderStatus.RETURNED);
+            
+            // Kiểm tra xem refund đã được tạo từ user chưa
+            vn.entity.Refund existingRefund = refundService.getRefundByOrderId(orderId);
+            if (existingRefund != null) {
+                // Refund đã tồn tại (user đã chọn phương thức), chỉ cần update refundAmount
+                try {
+                    vn.entity.Refund.RefundMethod refundMethod = existingRefund.getRefundMethod();
+                    vn.entity.Refund.RefundStatus oldStatus = existingRefund.getRefundStatus();
+                    
+                    System.out.println("DEBUG: Approve return - Order #" + orderId + 
+                                     ", Refund ID: " + existingRefund.getRefundId() + 
+                                     ", Method: " + refundMethod + 
+                                     ", Current Status: " + oldStatus);
+                    
+                    refundService.updateRefundAmount(existingRefund.getRefundId(), refundAmount, vendor.getUserId().toString());
+                    
+                    // Reload refund sau khi update để lấy status mới nhất
+                    existingRefund = refundService.getRefundByOrderId(orderId);
+                    System.out.println("DEBUG: After update amount - Refund Status: " + existingRefund.getRefundStatus());
+                    
+                    // Nếu user đã chọn ONEXU, tự động process ngay khi vendor approve
+                    if (refundMethod == vn.entity.Refund.RefundMethod.ONEXU && 
+                        existingRefund.getRefundStatus() == vn.entity.Refund.RefundStatus.PENDING) {
+                        try {
+                            System.out.println("DEBUG: Processing OneXu refund for refund ID: " + existingRefund.getRefundId());
+                            refundService.processRefundToOneXu(existingRefund.getRefundId(), order.getUser().getUserId());
+                            // Reload lại sau khi process
+                            existingRefund = refundService.getRefundByOrderId(orderId);
+                            System.out.println("DEBUG: After OneXu processing - Refund Status: " + existingRefund.getRefundStatus());
+                        } catch (Exception e) {
+                            System.err.println("ERROR: Failed to process OneXu refund for refund ID " + existingRefund.getRefundId() + ": " + e.getMessage());
+                            e.printStackTrace();
+                            // Continue even if OneXu processing fails
+                        }
+                    }
+                    // Nếu user đã chọn BANK_TRANSFER, tự động đánh dấu hoàn thành khi vendor approve (vendor đã chuyển khoản)
+                    else if (refundMethod == vn.entity.Refund.RefundMethod.BANK_TRANSFER) {
+                        try {
+                            // Nếu status là PROCESSING (đã có bank info), tự động mark completed
+                            if (existingRefund.getRefundStatus() == vn.entity.Refund.RefundStatus.PROCESSING) {
+                                System.out.println("DEBUG: Marking BANK_TRANSFER refund as completed for refund ID: " + existingRefund.getRefundId());
+                                refundService.markRefundCompleted(existingRefund.getRefundId(), vendor.getUserId());
+                                // Reload lại sau khi mark completed
+                                existingRefund = refundService.getRefundByOrderId(orderId);
+                                System.out.println("DEBUG: After mark completed - Refund Status: " + existingRefund.getRefundStatus() + 
+                                                 ", Completed At: " + existingRefund.getCompletedAt());
+                            } else if (existingRefund.getRefundStatus() == vn.entity.Refund.RefundStatus.PENDING) {
+                                System.out.println("DEBUG: BANK_TRANSFER refund status is PENDING (no bank info yet) - keeping PENDING status");
+                            }
+                            // Nếu status là PENDING (chưa có bank info), chỉ cần update amount
+                            // Status sẽ được chuyển sang PROCESSING khi user submit bank info
+                            // Sau đó vendor sẽ cần approve lại hoặc có thể mark completed sau
+                        } catch (Exception e) {
+                            System.err.println("ERROR: Failed to process Bank refund for refund ID " + existingRefund.getRefundId() + ": " + e.getMessage());
+                            e.printStackTrace();
+                            // Continue even if Bank processing fails
+                        }
+                    }
+                } catch (Exception e) {
+                    System.err.println("ERROR: Failed to update refund amount for order #" + orderId + ": " + e.getMessage());
+                    e.printStackTrace();
+                    // Continue even if update fails
+                }
+            } else {
+                // Refund chưa tồn tại, tạo mới (trường hợp user chưa chọn phương thức - không nên xảy ra)
+                try {
+                    System.out.println("DEBUG: Creating new refund request for order #" + orderId);
+                    refundService.createRefundRequest(orderId, order.getUser().getUserId(), refundAmount, vendor.getUserId().toString());
+                } catch (Exception e) {
+                    System.err.println("ERROR: Failed to create refund request for order #" + orderId + ": " + e.getMessage());
+                    e.printStackTrace();
+                    // Continue even if creation fails
+                }
+            }
             
             // Lưu thông tin return vào database (giữ nguyên cancellationReason từ user, chỉ thêm thông tin approve)
             Order returnedOrder = orderService.getOrderById(orderId);
@@ -598,80 +674,9 @@ public class VendorOrderController {
                 orderService.updateOrder(returnedOrder);
             }
             
-            // Kiểm tra xem refund đã được tạo từ user chưa
-            vn.entity.Refund existingRefund = refundService.getRefundByOrderId(orderId);
-            if (existingRefund != null) {
-                // Refund đã tồn tại (user đã chọn phương thức), chỉ cần update refundAmount
-                try {
-                    vn.entity.Refund.RefundMethod refundMethod = existingRefund.getRefundMethod();
-                    refundService.updateRefundAmount(existingRefund.getRefundId(), refundAmount, vendor.getUserId().toString());
-                    
-                    // Reload refund sau khi update
-                    existingRefund = refundService.getRefundByOrderId(orderId);
-                    
-                    // Nếu user đã chọn ONEXU, tự động process ngay khi vendor approve
-                    if (refundMethod == vn.entity.Refund.RefundMethod.ONEXU && 
-                        existingRefund.getRefundStatus() == vn.entity.Refund.RefundStatus.PENDING) {
-                        try {
-                            refundService.processRefundToOneXu(existingRefund.getRefundId(), order.getUser().getUserId());
-                        } catch (Exception e) {
-                            System.err.println("Error processing OneXu refund: " + e.getMessage());
-                            // Continue even if OneXu processing fails
-                        }
-                    }
-                } catch (Exception e) {
-                    System.err.println("Error updating refund amount: " + e.getMessage());
-                    // Continue even if update fails
-                }
-            } else {
-                // Refund chưa tồn tại, tạo mới (trường hợp user chưa chọn phương thức - không nên xảy ra)
-                try {
-                    refundService.createRefundRequest(orderId, order.getUser().getUserId(), 
-                        refundAmount, vendor.getUserId().toString());
-                } catch (Exception e) {
-                    System.err.println("Error creating refund request: " + e.getMessage());
-                    // Continue even if refund creation fails
-                }
-            }
-            
             redirectAttributes.addFlashAttribute("success", "Đã duyệt hoàn tiền cho đơn hàng #" + orderId);
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Lỗi duyệt hoàn tiền: " + e.getMessage());
-        }
-        
-        return "redirect:/vendor/orders/" + orderId;
-    }
-
-    /**
-     * Vendor đánh dấu đã hoàn tiền vào ngân hàng
-     */
-    @PostMapping("/{orderId}/mark-refund-completed")
-    public String markRefundCompleted(@PathVariable Long orderId,
-                                     HttpSession session,
-                                     RedirectAttributes redirectAttributes) {
-        User vendor = ensureVendor(session);
-        if (vendor == null) {
-            return "redirect:/login";
-        }
-        
-        try {
-            vn.entity.Refund refund = refundService.getRefundByOrderId(orderId);
-            if (refund == null) {
-                redirectAttributes.addFlashAttribute("error", "Không tìm thấy refund");
-                return "redirect:/vendor/orders/" + orderId;
-            }
-            
-            // Validate vendor owns the shop
-            Order order = getOrderForVendor(orderId, vendor);
-            if (order == null) {
-                redirectAttributes.addFlashAttribute("error", "Không có quyền truy cập");
-                return "redirect:/vendor/orders";
-            }
-            
-            refundService.markRefundCompleted(refund.getRefundId(), vendor.getUserId());
-            redirectAttributes.addFlashAttribute("success", "Đã đánh dấu hoàn tiền thành công");
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Lỗi: " + e.getMessage());
         }
         
         return "redirect:/vendor/orders/" + orderId;

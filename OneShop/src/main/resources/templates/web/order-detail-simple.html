@@ -59,6 +59,7 @@
         .status-shipping { background: #d4edda; color: #155724; }
         .status-delivered { background: #cce5ff; color: #004085; }
         .status-cancelled { background: #f8d7da; color: #721c24; }
+        .status-return-requested { background: #fff3cd; color: #856404; }
         .status-returned { background: #f0f0f0; color: #6c757d; }
         
         .order-info {
@@ -236,6 +237,7 @@
                     <span th:case="'SHIPPING'" class="status-shipping">SHIPPING</span>
                     <span th:case="'DELIVERED'" class="status-delivered">DELIVERED</span>
                     <span th:case="'CANCELLED'" class="status-cancelled">CANCELLED</span>
+                    <span th:case="'RETURN_REQUESTED'" class="status-return-requested">Đang xử lý hoàn trả</span>
                     <span th:case="'RETURNED'" class="status-returned">RETURNED</span>
                     <span th:case="*" class="status-pending">PENDING</span>
                 </span>
@@ -329,6 +331,91 @@
             </div>
         </div>
 
+        <!-- Refund Information Card (for RETURNED, RETURN_REQUESTED orders or DELIVERED orders with refund) -->
+        <div th:if="${(order?.status?.name() == 'RETURNED' or order?.status?.name() == 'RETURN_REQUESTED' or order?.status?.name() == 'DELIVERED') and refund != null}" class="order-card">
+            <h2 class="section-title">
+                <i class="fas fa-money-bill-wave me-2"></i>Thông tin hoàn tiền
+            </h2>
+            <div class="alert" style="border-radius: 10px;"
+                 th:classappend="${refund != null and refund.refundStatus != null and refund.refundStatus.name() == 'PENDING'} ? 'alert-warning' : 
+                                 (${refund != null and refund.refundStatus != null and refund.refundStatus.name() == 'PROCESSING'} ? 'alert-info' : 
+                                 (${refund != null and refund.refundStatus != null and refund.refundStatus.name() == 'COMPLETED'} ? 'alert-success' : 'alert-danger'))">
+                <div class="mb-3">
+                    <h5 class="mb-2">
+                        <span th:if="${refund != null and refund.refundStatus != null}" th:switch="${refund.refundStatus.name()}">
+                            <span th:case="'PENDING'">
+                                <span th:if="${order.status != null and order.status.name() == 'RETURN_REQUESTED'}">
+                                    <i class="fas fa-clock me-2"></i>Đang chờ vendor duyệt hoàn tiền
+                                </span>
+                                <span th:if="${order.status != null and order.status.name() == 'RETURNED'}">
+                                    <i class="fas fa-info-circle me-2"></i>Chờ thông tin ngân hàng
+                                </span>
+                            </span>
+                            <span th:case="'PROCESSING'">
+                                <i class="fas fa-spinner fa-spin me-2"></i>Đang xử lý hoàn tiền
+                            </span>
+                            <span th:case="'COMPLETED'">
+                                <i class="fas fa-check-circle me-2"></i>Đã hoàn tiền thành công
+                            </span>
+                            <span th:case="'FAILED'">
+                                <i class="fas fa-times-circle me-2"></i>Hoàn tiền thất bại
+                            </span>
+                        </span>
+                    </h5>
+                    <div class="summary-row" th:if="${refund != null and refund.refundAmount != null}">
+                        <span><strong>Số tiền hoàn:</strong></span>
+                        <span class="text-primary" style="font-size: 1.1rem; font-weight: 700;" 
+                              th:text="${#numbers.formatDecimal(refund.refundAmount, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'"></span>
+                    </div>
+                    <div th:if="${refund != null and refund.refundMethod != null}" class="summary-row">
+                        <span><strong>Phương thức hoàn tiền:</strong></span>
+                        <span th:switch="${refund.refundMethod.name()}">
+                            <span th:case="'ONEXU'">
+                                <i class="fas fa-coins me-1"></i>Hoàn vào OneXu
+                            </span>
+                            <span th:case="'BANK_TRANSFER'">
+                                <i class="fas fa-university me-1"></i>Hoàn vào ngân hàng
+                                <span th:if="${refund.bankName != null}">
+                                    (<span th:text="${refund.bankName}"></span>)
+                                </span>
+                            </span>
+                        </span>
+                    </div>
+                    <div th:if="${refund != null and refund.refundMethod != null and refund.refundMethod.name() == 'BANK_TRANSFER'}" 
+                         class="summary-row">
+                        <span><strong>Số tài khoản:</strong></span>
+                        <span th:text="${refund.bankAccountNumber != null ? refund.bankAccountNumber : 'N/A'}"></span>
+                    </div>
+                    <div th:if="${refund != null and refund.refundMethod != null and refund.refundMethod.name() == 'BANK_TRANSFER'}" 
+                         class="summary-row">
+                        <span><strong>Tên chủ tài khoản:</strong></span>
+                        <span th:text="${refund.accountHolderName != null ? refund.accountHolderName : 'N/A'}"></span>
+                    </div>
+                    <div th:if="${refund != null and refund.refundStatus != null and refund.refundStatus.name() == 'PROCESSING' and refund.refundMethod != null and refund.refundMethod.name() == 'BANK_TRANSFER'}" 
+                         class="mt-3 p-2 bg-light rounded">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <small class="text-muted">
+                            <strong>Thời gian xử lý:</strong> Có thể mất 1-3 ngày làm việc
+                        </small>
+                    </div>
+                    <div th:if="${refund.refundStatus != null and refund.refundStatus.name() == 'PENDING'}" class="mt-3">
+                        <div th:if="${order?.status?.name() == 'RETURNED' or order?.status?.name() == 'RETURN_REQUESTED'}" class="mb-2">
+                            <a th:href="@{/refund-request/{orderId}(orderId=${order.orderId})}" 
+                               class="btn btn-primary">
+                                <i class="fas fa-check me-2"></i>Chọn phương thức hoàn tiền
+                            </a>
+                        </div>
+                        <div th:if="${order?.status?.name() == 'DELIVERED'}" class="mb-2">
+                            <p class="text-muted small">
+                                <i class="fas fa-clock me-1"></i>
+                                Đang chờ vendor duyệt yêu cầu hoàn tiền
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Notes Card -->
         <div class="order-card">
             <h2 class="section-title">Ghi chú</h2>
@@ -353,7 +440,7 @@
                 </a>
             </div>
             
-            <div th:if="${order.status.name() == 'DELIVERED'}">
+            <div th:if="${order.status.name() == 'DELIVERED' and order.cancellationReason == null}">
                 <a th:href="@{/return-order/{id}(id=${order.orderId})}" 
                    class="btn btn-warning w-100 mb-2">
                     <i class="fas fa-undo me-1"></i>Yêu cầu trả hàng

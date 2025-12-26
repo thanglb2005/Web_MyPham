@@ -165,6 +165,18 @@
           <li class="nav-item" role="presentation">
             <a
               class="nav-link"
+              th:classappend="${currentStatus == 'RETURN_REQUESTED' ? 'active' : ''}"
+              th:href="@{/vendor/orders(shopId=${shopId}, status=RETURN_REQUESTED, q=${search})}"
+            >
+              Đang xử lý hoàn trả
+              <span class="badge bg-warning text-dark ms-1" th:text="${returnRequestedCount}"
+                >0</span
+              >
+            </a>
+          </li>
+          <li class="nav-item" role="presentation">
+            <a
+              class="nav-link"
               th:classappend="${currentStatus == 'RETURNED' ? 'active' : ''}"
               th:href="@{/vendor/orders(shopId=${shopId}, status=RETURNED, q=${search})}"
             >
@@ -287,6 +299,7 @@
                           <span th:case="'CANCELLED'" class="badge bg-danger"
                             >Đã hủy</span
                           >
+                          <span th:case="'RETURN_REQUESTED'" class="badge bg-warning text-dark">Đang xử lý hoàn trả</span>
                           <span th:case="'RETURNED'" class="badge bg-dark"
                             >Đã hoàn trả</span
                           >

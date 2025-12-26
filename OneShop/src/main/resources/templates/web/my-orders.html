@@ -66,6 +66,11 @@
             color: #dc3545;
         }
         
+        .status-return-requested { 
+            color: #ff9800;
+            border-color: #ff9800;
+        }
+        
         .status-returned { 
             color: #6c757d;
         }
@@ -146,16 +151,34 @@
             display: flex;
             flex-wrap: nowrap;
             overflow-x: auto;
+            overflow-y: hidden;
             padding-left: 0;
             gap: 0;
             column-gap: 0;
             border-spacing: 0;
-            scrollbar-width: none; /* Firefox */
-            -ms-overflow-style: none; /* IE and Edge */
+            scrollbar-width: thin; /* Firefox - thin scrollbar */
+            scrollbar-color: #007bff #f1f1f1; /* Firefox - thumb and track color */
+            -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
         }
         
+        /* Chrome, Safari, Opera - Custom scrollbar styling */
         .nav-tabs::-webkit-scrollbar {
-            display: none; /* Chrome, Safari, Opera */
+            height: 8px; /* Height of horizontal scrollbar */
+            display: block;
+        }
+        
+        .nav-tabs::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        
+        .nav-tabs::-webkit-scrollbar-thumb {
+            background: #007bff;
+            border-radius: 10px;
+        }
+        
+        .nav-tabs::-webkit-scrollbar-thumb:hover {
+            background: #0056b3;
         }
         
         .nav-item {
@@ -620,6 +643,12 @@
                         </a>
                     </li>
                     <li class="nav-item" role="presentation">
+                        <a class="nav-link" th:classappend="${currentStatus == 'return_requested'} ? 'active'" 
+                           th:href="@{/user/my-orders(status='return_requested')}">
+                            Đang xử lý hoàn trả <span class="badge bg-warning text-dark ms-1" th:text="${returnRequestedCount}">0</span>
+                        </a>
+                    </li>
+                    <li class="nav-item" role="presentation">
                         <a class="nav-link" th:classappend="${currentStatus == 'returned'} ? 'active'" 
                            th:href="@{/user/my-orders(status='returned')}">
                             Trả hàng <span class="badge bg-secondary ms-1" th:text="${returnedCount}">0</span>
@@ -661,6 +690,7 @@
                                         <span th:case="'SHIPPING'" class="status-shipping">Đang giao</span>
                                         <span th:case="'DELIVERED'" class="status-delivered">Đã giao</span>
                                         <span th:case="'CANCELLED'" class="status-cancelled">Đã hủy</span>
+                                        <span th:case="'RETURN_REQUESTED'" class="status-return-requested">Đang xử lý hoàn trả</span>
                                         <span th:case="'RETURNED'" class="status-returned">Trả hàng - hoàn tiền</span>
                                         <span th:case="*" class="status-pending">Đơn hàng mới</span>
                                     </span>
@@ -829,8 +859,67 @@
                             <p class="text-muted mb-0">Không có thông tin sản phẩm</p>
                         </div>
                         
-                        <!-- Thông báo đối với đơn đã trả hàng/hoàn tiền -->
-                        <div th:if="${order.status.name() == 'RETURNED'}" class="alert alert-secondary mt-3" style="border-radius: 12px;">
+                        <!-- Refund Information for RETURNED, RETURN_REQUESTED orders or DELIVERED orders with refund request -->
+                        <div th:if="${(order.status.name() == 'RETURNED' or order.status.name() == 'RETURN_REQUESTED' or order.status.name() == 'DELIVERED') and refundsMap != null and refundsMap[order.orderId] != null}">
+                            <div th:with="refund=${refundsMap[order.orderId]}" class="alert mt-3" style="border-radius: 12px;"
+                                 th:classappend="${refund != null and refund.refundStatus != null and refund.refundStatus.name() == 'PENDING'} ? 'alert-warning' : 
+                                                 (${refund != null and refund.refundStatus != null and refund.refundStatus.name() == 'PROCESSING'} ? 'alert-info' : 
+                                                 (${refund != null and refund.refundStatus != null and refund.refundStatus.name() == 'COMPLETED'} ? 'alert-success' : 'alert-danger'))">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <h6 class="mb-2">
+                                            <i class="fas fa-money-bill-wave me-2"></i>
+                                            <span th:if="${refund != null and refund.refundStatus != null}" th:switch="${refund.refundStatus.name()}">
+                                                <span th:case="'PENDING'">Đang chờ vendor duyệt hoàn tiền</span>
+                                                <span th:case="'PROCESSING'">Đang xử lý hoàn tiền</span>
+                                                <span th:case="'COMPLETED'">Đã hoàn tiền thành công</span>
+                                                <span th:case="'FAILED'">Hoàn tiền thất bại</span>
+                                            </span>
+                                        </h6>
+                                        <div th:if="${refund != null and refund.refundAmount != null}" class="mb-2">
+                                            <strong>Số tiền hoàn:</strong> 
+                                            <span class="text-primary" th:text="${#numbers.formatDecimal(refund.refundAmount, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'"></span>
+                                        </div>
+                                        <div th:if="${refund != null and refund.refundMethod != null}">
+                                            <strong>Phương thức:</strong> 
+                                            <span th:switch="${refund.refundMethod.name()}">
+                                                <span th:case="'ONEXU'">
+                                                    <i class="fas fa-coins me-1"></i>Hoàn vào OneXu
+                                                </span>
+                                                <span th:case="'BANK_TRANSFER'">
+                                                    <i class="fas fa-university me-1"></i>Hoàn vào ngân hàng
+                                                    <span th:if="${refund.bankName != null}">
+                                                        (<span th:text="${refund.bankName}"></span>)
+                                                    </span>
+                                                </span>
+                                            </span>
+                                        </div>
+                                        <div th:if="${refund != null and refund.refundStatus != null and refund.refundStatus.name() == 'PROCESSING' and refund.refundMethod != null and refund.refundMethod.name() == 'BANK_TRANSFER'}" 
+                                             class="mt-2 text-muted small">
+                                            <i class="fas fa-clock me-1"></i>
+                                            Thời gian xử lý: Có thể mất 1-3 ngày làm việc
+                                        </div>
+                                        <div th:if="${refund != null and refund.refundStatus != null and refund.refundStatus.name() == 'PENDING'}" 
+                                             class="mt-2 text-muted small">
+                                            <i class="fas fa-info-circle me-1"></i>
+                                            Đang chờ vendor duyệt yêu cầu hoàn tiền
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Thông báo đã yêu cầu trả hàng nhưng chưa có refund (RETURN_REQUESTED hoặc DELIVERED với cancellationReason) -->
+                        <div th:if="${(order.status.name() == 'RETURN_REQUESTED' or (order.status.name() == 'DELIVERED' and order.cancellationReason != null)) and 
+                                      (refundsMap == null or refundsMap[order.orderId] == null)}" 
+                             class="alert alert-info mt-3" style="border-radius: 12px;">
+                            <i class="fas fa-clock me-2"></i>
+                            Đã gửi yêu cầu trả hàng. Đang chờ vendor xem xét và duyệt hoàn tiền.
+                        </div>
+                        
+                        <!-- Thông báo đối với đơn đã trả hàng/hoàn tiền (nếu chưa có refund) -->
+                        <div th:if="${order.status.name() == 'RETURNED' and (refundsMap == null or refundsMap[order.orderId] == null)}" 
+                             class="alert alert-secondary mt-3" style="border-radius: 12px;">
                             <i class="fas fa-undo me-2"></i>
                             Đơn hàng đã được trả hàng/hoàn tiền. Không thể đánh giá hoặc yêu cầu trả hàng thêm.
                         </div>
@@ -846,7 +935,7 @@
                                 </a>
                             </div>
                             
-                            <div th:if="${order.status.name() == 'DELIVERED'}">
+                            <div th:if="${order.status.name() == 'DELIVERED' and order.cancellationReason == null}">
                                 <a th:href="@{/return-order/{id}(id=${order.orderId})}" 
                                    class="btn btn-outline-warning btn-action">
                                     <i class="fas fa-undo me-1"></i>Yêu cầu trả hàng

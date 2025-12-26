@@ -204,6 +204,14 @@ public class OneXuServiceImpl implements OneXuService {
             System.err.println("Error syncing balance for user " + userId + ": " + e.getMessage());
         }
     }
+    
+    @Override
+    public OneXuTransaction refundToOneXu(Long userId, Long orderId, Double amount) {
+        // 1 VNĐ = 1 OneXu
+        Double xuAmount = amount;
+        String description = "Hoàn tiền đơn hàng #" + orderId + " - " + amount + " VNĐ";
+        return addXu(userId, OneXuTransaction.TransactionType.REFUND, xuAmount, description, orderId);
+    }
 
     @Override
     public OneXuTransaction rewardFromReview(Long userId, Long productId) {

@@ -38,6 +38,12 @@ public class UserOrderController {
 
     @Autowired
     private CommentService commentService;
+    
+    @Autowired
+    private vn.service.RefundService refundService;
+    
+    @Autowired
+    private vn.service.OneXuService oneXuService;
 
     /**
      * Hiển thị trang lịch sử đơn hàng của user với các tab theo trạng thái
@@ -93,6 +99,7 @@ public class UserOrderController {
 
         // Load orderDetails for each order using repository
         java.util.Map<Long, Comment> myCommentsMap = new java.util.HashMap<>();
+        java.util.Map<Long, vn.entity.Refund> refundsMap = new java.util.HashMap<>();
         for (Order order : ordersPage.getContent()) {
             // Eagerly load product and shop to avoid lazy issues in view
             List<OrderDetail> orderDetails = orderDetailRepository.findByOrderIdWithProductAndShop(order.getOrderId());
@@ -118,28 +125,44 @@ public class UserOrderController {
                 }
             }
             // Force load product and shop information for each orderDetail
-            for (OrderDetail orderDetail : orderDetails) {
-                if (orderDetail.getProduct() != null) {
-                    // Access product to trigger lazy loading
-                    orderDetail.getProduct().getProductName();
-                    // Access shop information to trigger lazy loading
-                    if (orderDetail.getProduct().getShop() != null) {
-                        orderDetail.getProduct().getShop().getShopName();
-                        orderDetail.getProduct().getShop().getShopLogo();
+            if (orderDetails != null) {
+                for (OrderDetail orderDetail : orderDetails) {
+                    if (orderDetail.getProduct() != null) {
+                        // Access product to trigger lazy loading
+                        orderDetail.getProduct().getProductName();
+                        // Access shop information to trigger lazy loading
+                        if (orderDetail.getProduct().getShop() != null) {
+                            orderDetail.getProduct().getShop().getShopName();
+                            orderDetail.getProduct().getShop().getShopLogo();
+                        }
                     }
+                    
+                    // Load comment for this orderDetail to check if user has reviewed
+                    try {
+                        java.util.Optional<Comment> cmt = commentService.getUserCommentForOrderDetail(user.getUserId(), orderDetail.getOrderDetailId());
+                        if (cmt.isEmpty() && orderDetail.getProduct() != null) {
+                            // Fallback: nếu chưa có review theo order detail, lấy review gần nhất theo sản phẩm
+                            cmt = commentService.getLatestUserCommentForProduct(user.getUserId(), orderDetail.getProduct().getProductId());
+                        }
+                        cmt.ifPresent(comment -> myCommentsMap.put(orderDetail.getOrderDetailId(), comment));
+                    } catch (Exception ignored) {}
                 }
-                
-                // Load comment for this orderDetail to check if user has reviewed
-                try {
-                    java.util.Optional<Comment> cmt = commentService.getUserCommentForOrderDetail(user.getUserId(), orderDetail.getOrderDetailId());
-                    if (cmt.isEmpty() && orderDetail.getProduct() != null) {
-                        // Fallback: nếu chưa có review theo order detail, lấy review gần nhất theo sản phẩm
-                        cmt = commentService.getLatestUserCommentForProduct(user.getUserId(), orderDetail.getProduct().getProductId());
-                    }
-                    cmt.ifPresent(comment -> myCommentsMap.put(orderDetail.getOrderDetailId(), comment));
-                } catch (Exception ignored) {}
             }
             order.setOrderDetails(orderDetails);
+            
+            // Load refund information for RETURNED, RETURN_REQUESTED orders or DELIVERED orders with refund request
+            if (order.getStatus() == Order.OrderStatus.RETURNED || 
+                order.getStatus() == Order.OrderStatus.RETURN_REQUESTED || 
+                order.getStatus() == Order.OrderStatus.DELIVERED) {
+                try {
+                    vn.entity.Refund refund = refundService.getRefundByOrderId(order.getOrderId());
+                    if (refund != null) {
+                        refundsMap.put(order.getOrderId(), refund);
+                    }
+                } catch (Exception e) {
+                    System.err.println("Error loading refund for order " + order.getOrderId() + ": " + e.getMessage());
+                }
+            }
         }
 
         // Thống kê số lượng đơn hàng theo từng trạng thái
@@ -148,22 +171,26 @@ public class UserOrderController {
         long shippingCount = orderRepository.countByUserAndStatus(user, Order.OrderStatus.SHIPPING);
         long deliveredCount = orderRepository.countByUserAndStatus(user, Order.OrderStatus.DELIVERED);
         long cancelledCount = orderRepository.countByUserAndStatus(user, Order.OrderStatus.CANCELLED);
+        long returnRequestedCount = orderRepository.countByUserAndStatus(user, Order.OrderStatus.RETURN_REQUESTED);
         long returnedCount = orderRepository.countByUserAndStatus(user, Order.OrderStatus.RETURNED);
         
         // Debug: Log số lượng đơn hàng theo từng trạng thái
         System.out.println("Debug - Pending: " + pendingCount + ", Confirmed: " + confirmedCount + 
                           ", Shipping: " + shippingCount + ", Delivered: " + deliveredCount + 
-                          ", Cancelled: " + cancelledCount + ", Returned: " + returnedCount);
+                          ", Cancelled: " + cancelledCount + ", Return Requested: " + returnRequestedCount + 
+                          ", Returned: " + returnedCount);
 
         model.addAttribute("user", user);
         model.addAttribute("orders", ordersPage);
         model.addAttribute("currentStatus", status);
         model.addAttribute("myCommentsMap", myCommentsMap);
+        model.addAttribute("refundsMap", refundsMap);
         model.addAttribute("pendingCount", pendingCount);
         model.addAttribute("confirmedCount", confirmedCount);
         model.addAttribute("shippingCount", shippingCount);
         model.addAttribute("deliveredCount", deliveredCount);
         model.addAttribute("cancelledCount", cancelledCount);
+        model.addAttribute("returnRequestedCount", returnRequestedCount);
         model.addAttribute("returnedCount", returnedCount);
 
         return "web/my-orders";
@@ -226,10 +253,23 @@ public class UserOrderController {
             }
         }
 
+        // Load refund information if order is RETURNED, RETURN_REQUESTED or DELIVERED (user đã yêu cầu trả hàng)
+        vn.entity.Refund refund = null;
+        if (order.getStatus() == Order.OrderStatus.RETURNED || 
+            order.getStatus() == Order.OrderStatus.RETURN_REQUESTED || 
+            order.getStatus() == Order.OrderStatus.DELIVERED) {
+            try {
+                refund = refundService.getRefundByOrderId(orderId);
+            } catch (Exception e) {
+                System.err.println("Error loading refund for order " + orderId + ": " + e.getMessage());
+            }
+        }
+
         model.addAttribute("user", user);
         model.addAttribute("order", order);
         model.addAttribute("orderDetails", orderDetails);
         model.addAttribute("actualShippingFee", actualShippingFee);
+        model.addAttribute("refund", refund);
 
         return "web/order-detail-simple";
     }
@@ -292,17 +332,41 @@ public class UserOrderController {
         if (order.getStatus() != Order.OrderStatus.DELIVERED) {
             return "redirect:/user/my-orders?error=invalid_status";
         }
+        
+        // Tính finalAmount (số tiền khách hàng thực sự đã thanh toán)
+        double finalAmount;
+        if (order.getFinalAmount() != null && order.getFinalAmount() > 0) {
+            finalAmount = order.getFinalAmount();
+        } else {
+            double totalAmount = order.getTotalAmount() != null ? order.getTotalAmount() : 0.0;
+            double shippingFee = order.getShippingFee() != null ? order.getShippingFee() : 0.0;
+            double discountAmount = order.getDiscountAmount() != null ? order.getDiscountAmount() : 0.0;
+            finalAmount = totalAmount + shippingFee - discountAmount;
+        }
+        
+        // Load OneXu balance để hiển thị trong form
+        Double currentBalance = oneXuService.getUserBalance(user.getUserId());
+        Double balanceAfter = currentBalance + finalAmount; // Dùng finalAmount thay vì totalAmount
 
         model.addAttribute("order", order);
+        model.addAttribute("finalAmount", finalAmount);
+        model.addAttribute("currentBalance", currentBalance);
+        model.addAttribute("balanceAfter", balanceAfter);
         return "web/return-order-form";
     }
 
     /**
-     * Xử lý yêu cầu trả hàng với lý do
+     * Xử lý yêu cầu trả hàng với lý do và phương thức hoàn tiền
      */
     @PostMapping("/return-order/{orderId}")
     public String processReturnOrder(@PathVariable Long orderId, 
                                    @RequestParam String returnReason,
+                                   @RequestParam String refundMethod,
+                                   @RequestParam(required = false) String bankName,
+                                   @RequestParam(required = false) String bankAccountNumber,
+                                   @RequestParam(required = false) String accountHolderName,
+                                   @RequestParam(required = false) String bankBranch,
+                                   @RequestParam(required = false) String contactPhone,
                                    HttpSession session, 
                                    RedirectAttributes redirectAttributes) {
         User user = (User) session.getAttribute("user");
@@ -335,16 +399,26 @@ public class UserOrderController {
             redirectAttributes.addFlashAttribute("error", "Vui lòng nhập lý do trả hàng");
             return "redirect:/return-order/" + orderId;
         }
+        
+        // Kiểm tra phương thức hoàn tiền
+        if (refundMethod == null || (!"ONEXU".equals(refundMethod) && !"BANK_TRANSFER".equals(refundMethod))) {
+            redirectAttributes.addFlashAttribute("error", "Vui lòng chọn phương thức hoàn tiền");
+            return "redirect:/return-order/" + orderId;
+        }
 
         try {
-            // Cập nhật trạng thái đơn hàng và lý do trả hàng
-            order.setStatus(Order.OrderStatus.RETURNED);
+            // Lưu lý do trả hàng và chuyển trạng thái sang RETURN_REQUESTED
             order.setCancellationReason(returnReason.trim());
             order.setCancelledDate(LocalDateTime.now());
+            order.setStatus(Order.OrderStatus.RETURN_REQUESTED); // Chuyển sang trạng thái "Đang xử lý hoàn trả"
             orderRepository.save(order);
+            
+            // Tạo refund request với phương thức đã chọn
+            refundService.createRefundRequestFromUser(orderId, user.getUserId(), refundMethod,
+                    bankName, bankAccountNumber, accountHolderName, bankBranch, contactPhone);
 
             redirectAttributes.addFlashAttribute("success", "Đã gửi yêu cầu trả hàng thành công. Chúng tôi sẽ xem xét và phản hồi trong thời gian sớm nhất.");
-            return "redirect:/user/my-orders?status=returned";
+            return "redirect:/user/my-orders?status=return_requested";
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Có lỗi xảy ra khi xử lý yêu cầu trả hàng: " + e.getMessage());
             return "redirect:/return-order/" + orderId;

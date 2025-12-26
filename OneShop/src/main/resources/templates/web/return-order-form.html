@@ -1,282 +1,712 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Yêu cầu trả hàng - OneShop</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link href="/css/main.css" rel="stylesheet">
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+      rel="stylesheet"
+    />
+    <link href="/css/main.css" rel="stylesheet" />
     <style>
-        body {
-            background-color: #f8f9fa;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        
+      body {
+        background-color: #f8f9fa;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      }
+
+      .return-form-container {
+        max-width: 600px;
+        margin: 2rem auto;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+      }
+
+      .form-header {
+        background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+        color: white;
+        padding: 1.5rem;
+        text-align: center;
+      }
+
+      .form-header h2 {
+        margin: 0;
+        font-size: 1.5rem;
+        font-weight: 600;
+      }
+
+      .form-body {
+        padding: 2rem;
+      }
+
+      .order-info {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+      }
+
+      .order-info h5 {
+        color: #495057;
+        margin-bottom: 0.5rem;
+      }
+
+      .form-group {
+        margin-bottom: 1.5rem;
+      }
+
+      .form-label {
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 0.5rem;
+      }
+
+      .form-control {
+        border: 2px solid #e9ecef;
+        border-radius: 8px;
+        padding: 0.75rem;
+        transition: border-color 0.3s ease;
+      }
+
+      .form-control:focus {
+        border-color: #ff6b6b;
+        box-shadow: 0 0 0 0.2rem rgba(255, 107, 107, 0.25);
+      }
+
+      .btn-return {
+        background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+        border: none;
+        color: white;
+        padding: 0.75rem 2rem;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: transform 0.2s ease;
+      }
+
+      .btn-return:hover {
+        transform: translateY(-2px);
+        color: white;
+      }
+
+      .btn-cancel {
+        background: #6c757d;
+        border: none;
+        color: white;
+        padding: 0.75rem 2rem;
+        border-radius: 8px;
+        font-weight: 600;
+        margin-right: 1rem;
+      }
+
+      .btn-cancel:hover {
+        background: #5a6268;
+        color: white;
+      }
+
+      .reason-options {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+      }
+
+      .reason-option {
+        padding: 1rem 0.75rem;
+        border: 2px solid #e9ecef;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-align: center;
+        font-size: 0.85rem;
+        line-height: 1.3;
+        min-height: 80px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .reason-option:hover {
+        border-color: #ff6b6b;
+        background-color: #fff5f5;
+      }
+
+      .reason-option.selected {
+        border-color: #ff6b6b;
+        background-color: #ff6b6b;
+        color: white;
+      }
+
+      .alert {
+        border-radius: 8px;
+        border: none;
+      }
+
+      /* Responsive */
+      @media (max-width: 768px) {
         .return-form-container {
-            max-width: 600px;
-            margin: 2rem auto;
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
+          margin: 1rem;
+          max-width: none;
         }
-        
-        .form-header {
-            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
-            color: white;
-            padding: 1.5rem;
-            text-align: center;
-        }
-        
-        .form-header h2 {
-            margin: 0;
-            font-size: 1.5rem;
-            font-weight: 600;
-        }
-        
+
         .form-body {
-            padding: 2rem;
+          padding: 1rem;
         }
-        
-        .order-info {
-            background: #f8f9fa;
-            border-radius: 8px;
-            padding: 1rem;
-            margin-bottom: 1.5rem;
-        }
-        
-        .order-info h5 {
-            color: #495057;
-            margin-bottom: 0.5rem;
-        }
-        
-        .form-group {
-            margin-bottom: 1.5rem;
-        }
-        
-        .form-label {
-            font-weight: 600;
-            color: #495057;
-            margin-bottom: 0.5rem;
-        }
-        
-        .form-control {
-            border: 2px solid #e9ecef;
-            border-radius: 8px;
-            padding: 0.75rem;
-            transition: border-color 0.3s ease;
-        }
-        
-        .form-control:focus {
-            border-color: #ff6b6b;
-            box-shadow: 0 0 0 0.2rem rgba(255, 107, 107, 0.25);
-        }
-        
-        .btn-return {
-            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
-            border: none;
-            color: white;
-            padding: 0.75rem 2rem;
-            border-radius: 8px;
-            font-weight: 600;
-            transition: transform 0.2s ease;
-        }
-        
-        .btn-return:hover {
-            transform: translateY(-2px);
-            color: white;
-        }
-        
-        .btn-cancel {
-            background: #6c757d;
-            border: none;
-            color: white;
-            padding: 0.75rem 2rem;
-            border-radius: 8px;
-            font-weight: 600;
-            margin-right: 1rem;
-        }
-        
-        .btn-cancel:hover {
-            background: #5a6268;
-            color: white;
-        }
-        
+
         .reason-options {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 0.75rem;
-            margin-bottom: 1rem;
+          grid-template-columns: 1fr;
+          gap: 0.5rem;
         }
-        
+
         .reason-option {
-            padding: 1rem 0.75rem;
-            border: 2px solid #e9ecef;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-align: center;
-            font-size: 0.85rem;
-            line-height: 1.3;
-            min-height: 80px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
+          min-height: 60px;
+          padding: 0.75rem;
+          font-size: 0.8rem;
         }
-        
-        .reason-option:hover {
-            border-color: #ff6b6b;
-            background-color: #fff5f5;
+
+        .d-flex.justify-content-between {
+          flex-direction: column;
+          gap: 0.5rem;
         }
-        
-        .reason-option.selected {
-            border-color: #ff6b6b;
-            background-color: #ff6b6b;
-            color: white;
+
+        .btn-cancel,
+        .btn-return {
+          width: 100% !important;
+          margin: 0 !important;
         }
-        
-        .alert {
-            border-radius: 8px;
-            border: none;
-        }
-        
-        /* Responsive */
-        @media (max-width: 768px) {
-            .return-form-container {
-                margin: 1rem;
-                max-width: none;
-            }
-            
-            .form-body {
-                padding: 1rem;
-            }
-            
-            .reason-options {
-                grid-template-columns: 1fr;
-                gap: 0.5rem;
-            }
-            
-            .reason-option {
-                min-height: 60px;
-                padding: 0.75rem;
-                font-size: 0.8rem;
-            }
-            
-            .d-flex.justify-content-between {
-                flex-direction: column;
-                gap: 0.5rem;
-            }
-            
-            .btn-cancel,
-            .btn-return {
-                width: 100% !important;
-                margin: 0 !important;
-            }
-        }
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <!-- Header -->
     <div th:replace="web/fragments/header :: header"></div>
 
     <div class="container">
-        <div class="return-form-container">
-            <!-- Form Header -->
-            <div class="form-header">
-                <h2><i class="fas fa-undo me-2"></i>Yêu cầu trả hàng</h2>
-                <p class="mb-0">Vui lòng cung cấp lý do để chúng tôi có thể hỗ trợ bạn tốt nhất</p>
-            </div>
-
-            <!-- Form Body -->
-            <div class="form-body">
-                <!-- Alert Messages -->
-                <div th:if="${error}" class="alert alert-danger" role="alert">
-                    <i class="fas fa-exclamation-triangle me-2"></i>
-                    <span th:text="${error}"></span>
-                </div>
-
-                <!-- Order Information -->
-                <div class="order-info">
-                    <h5><i class="fas fa-shopping-bag me-2"></i>Thông tin đơn hàng</h5>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <strong>Mã đơn hàng:</strong> #<span th:text="${order.orderId}"></span>
-                        </div>
-                        <div class="col-md-6">
-                            <strong>Ngày đặt:</strong> <span th:text="${#temporals.format(order.orderDate, 'dd/MM/yyyy HH:mm')}"></span>
-                        </div>
-                        <div class="col-md-6">
-                            <strong>Tổng tiền:</strong> <span th:text="${#numbers.formatDecimal(order.totalAmount, 1, 'DEFAULT', 0, 'DEFAULT')}"></span> ₫
-                        </div>
-                        <div class="col-md-6">
-                            <strong>Trạng thái:</strong> <span class="badge bg-success">Đã giao</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Return Reason Form -->
-                <form th:action="@{/return-order/{orderId}(orderId=${order.orderId})}" method="post">
-                    <div class="form-group">
-                        <label class="form-label">
-                            <i class="fas fa-comment-dots me-2"></i>Lý do trả hàng
-                        </label>
-                        
-                        <!-- Quick Reason Options -->
-                        <div class="reason-options">
-                            <div class="reason-option" onclick="selectReason('Sản phẩm không đúng mô tả')">
-                                <i class="fas fa-exclamation-circle mb-2" style="font-size: 1.2rem;"></i>
-                                <span>Sản phẩm không đúng mô tả</span>
-                            </div>
-                            <div class="reason-option" onclick="selectReason('Sản phẩm bị lỗi/hỏng')">
-                                <i class="fas fa-times-circle mb-2" style="font-size: 1.2rem;"></i>
-                                <span>Sản phẩm bị lỗi/hỏng</span>
-                            </div>
-                            <div class="reason-option" onclick="selectReason('Không vừa ý')">
-                                <i class="fas fa-frown mb-2" style="font-size: 1.2rem;"></i>
-                                <span>Không vừa ý</span>
-                            </div>
-                            <div class="reason-option" onclick="selectReason('Đổi ý không muốn mua')">
-                                <i class="fas fa-undo mb-2" style="font-size: 1.2rem;"></i>
-                                <span>Đổi ý không muốn mua</span>
-                            </div>
-                            <div class="reason-option" onclick="selectReason('Giao hàng chậm')">
-                                <i class="fas fa-clock mb-2" style="font-size: 1.2rem;"></i>
-                                <span>Giao hàng chậm</span>
-                            </div>
-                            <div class="reason-option" onclick="selectReason('Khác')">
-                                <i class="fas fa-ellipsis-h mb-2" style="font-size: 1.2rem;"></i>
-                                <span>Khác</span>
-                            </div>
-                        </div>
-                        
-                        <!-- Custom Reason Input -->
-                        <textarea 
-                            class="form-control" 
-                            name="returnReason" 
-                            id="returnReason" 
-                            rows="4" 
-                            placeholder="Vui lòng mô tả chi tiết lý do trả hàng..."
-                            required></textarea>
-                        <small class="form-text text-muted">
-                            <i class="fas fa-info-circle me-1"></i>
-                            Mô tả chi tiết sẽ giúp chúng tôi cải thiện dịch vụ tốt hơn
-                        </small>
-                    </div>
-
-                    <!-- Action Buttons -->
-                    <div class="d-flex justify-content-between">
-                        <a th:href="@{/user/my-orders}" class="btn btn-cancel">
-                            <i class="fas fa-arrow-left me-2"></i>Quay lại
-                        </a>
-                        <button type="submit" class="btn btn-return" onclick="return validateForm()">
-                            <i class="fas fa-paper-plane me-2"></i>Gửi yêu cầu trả hàng
-                        </button>
-                    </div>
-                </form>
-            </div>
+      <div class="return-form-container">
+        <!-- Form Header -->
+        <div class="form-header">
+          <h2><i class="fas fa-undo me-2"></i>Yêu cầu trả hàng</h2>
+          <p class="mb-0">
+            Vui lòng cung cấp lý do để chúng tôi có thể hỗ trợ bạn tốt nhất
+          </p>
         </div>
+
+        <!-- Form Body -->
+        <div class="form-body">
+          <!-- Alert Messages -->
+          <div th:if="${error}" class="alert alert-danger" role="alert">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            <span th:text="${error}"></span>
+          </div>
+
+          <!-- Order Information -->
+          <div class="order-info">
+            <h5><i class="fas fa-shopping-bag me-2"></i>Thông tin đơn hàng</h5>
+            <div class="row">
+              <div class="col-md-6">
+                <strong>Mã đơn hàng:</strong> #<span
+                  th:text="${order.orderId}"
+                ></span>
+              </div>
+              <div class="col-md-6">
+                <strong>Ngày đặt:</strong>
+                <span
+                  th:text="${#temporals.format(order.orderDate, 'dd/MM/yyyy HH:mm')}"
+                ></span>
+              </div>
+              <div class="col-md-6">
+                <strong>Tổng tiền đã thanh toán:</strong>
+                <span
+                  th:text="${#numbers.formatDecimal(finalAmount, 1, 'DEFAULT', 0, 'DEFAULT')}"
+                ></span>
+                ₫ <br /><small class="text-muted"
+                  >(Tiền gốc:
+                  <span
+                    th:text="${#numbers.formatDecimal(order.totalAmount, 1, 'DEFAULT', 0, 'DEFAULT')}"
+                  ></span>
+                  ₫)</small
+                >
+              </div>
+              <div class="col-md-6">
+                <strong>Trạng thái:</strong>
+                <span class="badge bg-success">Đã giao</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Return Reason Form -->
+          <form
+            th:action="@{/return-order/{orderId}(orderId=${order.orderId})}"
+            method="post"
+          >
+            <div class="form-group">
+              <label class="form-label">
+                <i class="fas fa-comment-dots me-2"></i>Lý do trả hàng
+              </label>
+
+              <!-- Quick Reason Options -->
+              <div class="reason-options">
+                <div
+                  class="reason-option"
+                  onclick="selectReason('Sản phẩm không đúng mô tả')"
+                >
+                  <i
+                    class="fas fa-exclamation-circle mb-2"
+                    style="font-size: 1.2rem"
+                  ></i>
+                  <span>Sản phẩm không đúng mô tả</span>
+                </div>
+                <div
+                  class="reason-option"
+                  onclick="selectReason('Sản phẩm bị lỗi/hỏng')"
+                >
+                  <i
+                    class="fas fa-times-circle mb-2"
+                    style="font-size: 1.2rem"
+                  ></i>
+                  <span>Sản phẩm bị lỗi/hỏng</span>
+                </div>
+                <div
+                  class="reason-option"
+                  onclick="selectReason('Không vừa ý')"
+                >
+                  <i class="fas fa-frown mb-2" style="font-size: 1.2rem"></i>
+                  <span>Không vừa ý</span>
+                </div>
+                <div
+                  class="reason-option"
+                  onclick="selectReason('Đổi ý không muốn mua')"
+                >
+                  <i class="fas fa-undo mb-2" style="font-size: 1.2rem"></i>
+                  <span>Đổi ý không muốn mua</span>
+                </div>
+                <div
+                  class="reason-option"
+                  onclick="selectReason('Giao hàng chậm')"
+                >
+                  <i class="fas fa-clock mb-2" style="font-size: 1.2rem"></i>
+                  <span>Giao hàng chậm</span>
+                </div>
+                <div class="reason-option" onclick="selectReason('Khác')">
+                  <i
+                    class="fas fa-ellipsis-h mb-2"
+                    style="font-size: 1.2rem"
+                  ></i>
+                  <span>Khác</span>
+                </div>
+              </div>
+
+              <!-- Custom Reason Input -->
+              <textarea
+                class="form-control"
+                name="returnReason"
+                id="returnReason"
+                rows="4"
+                placeholder="Vui lòng mô tả chi tiết lý do trả hàng..."
+                required
+              ></textarea>
+              <small class="form-text text-muted">
+                <i class="fas fa-info-circle me-1"></i>
+                Mô tả chi tiết sẽ giúp chúng tôi cải thiện dịch vụ tốt hơn
+              </small>
+            </div>
+
+            <!-- Refund Method Selection -->
+            <div class="form-group">
+              <label class="form-label">
+                <i class="fas fa-wallet me-2"></i>Phương thức hoàn tiền
+              </label>
+
+              <!-- OneXu Option -->
+              <div
+                class="method-option-card"
+                onclick="selectRefundMethod('ONEXU')"
+                style="
+                  border: 2px solid #e9ecef;
+                  border-radius: 8px;
+                  padding: 1rem;
+                  margin-bottom: 1rem;
+                  cursor: pointer;
+                  transition: all 0.3s ease;
+                "
+              >
+                <input
+                  type="radio"
+                  name="refundMethod"
+                  id="refundMethodOneXu"
+                  value="ONEXU"
+                  checked
+                  style="margin-right: 0.5rem"
+                />
+                <label
+                  for="refundMethodOneXu"
+                  style="
+                    cursor: pointer;
+                    margin: 0;
+                    font-weight: 600;
+                    color: #495057;
+                  "
+                >
+                  <i class="fas fa-coins me-2" style="color: #f59e0b"></i>Hoàn
+                  tiền vào OneXu
+                </label>
+                <div
+                  style="
+                    margin-top: 0.5rem;
+                    margin-left: 1.8rem;
+                    color: #6c757d;
+                    font-size: 0.9rem;
+                  "
+                >
+                  Nhận ngay
+                  <strong
+                    th:text="${#numbers.formatDecimal(finalAmount, 0, 'COMMA', 0, 'POINT')}"
+                  ></strong>
+                  OneXu vào tài khoản (1 VNĐ = 1 OneXu) <br />Số dư hiện tại:
+                  <span
+                    th:text="${#numbers.formatDecimal(currentBalance, 0, 'COMMA', 0, 'POINT')}"
+                  ></span>
+                  OneXu <br />Số dư sau khi hoàn:
+                  <span
+                    style="color: #059669; font-weight: 600"
+                    th:text="${#numbers.formatDecimal(balanceAfter, 0, 'COMMA', 0, 'POINT')}"
+                  ></span>
+                  OneXu
+                </div>
+              </div>
+
+              <!-- Bank Transfer Option -->
+              <div
+                class="method-option-card"
+                onclick="selectRefundMethod('BANK_TRANSFER')"
+                style="
+                  border: 2px solid #e9ecef;
+                  border-radius: 8px;
+                  padding: 1rem;
+                  margin-bottom: 1rem;
+                  cursor: pointer;
+                  transition: all 0.3s ease;
+                "
+              >
+                <input
+                  type="radio"
+                  name="refundMethod"
+                  id="refundMethodBank"
+                  value="BANK_TRANSFER"
+                  style="margin-right: 0.5rem"
+                />
+                <label
+                  for="refundMethodBank"
+                  style="
+                    cursor: pointer;
+                    margin: 0;
+                    font-weight: 600;
+                    color: #495057;
+                  "
+                >
+                  <i class="fas fa-university me-2" style="color: #10b981"></i
+                  >Hoàn tiền vào tài khoản ngân hàng
+                </label>
+                <div
+                  style="
+                    margin-top: 0.5rem;
+                    margin-left: 1.8rem;
+                    color: #6c757d;
+                    font-size: 0.9rem;
+                  "
+                >
+                  Nhận tiền trực tiếp vào tài khoản ngân hàng của bạn
+                  <br /><strong style="color: #dc3545"
+                    >Thời gian xử lý: 1-3 ngày làm việc</strong
+                  >
+                </div>
+              </div>
+
+              <!-- Bank Information Form (hidden by default) -->
+              <div
+                id="bankInfoForm"
+                style="
+                  display: none;
+                  margin-top: 1rem;
+                  padding: 1rem;
+                  background: #f8f9fa;
+                  border-radius: 8px;
+                  border: 1px dashed #cbd5e1;
+                "
+              >
+                <h6 style="margin-bottom: 1rem; color: #495057">
+                  <i class="fas fa-university me-2"></i>Thông tin tài khoản ngân
+                  hàng
+                </h6>
+
+                <div class="mb-3">
+                  <label class="form-label"
+                    >Tên ngân hàng <span class="text-danger">*</span></label
+                  >
+                  <select class="form-control" name="bankName" id="bankName">
+                    <option value="">-- Chọn ngân hàng --</option>
+                    <option value="Vietcombank">Vietcombank</option>
+                    <option value="Vietinbank">Vietinbank</option>
+                    <option value="BIDV">BIDV</option>
+                    <option value="Techcombank">Techcombank</option>
+                    <option value="ACB">ACB</option>
+                    <option value="MBBank">MBBank</option>
+                    <option value="VPBank">VPBank</option>
+                    <option value="TPBank">TPBank</option>
+                    <option value="Sacombank">Sacombank</option>
+                    <option value="Eximbank">Eximbank</option>
+                    <option value="Agribank">Agribank</option>
+                    <option value="DongA Bank">DongA Bank</option>
+                    <option value="HSBC">HSBC</option>
+                    <option value="Standard Chartered">
+                      Standard Chartered
+                    </option>
+                    <option value="Citibank">Citibank</option>
+                    <option value="Shinhan Bank">Shinhan Bank</option>
+                    <option value="Woori Bank">Woori Bank</option>
+                    <option value="Public Bank">Public Bank</option>
+                    <option value="OCB">OCB</option>
+                    <option value="VIB">VIB</option>
+                    <option value="SHB">SHB</option>
+                    <option value="HDBank">HDBank</option>
+                    <option value="LienVietPostBank">LienVietPostBank</option>
+                    <option value="SeABank">SeABank</option>
+                    <option value="Bac A Bank">Bac A Bank</option>
+                    <option value="Viet Capital Bank">Viet Capital Bank</option>
+                    <option value="PVcomBank">PVcomBank</option>
+                    <option value="NCB">NCB</option>
+                    <option value="Kienlongbank">Kienlongbank</option>
+                    <option value="VietBank">VietBank</option>
+                    <option value="GPBank">GPBank</option>
+                    <option value="OceanBank">OceanBank</option>
+                    <option value="PGBank">PGBank</option>
+                    <option value="VRB">VRB</option>
+                    <option value="CIMB Bank">CIMB Bank</option>
+                    <option value="UOB">UOB</option>
+                    <option value="Indovina Bank">Indovina Bank</option>
+                    <option value="Hong Leong Bank">Hong Leong Bank</option>
+                    <option value="Public Bank Vietnam">
+                      Public Bank Vietnam
+                    </option>
+                    <option value="United Overseas Bank">
+                      United Overseas Bank
+                    </option>
+                    <option value="Bank of China">Bank of China</option>
+                    <option value="Bank of Communications">
+                      Bank of Communications
+                    </option>
+                    <option value="Industrial and Commercial Bank of China">
+                      Industrial and Commercial Bank of China
+                    </option>
+                    <option value="Mizuho Bank">Mizuho Bank</option>
+                    <option value="Sumitomo Mitsui Banking Corporation">
+                      Sumitomo Mitsui Banking Corporation
+                    </option>
+                    <option value="The Bank of Tokyo-Mitsubishi UFJ">
+                      The Bank of Tokyo-Mitsubishi UFJ
+                    </option>
+                    <option value="BNP Paribas">BNP Paribas</option>
+                    <option value="Deutsche Bank">Deutsche Bank</option>
+                    <option value="J.P. Morgan Chase Bank">
+                      J.P. Morgan Chase Bank
+                    </option>
+                    <option value="Wells Fargo Bank">Wells Fargo Bank</option>
+                    <option value="ANZ Bank">ANZ Bank</option>
+                    <option value="Maybank">Maybank</option>
+                    <option value="RHB Bank">RHB Bank</option>
+                    <option value="Bangkok Bank">Bangkok Bank</option>
+                    <option value="Kasikornbank">Kasikornbank</option>
+                    <option value="Krungthai Bank">Krungthai Bank</option>
+                    <option value="Siam Commercial Bank">
+                      Siam Commercial Bank
+                    </option>
+                    <option value="CIMB Thai Bank">CIMB Thai Bank</option>
+                    <option value="Bank of Ayudhya">Bank of Ayudhya</option>
+                    <option value="Bank of Taiwan">Bank of Taiwan</option>
+                    <option value="Mega International Commercial Bank">
+                      Mega International Commercial Bank
+                    </option>
+                    <option value="First Commercial Bank">
+                      First Commercial Bank
+                    </option>
+                    <option value="E.SUN Commercial Bank">
+                      E.SUN Commercial Bank
+                    </option>
+                    <option value="CTBC Bank">CTBC Bank</option>
+                    <option value="Hua Nan Commercial Bank">
+                      Hua Nan Commercial Bank
+                    </option>
+                    <option value="Land Bank of Taiwan">
+                      Land Bank of Taiwan
+                    </option>
+                    <option value="Taiwan Cooperative Bank">
+                      Taiwan Cooperative Bank
+                    </option>
+                    <option value="Chang Hwa Commercial Bank">
+                      Chang Hwa Commercial Bank
+                    </option>
+                    <option value="Bank of East Asia">Bank of East Asia</option>
+                    <option value="DBS Bank">DBS Bank</option>
+                    <option value="Oversea-Chinese Banking Corporation">
+                      Oversea-Chinese Banking Corporation
+                    </option>
+                    <option value="United Overseas Bank">
+                      United Overseas Bank
+                    </option>
+                    <option value="Bank of America">Bank of America</option>
+                    <option value="Bank of Tokyo-Mitsubishi UFJ">
+                      Bank of Tokyo-Mitsubishi UFJ
+                    </option>
+                    <option value="BNP Paribas">BNP Paribas</option>
+                    <option value="Credit Agricole CIB">
+                      Credit Agricole CIB
+                    </option>
+                    <option value="Societe Generale">Societe Generale</option>
+                    <option value="UBS AG">UBS AG</option>
+                    <option value="Credit Suisse AG">Credit Suisse AG</option>
+                    <option value="Deutsche Bank AG">Deutsche Bank AG</option>
+                    <option value="Commerzbank AG">Commerzbank AG</option>
+                    <option value="ING Bank N.V.">ING Bank N.V.</option>
+                    <option value="Rabobank">Rabobank</option>
+                    <option value="ABN AMRO Bank N.V.">
+                      ABN AMRO Bank N.V.
+                    </option>
+                    <option value="Nordea Bank Abp">Nordea Bank Abp</option>
+                    <option value="Danske Bank A/S">Danske Bank A/S</option>
+                    <option value="SEB AB">SEB AB</option>
+                    <option value="Swedbank AB">Swedbank AB</option>
+                    <option value="Handelsbanken">Handelsbanken</option>
+                    <option value="DNB Bank ASA">DNB Bank ASA</option>
+                    <option value="SpareBank 1 SR-Bank">
+                      SpareBank 1 SR-Bank
+                    </option>
+                    <option value="SpareBank 1 SMN">SpareBank 1 SMN</option>
+                    <option value="SpareBank 1 Nord-Norge">
+                      SpareBank 1 Nord-Norge
+                    </option>
+                    <option value="SpareBank 1 Ostlandet">
+                      SpareBank 1 Ostlandet
+                    </option>
+                    <option value="SpareBank 1 BV">SpareBank 1 BV</option>
+                    <option value="SpareBank 1 Ringerike Hadeland">
+                      SpareBank 1 Ringerike Hadeland
+                    </option>
+                    <option value="SpareBank 1 Gudbrandsdal">
+                      SpareBank 1 Gudbrandsdal
+                    </option>
+                    <option value="SpareBank 1 Lom og Fjordane">
+                      SpareBank 1 Lom og Fjordane
+                    </option>
+                    <option value="SpareBank 1 Sørøst-Norge">
+                      SpareBank 1 Sørøst-Norge
+                    </option>
+                    <option value="SpareBank 1 Telemark">
+                      SpareBank 1 Telemark
+                    </option>
+                    <option value="SpareBank 1 Nordvest">
+                      SpareBank 1 Nordvest
+                    </option>
+                    <option value="SpareBank 1 Helgeland">
+                      SpareBank 1 Helgeland
+                    </option>
+                    <option value="SpareBank 1 Hallingdal Valdres">
+                      SpareBank 1 Hallingdal Valdres
+                    </option>
+                    <option value="SpareBank 1 Modum">SpareBank 1 Modum</option>
+                    <option value="SpareBank 1 Østfold Akershus">
+                      SpareBank 1 Østfold Akershus
+                    </option>
+                    <option value="SpareBank 1 Buskerud Vestfold">
+                      SpareBank 1 Buskerud Vestfold
+                    </option>
+                    <option value="SpareBank 1 Nord-Norge">
+                      SpareBank 1 Nord-Norge
+                    </option>
+                    <option value="SpareBank 1 Romsdal">
+                      SpareBank 1 Romsdal
+                    </option>
+                    <option value="SpareBank 1 Søre Sunnmøre">
+                      SpareBank 1 Søre Sunnmøre
+                    </option>
+                    <option value="SpareBank 1 Nordmøre">
+                      SpareBank 1 Nordmøre
+                    </option>
+                    <option value="SpareBank 1 Sogn og Fjordane">
+                      SpareBank 1 Sogn og Fjordane
+                    </option>
+                  </select>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label"
+                    >Số tài khoản <span class="text-danger">*</span></label
+                  >
+                  <input
+                    type="text"
+                    class="form-control"
+                    name="bankAccountNumber"
+                    id="bankAccountNumber"
+                    placeholder="Nhập số tài khoản"
+                  />
+                </div>
+                <div class="mb-3">
+                  <label class="form-label"
+                    >Tên chủ tài khoản <span class="text-danger">*</span></label
+                  >
+                  <input
+                    type="text"
+                    class="form-control"
+                    name="accountHolderName"
+                    id="accountHolderName"
+                    placeholder="Nhập tên chủ tài khoản"
+                  />
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">Chi nhánh (Tùy chọn)</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    name="bankBranch"
+                    id="bankBranch"
+                    placeholder="Nhập chi nhánh"
+                  />
+                </div>
+                <div class="mb-3">
+                  <label class="form-label"
+                    >Số điện thoại liên hệ (Tùy chọn)</label
+                  >
+                  <input
+                    type="text"
+                    class="form-control"
+                    name="contactPhone"
+                    id="contactPhone"
+                    placeholder="Nhập số điện thoại"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="d-flex justify-content-between">
+              <a th:href="@{/user/my-orders}" class="btn btn-cancel">
+                <i class="fas fa-arrow-left me-2"></i>Quay lại
+              </a>
+              <button
+                type="submit"
+                class="btn btn-return"
+                onclick="return validateForm()"
+              >
+                <i class="fas fa-paper-plane me-2"></i>Gửi yêu cầu trả hàng
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
     </div>
 
     <!-- Footer -->
@@ -284,40 +714,121 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        function selectReason(reason) {
-            // Remove selected class from all options
-            document.querySelectorAll('.reason-option').forEach(option => {
-                option.classList.remove('selected');
-            });
-            
-            // Add selected class to clicked option
-            event.currentTarget.classList.add('selected');
-            
-            // Set the textarea value
-            document.getElementById('returnReason').value = reason;
+      function selectReason(reason) {
+        // Remove selected class from all options
+        document.querySelectorAll(".reason-option").forEach((option) => {
+          option.classList.remove("selected");
+        });
+
+        // Add selected class to clicked option
+        event.currentTarget.classList.add("selected");
+
+        // Set the textarea value
+        document.getElementById("returnReason").value = reason;
+      }
+
+      function selectRefundMethod(method) {
+        const bankForm = document.getElementById("bankInfoForm");
+        const bankName = document.getElementById("bankName");
+        const bankAccountNumber = document.getElementById("bankAccountNumber");
+        const accountHolderName = document.getElementById("accountHolderName");
+
+        // Update radio button
+        if (method === "ONEXU") {
+          document.getElementById("refundMethodOneXu").checked = true;
+          bankForm.style.display = "none";
+          // Remove required
+          bankName.removeAttribute("required");
+          bankAccountNumber.removeAttribute("required");
+          accountHolderName.removeAttribute("required");
+        } else {
+          document.getElementById("refundMethodBank").checked = true;
+          bankForm.style.display = "block";
+          // Add required
+          bankName.setAttribute("required", "required");
+          bankAccountNumber.setAttribute("required", "required");
+          accountHolderName.setAttribute("required", "required");
         }
-        
-        function validateForm() {
-            const reason = document.getElementById('returnReason').value.trim();
-            
-            if (reason.length < 10) {
-                alert('Vui lòng nhập lý do trả hàng ít nhất 10 ký tự');
-                return false;
-            }
-            
-            if (reason.length > 500) {
-                alert('Lý do trả hàng không được quá 500 ký tự');
-                return false;
-            }
-            
-            return confirm('Bạn có chắc chắn muốn gửi yêu cầu trả hàng?');
+
+        // Update selected state
+        document.querySelectorAll(".method-option-card").forEach((card) => {
+          card.style.borderColor = "#e9ecef";
+          card.style.backgroundColor = "white";
+        });
+        event.currentTarget.style.borderColor = "#ff6b6b";
+        event.currentTarget.style.backgroundColor = "#fff5f5";
+      }
+
+      function validateForm() {
+        const reason = document.getElementById("returnReason").value.trim();
+
+        if (reason.length < 10) {
+          alert("Vui lòng nhập lý do trả hàng ít nhất 10 ký tự");
+          return false;
         }
-        
-        // Auto-resize textarea
-        document.getElementById('returnReason').addEventListener('input', function() {
-            this.style.height = 'auto';
-            this.style.height = this.scrollHeight + 'px';
+
+        if (reason.length > 500) {
+          alert("Lý do trả hàng không được quá 500 ký tự");
+          return false;
+        }
+
+        // Validate refund method
+        const refundMethod = document.querySelector(
+          'input[name="refundMethod"]:checked'
+        ).value;
+        if (!refundMethod) {
+          alert("Vui lòng chọn phương thức hoàn tiền");
+          return false;
+        }
+
+        // Validate bank info if BANK_TRANSFER
+        if (refundMethod === "BANK_TRANSFER") {
+          const bankName = document.getElementById("bankName").value.trim();
+          const bankAccountNumber = document
+            .getElementById("bankAccountNumber")
+            .value.trim();
+          const accountHolderName = document
+            .getElementById("accountHolderName")
+            .value.trim();
+
+          if (!bankName) {
+            alert("Vui lòng chọn ngân hàng");
+            return false;
+          }
+          if (!bankAccountNumber) {
+            alert("Vui lòng nhập số tài khoản");
+            return false;
+          }
+          if (!/^\d+$/.test(bankAccountNumber)) {
+            alert("Số tài khoản chỉ được chứa số");
+            return false;
+          }
+          if (!accountHolderName) {
+            alert("Vui lòng nhập tên chủ tài khoản");
+            return false;
+          }
+        }
+
+        return confirm("Bạn có chắc chắn muốn gửi yêu cầu trả hàng?");
+      }
+
+      // Initialize on page load
+      document.addEventListener("DOMContentLoaded", function () {
+        // Set default selected style for ONEXU
+        const oneXuCard = document.querySelector(".method-option-card");
+        if (oneXuCard) {
+          oneXuCard.style.borderColor = "#ff6b6b";
+          oneXuCard.style.backgroundColor = "#fff5f5";
+        }
+      });
+
+      // Auto-resize textarea
+      document
+        .getElementById("returnReason")
+        .addEventListener("input", function () {
+          this.style.height = "auto";
+          this.style.height = this.scrollHeight + "px";
         });
     </script>
-</body>
+  </body>
 </html>

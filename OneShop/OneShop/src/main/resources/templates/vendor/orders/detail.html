@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{vendor/layouts/dashboard-layout}">
+<head>
+    <title th:text="${pageTitle}">Order detail</title>
+    <style>
+        .order-summary-card {
+            border: none;
+            border-radius: 14px;
+            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.12);
+            margin-bottom: 24px;
+        }
+        .order-summary-card .card-body {
+            padding: 28px 32px;
+        }
+        .status-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            border-radius: 999px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        .status-chip.pending { background: rgba(255, 159, 67, 0.18); color: #e67e22; }
+        .status-chip.confirmed { background: rgba(59, 130, 246, 0.16); color: #2563eb; }
+        .status-chip.shipping { background: rgba(45, 212, 191, 0.16); color: #0f766e; }
+        .status-chip.delivered { background: rgba(34, 197, 94, 0.16); color: #16a34a; }
+        .status-chip.cancelled { background: rgba(239, 68, 68, 0.16); color: #dc2626; }
+        .status-chip.returned { background: rgba(148, 163, 184, 0.16); color: #475569; }
+        .metric-box {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 18px 20px;
+            height: 100%;
+        }
+        .metric-title {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #64748b;
+            margin-bottom: 6px;
+        }
+        .metric-value {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #0f172a;
+        }
+        .metric-sub {
+            font-size: 0.85rem;
+            color: #94a3b8;
+        }
+        .info-card {
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px;
+            height: 100%;
+            background: #fff;
+            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+        }
+        .info-card h6 {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #475569;
+            margin-bottom: 16px;
+        }
+        .info-card .line-item {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 10px;
+            font-size: 0.95rem;
+        }
+        .info-card .line-item span:first-child {
+            color: #1e293b;
+            font-weight: 600;
+        }
+        .info-card .line-item span:last-child {
+            color: #475569;
+            text-align: right;
+        }
+        .item-table {
+            border-radius: 14px;
+            border: 1px solid #e2e8f0;
+            overflow: hidden;
+            box-shadow: 0 6px 18px rgba(15, 23, 42, 0.08);
+        }
+        .item-table thead {
+            background: #f1f5f9;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-size: 0.8rem;
+            color: #475569;
+        }
+        .product-cell {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .product-thumb {
+            width: 72px;
+            height: 72px;
+            border-radius: 12px;
+            object-fit: cover;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+        }
+        .product-meta .name {
+            font-weight: 600;
+            color: #0f172a;
+        }
+        .product-meta .sub {
+            font-size: 0.85rem;
+            color: #64748b;
+        }
+        .summary-box {
+            background: #0f172a;
+            color: #e2e8f0;
+            border-radius: 14px;
+            padding: 24px;
+        }
+        .summary-box .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 0.95rem;
+        }
+        .summary-box .summary-row.total {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #38bdf8;
+        }
+        .summary-box .summary-row.last {
+            margin-bottom: 0;
+        }
+        .status-timeline {
+            position: relative;
+            padding-left: 18px;
+        }
+        .status-timeline::before {
+            content: "";
+            position: absolute;
+            top: 12px;
+            bottom: 12px;
+            left: 6px;
+            width: 2px;
+            background: #e2e8f0;
+        }
+        .timeline-step {
+            position: relative;
+            padding-left: 20px;
+            margin-bottom: 18px;
+        }
+        .timeline-step:last-child {
+            margin-bottom: 0;
+        }
+        .timeline-step::before {
+            content: "";
+            position: absolute;
+            left: -9px;
+            top: 4px;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            border: 3px solid #fff;
+            background: #cbd5f5;
+            box-shadow: 0 0 0 2px #e2e8f0;
+        }
+        .timeline-step.completed::before {
+            background: #38bdf8;
+            box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.25);
+        }
+        .timeline-step.current::before {
+            background: #22c55e;
+            box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.35);
+        }
+        .timeline-step .title {
+            font-weight: 600;
+            color: #0f172a;
+        }
+        .timeline-step .time {
+            font-size: 0.8rem;
+            color: #64748b;
+        }
+      .action-panel {
+        border: 1px dashed #cbd5f5;
+        border-radius: 12px;
+        padding: 20px;
+        background: #f8fafc;
+        position: sticky;
+        top: 80px;
+        z-index: 10;
+      }
+    </style>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle"></i>
+            <span th:text="${success}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-circle"></i>
+            <span th:text="${error}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <div class="mb-3 d-flex justify-content-between align-items-center gap-2">
+            <a th:href="@{/vendor/orders}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-2"></i>Back to orders
+            </a>
+            <a th:if="${order.shop != null}"
+               th:href="@{/vendor/orders(shopId=${order.shop.shopId})}"
+               class="btn btn-outline-primary">
+                <i class="fas fa-store me-2"></i>Orders of this shop
+            </a>
+        </div>
+
+        <div class="card order-summary-card">
+            <div class="card-body">
+                <div class="row g-4 align-items-center">
+                    <div class="col-lg-4">
+                        <div class="d-flex flex-column gap-2">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="rounded-circle bg-light p-3">
+                                    <i class="fas fa-receipt fa-lg text-primary"></i>
+                                </div>
+                                <div>
+                                    <div class="text-muted small text-uppercase mb-1">Order</div>
+                                    <div class="h4 mb-0">#<span th:text="${order.orderId}">0</span></div>
+                                </div>
+                            </div>
+                            <div th:switch="${order.status != null ? order.status.name() : 'PENDING'}">
+                                <div class="status-chip pending" th:case="'PENDING'"><i class="fas fa-clock"></i>Pending</div>
+                                <div class="status-chip confirmed" th:case="'NEW'"><i class="fas fa-check-circle"></i>Processing</div>
+                                <div class="status-chip confirmed" th:case="'CONFIRMED'"><i class="fas fa-check-circle"></i>Confirmed</div>
+                                <div class="status-chip shipping" th:case="'SHIPPING'"><i class="fas fa-truck"></i>Shipping</div>
+                                <div class="status-chip delivered" th:case="'DELIVERED'"><i class="fas fa-box"></i>Delivered</div>
+                                <div class="status-chip cancelled" th:case="'CANCELLED'"><i class="fas fa-times-circle"></i>Cancelled</div>
+                                <div class="status-chip returned" th:case="'RETURNED'"><i class="fas fa-undo"></i>Returned</div>
+                                <div class="status-chip returned" th:case="'RETURNED_REFUNDED'"><i class="fas fa-undo"></i>Returned</div>
+                                <div class="status-chip pending" th:case="*"><i class="fas fa-clock"></i>Pending</div>
+                            </div>
+                            <div class="text-muted small">
+                                Placed on <span th:text="${order.orderDate != null ? #temporals.format(order.orderDate, 'dd/MM/yyyy HH:mm') : 'Updating'}"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-8">
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <div class="metric-box">
+                                    <div class="metric-title">Customer</div>
+                                    <div class="metric-value" th:text="${order.customerName != null ? order.customerName : (order.user != null ? order.user.name : 'N/A')}">Customer</div>
+                                    <div class="metric-sub" th:text="${order.customerPhone != null ? order.customerPhone : 'No phone'}">No phone</div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="metric-box">
+                                    <div class="metric-title">Shop</div>
+                                    <div class="metric-value" th:text="${order.shop != null ? order.shop.shopName : 'N/A'}">Shop</div>
+                                    <div class="metric-sub" th:text="${order.shop != null ? order.shop.shopSlug : ''}"></div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="metric-box">
+                                    <div class="metric-title">Total amount</div>
+                                    <div class="metric-value text-primary" th:text="${#numbers.formatDecimal(finalAmount, 0, 'COMMA', 0, 'POINT')} + ' VND'">0</div>
+                                    <div class="metric-sub" th:text="'Method: ' + (order.paymentMethod != null ? order.paymentMethod : 'N/A')"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-xl-8">
+                <div class="info-card mb-4">
+                    <h6>Items</h6>
+                    <div class="table-responsive item-table">
+                        <table class="table align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Product</th>
+                                    <th scope="col" class="text-end">Unit price</th>
+                                    <th scope="col" class="text-center">Qty</th>
+                                    <th scope="col" class="text-end">Line total</th>
+                                </tr>
+                            </thead>
+                            <tbody id="productTableBody">
+                                <tr th:each="detail, iterStat : ${orderDetails}" 
+                                    th:classappend="${iterStat.index >= 3 ? 'd-none product-row-hidden' : ''}">
+                                    <td>
+                                        <div class="product-cell">
+                                            <img class="product-thumb"
+                                                 th:src="${detail.product != null && detail.product.productImage != null} ?
+                                                         @{/loadImage(imageName=${detail.product.productImage})} :
+                                                         @{/images/no-image.png}"
+                                                 alt="Product image"
+                                                 onerror="this.src='/images/no-image.png'">
+                                            <div class="product-meta">
+                                                <div class="name" th:text="${detail.product != null && detail.product.productName != null ? detail.product.productName : detail.productName}">Product name</div>
+                                                <div class="sub" th:text="'SKU: ' + (detail.product != null ? detail.product.productId : detail.order.orderId + '-' + detail.orderDetailId)"></div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="text-end" th:text="${#numbers.formatDecimal(detail.unitPrice != null ? detail.unitPrice : 0, 0, 'COMMA', 0, 'POINT')} + ' VND'">0</td>
+                                    <td class="text-center" th:text="${detail.quantity != null ? detail.quantity : 0}">0</td>
+                                    <td class="text-end fw-semibold text-primary"
+                                        th:text="${#numbers.formatDecimal(detail.totalPrice != null ? detail.totalPrice : (detail.unitPrice != null ? detail.unitPrice : 0) * (detail.quantity != null ? detail.quantity : 0), 0, 'COMMA', 0, 'POINT')} + ' VND'">
+                                        0
+                                    </td>
+                                </tr>
+                                <tr th:if="${orderDetails == null or orderDetails.isEmpty()}">
+                                    <td colspan="4" class="text-center text-muted py-4">
+                                        <i class="fas fa-box-open me-2"></i>No items found for this order.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div th:if="${orderDetails != null and orderDetails.size() > 3}" 
+                             class="text-center py-2 border-top">
+                            <button type="button" 
+                                    class="btn btn-sm btn-outline-primary" 
+                                    id="toggleProductsBtn"
+                                    onclick="toggleProducts()">
+                                <i class="fas fa-chevron-down me-1"></i>
+                                <span id="toggleProductsText">Xem thêm <span th:text="${orderDetails.size() - 3}"></span> sản phẩm</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Return & Refund Card - Moved here from sidebar -->
+                <div th:if="${order.cancellationReason != null and order.cancellationReason != ''}" 
+                     class="card order-summary-card mb-4">
+                    <div class="card-body">
+                        <h6 class="mb-3">
+                            <i class="fas fa-undo me-2 text-warning"></i>Trả hàng & Hoàn tiền
+                        </h6>
+                        
+                        <!-- Lý do trả hàng -->
+                        <div class="mb-3">
+                            <small class="text-muted d-block mb-1">Lý do trả hàng:</small>
+                            <p class="mb-0 text-muted small" 
+                               th:text="${order.cancellationReason}"></p>
+                        </div>
+
+                        <!-- Refund Summary -->
+                        <div>
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div class="flex-grow-1">
+                                    <div class="d-flex justify-content-between small mb-1">
+                                        <span class="text-muted">Trạng thái:</span>
+                                        <strong th:switch="${refundStatusName}">
+                                            <span th:case="'PENDING'" class="text-warning">
+                                                <span th:if="${orderStatusName == 'RETURN_REQUESTED'}">Chờ xử lý</span>
+                                                <span th:if="${orderStatusName == 'RETURNED'}">Chờ thông tin ngân hàng</span>
+                                            </span>
+                                            <span th:case="'PROCESSING'" class="text-info">Đang xử lý</span>
+                                            <span th:case="'COMPLETED'" class="text-success">Đã hoàn thành</span>
+                                            <span th:case="*" class="text-muted">Chưa xác định</span>
+                                        </strong>
+                                    </div>
+                                    <div class="d-flex justify-content-between small mb-1">
+                                        <span class="text-muted">Số tiền:</span>
+                                        <strong class="text-primary" 
+                                                th:text="${#numbers.formatDecimal(refund != null and refund.refundAmount != null ? refund.refundAmount : finalAmount, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">
+                                        </strong>
+                                    </div>
+                                    <div th:if="${refundMethodName != 'UNKNOWN'}" class="d-flex justify-content-between small">
+                                        <span class="text-muted">Phương thức:</span>
+                                        <strong th:switch="${refundMethodName}">
+                                            <span th:case="'ONEXU'" class="text-warning">
+                                                <i class="fas fa-coins me-1"></i>OneXu
+                                            </span>
+                                            <span th:case="'BANK_TRANSFER'" class="text-info">
+                                                <i class="fas fa-university me-1"></i>Ngân hàng
+                                            </span>
+                                        </strong>
+                                    </div>
+                                </div>
+                                <button class="btn btn-sm btn-outline-primary ms-3"
+                                        type="button"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#refundDetailModal">
+                                    <i class="fas fa-info-circle me-1"></i>Chi tiết
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <div class="info-card">
+                            <h6>Customer information</h6>
+                            <div class="line-item">
+                                <span>Name</span>
+                                <span th:text="${order.customerName != null ? order.customerName : (order.user != null ? order.user.name : 'N/A')}">N/A</span>
+                            </div>
+                            <div class="line-item">
+                                <span>Email</span>
+                                <span th:text="${order.customerEmail != null ? order.customerEmail : (order.user != null ? order.user.email : 'N/A')}">N/A</span>
+                            </div>
+                            <div class="line-item">
+                                <span>Phone</span>
+                                <span th:text="${order.customerPhone != null ? order.customerPhone : 'N/A'}">N/A</span>
+                            </div>
+                            <div class="line-item" th:if="${order.user != null}">
+                                <span>Account ID</span>
+                                <span th:text="${order.user.userId}">0</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="info-card">
+                            <h6>Shipping and notes</h6>
+                            <div class="line-item">
+                                <span>Shipping address</span>
+                                <span th:text="${order.shippingAddress != null ? order.shippingAddress : 'N/A'}">N/A</span>
+                            </div>
+                            <div class="line-item" th:if="${order.pickupAddress != null}">
+                                <span>Pickup address</span>
+                                <span th:text="${order.pickupAddress}">N/A</span>
+                            </div>
+                            <div class="line-item">
+                                <span>Package type</span>
+                                <span th:text="${order.packageType != null ? order.packageType : 'N/A'}">N/A</span>
+                            </div>
+                            <div class="line-item">
+                                <span>Note</span>
+                                <span th:text="${order.note != null && !order.note.isEmpty() ? order.note : 'No note'}">No note</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-4">
+                <div class="summary-box mb-4">
+                    <div class="summary-row">
+                        <span>Subtotal</span>
+                        <span th:text="${#numbers.formatDecimal(subtotal, 0, 'COMMA', 0, 'POINT')} + ' VND'">0</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Shipping fee</span>
+                        <span th:text="${#numbers.formatDecimal(shippingFee, 0, 'COMMA', 0, 'POINT')} + ' VND'">0</span>
+                    </div>
+                    <div class="summary-row" th:if="${discountAmount != null && discountAmount > 0}">
+                        <span>Discount</span>
+                        <span th:text="${'-' + #numbers.formatDecimal(discountAmount, 0, 'COMMA', 0, 'POINT') + ' VND'}">0</span>
+                    </div>
+                    <div class="summary-row total last">
+                        <span>Grand total</span>
+                        <span th:text="${#numbers.formatDecimal(finalAmount, 0, 'COMMA', 0, 'POINT')} + ' VND'">0</span>
+                    </div>
+                    <div class="summary-row last mt-3">
+                        <span>Payment status</span>
+                        <span th:text="${order.paymentPaid == true ? 'Paid' : 'Unpaid'}">Unpaid</span>
+                    </div>
+                </div>
+
+
+                <div class="info-card mb-4">
+                    <h6>Status history</h6>
+                    <div class="status-timeline" th:with="statusOrdinal=${order.status != null ? order.status.ordinal() : 0}">
+                        <div class="timeline-step"
+                             th:classappend="${statusOrdinal == 0 ? ' completed current' : (statusOrdinal > 0 ? ' completed' : '')}">
+                            <div class="title">Order placed</div>
+                            <div class="time" th:text="${order.orderDate != null ? #temporals.format(order.orderDate, 'dd/MM/yyyy HH:mm') : 'Updating'}"></div>
+                        </div>
+                        <div class="timeline-step"
+                             th:classappend="${statusOrdinal == 2 ? ' completed current' : (statusOrdinal > 2 ? ' completed' : '')}">
+                            <div class="title">Confirmed</div>
+                            <div class="time">
+                                <span th:text="${statusOrdinal >= 2 ? 'Completed' : 'Waiting'}"></span>
+                            </div>
+                        </div>
+                        <div class="timeline-step"
+                             th:classappend="${statusOrdinal == 3 ? ' completed current' : (statusOrdinal > 3 ? ' completed' : '')}">
+                            <div class="title">Shipping</div>
+                            <div class="time" th:text="${order.shippedDate != null ? #temporals.format(order.shippedDate, 'dd/MM/yyyy HH:mm') : 'Waiting'}"></div>
+                        </div>
+                        <div class="timeline-step"
+                             th:classappend="${statusOrdinal == 4 ? ' completed current' : (statusOrdinal > 4 ? ' completed' : '')}">
+                            <div class="title">Delivered</div>
+                            <div class="time" th:text="${order.deliveredDate != null ? #temporals.format(order.deliveredDate, 'dd/MM/yyyy HH:mm') : 'Waiting'}"></div>
+                        </div>
+                        <!-- Return Requested step -->
+                        <div class="timeline-step"
+                             th:if="${order.status != null and (order.status.name() == 'RETURN_REQUESTED' or order.status.name() == 'RETURNED')}"
+                             th:classappend="${order.status != null and order.status.name() == 'RETURN_REQUESTED'} ? ' current' : ' completed'">
+                            <div class="title">Return Requested</div>
+                            <div class="time" th:text="${order.cancelledDate != null ? #temporals.format(order.cancelledDate, 'dd/MM/yyyy HH:mm') : 'Waiting'}"></div>
+                        </div>
+                        <div class="timeline-step"
+                             th:if="${statusOrdinal >= 5 and order.status != null and order.status.name() == 'CANCELLED'}"
+                             th:classappend="' current'">
+                            <div class="title">Cancelled</div>
+                            <div class="time" th:text="${order.cancelledDate != null ? #temporals.format(order.cancelledDate, 'dd/MM/yyyy HH:mm') : 'Updated'}"></div>
+                        </div>
+                        <div class="timeline-step"
+                             th:if="${order.status != null and order.status.name() == 'RETURNED'}"
+                             th:classappend="' completed'">
+                            <div class="title">Returned</div>
+                            <div class="time" th:text="${order.cancelledDate != null ? #temporals.format(order.cancelledDate, 'dd/MM/yyyy HH:mm') : 'Updated'}"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="action-panel">
+                    <h6 class="mb-3 text-uppercase small text-muted">Quick actions</h6>
+                    <div class="d-grid gap-2">
+                        <form th:if="${order.status == T(vn.entity.Order.OrderStatus).PENDING}"
+                              th:action="@{/vendor/orders/{id}/confirm(id=${order.orderId})}"
+                              method="post">
+                            <button class="btn btn-success">
+                                <i class="fas fa-check me-2"></i>Confirm order
+                            </button>
+                        </form>
+                        <form th:if="${order.status == T(vn.entity.Order.OrderStatus).PENDING or order.status == T(vn.entity.Order.OrderStatus).CONFIRMED}"
+                              th:action="@{/vendor/orders/{id}/cancel(id=${order.orderId})}"
+                              method="post">
+                            <button class="btn btn-outline-danger" type="submit">
+                                <i class="fas fa-times me-2"></i>Cancel order
+                            </button>
+                        </form>
+                        <!-- Standard orders: Mark delivered/failed buttons for CONFIRMED or SHIPPING status -->
+                        <!-- Only show for STANDARD delivery orders -->
+                        <div th:if="${order.deliveryType != null && order.deliveryType.name() == 'STANDARD' && 
+                                      (order.status.name() == 'CONFIRMED' or order.status.name() == 'SHIPPING')}">
+                            <form th:action="@{/vendor/orders/{id}/mark-delivered(id=${order.orderId})}"
+                                  method="post"
+                                  class="d-grid mb-2">
+                                <button class="btn btn-success">
+                                    <i class="fas fa-check-circle me-2"></i>Giao thành công
+                                </button>
+                            </form>
+                            <form th:action="@{/vendor/orders/{id}/mark-failed(id=${order.orderId})}"
+                                  method="post"
+                                  class="d-grid">
+                                <button class="btn btn-danger">
+                                    <i class="fas fa-times-circle me-2"></i>Giao thất bại
+                                </button>
+                            </form>
+                        </div>
+                        <!-- Approve return button - opens modal -->
+                        <!-- Chỉ hiển thị khi order ở trạng thái RETURN_REQUESTED (user đã yêu cầu trả hàng) -->
+                        <button type="button"
+                                class="btn btn-outline-warning"
+                                data-bs-toggle="modal"
+                                data-bs-target="#returnModal"
+                                th:if="${order.status == T(vn.entity.Order.OrderStatus).RETURN_REQUESTED}">
+                            <i class="fas fa-undo me-2"></i>Approve return
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="cancelModal" tabindex="-1" aria-labelledby="cancelModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <form th:action="@{/vendor/orders/{id}/cancel(id=${order.orderId})}" method="post">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="cancelModalLabel">Cancel order #<span th:text="${order.orderId}"></span></h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label for="cancelReason" class="form-label">Reason</label>
+                                <textarea class="form-control" id="cancelReason" name="reason" rows="3" required></textarea>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Back</button>
+                            <button type="submit" class="btn btn-danger">Confirm cancel</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Modal for Approve Return -->
+        <div class="modal fade" id="returnModal" tabindex="-1" aria-labelledby="returnModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <form th:action="@{/vendor/orders/{id}/approve-return(id=${order.orderId})}" method="post">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="returnModalLabel">Approve Return for Order #<span th:text="${order.orderId}"></span></h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label for="refundAmount" class="form-label">Refund Amount (VND) <span class="text-danger">*</span></label>
+                                <input type="number" 
+                                       class="form-control" 
+                                       id="refundAmount" 
+                                       name="refundAmount" 
+                                       step="0.01"
+                                       th:value="${finalAmount}"
+                                       required>
+                                <small class="text-muted">
+                                    Số tiền khách đã thanh toán (finalAmount): 
+                                    <span th:text="${#numbers.formatDecimal(finalAmount, 0, 'COMMA', 0, 'POINT')} + ' VND'"></span>
+                                    <br>
+                                    <span class="text-info">
+                                        (Tổng tiền gốc: 
+                                        <span th:text="${#numbers.formatDecimal(order.totalAmount, 0, 'COMMA', 0, 'POINT')} + ' VND'"></span>)
+                                    </span>
+                                </small>
+                            </div>
+                            <div class="mb-3">
+                                <label for="returnReason" class="form-label">Return Reason <span class="text-danger">*</span></label>
+                                <textarea class="form-control" 
+                                          id="returnReason" 
+                                          name="returnReason" 
+                                          rows="3" 
+                                          placeholder="Enter reason for return/refund..."
+                                          required></textarea>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-warning">Approve Return</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal for Refund Detail -->
+        <div class="modal fade" id="refundDetailModal" tabindex="-1" aria-labelledby="refundDetailModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="refundDetailModalLabel">
+                            <i class="fas fa-money-bill-wave me-2 text-primary"></i>Chi tiết hoàn tiền
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div th:switch="${refundStatusName}" class="mb-3">
+                            <div th:case="'PENDING'" class="alert alert-warning mb-0">
+                                <strong>Trạng thái:</strong> Chờ xử lý<br>
+                                <small th:if="${orderStatusName == 'RETURN_REQUESTED'}">
+                                    Vendor chưa duyệt yêu cầu hoàn tiền
+                                </small>
+                                <small th:if="${orderStatusName == 'RETURNED'}">
+                                    Đã duyệt hoàn tiền, đang chờ thông tin ngân hàng từ khách hàng
+                                </small>
+                            </div>
+                            <div th:case="'PROCESSING'" class="alert alert-info mb-0">
+                                <strong>Trạng thái:</strong> Đang xử lý<br>
+                                <small th:if="${refundMethodName == 'BANK_TRANSFER'}">
+                                    Đã nhận thông tin ngân hàng, đang chờ vendor chuyển khoản (1-3 ngày làm việc)
+                                </small>
+                                <small th:unless="${refundMethodName == 'BANK_TRANSFER'}">
+                                    Đang xử lý hoàn tiền
+                                </small>
+                            </div>
+                            <div th:case="'COMPLETED'" class="alert alert-success mb-0">
+                                <strong>Trạng thái:</strong> Đã hoàn thành<br>
+                                <small>Hoàn tiền đã được xử lý thành công</small>
+                            </div>
+                            <div th:case="*" class="alert alert-secondary mb-0">
+                                <strong>Trạng thái:</strong> Chưa xác định<br>
+                                <small>Đang kiểm tra thông tin hoàn tiền</small>
+                            </div>
+                        </div>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="border rounded p-3">
+                                        <small class="text-muted d-block mb-1">Số tiền hoàn</small>
+                                        <strong class="text-primary fs-5" 
+                                                th:text="${#numbers.formatDecimal(refund != null and refund.refundAmount != null ? refund.refundAmount : finalAmount, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">
+                                        </strong>
+                                    </div>
+                                </div>
+                                <div class="col-md-6" th:if="${refund != null and refund.refundMethod != null}">
+                                    <div class="border rounded p-3">
+                                        <small class="text-muted d-block mb-1">Phương thức</small>
+                                        <strong th:switch="${refund.refundMethod.name()}">
+                                            <span th:case="'ONEXU'" class="text-warning">
+                                                <i class="fas fa-coins me-1"></i>OneXu
+                                            </span>
+                                            <span th:case="'BANK_TRANSFER'" class="text-info">
+                                                <i class="fas fa-university me-1"></i>Ngân hàng
+                                            </span>
+                                        </strong>
+                                    </div>
+                                </div>
+                                <div class="col-12" th:if="${refund != null and refund.bankName != null}">
+                                    <div class="border rounded p-3">
+                                        <h6 class="mb-3"><i class="fas fa-university me-2"></i>Thông tin ngân hàng</h6>
+                                        <div class="row g-2 small">
+                                            <div class="col-4"><strong>Ngân hàng:</strong></div>
+                                            <div class="col-8" th:text="${refund.bankName}"></div>
+                                            <div class="col-4" th:if="${refund.bankAccountNumber != null}"><strong>Số tài khoản:</strong></div>
+                                            <div class="col-8" th:if="${refund.bankAccountNumber != null}" th:text="${refund.bankAccountNumber}"></div>
+                                            <div class="col-4" th:if="${refund.accountHolderName != null}"><strong>Chủ tài khoản:</strong></div>
+                                            <div class="col-8" th:if="${refund.accountHolderName != null}" th:text="${refund.accountHolderName}"></div>
+                                            <div class="col-4" th:if="${refund.bankBranch != null and !refund.bankBranch.isEmpty()}"><strong>Chi nhánh:</strong></div>
+                                            <div class="col-8" th:if="${refund.bankBranch != null and !refund.bankBranch.isEmpty()}" th:text="${refund.bankBranch}"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12" th:if="${order.cancelledDate != null}">
+                                    <div class="text-muted small">
+                                        <strong>Ngày yêu cầu:</strong> 
+                                        <span th:text="${#temporals.format(order.cancelledDate, 'dd/MM/yyyy HH:mm')}"></span>
+                                    </div>
+                                    <div class="text-muted small" th:if="${refund != null and refund.completedAt != null}">
+                                        <strong>Ngày hoàn thành:</strong> 
+                                        <span th:text="${#temporals.format(refund.completedAt, 'dd/MM/yyyy HH:mm')}"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleProducts() {
+            const hiddenRows = document.querySelectorAll('.product-row-hidden');
+            const toggleBtn = document.getElementById('toggleProductsBtn');
+            const toggleText = document.getElementById('toggleProductsText');
+            const icon = toggleBtn.querySelector('i');
+            
+            if (hiddenRows.length > 0) {
+                // Check if any row is currently hidden
+                const isAnyHidden = Array.from(hiddenRows).some(row => row.classList.contains('d-none'));
+                
+                hiddenRows.forEach(row => {
+                    if (isAnyHidden) {
+                        // Show all hidden rows
+                        row.classList.remove('d-none');
+                        icon.classList.remove('fa-chevron-down');
+                        icon.classList.add('fa-chevron-up');
+                        toggleText.innerHTML = 'Thu gọn';
+                    } else {
+                        // Hide all rows again
+                        row.classList.add('d-none');
+                        icon.classList.remove('fa-chevron-up');
+                        icon.classList.add('fa-chevron-down');
+                        toggleText.innerHTML = 'Xem thêm <span>' + hiddenRows.length + '</span> sản phẩm';
+                    }
+                });
+            }
+        }
+    </script>
+</body>
+</html>
