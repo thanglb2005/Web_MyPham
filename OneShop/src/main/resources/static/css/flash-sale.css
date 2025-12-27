@@ -1,0 +1,533 @@
+/* Flash Sale Styles */
+
+/* Flash Sale Product in List */
+.product-card.flash-sale-product {
+  border: 2px solid #ff6b6b;
+  box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+}
+
+.product-card.flash-sale-product .product-label .label-text.flash {
+  background: linear-gradient(135deg, #ff6b6b 0%, #ff4757 100%);
+  color: white;
+  font-weight: bold;
+  font-size: 11px;
+  padding: 4px 8px;
+  border-radius: 3px;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.product-card.flash-sale-product .product-price {
+  color: #ff6b6b;
+}
+
+.product-card.flash-sale-product .product-price del {
+  color: #999;
+  font-size: 0.9rem;
+}
+
+.product-card.flash-sale-product .product-price span {
+  color: #ff6b6b;
+  font-weight: bold;
+  font-size: 1.1rem;
+}
+
+/* Flash Sale Banner */
+.flash-sale-banner {
+  background: linear-gradient(135deg, #ff6b6b 0%, #ff4757 50%, #ff6b6b 100%);
+  background-size: 200% 200%;
+  animation: gradientShift 5s ease infinite;
+  color: white;
+  padding: 60px 0;
+  margin-bottom: 40px;
+  position: relative;
+  overflow: hidden;
+}
+
+.flash-sale-banner::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+  animation: rotate 20s linear infinite;
+}
+
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.flash-sale-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 30px;
+  position: relative;
+  z-index: 1;
+}
+
+.flash-sale-title h1 {
+  font-size: 3.5rem;
+  font-weight: 900;
+  margin: 0;
+  text-shadow: 3px 3px 6px rgba(0,0,0,0.3);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  animation: titlePulse 2s ease-in-out infinite;
+}
+
+.flash-sale-title h1 i {
+  color: #ffd700;
+  text-shadow: 0 0 15px rgba(255, 215, 0, 0.8);
+  animation: firePulse 1.5s ease-in-out infinite;
+}
+
+@keyframes titlePulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.02);
+  }
+}
+
+@keyframes firePulse {
+  0%, 100% {
+    transform: scale(1) rotate(0deg);
+  }
+  25% {
+    transform: scale(1.1) rotate(-5deg);
+  }
+  75% {
+    transform: scale(1.1) rotate(5deg);
+  }
+}
+
+.flash-sale-title p {
+  font-size: 1.5rem;
+  margin: 15px 0 0 0;
+  opacity: 0.95;
+  font-weight: 600;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+}
+
+/* Countdown Timer */
+.countdown {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.countdown-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.25);
+  padding: 15px 20px;
+  border-radius: 12px;
+  min-width: 80px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  transition: all 0.3s ease;
+}
+
+.countdown-item:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.countdown-value {
+  font-size: 2.5rem;
+  font-weight: 900;
+  color: white;
+  line-height: 1;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+  animation: numberPulse 1s ease-in-out infinite;
+}
+
+@keyframes numberPulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+.countdown-label {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.95);
+  margin-top: 8px;
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.countdown-expired,
+.countdown-starting {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: white;
+}
+
+/* Flash Sale Section */
+.flash-sale-section {
+  padding: 40px 0;
+}
+
+.flash-sale-card {
+  background: linear-gradient(135deg, #ffffff 0%, #fff5f5 100%);
+  border-radius: 20px;
+  padding: 40px;
+  margin-bottom: 40px;
+  box-shadow: 0 8px 30px rgba(255, 107, 107, 0.2);
+  border: 3px solid #ff6b6b;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.flash-sale-card::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255, 107, 107, 0.1) 0%, transparent 70%);
+  animation: rotate 15s linear infinite;
+}
+
+.flash-sale-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 40px rgba(255, 107, 107, 0.3);
+}
+
+.flash-sale-card.upcoming {
+  border-color: #17a2b8;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+}
+
+.flash-sale-info {
+  position: relative;
+  z-index: 1;
+}
+
+.flash-sale-info h3 {
+  color: #ff6b6b;
+  font-size: 2.5rem;
+  margin-bottom: 15px;
+  font-weight: 800;
+  text-shadow: 2px 2px 4px rgba(255, 107, 107, 0.2);
+}
+
+.flash-sale-card.upcoming h3 {
+  color: #17a2b8;
+}
+
+.flash-sale-info p {
+  color: #666;
+  margin-bottom: 20px;
+}
+
+.flash-sale-timer {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.timer-label {
+  font-weight: 600;
+  color: #333;
+}
+
+/* Flash Sale Product Card */
+.flash-sale-product {
+  position: relative;
+  transition: transform 0.3s ease;
+}
+
+.flash-sale-product:hover {
+  transform: translateY(-5px);
+}
+
+.flash-sale-product .product-label {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 10;
+}
+
+.flash-sale-product .label-text.flash {
+  background: linear-gradient(135deg, #ff6b6b, #ee5a6f);
+  color: white;
+  padding: 5px 12px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  margin-right: 5px;
+}
+
+.flash-sale-product .flash-price {
+  color: #ff6b6b;
+  font-size: 1.8rem;
+  font-weight: 900;
+  margin-right: 10px;
+  text-shadow: 1px 1px 2px rgba(255, 107, 107, 0.2);
+}
+
+.flash-sale-product .original-price {
+  color: #999;
+  font-size: 1.2rem;
+  text-decoration: line-through;
+  margin-left: 10px;
+}
+
+/* Flash Sale Progress */
+.flash-sale-progress {
+  margin: 20px 0;
+  padding: 15px;
+  background: #fff5f5;
+  border-radius: 10px;
+  border: 1px solid #ffe5e5;
+}
+
+.progress-info {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.95rem;
+  color: #333;
+  margin-bottom: 10px;
+  font-weight: 600;
+}
+
+.progress-info span:first-child {
+  color: #ff6b6b;
+}
+
+.progress-info span:last-child {
+  color: #28a745;
+  font-weight: 700;
+}
+
+.progress-bar {
+  height: 12px;
+  background: #e9ecef;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #ff6b6b, #ff4757, #ff6b6b);
+  background-size: 200% 100%;
+  animation: progressShine 2s linear infinite;
+  transition: width 0.5s ease;
+  border-radius: 10px;
+  box-shadow: 0 2px 4px rgba(255, 107, 107, 0.3);
+}
+
+@keyframes progressShine {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 200% 50%;
+  }
+}
+
+/* Flash Sale Badge (for product cards) */
+.flash-sale-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: linear-gradient(135deg, #ff6b6b, #ee5a6f);
+  color: white;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: bold;
+  z-index: 10;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.badge-text {
+  text-transform: uppercase;
+  font-size: 0.7rem;
+}
+
+.badge-discount {
+  font-size: 0.9rem;
+}
+
+/* Product Detail Flash Sale */
+.product-detail-flash-sale {
+  background: linear-gradient(135deg, #fff5f5, #ffe5e5);
+  border: 2px solid #ff6b6b;
+  border-radius: 8px;
+  padding: 20px;
+  margin: 20px 0;
+}
+
+.product-detail-flash-sale .flash-sale-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.product-detail-flash-sale h4 {
+  color: #ff6b6b;
+  margin: 0;
+  font-size: 1.3rem;
+}
+
+.product-detail-flash-sale .flash-price {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #ff6b6b;
+}
+
+.product-detail-flash-sale .original-price {
+  font-size: 1.2rem;
+  color: #999;
+  text-decoration: line-through;
+  margin-left: 15px;
+}
+
+/* Cart Flash Sale Badge */
+.cart-flash-sale-badge {
+  display: inline-block;
+  background: linear-gradient(135deg, #ff6b6b, #ee5a6f);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: bold;
+  margin-left: 10px;
+}
+
+/* Product Action Button Hover */
+.flash-sale-product .product-action a:hover,
+.flash-sale-product-card .product-action a:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 107, 107, 0.5) !important;
+  background: linear-gradient(135deg, #ff4757, #ff6b6b) !important;
+}
+
+/* Flash Sale Product Card Hover */
+.flash-sale-product-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 8px 30px rgba(255, 107, 107, 0.4) !important;
+}
+
+.flash-sale-product-card:hover .product-image img {
+  transform: scale(1.1);
+}
+
+/* Loading State */
+.flash-sale-products .loading {
+  text-align: center;
+  padding: 60px 20px;
+  font-size: 1.2rem;
+  color: #666;
+  font-weight: 600;
+}
+
+.flash-sale-products .loading::before {
+  content: '';
+  display: inline-block;
+  width: 40px;
+  height: 40px;
+  border: 4px solid #ff6b6b;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-right: 15px;
+  vertical-align: middle;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .flash-sale-header {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .flash-sale-title h1 {
+    font-size: 2.5rem;
+  }
+  
+  .flash-sale-title p {
+    font-size: 1.2rem;
+  }
+  
+  .countdown-item {
+    min-width: 60px;
+    padding: 12px 15px;
+  }
+  
+  .countdown-value {
+    font-size: 2rem;
+  }
+  
+  .countdown-label {
+    font-size: 0.75rem;
+  }
+  
+  .flash-sale-banner {
+    padding: 40px 0;
+  }
+  
+  .flash-sale-card {
+    padding: 25px;
+  }
+  
+  .flash-sale-info h3 {
+    font-size: 2rem;
+  }
+}
+

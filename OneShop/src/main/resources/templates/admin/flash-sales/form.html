@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title th:text="${(flashSale != null && flashSale.flashSaleId != null ? 'Chỉnh sửa Flash Sale' : 'Tạo Flash Sale mới') + ' - OneShop Admin'}"></title>
+
+    <!-- CSS Libraries -->
+    <link rel="stylesheet" href="/assets/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="/assets/css/atlantis.min.css" />
+    <link rel="stylesheet" href="/fonts/fontawesome/fontawesome.min.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="/assets/css/demo.css" />
+    <link rel="stylesheet" href="/assets/css/fonts.min.css" />
+    <link rel="stylesheet" href="/css/admin-fonts.css" />
+
+    <style>
+      .page-title { color: #333; font-size: 1.8rem; margin: 0; font-weight: 600; }
+
+      .form-container {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+      }
+
+      .form-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 20px 25px;
+        border: none;
+      }
+
+      .form-header h5 {
+        margin: 0;
+        font-weight: 600;
+        font-size: 1.2rem;
+      }
+
+      .form-header i {
+        margin-right: 10px;
+        font-size: 1.1rem;
+      }
+
+      .form-body {
+        padding: 30px;
+      }
+
+      .form-group {
+        margin-bottom: 20px;
+      }
+
+      .form-label {
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 8px;
+        display: block;
+      }
+
+      .form-control {
+        border: 2px solid #e9ecef;
+        border-radius: 8px;
+        padding: 12px 15px;
+        font-size: 14px;
+        transition: all 0.3s ease;
+      }
+
+      .form-control:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        outline: none;
+      }
+
+      .form-control.is-invalid {
+        border-color: #dc3545;
+      }
+
+      .invalid-feedback {
+        display: block;
+        color: #dc3545;
+        font-size: 12px;
+        margin-top: 5px;
+      }
+
+      .btn {
+        border-radius: 8px;
+        font-weight: 500;
+        padding: 10px 20px;
+        transition: all 0.3s ease;
+        border: none;
+      }
+
+      .btn-primary {
+        background: linear-gradient(135deg, #007bff, #0056b3);
+        color: white;
+      }
+
+      .btn-primary:hover {
+        background: linear-gradient(135deg, #0056b3, #004085);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 123, 255, 0.4);
+      }
+
+      .btn-secondary {
+        background: linear-gradient(135deg, #6c757d, #545b62);
+        color: white;
+      }
+
+      .btn-secondary:hover {
+        background: linear-gradient(135deg, #545b62, #495057);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(108, 117, 125, 0.4);
+      }
+
+      .btn-danger {
+        background: linear-gradient(135deg, #dc3545, #c82333);
+        color: white;
+      }
+
+      .btn-danger:hover {
+        background: linear-gradient(135deg, #c82333, #bd2130);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(220, 53, 69, 0.4);
+      }
+
+      .alert {
+        border: none;
+        border-radius: 8px;
+        padding: 15px 20px;
+        margin-bottom: 20px;
+      }
+
+      .fade-in {
+        animation: fadeIn 0.5s ease-in;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrapper">
+      <!-- Header -->
+      <th:block th:replace="~{admin/fragments/header :: header}"></th:block>
+
+      <!-- Navbar -->
+      <th:block th:replace="~{admin/fragments/navbar :: navbar}"></th:block>
+
+      <div class="main-panel">
+        <div class="content">
+          <!-- Page Header -->
+          <div class="page-header">
+            <h2 class="page-title" th:text="${flashSale != null && flashSale.flashSaleId != null ? 'Chỉnh sửa Flash Sale' : 'Tạo Flash Sale mới'}"></h2>
+          </div>
+
+          <div class="page-inner">
+            <!-- Form Container -->
+            <div class="form-container">
+              <div class="form-header">
+                <h5 class="mb-0">
+                  <i class="fas fa-fire"></i>
+                  <span th:text="${flashSale != null && flashSale.flashSaleId != null ? 'Chỉnh sửa Flash Sale' : 'Tạo Flash Sale mới'}"></span>
+                </h5>
+              </div>
+              <div class="form-body">
+                <!-- Alert Messages -->
+                <div th:if="${success}" class="alert alert-success fade-in">
+                  <i class="fas fa-check-circle"></i>
+                  <span th:text="${success}"></span>
+                </div>
+                
+                <div th:if="${error}" class="alert alert-danger fade-in">
+                  <i class="fas fa-exclamation-circle"></i>
+                  <span th:text="${error}"></span>
+                </div>
+
+                <!-- Form -->
+                <form th:action="${flashSale != null && flashSale.flashSaleId != null ? '/admin/flash-sales/edit/' + flashSale.flashSaleId : '/admin/flash-sales/create'}" 
+                      th:object="${flashSale}" 
+                      method="post" 
+                      class="fade-in"
+                      onsubmit="return validateForm()"
+                      th:if="${flashSale != null}">
+                  
+                  <div class="row">
+                    <!-- Tên Flash Sale -->
+                    <div class="col-sm-12">
+                      <div class="form-group">
+                        <label class="form-label">
+                          <i class="fas fa-fire"></i> Tên Flash Sale <span class="text-danger">*</span>
+                        </label>
+                        <input
+                          th:field="*{saleName}"
+                          type="text"
+                          class="form-control"
+                          placeholder="Nhập tên flash sale..."
+                          required
+                        />
+                        <div class="invalid-feedback">
+                          Vui lòng nhập tên flash sale
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Mô tả -->
+                    <div class="col-sm-12">
+                      <div class="form-group">
+                        <label class="form-label">
+                          <i class="fas fa-align-left"></i> Mô tả
+                        </label>
+                        <textarea
+                          th:field="*{description}"
+                          class="form-control"
+                          rows="3"
+                          placeholder="Nhập mô tả flash sale..."
+                        ></textarea>
+                      </div>
+                    </div>
+
+                    <!-- Thời gian bắt đầu -->
+                    <div class="col-md-6">
+                      <div class="form-group">
+                        <label class="form-label">
+                          <i class="fas fa-calendar-alt"></i> Thời gian bắt đầu <span class="text-danger">*</span>
+                        </label>
+                        <input
+                          id="startTime"
+                          name="startTime"
+                          type="datetime-local"
+                          class="form-control"
+                          th:value="${flashSale != null && flashSale.startTime != null ? #temporals.format(flashSale.startTime, 'yyyy-MM-dd''T''HH:mm') : ''}"
+                          required
+                        />
+                        <div class="invalid-feedback">
+                          Vui lòng chọn thời gian bắt đầu
+                        </div>
+                        <small class="form-text text-muted">
+                          Chọn thời gian bắt đầu flash sale
+                        </small>
+                      </div>
+                    </div>
+
+                    <!-- Thời gian kết thúc -->
+                    <div class="col-md-6">
+                      <div class="form-group">
+                        <label class="form-label">
+                          <i class="fas fa-calendar-times"></i> Thời gian kết thúc <span class="text-danger">*</span>
+                        </label>
+                        <input
+                          id="endTime"
+                          name="endTime"
+                          type="datetime-local"
+                          class="form-control"
+                          th:value="${flashSale != null && flashSale.endTime != null ? #temporals.format(flashSale.endTime, 'yyyy-MM-dd''T''HH:mm') : ''}"
+                          required
+                        />
+                        <div class="invalid-feedback" id="endTimeError">
+                          Vui lòng chọn thời gian kết thúc
+                        </div>
+                        <small class="form-text text-muted">
+                          Thời gian kết thúc phải sau thời gian bắt đầu
+                        </small>
+                      </div>
+                    </div>
+
+                    <!-- Banner Image -->
+                    <div class="col-sm-12">
+                      <div class="form-group">
+                        <label class="form-label">
+                          <i class="fas fa-image"></i> URL Banner Image
+                        </label>
+                        <input
+                          th:field="*{bannerImage}"
+                          type="text"
+                          class="form-control"
+                          placeholder="Nhập URL hình ảnh banner (tùy chọn)..."
+                        />
+                        <small class="form-text text-muted">
+                          Nhập URL hình ảnh banner cho flash sale này (tùy chọn)
+                        </small>
+                      </div>
+                    </div>
+
+                    <!-- Trạng thái (chỉ hiển thị khi edit) -->
+                    <div class="col-sm-12" th:if="${flashSale != null && flashSale.flashSaleId != null}">
+                      <div class="form-group">
+                        <label class="form-label">
+                          <i class="fas fa-toggle-on"></i> Trạng thái
+                        </label>
+                        <select th:field="*{status}" class="form-control" th:if="${statuses != null}">
+                          <option th:each="status : ${statuses}" 
+                                  th:value="${status}" 
+                                  th:selected="${flashSale.status != null && flashSale.status == status}"
+                                  th:text="${status.name() == 'DRAFT' ? 'Nháp' : 
+                                            status.name() == 'SCHEDULED' ? 'Đã lên lịch' :
+                                            status.name() == 'ACTIVE' ? 'Đang hoạt động' :
+                                            status.name() == 'ENDED' ? 'Đã kết thúc' :
+                                            'Đã hủy'}">
+                          </option>
+                        </select>
+                        <select th:field="*{status}" class="form-control" th:unless="${statuses != null}">
+                          <option th:value="DRAFT" th:selected="${flashSale.status != null && flashSale.status.name() == 'DRAFT'}">Nháp</option>
+                          <option th:value="SCHEDULED" th:selected="${flashSale.status != null && flashSale.status.name() == 'SCHEDULED'}">Đã lên lịch</option>
+                          <option th:value="ACTIVE" th:selected="${flashSale.status != null && flashSale.status.name() == 'ACTIVE'}">Đang hoạt động</option>
+                          <option th:value="ENDED" th:selected="${flashSale.status != null && flashSale.status.name() == 'ENDED'}">Đã kết thúc</option>
+                          <option th:value="CANCELLED" th:selected="${flashSale.status != null && flashSale.status.name() == 'CANCELLED'}">Đã hủy</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Form Actions -->
+                  <div class="form-actions mt-4">
+                    <div class="row">
+                      <div class="col-sm-12">
+                        <div class="d-flex justify-content-between">
+                          <a th:href="@{/admin/flash-sales}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Quay lại
+                          </a>
+                          <div>
+                            <button type="button" class="btn btn-danger mr-2" onclick="resetForm()">
+                              <i class="fas fa-undo"></i> Làm mới
+                            </button>
+                            <button type="submit" class="btn btn-primary">
+                              <i class="fas fa-save"></i>
+                              <span th:text="${flashSale != null && flashSale.flashSaleId != null ? 'Cập nhật' : 'Tạo mới'}"></span>
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/assets/js/core/jquery.3.2.1.min.js"></script>
+    <script src="/assets/js/core/popper.min.js"></script>
+    <script src="/assets/js/core/bootstrap.min.js"></script>
+    <script src="/assets/js/atlantis.min.js"></script>
+
+    <script>
+      // Form validation
+      function validateForm() {
+        let isValid = true;
+        const form = document.querySelector('form');
+        const inputs = form.querySelectorAll('input[required], select[required]');
+        
+        inputs.forEach(input => {
+          if (!input.value.trim()) {
+            input.classList.add('is-invalid');
+            isValid = false;
+          } else {
+            input.classList.remove('is-invalid');
+            input.classList.add('is-valid');
+          }
+        });
+        
+        // Validate dates
+        const startTime = document.getElementById('startTime');
+        const endTime = document.getElementById('endTime');
+        const endTimeError = document.getElementById('endTimeError');
+        
+        if (startTime && endTime && startTime.value && endTime.value) {
+          const start = new Date(startTime.value);
+          const end = new Date(endTime.value);
+          
+          // Calculate difference in milliseconds
+          const diffMs = end.getTime() - start.getTime();
+          const diffMinutes = diffMs / (1000 * 60);
+          
+          // End time must be at least 1 minute after start time
+          if (diffMinutes < 1) {
+            endTime.classList.add('is-invalid');
+            endTimeError.textContent = 'Thời gian kết thúc phải sau thời gian bắt đầu ít nhất 1 phút';
+            endTime.setCustomValidity('Thời gian kết thúc phải sau thời gian bắt đầu ít nhất 1 phút');
+            isValid = false;
+          } else {
+            endTime.classList.remove('is-invalid');
+            endTimeError.textContent = 'Vui lòng chọn thời gian kết thúc';
+            endTime.setCustomValidity('');
+          }
+        }
+        
+        if (!isValid) {
+          alert('Vui lòng điền đầy đủ thông tin và kiểm tra lại các trường bắt buộc!');
+        }
+        
+        return isValid;
+      }
+      
+      // Reset form
+      function resetForm() {
+        if (confirm('Bạn có chắc chắn muốn làm mới form không? Tất cả dữ liệu sẽ bị mất.')) {
+          document.querySelector('form').reset();
+          const inputs = document.querySelectorAll('.form-control');
+          inputs.forEach(input => {
+            input.classList.remove('is-invalid', 'is-valid');
+          });
+        }
+      }
+      
+      // Real-time validation
+      document.addEventListener('DOMContentLoaded', function() {
+        const form = document.querySelector('form');
+        const inputs = form.querySelectorAll('input[required], select[required]');
+        
+        inputs.forEach(input => {
+          input.addEventListener('blur', function() {
+            if (!this.value.trim()) {
+              this.classList.add('is-invalid');
+              this.classList.remove('is-valid');
+            } else {
+              this.classList.remove('is-invalid');
+              this.classList.add('is-valid');
+            }
+          });
+        });
+        
+        // Date validation
+        const startTime = document.getElementById('startTime');
+        const endTime = document.getElementById('endTime');
+        const endTimeError = document.getElementById('endTimeError');
+        
+        if (startTime && endTime) {
+          // Function to update min attribute for endTime
+          function updateEndTimeMin() {
+            if (startTime.value) {
+              const start = new Date(startTime.value);
+              const minEndTime = new Date(start);
+              minEndTime.setMinutes(minEndTime.getMinutes() + 1);
+              const minEndTimeStr = minEndTime.toISOString().slice(0, 16);
+              endTime.setAttribute('min', minEndTimeStr);
+            }
+          }
+          
+          // Function to validate date time range
+          function validateDateTimeRange() {
+            if (startTime.value && endTime.value) {
+              const start = new Date(startTime.value);
+              const end = new Date(endTime.value);
+              
+              // Calculate difference in milliseconds
+              const diffMs = end.getTime() - start.getTime();
+              const diffMinutes = diffMs / (1000 * 60);
+              
+              // End time must be at least 1 minute after start time
+              if (diffMinutes < 1) {
+                endTime.classList.add('is-invalid');
+                endTimeError.textContent = 'Thời gian kết thúc phải sau thời gian bắt đầu ít nhất 1 phút';
+                endTime.setCustomValidity('Thời gian kết thúc phải sau thời gian bắt đầu ít nhất 1 phút');
+                return false;
+              } else {
+                endTime.classList.remove('is-invalid');
+                endTimeError.textContent = 'Vui lòng chọn thời gian kết thúc';
+                endTime.setCustomValidity('');
+                return true;
+              }
+            } else {
+              endTime.classList.remove('is-invalid');
+              endTime.setCustomValidity('');
+              return true;
+            }
+          }
+          
+          // Set min attribute when startTime changes
+          startTime.addEventListener('change', function() {
+            updateEndTimeMin();
+            validateDateTimeRange();
+            
+            // If endTime is already set and is before new min, clear it
+            if (endTime.value && startTime.value) {
+              const start = new Date(startTime.value);
+              const end = new Date(endTime.value);
+              const diffMs = end.getTime() - start.getTime();
+              const diffMinutes = diffMs / (1000 * 60);
+              
+              // Clear if end time is less than 1 minute after start
+              if (diffMinutes < 1) {
+                endTime.value = '';
+                endTime.classList.remove('is-invalid');
+              }
+            }
+          });
+          
+          // Validate when end time changes
+          endTime.addEventListener('change', function() {
+            validateDateTimeRange();
+          });
+          
+          // Initialize: Set min and validate on page load (for edit mode)
+          if (startTime.value) {
+            updateEndTimeMin();
+            // Small delay to ensure DOM is fully ready
+            setTimeout(function() {
+              validateDateTimeRange();
+            }, 100);
+          }
+        }
+      });
+    </script>
+  </body>
+</html>
+

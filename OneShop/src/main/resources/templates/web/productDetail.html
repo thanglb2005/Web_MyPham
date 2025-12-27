@@ -105,7 +105,17 @@
                 <i class="icofont-star" th:classappend="${avgRating} >= 5 ? ' active' : ''"></i>
                 <a href="#">([[${#numbers.formatDecimal(avgRating, 1, 'DEFAULT', 1, 'DEFAULT')}]]/5 sao)</a>
               </div>
-              <h3 class="details-price">
+              <!-- Flash Sale Badge -->
+              <div id="flash-sale-badge" class="flash-sale-badge-detail" style="display: none;">
+                <span class="badge-text">FLASH SALE</span>
+                <span class="badge-discount" id="flash-sale-discount"></span>
+                <div class="countdown" id="flash-sale-countdown"></div>
+              </div>
+              
+              <!-- Hidden input for product ID (for JavaScript) -->
+              <input type="hidden" id="product-id-hidden" th:value="${product.productId}" />
+              
+              <h3 class="details-price" id="product-price">
                 <del th:if="${product.discount > 0}"
                   >[[${#numbers.formatDecimal(product.price, 1, 'DEFAULT', 0,
                   'DEFAULT')}]] đ</del
@@ -1051,5 +1061,102 @@
     </script>
 
     <script src="/js/favorite.js"></script>
+    
+    <!-- Flash Sale -->
+    <link rel="stylesheet" href="/css/flash-sale.css" />
+    <script src="/js/flash-sale-api.js"></script>
+    <script src="/js/flash-sale.js"></script>
+    <script th:inline="javascript">
+      // Load flash sale info for product
+      document.addEventListener('DOMContentLoaded', function() {
+        console.log('Product Detail: DOM loaded, checking flash sale...');
+        
+        // Check if FlashSaleAPI is available
+        if (typeof FlashSaleAPI === 'undefined') {
+          console.error('Product Detail: FlashSaleAPI is not defined');
+          return;
+        }
+        
+        // Get product ID from hidden input
+        const productIdInput = document.getElementById('product-id-hidden');
+        const productId = productIdInput ? productIdInput.value : null;
+        
+        console.log('Product Detail: Product ID =', productId);
+        
+        if (!productId) {
+          console.warn('Product Detail: Product ID is missing');
+          return;
+        }
+        
+        console.log('Product Detail: Fetching flash sale price for product', productId);
+        
+        FlashSaleAPI.getProductFlashSalePrice(productId).then(function(data) {
+          console.log('Product Detail: Flash sale data received:', data);
+          
+          if (data && data.inFlashSale) {
+            console.log('Product Detail: Product is in flash sale!');
+            
+            // Show flash sale badge
+            const badge = document.getElementById('flash-sale-badge');
+            if (badge) {
+              badge.style.display = 'block';
+              const discountEl = document.getElementById('flash-sale-discount');
+              if (discountEl) {
+                discountEl.textContent = '-' + data.discountPercentage + '%';
+              }
+            } else {
+              console.warn('Product Detail: Flash sale badge element not found');
+            }
+            
+            // Update price
+            const priceElement = document.getElementById('product-price');
+            if (priceElement) {
+              priceElement.innerHTML = `
+                <del style="color: #999; font-size: 1.2rem;">${formatPrice(data.originalPrice)}</del>
+                <span style="color: #ff6b6b; font-size: 1.8rem; font-weight: bold; margin-left: 10px;">${formatPrice(data.flashSalePrice)}</span>
+                <span class="badge badge-danger" style="margin-left: 10px; background: #ff6b6b; padding: 5px 10px; border-radius: 4px;">-${data.discountPercentage}%</span>
+              `;
+              console.log('Product Detail: Price updated');
+            } else {
+              console.warn('Product Detail: Price element not found');
+            }
+            
+            // Show countdown
+            if (data.remainingSeconds) {
+              const endTime = Math.floor(Date.now() / 1000) + data.remainingSeconds;
+              FlashSaleTimer.initCountdown('flash-sale-countdown', endTime);
+              console.log('Product Detail: Countdown initialized');
+            }
+            
+            // Show remaining quantity
+            if (data.remainingQuantity !== undefined) {
+              const quantityInfo = document.createElement('div');
+              quantityInfo.className = 'flash-sale-quantity-info';
+              quantityInfo.style.cssText = 'margin-top: 15px; padding: 12px; background: #fff5f5; border-left: 4px solid #ff6b6b; border-radius: 4px;';
+              quantityInfo.innerHTML = `
+                <strong style="color: #ff6b6b; font-size: 1.1rem;">⚡ Flash Sale đang diễn ra:</strong> 
+                <span style="margin-left: 10px;">Còn lại <strong style="color: #ff6b6b;">${data.remainingQuantity}</strong> sản phẩm</span>
+                ${data.maxQuantityPerUser > 1 ? `<span style="margin-left: 10px; color: #666;">(Tối đa ${data.maxQuantityPerUser} sản phẩm/người)</span>` : ''}
+              `;
+              if (priceElement && priceElement.parentElement) {
+                priceElement.parentElement.insertBefore(quantityInfo, priceElement.nextSibling);
+              }
+            }
+          } else {
+            console.log('Product Detail: Product is NOT in flash sale');
+          }
+        }).catch(function(error) {
+          console.error('Product Detail: Error fetching flash sale price:', error);
+        });
+      });
+      
+      function formatPrice(price) {
+        if (!price) return '0 đ';
+        return new Intl.NumberFormat('vi-VN', {
+          style: 'currency',
+          currency: 'VND'
+        }).format(price);
+      }
+    </script>
   </body>
 </html>

@@ -142,12 +142,13 @@
                                         <!-- Right side columns container -->
                                         <div style="display: flex; gap: 20px;">
                                             <!-- Column: Unit Price -->
-                                            <div style="width: 150px; text-align: right;">
+                                            <div style="width: 150px; text-align: right;" th:attr="data-product-id=${item.id}">
                                                 <div th:if="${item.discount != null and item.discount > 0}" 
                                                      style="color: #757575; font-size: 12px; text-decoration: line-through;" 
                                                      th:text="${#numbers.formatDecimal(item.unitPrice, 0, 'DEFAULT', 0, 'DEFAULT')} + 'đ'"></div>
-                                                <div style="color: #33a3cc; font-size: 16px; font-weight: 500;" 
+                                                <div class="cart-item-price" style="color: #33a3cc; font-size: 16px; font-weight: 500;" 
                                                      th:text="${#numbers.formatDecimal(item.discount != null and item.discount > 0 ? item.unitPrice * (1 - item.discount/100.0) : item.unitPrice, 0, 'DEFAULT', 0, 'DEFAULT')} + 'đ'"></div>
+                                                <span class="cart-flash-sale-badge" style="display: none; margin-top: 5px; display: block; font-size: 11px; color: #ff6b6b; font-weight: 600;">⚡ Flash Sale</span>
                                             </div>
                                             
                                             <!-- Column: Quantity -->
@@ -1698,6 +1699,59 @@
                 });
             }
         }
+    </script>
+    
+    <!-- Flash Sale -->
+    <link rel="stylesheet" href="/css/flash-sale.css" />
+    <script src="/js/flash-sale-api.js"></script>
+    <script src="/js/flash-sale.js"></script>
+    <script>
+      // Load flash sale info for cart items
+      document.addEventListener('DOMContentLoaded', function() {
+        const cartItems = document.querySelectorAll('[data-product-id]');
+        cartItems.forEach(function(item) {
+          const productId = item.getAttribute('data-product-id');
+          if (!productId) return;
+          
+          FlashSaleAPI.getProductFlashSalePrice(productId).then(function(data) {
+            if (data && data.inFlashSale) {
+              const badge = item.querySelector('.cart-flash-sale-badge');
+              if (badge) {
+                badge.style.display = 'block';
+              }
+              
+              // Update price display if needed
+              const priceElement = item.querySelector('.cart-item-price');
+              if (priceElement && data.flashSalePrice) {
+                const originalPrice = data.originalPrice;
+                const flashPrice = data.flashSalePrice;
+                
+                // Check if current price is flash sale price
+                const currentPriceText = priceElement.textContent.replace(/[^\d]/g, '');
+                const flashPriceText = Math.floor(flashPrice).toString();
+                
+                if (currentPriceText !== flashPriceText) {
+                  priceElement.innerHTML = `
+                    <div style="color: #757575; font-size: 12px; text-decoration: line-through;">
+                      ${formatPrice(originalPrice)}
+                    </div>
+                    <div style="color: #ff6b6b; font-size: 16px; font-weight: 500;">
+                      ${formatPrice(flashPrice)}
+                    </div>
+                  `;
+                }
+              }
+            }
+          });
+        });
+      });
+      
+      function formatPrice(price) {
+        return new Intl.NumberFormat('vi-VN', {
+          style: 'currency',
+          currency: 'VND'
+        }).format(price);
+      }
     </script>
 </body>
 </html>

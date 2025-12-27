@@ -11,7 +11,6 @@ import vn.entity.OrderDetail;
 import vn.entity.Product;
 import vn.entity.Shop;
 import vn.entity.User;
-import vn.entity.FlashSaleProduct;
 import vn.repository.OrderDetailRepository;
 import vn.repository.OrderRepository;
 import vn.repository.ProductRepository;
@@ -168,43 +167,44 @@ public class OrderServiceImpl implements OrderService {
 
         List<OrderDetail> orderDetails = new ArrayList<>();
         for (CartItem cartItem : cartItems.values()) {
-            Product product = productRepository.findById(cartItem.getId())
-                    .orElseThrow(() -> new RuntimeException("Product not found: " + cartItem.getId()));
-            
             OrderDetail orderDetail = new OrderDetail();
             orderDetail.setOrder(savedOrder);
-            orderDetail.setProduct(product);
+            orderDetail.setProduct(productRepository.findById(cartItem.getId())
+                    .orElseThrow(() -> new RuntimeException("Product not found: " + cartItem.getId())));
             orderDetail.setProductName(cartItem.getName());
             orderDetail.setUnitPrice(cartItem.getUnitPrice());
             orderDetail.setQuantity(cartItem.getQuantity());
             orderDetail.setTotalPrice(cartItem.getTotalPrice());
             orderDetails.add(orderDetail);
+        }
+        orderDetailRepository.saveAll(orderDetails);
+
+        // Track flash sale purchases
+        for (OrderDetail orderDetail : orderDetails) {
+            Long productId = orderDetail.getProduct().getProductId();
+            Optional<vn.entity.FlashSaleProduct> fspOpt = flashSaleService.getActiveFlashSaleProduct(productId);
             
-            // Check if product is in flash sale and record purchase
-            Optional<FlashSaleProduct> flashSaleProductOpt = flashSaleService.getActiveFlashSaleProduct(product.getProductId());
-            if (flashSaleProductOpt.isPresent()) {
-                FlashSaleProduct fsp = flashSaleProductOpt.get();
+            if (fspOpt.isPresent()) {
+                vn.entity.FlashSaleProduct fsp = fspOpt.get();
+                Long flashSaleId = fsp.getFlashSale().getFlashSaleId();
+                
+                // Record flash sale purchase
                 try {
                     flashSaleService.recordFlashSalePurchase(
-                        fsp.getFlashSale().getFlashSaleId(),
+                        flashSaleId,
                         savedOrder.getOrderId(),
-                        product.getProductId(),
+                        productId,
                         user.getUserId(),
-                        cartItem.getQuantity(),
+                        orderDetail.getQuantity(),
                         fsp.getFlashSalePrice()
                     );
-                    System.out.println("Recorded flash sale purchase: Order " + savedOrder.getOrderId() + 
-                                     ", Product " + product.getProductId() + 
-                                     ", Quantity " + cartItem.getQuantity());
                 } catch (Exception e) {
-                    // Log error but don't fail the order creation
-                    System.err.println("Error recording flash sale purchase for order " + savedOrder.getOrderId() + 
-                                     ", product " + product.getProductId() + ": " + e.getMessage());
+                    System.err.println("Error recording flash sale purchase for product " + productId + ": " + e.getMessage());
                     e.printStackTrace();
+                    // Continue with order creation even if flash sale tracking fails
                 }
             }
         }
-        orderDetailRepository.saveAll(orderDetails);
 
         savedOrder.setOrderDetails(orderDetails);
         return savedOrder;

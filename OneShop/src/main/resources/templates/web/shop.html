@@ -506,7 +506,7 @@
               id="product-container"
             >
               <div class="col" th:each="item : ${products}">
-                <div class="product-card">
+                <div class="product-card" th:attr="data-product-id=${item.productId}">
                   <div class="product-media">
                     <div class="product-label">
                       <label
@@ -817,5 +817,12 @@
         }
       }
     </script>
+    
+    <!-- Flash Sale Integration -->
+    <link rel="stylesheet" href="/css/flash-sale.css" />
+    <script src="/js/flash-sale-api.js"></script>
+    <script src="/js/flash-sale.js"></script>
+    <script src="/js/flash-sale-product-list.js"></script>
+    <script src="/js/flash-sale-notification-bar.js"></script>
   </body>
 </html>
