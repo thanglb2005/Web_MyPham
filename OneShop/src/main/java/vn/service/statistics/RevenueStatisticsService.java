@@ -4,13 +4,16 @@ import org.springframework.stereotype.Service;
 import vn.entity.Order;
 import vn.entity.OrderDetail;
 import vn.entity.Product;
+import vn.entity.Refund;
 import vn.entity.User;
 import vn.repository.OrderRepository;
 import vn.repository.OrderDetailRepository;
+import vn.repository.RefundRepository;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -28,20 +31,45 @@ public class RevenueStatisticsService {
     
     private final OrderRepository orderRepository;
     private final OrderDetailRepository orderDetailRepository;
+    private final RefundRepository refundRepository;
     private final NumberFormat currencyFormat;
 
-    public RevenueStatisticsService(OrderRepository orderRepository, OrderDetailRepository orderDetailRepository) {
+    public RevenueStatisticsService(OrderRepository orderRepository, 
+                                   OrderDetailRepository orderDetailRepository,
+                                   RefundRepository refundRepository) {
         this.orderRepository = orderRepository;
         this.orderDetailRepository = orderDetailRepository;
+        this.refundRepository = refundRepository;
         this.currencyFormat = NumberFormat.getNumberInstance(Locale.forLanguageTag("vi-VN"));
         ((DecimalFormat) this.currencyFormat).applyPattern("#,###");
     }
 
     /**
-     * Return the effective order amount for revenue reporting.
+     * Check if order should be counted for gross revenue.
+     * Gross revenue = orders that have been DELIVERED (have deliveredDate).
+     * This is independent of current status (even if later returned/refunded).
+     */
+    private boolean isOrderDelivered(Order order) {
+        // Order must have been delivered (has deliveredDate)
+        // This means it was successfully delivered at some point, regardless of current status
+        return order != null && order.getDeliveredDate() != null;
+    }
+
+    /**
+     * Return the effective order amount for gross revenue reporting.
+     * Gross revenue = sum of finalAmount for orders that have been DELIVERED (have deliveredDate).
+     * This is independent of current status - even if order is later RETURNED, 
+     * it still counts towards gross revenue if it was delivered.
+     * 
      * Prefer finalAmount when available and positive; otherwise fall back to totalAmount.
      */
     private double effectiveAmount(Order order) {
+        // Only count orders that have been delivered (have deliveredDate)
+        // This ensures gross revenue is based on delivery, not current status
+        if (!isOrderDelivered(order)) {
+            return 0.0;
+        }
+        
         try {
             Double finalAmt = order.getFinalAmount();
             if (finalAmt != null && finalAmt > 0) {
@@ -56,73 +84,191 @@ public class RevenueStatisticsService {
     }
 
     /**
-     * Get today's revenue statistics - Đã sửa để chỉ lọc đơn hàng theo ngày được chọn
-     * @return Map containing orders count and revenue
+     * Calculate total refund amount for completed refunds within a date range
+     * @param startDate Start date (inclusive), null means no start limit
+     * @param endDate End date (inclusive), null means no end limit
+     * @param shopId Shop ID to filter by, null means all shops
+     * @return Total refund amount
      */
-    public Map<String, Object> getTodayStatistics() {
-        Map<String, Object> result = new HashMap<>();
-        
+    private double calculateRefundAmount(LocalDateTime startDate, LocalDateTime endDate, Long shopId) {
         try {
-            // Lấy tất cả đơn hàng
-            List<Order> todayOrders = new ArrayList<>();
+            List<Refund> allRefunds = refundRepository.findAll();
+            double totalRefund = 0.0;
+            
+            for (Refund refund : allRefunds) {
+                // Only count completed refunds
+                if (refund.getRefundStatus() != Refund.RefundStatus.COMPLETED) {
+                    continue;
+                }
+                
+                // Filter by shop if specified
+                if (shopId != null && refund.getOrder() != null && refund.getOrder().getShop() != null) {
+                    if (!refund.getOrder().getShop().getShopId().equals(shopId)) {
+                        continue;
+                    }
+                }
+                
+                // Filter by date range (use order date, not refund completion date)
+                if (refund.getOrder() != null && refund.getOrder().getOrderDate() != null) {
+                    LocalDateTime orderDate = refund.getOrder().getOrderDate();
+                    
+                    if (startDate != null && orderDate.isBefore(startDate)) {
+                        continue;
+                    }
+                    if (endDate != null && orderDate.isAfter(endDate)) {
+                        continue;
+                    }
+                }
+                
+                if (refund.getRefundAmount() != null && refund.getRefundAmount() > 0) {
+                    totalRefund += refund.getRefundAmount();
+                }
+            }
+            
+            return totalRefund;
+        } catch (Exception e) {
+            System.err.println("Lỗi khi tính tổng refund: " + e.getMessage());
+            e.printStackTrace();
+            return 0.0;
+        }
+    }
+
+    /**
+     * Calculate refund amount for today
+     */
+    private double calculateTodayRefundAmount(Long shopId) {
+        Calendar today = Calendar.getInstance();
+        today.set(Calendar.HOUR_OF_DAY, 0);
+        today.set(Calendar.MINUTE, 0);
+        today.set(Calendar.SECOND, 0);
+        today.set(Calendar.MILLISECOND, 0);
+        
+        LocalDateTime startOfDay = LocalDateTime.of(
+            today.get(Calendar.YEAR),
+            today.get(Calendar.MONTH) + 1,
+            today.get(Calendar.DAY_OF_MONTH),
+            0, 0, 0
+        );
+        
+        LocalDateTime endOfDay = startOfDay.plusDays(1).minusSeconds(1);
+        
+        return calculateRefundAmount(startOfDay, endOfDay, shopId);
+    }
+
+    /**
+     * Calculate refund amount for a specific month
+     */
+    private double calculateMonthRefundAmount(int month, int year, Long shopId) {
+        Calendar cal = Calendar.getInstance();
+        cal.set(year, month - 1, 1, 0, 0, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+        
+        LocalDateTime startOfMonth = LocalDateTime.of(
+            cal.get(Calendar.YEAR),
+            cal.get(Calendar.MONTH) + 1,
+            1, 0, 0, 0
+        );
+        
+        cal.add(Calendar.MONTH, 1);
+        LocalDateTime endOfMonth = LocalDateTime.of(
+            cal.get(Calendar.YEAR),
+            cal.get(Calendar.MONTH) + 1,
+            1, 0, 0, 0
+        ).minusSeconds(1);
+        
+        return calculateRefundAmount(startOfMonth, endOfMonth, shopId);
+    }
+
+    /**
+     * Count delivered orders (orders with deliveredDate) in a specific month
+     */
+    private int countDeliveredOrdersInMonth(int month, int year, Long shopId) {
+        try {
             List<Order> allOrders = orderRepository.findAll();
+            int count = 0;
             
-            System.out.println("Tổng số đơn hàng trong cơ sở dữ liệu: " + allOrders.size());
+            for (Order order : allOrders) {
+                if (order.getOrderDate() == null || order.getDeliveredDate() == null) continue;
+                
+                // Filter by shop if specified
+                if (shopId != null) {
+                    if (order.getShop() == null || !order.getShop().getShopId().equals(shopId)) {
+                        continue;
+                    }
+                }
+                
+                Calendar orderDate = Calendar.getInstance();
+                orderDate.setTime(java.sql.Timestamp.valueOf(order.getOrderDate()));
+                int orderMonth = orderDate.get(Calendar.MONTH) + 1;
+                int orderYear = orderDate.get(Calendar.YEAR);
+                
+                if (orderMonth == month && orderYear == year) {
+                    count++;
+                }
+            }
             
-            // Lấy ngày hiện tại
+            return count;
+        } catch (Exception e) {
+            System.err.println("Lỗi khi đếm đơn hàng đã giao: " + e.getMessage());
+            return 0;
+        }
+    }
+
+    /**
+     * Count delivered orders for today
+     */
+    private int countDeliveredOrdersToday(Long shopId) {
+        try {
+            List<Order> allOrders = orderRepository.findAll();
             Calendar today = Calendar.getInstance();
-            // Reset time part để chỉ so sánh theo ngày
             today.set(Calendar.HOUR_OF_DAY, 0);
             today.set(Calendar.MINUTE, 0);
             today.set(Calendar.SECOND, 0);
             today.set(Calendar.MILLISECOND, 0);
             
-            int orderCount = 0;
-            double revenue = 0.0;
+            int count = 0;
             
             for (Order order : allOrders) {
-                if (order.getOrderDate() != null) {
-                    // Chuyển đổi ngày đơn hàng sang Calendar để so sánh
-                    Calendar orderDate = Calendar.getInstance();
-                    orderDate.setTime(java.sql.Timestamp.valueOf(order.getOrderDate()));
-                    orderDate.set(Calendar.HOUR_OF_DAY, 0);
-                    orderDate.set(Calendar.MINUTE, 0);
-                    orderDate.set(Calendar.SECOND, 0);
-                    orderDate.set(Calendar.MILLISECOND, 0);
-                    
-                    // Chỉ thêm đơn hàng cùng ngày
-                    if (orderDate.get(Calendar.YEAR) == today.get(Calendar.YEAR) &&
-                        orderDate.get(Calendar.DAY_OF_YEAR) == today.get(Calendar.DAY_OF_YEAR)) {
-                        todayOrders.add(order);
-                        revenue += effectiveAmount(order);
-                        System.out.println("[Đơn hàng hôm nay] ID: " + order.getOrderId() + ", Ngày: " + order.getOrderDate() + ", Giá trị: " + order.getTotalAmount());
+                if (order.getOrderDate() == null || order.getDeliveredDate() == null) continue;
+                
+                // Filter by shop if specified
+                if (shopId != null) {
+                    if (order.getShop() == null || !order.getShop().getShopId().equals(shopId)) {
+                        continue;
                     }
+                }
+                
+                Calendar orderDate = Calendar.getInstance();
+                orderDate.setTime(java.sql.Timestamp.valueOf(order.getOrderDate()));
+                orderDate.set(Calendar.HOUR_OF_DAY, 0);
+                orderDate.set(Calendar.MINUTE, 0);
+                orderDate.set(Calendar.SECOND, 0);
+                orderDate.set(Calendar.MILLISECOND, 0);
+                
+                if (orderDate.get(Calendar.YEAR) == today.get(Calendar.YEAR) &&
+                    orderDate.get(Calendar.DAY_OF_YEAR) == today.get(Calendar.DAY_OF_YEAR)) {
+                    count++;
                 }
             }
             
-            orderCount = todayOrders.size();
-            
-            System.out.println("Hôm nay có " + orderCount + " đơn hàng, tổng doanh thu: " + revenue);
-            
-            result.put("orderCount", orderCount);
-            result.put("formattedOrderCount", String.valueOf(orderCount));
-            result.put("revenue", revenue);
-            result.put("formattedRevenue", formatCurrency(revenue));
+            return count;
         } catch (Exception e) {
-            System.err.println("Lỗi khi lấy thống kê hôm nay: " + e.getMessage());
-            e.printStackTrace();
-            result.put("orderCount", 0);
-            result.put("formattedOrderCount", "0");
-            result.put("revenue", 0.0);
-            result.put("formattedRevenue", formatCurrency(0.0));
+            System.err.println("Lỗi khi đếm đơn hàng hôm nay: " + e.getMessage());
+            return 0;
         }
-        
-        return result;
     }
 
     /**
-     * Get current month's revenue statistics - Đã sửa để chỉ lọc theo tháng hiện tại
-     * @return Map containing revenue and growth rate
+     * Get today's revenue statistics - Returns both gross and net revenue
+     * @return Map containing orders count, gross revenue, net revenue, and refund amount
+     */
+    public Map<String, Object> getTodayStatistics() {
+        return getTodayStatisticsByShop(null);
+    }
+
+    /**
+     * Get current month's revenue statistics - Returns both gross and net revenue
+     * @return Map containing gross revenue, net revenue, refund amount, and growth rate
      */
     public Map<String, Object> getCurrentMonthStatistics() {
         // Lấy tháng và năm hiện tại
@@ -134,7 +280,7 @@ public class RevenueStatisticsService {
     }
     
     /**
-     * Get current month statistics by shop
+     * Get current month statistics by shop - Returns both gross and net revenue
      */
     public Map<String, Object> getCurrentMonthStatisticsByShop(Long shopId) {
         Calendar currentDate = Calendar.getInstance();
@@ -145,63 +291,106 @@ public class RevenueStatisticsService {
     }
     
     /**
-     * Get month statistics for a specific shop
+     * Get month statistics for a specific shop - Returns both gross and net revenue
      */
     public Map<String, Object> getMonthStatisticsByShop(Long shopId, int month, int year) {
         Map<String, Object> result = new HashMap<>();
         
         try {
             List<Order> allOrders = orderRepository.findAll();
-            double currentMonthRevenue = 0.0;
-            double previousMonthRevenue = 0.0;
+            double currentMonthGrossRevenue = 0.0;
+            double previousMonthGrossRevenue = 0.0;
             
             for (Order order : allOrders) {
-                if (order.getOrderDate() != null && order.getShop() != null && order.getShop().getShopId().equals(shopId)) {
-                    Calendar orderDate = Calendar.getInstance();
-                    orderDate.setTime(java.sql.Timestamp.valueOf(order.getOrderDate()));
-                    int orderMonth = orderDate.get(Calendar.MONTH) + 1;
-                    int orderYear = orderDate.get(Calendar.YEAR);
-                    
-                    if (orderMonth == month && orderYear == year) {
-                        currentMonthRevenue += effectiveAmount(order);
+                if (order.getOrderDate() == null) continue;
+                
+                // Filter by shop if specified
+                if (shopId != null) {
+                    if (order.getShop() == null || !order.getShop().getShopId().equals(shopId)) {
+                        continue;
                     }
-                    
-                    int localPrevMonth = month - 1;
-                    int localPrevYear = year;
-                    if (localPrevMonth == 0) {
-                        localPrevMonth = 12;
-                        localPrevYear = year - 1;
-                    }
-                    if (orderMonth == localPrevMonth && orderYear == localPrevYear) {
-                        previousMonthRevenue += effectiveAmount(order);
-                    }
+                }
+                
+                Calendar orderDate = Calendar.getInstance();
+                orderDate.setTime(java.sql.Timestamp.valueOf(order.getOrderDate()));
+                int orderMonth = orderDate.get(Calendar.MONTH) + 1;
+                int orderYear = orderDate.get(Calendar.YEAR);
+                
+                double amount = effectiveAmount(order);
+                
+                if (orderMonth == month && orderYear == year) {
+                    currentMonthGrossRevenue += amount;
+                }
+                
+                int localPrevMonth = month - 1;
+                int localPrevYear = year;
+                if (localPrevMonth == 0) {
+                    localPrevMonth = 12;
+                    localPrevYear = year - 1;
+                }
+                if (orderMonth == localPrevMonth && orderYear == localPrevYear) {
+                    previousMonthGrossRevenue += amount;
                 }
             }
             
-            // Tính tỷ lệ tăng trưởng
+            // Calculate refund amounts
+            double currentMonthRefund = calculateMonthRefundAmount(month, year, shopId);
+            // Net revenue = Gross - Refund, but cannot be negative
+            double currentMonthNetRevenue = Math.max(0.0, currentMonthGrossRevenue - currentMonthRefund);
+            
+            // Calculate AOV (Average Order Value) = Net Revenue / Number of delivered orders
+            int deliveredOrderCount = countDeliveredOrdersInMonth(month, year, shopId);
+            double aov = deliveredOrderCount > 0 ? currentMonthNetRevenue / deliveredOrderCount : 0.0;
+            
+            int prevMonth = month - 1;
+            int prevYear = year;
+            if (prevMonth == 0) {
+                prevMonth = 12;
+                prevYear = year - 1;
+            }
+            double previousMonthRefund = calculateMonthRefundAmount(prevMonth, prevYear, shopId);
+            double previousMonthNetRevenue = Math.max(0.0, previousMonthGrossRevenue - previousMonthRefund);
+            
+            // Tính tỷ lệ tăng trưởng (dựa trên net revenue)
             String growthRateDisplay;
             boolean isPositiveGrowth = true;
             
-            if (previousMonthRevenue > 0) {
-                // Tháng trước có doanh thu, tính % tăng trưởng bình thường
-                double growthRate = ((currentMonthRevenue - previousMonthRevenue) / previousMonthRevenue) * 100;
+            if (previousMonthNetRevenue > 0) {
+                double growthRate = ((currentMonthNetRevenue - previousMonthNetRevenue) / previousMonthNetRevenue) * 100;
                 growthRateDisplay = formatNumber(growthRate) + "%";
                 isPositiveGrowth = growthRate >= 0;
-            } else if (currentMonthRevenue > 0) {
-                // Tháng trước không có doanh thu, hiển thị "Mới" thay vì 100%
+            } else if (currentMonthNetRevenue > 0) {
                 growthRateDisplay = "Mới";
                 isPositiveGrowth = true;
             } else {
-                // Cả 2 tháng đều không có doanh thu
                 growthRateDisplay = "0%";
                 isPositiveGrowth = false;
             }
             
-            result.put("revenue", currentMonthRevenue);
-            result.put("formattedRevenue", formatCurrency(currentMonthRevenue));
+            result.put("grossRevenue", currentMonthGrossRevenue);
+            result.put("formattedGrossRevenue", formatCurrency(currentMonthGrossRevenue));
+            result.put("refundAmount", currentMonthRefund);
+            result.put("formattedRefundAmount", formatCurrency(currentMonthRefund));
+            result.put("netRevenue", currentMonthNetRevenue);
+            result.put("formattedNetRevenue", formatCurrency(currentMonthNetRevenue));
+            result.put("deliveredOrderCount", deliveredOrderCount);
+            result.put("aov", aov);
+            result.put("formattedAov", formatCurrency(aov));
             result.put("growthRate", growthRateDisplay);
             result.put("isPositiveGrowth", isPositiveGrowth);
+            
+            // Backward compatibility
+            result.put("revenue", currentMonthNetRevenue);
+            result.put("formattedRevenue", formatCurrency(currentMonthNetRevenue));
         } catch (Exception e) {
+            System.err.println("Lỗi khi lấy thống kê tháng: " + e.getMessage());
+            e.printStackTrace();
+            result.put("grossRevenue", 0.0);
+            result.put("formattedGrossRevenue", formatCurrency(0.0));
+            result.put("refundAmount", 0.0);
+            result.put("formattedRefundAmount", formatCurrency(0.0));
+            result.put("netRevenue", 0.0);
+            result.put("formattedNetRevenue", formatCurrency(0.0));
             result.put("revenue", 0.0);
             result.put("formattedRevenue", formatCurrency(0.0));
             result.put("growthRate", "0.0");
@@ -212,7 +401,9 @@ public class RevenueStatisticsService {
     }
     
     /**
-     * Get today statistics by shop
+     * Get today statistics by shop - Returns both gross and net revenue
+     * @param shopId Shop ID, null for all shops
+     * @return Map containing orders count, gross revenue, net revenue, and refund amount
      */
     public Map<String, Object> getTodayStatisticsByShop(Long shopId) {
         Map<String, Object> result = new HashMap<>();
@@ -226,32 +417,70 @@ public class RevenueStatisticsService {
             today.set(Calendar.MILLISECOND, 0);
             
             int orderCount = 0;
-            double revenue = 0.0;
+            double grossRevenue = 0.0;
             
             for (Order order : allOrders) {
-                if (order.getOrderDate() != null && order.getShop() != null && order.getShop().getShopId().equals(shopId)) {
-                    Calendar orderDate = Calendar.getInstance();
-                    orderDate.setTime(java.sql.Timestamp.valueOf(order.getOrderDate()));
-                    orderDate.set(Calendar.HOUR_OF_DAY, 0);
-                    orderDate.set(Calendar.MINUTE, 0);
-                    orderDate.set(Calendar.SECOND, 0);
-                    orderDate.set(Calendar.MILLISECOND, 0);
-                    
-                    if (orderDate.get(Calendar.YEAR) == today.get(Calendar.YEAR) &&
-                        orderDate.get(Calendar.DAY_OF_YEAR) == today.get(Calendar.DAY_OF_YEAR)) {
+                if (order.getOrderDate() == null) continue;
+                
+                // Filter by shop if specified
+                if (shopId != null) {
+                    if (order.getShop() == null || !order.getShop().getShopId().equals(shopId)) {
+                        continue;
+                    }
+                }
+                
+                Calendar orderDate = Calendar.getInstance();
+                orderDate.setTime(java.sql.Timestamp.valueOf(order.getOrderDate()));
+                orderDate.set(Calendar.HOUR_OF_DAY, 0);
+                orderDate.set(Calendar.MINUTE, 0);
+                orderDate.set(Calendar.SECOND, 0);
+                orderDate.set(Calendar.MILLISECOND, 0);
+                
+                if (orderDate.get(Calendar.YEAR) == today.get(Calendar.YEAR) &&
+                    orderDate.get(Calendar.DAY_OF_YEAR) == today.get(Calendar.DAY_OF_YEAR)) {
+                    double amount = effectiveAmount(order);
+                    if (amount > 0) {
                         orderCount++;
-                        revenue += effectiveAmount(order);
+                        grossRevenue += amount;
                     }
                 }
             }
             
+            // Calculate refund amount for today
+            double refundAmount = calculateTodayRefundAmount(shopId);
+            // Net revenue = Gross - Refund, but cannot be negative
+            double netRevenue = Math.max(0.0, grossRevenue - refundAmount);
+            
+            // Calculate AOV (Average Order Value) = Net Revenue / Number of delivered orders
+            int deliveredOrderCount = countDeliveredOrdersToday(shopId);
+            double aov = deliveredOrderCount > 0 ? netRevenue / deliveredOrderCount : 0.0;
+            
             result.put("orderCount", orderCount);
             result.put("formattedOrderCount", String.valueOf(orderCount));
-            result.put("revenue", revenue);
-            result.put("formattedRevenue", formatCurrency(revenue));
+            result.put("deliveredOrderCount", deliveredOrderCount);
+            result.put("grossRevenue", grossRevenue);
+            result.put("formattedGrossRevenue", formatCurrency(grossRevenue));
+            result.put("refundAmount", refundAmount);
+            result.put("formattedRefundAmount", formatCurrency(refundAmount));
+            result.put("netRevenue", netRevenue);
+            result.put("formattedNetRevenue", formatCurrency(netRevenue));
+            result.put("aov", aov);
+            result.put("formattedAov", formatCurrency(aov));
+            
+            // Backward compatibility
+            result.put("revenue", netRevenue);
+            result.put("formattedRevenue", formatCurrency(netRevenue));
         } catch (Exception e) {
+            System.err.println("Lỗi khi lấy thống kê hôm nay: " + e.getMessage());
+            e.printStackTrace();
             result.put("orderCount", 0);
             result.put("formattedOrderCount", "0");
+            result.put("grossRevenue", 0.0);
+            result.put("formattedGrossRevenue", formatCurrency(0.0));
+            result.put("refundAmount", 0.0);
+            result.put("formattedRefundAmount", formatCurrency(0.0));
+            result.put("netRevenue", 0.0);
+            result.put("formattedNetRevenue", formatCurrency(0.0));
             result.put("revenue", 0.0);
             result.put("formattedRevenue", formatCurrency(0.0));
         }
@@ -260,92 +489,13 @@ public class RevenueStatisticsService {
     }
     
     /**
-     * Get month statistics for a specific month and year
+     * Get month statistics for a specific month and year - Returns both gross and net revenue
      * @param month Month (1-12)
      * @param year Year
-     * @return Map containing revenue and growth rate
+     * @return Map containing gross revenue, net revenue, refund amount, and growth rate
      */
     public Map<String, Object> getMonthStatistics(int month, int year) {
-        Map<String, Object> result = new HashMap<>();
-        
-        try {
-            
-            // Truy vấn trực tiếp từ danh sách đơn hàng
-            List<Order> allOrders = orderRepository.findAll();
-            System.out.println("Tổng số đơn hàng: " + allOrders.size());
-            System.out.println("Đang lấy thống kê cho tháng " + month + "/" + year);
-            
-            double currentMonthRevenue = 0.0;
-            double previousMonthRevenue = 0.0;
-            
-            for (Order order : allOrders) {
-                if (order.getOrderDate() != null) {
-                    Calendar orderDate = Calendar.getInstance();
-                    orderDate.setTime(java.sql.Timestamp.valueOf(order.getOrderDate()));
-                    int orderMonth = orderDate.get(Calendar.MONTH) + 1; // Chuyển sang 1-based (1-12)
-                    int orderYear = orderDate.get(Calendar.YEAR);
-                    
-                    // Lọc đơn hàng của tháng được chọn
-                    if (orderMonth == month && orderYear == year) {
-                        currentMonthRevenue += effectiveAmount(order);
-                        System.out.println("[Đơn hàng - Tháng " + month + "/" + year + "] ID: " + order.getOrderId() + 
-                                           ", Tháng: " + orderMonth + "/" + orderYear + 
-                                           ", Giá trị: " + order.getTotalAmount());
-                    }
-                    
-                    // Lọc đơn hàng của tháng trước
-                    int localPrevMonth = month - 1;
-                    int localPrevYear = year;
-                    if (localPrevMonth == 0) {
-                        localPrevMonth = 12;
-                        localPrevYear = year - 1;
-                    }
-                    if (orderMonth == localPrevMonth && orderYear == localPrevYear) {
-                        previousMonthRevenue += effectiveAmount(order);
-                    }
-                }
-            }
-            
-            // Calculate growth rate
-            System.out.println("=== TÍNH TOÁN TỶ LỆ TĂNG TRƯỞNG ===");
-            System.out.println("Doanh thu tháng " + month + "/" + year + ": " + formatCurrency(currentMonthRevenue));
-            System.out.println("Doanh thu tháng trước: " + formatCurrency(previousMonthRevenue));
-            
-            String growthRateDisplay;
-            boolean isPositiveGrowth = true;
-            
-            if (previousMonthRevenue > 0) {
-                // Tháng trước có doanh thu, tính % tăng trưởng bình thường
-                double growthRate = ((currentMonthRevenue - previousMonthRevenue) / previousMonthRevenue) * 100;
-                growthRateDisplay = formatNumber(growthRate) + "%";
-                isPositiveGrowth = growthRate >= 0;
-                System.out.println("Tăng trưởng: " + growthRateDisplay);
-            } else if (currentMonthRevenue > 0) {
-                // Tháng trước không có doanh thu, hiển thị "Mới" thay vì 100%
-                growthRateDisplay = "Mới";
-                isPositiveGrowth = true;
-                System.out.println("Trạng thái: Dữ liệu mới (tháng trước không có doanh thu)");
-            } else {
-                // Cả 2 tháng đều không có doanh thu
-                growthRateDisplay = "0%";
-                isPositiveGrowth = false;
-                System.out.println("Trạng thái: Không có dữ liệu cả 2 tháng");
-            }
-            
-            result.put("revenue", currentMonthRevenue);
-            result.put("formattedRevenue", formatCurrency(currentMonthRevenue));
-            result.put("growthRate", growthRateDisplay);
-            result.put("isPositiveGrowth", isPositiveGrowth);
-        } catch (Exception e) {
-            System.err.println("Lỗi khi lấy thống kê tháng hiện tại: " + e.getMessage());
-            e.printStackTrace();
-            result.put("revenue", 0.0);
-            result.put("formattedRevenue", formatCurrency(0.0));
-            result.put("growthRate", "0.0");
-            result.put("isPositiveGrowth", false);
-        }
-        
-        return result;
+        return getMonthStatisticsByShop(null, month, year);
     }
 
     /**
@@ -394,19 +544,20 @@ public class RevenueStatisticsService {
     }
 
     /**
-     * Get statistics for selected period - Sửa để hiển thị tất cả đơn hàng 
+     * Get statistics for selected period - Returns both gross and net revenue
      * @param type Period type: 'month', 'quarter', 'year'
      * @param year Selected year
      * @param month Selected month (for monthly view)
      * @param quarter Selected quarter (for quarterly view)
-     * @return Map containing period name and revenue
+     * @return Map containing period name, gross revenue, net revenue, and refund amount
      */
     public Map<String, Object> getSelectedPeriodStatistics(String type, int year, int month, int quarter) {
         Map<String, Object> result = new HashMap<>();
         
         try {
             String periodName = "";
-            double revenue = 0.0;
+            double grossRevenue = 0.0;
+            double refundAmount = 0.0;
             List<Order> allOrders = orderRepository.findAll();
             
             // Log thông tin đầu vào để debug
@@ -414,125 +565,139 @@ public class RevenueStatisticsService {
             System.out.println("Loại: " + type + ", Năm: " + year + ", Tháng: " + month + ", Quý: " + quarter);
             System.out.println("Tổng số đơn hàng trong CSDL: " + allOrders.size());
             
-            // Log các thông số đầu vào để debug
+            LocalDateTime startDate = null;
+            LocalDateTime endDate = null;
             
             switch (type) {
                 case "month":
-                    // Monthly statistics - hiển thị dữ liệu thật của tháng được chọn
+                    // Monthly statistics
                     periodName = "Tháng " + month + "/" + year;
                     
-                    // In log để debug chi tiết
-                    System.out.println("\n===== THỐNG KÊ CHO " + periodName + " =====");
-                    System.out.println("Đơn hàng trong tháng " + month + "/" + year + ":");
-                    System.out.println("------------------------------------");
-                    
-                    // IMPORTANT DEBUG: Kiểm tra tất cả đơn hàng trong hệ thống
-                    System.out.println("\n===== DANH SÁCH TẤT CẢ ĐƠN HÀNG =====");
-                    for (Order debugOrder : allOrders) {
-                        if (debugOrder.getOrderDate() != null) {
-                            Calendar debugCal = Calendar.getInstance();
-                            debugCal.setTime(java.sql.Timestamp.valueOf(debugOrder.getOrderDate()));
-                            System.out.println("DEBUG - Order ID: " + debugOrder.getOrderId() + 
-                                       ", Date: " + debugOrder.getOrderDate() + 
-                                       ", Month: " + (debugCal.get(Calendar.MONTH) + 1) +
-                                       ", Year: " + debugCal.get(Calendar.YEAR) +
-                                       ", Amount: " + (debugOrder.getTotalAmount() != null ? debugOrder.getTotalAmount() : "null"));
-                        }
-                    }
+                    Calendar cal = Calendar.getInstance();
+                    cal.set(year, month - 1, 1, 0, 0, 0);
+                    cal.set(Calendar.MILLISECOND, 0);
+                    startDate = LocalDateTime.of(
+                        cal.get(Calendar.YEAR),
+                        cal.get(Calendar.MONTH) + 1,
+                        1, 0, 0, 0
+                    );
+                    cal.add(Calendar.MONTH, 1);
+                    endDate = LocalDateTime.of(
+                        cal.get(Calendar.YEAR),
+                        cal.get(Calendar.MONTH) + 1,
+                        1, 0, 0, 0
+                    ).minusSeconds(1);
                     
                     for (Order order : allOrders) {
                         if (order.getOrderDate() != null) {
-                            // Lọc theo tháng và năm đã chọn
                             Calendar orderDate = Calendar.getInstance();
                             orderDate.setTime(java.sql.Timestamp.valueOf(order.getOrderDate()));
-                            int orderMonth = orderDate.get(Calendar.MONTH) + 1; // Calendar.MONTH bắt đầu từ 0 (chuyển sang 1-12)
+                            int orderMonth = orderDate.get(Calendar.MONTH) + 1;
                             int orderYear = orderDate.get(Calendar.YEAR);
                             
                             if (orderYear == year && orderMonth == month) {
-                                revenue += effectiveAmount(order);
-                                System.out.println("ID: " + order.getOrderId() + 
-                                                  ", Ngày: " + order.getOrderDate() + 
-                                                  ", Tháng: " + orderMonth + "/" + orderYear + 
-                                                  ", Giá trị: " + formatCurrency(order.getTotalAmount()));
+                                grossRevenue += effectiveAmount(order);
                             }
                         }
                     }
-                    System.out.println("\nTổng doanh thu " + periodName + ": " + formatCurrency(revenue));
+                    
+                    refundAmount = calculateRefundAmount(startDate, endDate, null);
                     break;
                     
                 case "quarter":
-                    // Quarterly statistics - hiển thị dữ liệu thật
+                    // Quarterly statistics
                     periodName = "Quý " + quarter + "/" + year;
                     int startMonth = (quarter - 1) * 3 + 1;
                     int endMonth = quarter * 3;
                     
-                    System.out.println("\n===== THỐNG KÊ CHO " + periodName + " =====");
-                    System.out.println("Đơn hàng trong quý " + quarter + "/" + year + " (tháng " + startMonth + "-" + endMonth + "):");
-                    System.out.println("------------------------------------");
+                    Calendar quarterCal = Calendar.getInstance();
+                    quarterCal.set(year, startMonth - 1, 1, 0, 0, 0);
+                    quarterCal.set(Calendar.MILLISECOND, 0);
+                    startDate = LocalDateTime.of(
+                        quarterCal.get(Calendar.YEAR),
+                        quarterCal.get(Calendar.MONTH) + 1,
+                        1, 0, 0, 0
+                    );
+                    quarterCal.set(year, endMonth - 1, 1, 0, 0, 0);
+                    quarterCal.add(Calendar.MONTH, 1);
+                    endDate = LocalDateTime.of(
+                        quarterCal.get(Calendar.YEAR),
+                        quarterCal.get(Calendar.MONTH) + 1,
+                        1, 0, 0, 0
+                    ).minusSeconds(1);
                     
                     for (Order order : allOrders) {
                         if (order.getOrderDate() != null) {
-                            // Sử dụng Calendar thay vì toInstant()
-                            Calendar cal = Calendar.getInstance();
-                            cal.setTime(java.sql.Timestamp.valueOf(order.getOrderDate()));
-                            int orderMonth = cal.get(Calendar.MONTH) + 1; // Calendar.MONTH bắt đầu từ 0
-                            int orderYear = cal.get(Calendar.YEAR);
+                            Calendar orderCal = Calendar.getInstance();
+                            orderCal.setTime(java.sql.Timestamp.valueOf(order.getOrderDate()));
+                            int orderMonth = orderCal.get(Calendar.MONTH) + 1;
+                            int orderYear = orderCal.get(Calendar.YEAR);
                             
                             if (orderYear == year && orderMonth >= startMonth && orderMonth <= endMonth) {
-                                revenue += effectiveAmount(order);
-                                System.out.println("ID: " + order.getOrderId() + 
-                                                  ", Ngày: " + order.getOrderDate() + 
-                                                  ", Tháng: " + orderMonth + "/" + orderYear + 
-                                                  ", Giá trị: " + formatCurrency(order.getTotalAmount()));
+                                grossRevenue += effectiveAmount(order);
                             }
                         }
                     }
-                    System.out.println("\nTổng doanh thu " + periodName + ": " + formatCurrency(revenue));
+                    
+                    refundAmount = calculateRefundAmount(startDate, endDate, null);
                     break;
                     
                 case "year":
                     // Yearly statistics
                     periodName = "Năm " + year;
                     
-                    System.out.println("\n===== THỐNG KÊ CHO " + periodName + " =====");
-                    System.out.println("Đơn hàng trong năm " + year + ":");
-                    System.out.println("------------------------------------");
+                    Calendar yearCal = Calendar.getInstance();
+                    yearCal.set(year, 0, 1, 0, 0, 0);
+                    yearCal.set(Calendar.MILLISECOND, 0);
+                    startDate = LocalDateTime.of(year, 1, 1, 0, 0, 0);
+                    endDate = LocalDateTime.of(year + 1, 1, 1, 0, 0, 0).minusSeconds(1);
                     
                     for (Order order : allOrders) {
                         if (order.getOrderDate() != null) {
-                            // Sử dụng Calendar thay vì toInstant()
-                            Calendar cal = Calendar.getInstance();
-                            cal.setTime(java.sql.Timestamp.valueOf(order.getOrderDate()));
-                            int orderYear = cal.get(Calendar.YEAR);
+                            Calendar orderCal = Calendar.getInstance();
+                            orderCal.setTime(java.sql.Timestamp.valueOf(order.getOrderDate()));
+                            int orderYear = orderCal.get(Calendar.YEAR);
                             
                             if (orderYear == year) {
-                                revenue += effectiveAmount(order);
-                                System.out.println("ID: " + order.getOrderId() + 
-                                                  ", Ngày: " + order.getOrderDate() + 
-                                                  ", Tháng: " + (cal.get(Calendar.MONTH) + 1) + "/" + orderYear + 
-                                                  ", Giá trị: " + formatCurrency(order.getTotalAmount()));
+                                grossRevenue += effectiveAmount(order);
                             }
                         }
                     }
-                    System.out.println("\nTổng doanh thu " + periodName + ": " + formatCurrency(revenue));
+                    
+                    refundAmount = calculateRefundAmount(startDate, endDate, null);
                     break;
             }
             
+            // Net revenue = Gross - Refund, but cannot be negative
+            double netRevenue = Math.max(0.0, grossRevenue - refundAmount);
+            
             System.out.println("\n===== KẾT QUẢ CUỐI CÙNG =====");
             System.out.println("Kỳ báo cáo: " + periodName);
-            System.out.println("Doanh thu: " + formatCurrency(revenue));
-            
-            // Cập nhật để thử tránh lỗi hiển thị "0 đ" khi có dữ liệu
-            String formattedValue = formatCurrency(revenue);
-            System.out.println("FORMATTED REVENUE: " + formattedValue);
+            System.out.println("Doanh thu gộp: " + formatCurrency(grossRevenue));
+            System.out.println("Tổng hoàn tiền: " + formatCurrency(refundAmount));
+            System.out.println("Doanh thu thực: " + formatCurrency(netRevenue));
             
             result.put("periodName", periodName);
-            result.put("revenue", revenue);
-            result.put("formattedRevenue", formattedValue);
+            result.put("grossRevenue", grossRevenue);
+            result.put("formattedGrossRevenue", formatCurrency(grossRevenue));
+            result.put("refundAmount", refundAmount);
+            result.put("formattedRefundAmount", formatCurrency(refundAmount));
+            result.put("netRevenue", netRevenue);
+            result.put("formattedNetRevenue", formatCurrency(netRevenue));
+            
+            // Backward compatibility
+            result.put("revenue", netRevenue);
+            result.put("formattedRevenue", formatCurrency(netRevenue));
         } catch (Exception e) {
             System.err.println("Lỗi khi lấy thống kê kỳ đã chọn: " + e.getMessage());
             e.printStackTrace();
             result.put("periodName", "Không xác định");
+            result.put("grossRevenue", 0.0);
+            result.put("formattedGrossRevenue", formatCurrency(0.0));
+            result.put("refundAmount", 0.0);
+            result.put("formattedRefundAmount", formatCurrency(0.0));
+            result.put("netRevenue", 0.0);
+            result.put("formattedNetRevenue", formatCurrency(0.0));
             result.put("revenue", 0.0);
             result.put("formattedRevenue", formatCurrency(0.0));
         }
@@ -540,6 +705,62 @@ public class RevenueStatisticsService {
         return result;
     }
 
+    /**
+     * Calculate revenue for orders with specific status (SHIPPING or CONFIRMED)
+     * @param status Order status (SHIPPING or CONFIRMED)
+     * @param shopId Shop ID to filter by, null for all shops
+     * @return Map containing revenue amount and formatted revenue
+     */
+    public Map<String, Object> getRevenueByStatus(Order.OrderStatus status, Long shopId) {
+        Map<String, Object> result = new HashMap<>();
+        
+        try {
+            List<Order> allOrders = orderRepository.findAll();
+            double revenue = 0.0;
+            int orderCount = 0;
+            
+            for (Order order : allOrders) {
+                // Filter by shop if specified
+                if (shopId != null) {
+                    if (order.getShop() == null || !order.getShop().getShopId().equals(shopId)) {
+                        continue;
+                    }
+                }
+                
+                // Check if order has the specified status
+                if (order.getStatus() == status) {
+                    orderCount++;
+                    // Get order amount (prefer finalAmount, fallback to totalAmount)
+                    Double amount = null;
+                    try {
+                        amount = order.getFinalAmount();
+                        if (amount == null || amount <= 0) {
+                            amount = order.getTotalAmount();
+                        }
+                    } catch (Exception ignored) {}
+                    
+                    if (amount != null && amount > 0) {
+                        revenue += amount;
+                    }
+                }
+            }
+            
+            result.put("revenue", revenue);
+            result.put("formattedRevenue", formatCurrency(revenue));
+            result.put("orderCount", orderCount);
+            result.put("formattedOrderCount", String.valueOf(orderCount));
+        } catch (Exception e) {
+            System.err.println("Lỗi khi tính doanh thu theo trạng thái " + status + ": " + e.getMessage());
+            e.printStackTrace();
+            result.put("revenue", 0.0);
+            result.put("formattedRevenue", formatCurrency(0.0));
+            result.put("orderCount", 0);
+            result.put("formattedOrderCount", "0");
+        }
+        
+        return result;
+    }
+    
     /**
      * Get order completion rate statistics
      * @return Map containing completion rate and text
@@ -975,7 +1196,8 @@ public class RevenueStatisticsService {
             int orderCount = 0;
             
             for (Order order : allOrders) {
-                if (order.getOrderDate() != null) {
+                // Chỉ đếm orders đã được delivered (có deliveredDate)
+                if (order.getOrderDate() != null && order.getDeliveredDate() != null) {
                     Calendar orderDate = Calendar.getInstance();
                     orderDate.setTime(java.sql.Timestamp.valueOf(order.getOrderDate()));
                     int orderMonth = orderDate.get(Calendar.MONTH) + 1; // Chuyển sang 1-based (1-12)

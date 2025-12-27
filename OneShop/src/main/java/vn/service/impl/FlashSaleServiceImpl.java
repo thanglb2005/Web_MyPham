@@ -157,6 +157,21 @@ public class FlashSaleServiceImpl implements FlashSaleService {
             throw new RuntimeException("Cannot delete active flash sale");
         }
         
+        // Delete all related FlashSaleOrder records first (to avoid foreign key constraint violation)
+        List<FlashSaleOrder> flashSaleOrders = flashSaleOrderRepository.findByFlashSaleId(id);
+        if (!flashSaleOrders.isEmpty()) {
+            flashSaleOrderRepository.deleteAll(flashSaleOrders);
+            System.out.println("Deleted " + flashSaleOrders.size() + " flash sale orders for flash sale ID: " + id);
+        }
+        
+        // Delete all related FlashSaleProduct records
+        List<FlashSaleProduct> flashSaleProducts = flashSaleProductRepository.findByFlashSaleFlashSaleId(id);
+        if (!flashSaleProducts.isEmpty()) {
+            flashSaleProductRepository.deleteAll(flashSaleProducts);
+            System.out.println("Deleted " + flashSaleProducts.size() + " flash sale products for flash sale ID: " + id);
+        }
+        
+        // Finally, delete the flash sale itself
         flashSaleRepository.delete(flashSale);
     }
     

@@ -144,11 +144,11 @@
                                             <!-- Column: Unit Price -->
                                             <div style="width: 150px; text-align: right;" th:attr="data-product-id=${item.id}">
                                                 <div th:if="${item.discount != null and item.discount > 0}" 
+                                                     class="cart-item-original-price"
                                                      style="color: #757575; font-size: 12px; text-decoration: line-through;" 
                                                      th:text="${#numbers.formatDecimal(item.unitPrice, 0, 'DEFAULT', 0, 'DEFAULT')} + 'đ'"></div>
                                                 <div class="cart-item-price" style="color: #33a3cc; font-size: 16px; font-weight: 500;" 
                                                      th:text="${#numbers.formatDecimal(item.discount != null and item.discount > 0 ? item.unitPrice * (1 - item.discount/100.0) : item.unitPrice, 0, 'DEFAULT', 0, 'DEFAULT')} + 'đ'"></div>
-                                                <span class="cart-flash-sale-badge" style="display: none; margin-top: 5px; display: block; font-size: 11px; color: #ff6b6b; font-weight: 600;">⚡ Flash Sale</span>
                                             </div>
                                             
                                             <!-- Column: Quantity -->
@@ -1714,33 +1714,44 @@
           if (!productId) return;
           
           FlashSaleAPI.getProductFlashSalePrice(productId).then(function(data) {
-            if (data && data.inFlashSale) {
-              const badge = item.querySelector('.cart-flash-sale-badge');
-              if (badge) {
-                badge.style.display = 'block';
+            const priceElement = item.querySelector('.cart-item-price');
+            const originalPriceElement = item.querySelector('.cart-item-original-price');
+            
+            if (data && data.inFlashSale && data.flashSalePrice) {
+              // Sản phẩm trong flash sale: hiển thị giá gốc gạch bỏ + giá flash sale màu đỏ
+              const originalPrice = data.originalPrice;
+              const flashPrice = data.flashSalePrice;
+              
+              // Hiển thị giá gốc gạch bỏ (nếu chưa có)
+              if (!originalPriceElement) {
+                const originalDiv = document.createElement('div');
+                originalDiv.className = 'cart-item-original-price';
+                originalDiv.style.cssText = 'color: #757575; font-size: 12px; text-decoration: line-through;';
+                originalDiv.textContent = formatPrice(originalPrice);
+                priceElement.parentNode.insertBefore(originalDiv, priceElement);
+              } else {
+                originalPriceElement.textContent = formatPrice(originalPrice);
+                originalPriceElement.style.display = 'block';
               }
               
-              // Update price display if needed
-              const priceElement = item.querySelector('.cart-item-price');
-              if (priceElement && data.flashSalePrice) {
-                const originalPrice = data.originalPrice;
-                const flashPrice = data.flashSalePrice;
-                
-                // Check if current price is flash sale price
-                const currentPriceText = priceElement.textContent.replace(/[^\d]/g, '');
-                const flashPriceText = Math.floor(flashPrice).toString();
-                
-                if (currentPriceText !== flashPriceText) {
-                  priceElement.innerHTML = `
-                    <div style="color: #757575; font-size: 12px; text-decoration: line-through;">
-                      ${formatPrice(originalPrice)}
-                    </div>
-                    <div style="color: #ff6b6b; font-size: 16px; font-weight: 500;">
-                      ${formatPrice(flashPrice)}
-                    </div>
-                  `;
-                }
+              // Cập nhật giá flash sale màu đỏ
+              priceElement.style.color = '#ff6b6b';
+              priceElement.textContent = formatPrice(flashPrice);
+            } else {
+              // Sản phẩm bình thường: màu xanh như cũ
+              priceElement.style.color = '#33a3cc';
+              
+              // Ẩn giá gốc nếu có (trường hợp sản phẩm không còn trong flash sale)
+              if (originalPriceElement) {
+                originalPriceElement.style.display = 'none';
               }
+            }
+          }).catch(function(error) {
+            console.error('Error loading flash sale price for product ' + productId + ':', error);
+            // Nếu có lỗi, giữ nguyên màu xanh
+            const priceElement = item.querySelector('.cart-item-price');
+            if (priceElement) {
+              priceElement.style.color = '#33a3cc';
             }
           });
         });

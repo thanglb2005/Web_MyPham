@@ -30,59 +30,55 @@ public class RevenueController {
     private final OrderRepository orderRepository;
     private final ShopRepository shopRepository;
     
-    // API endpoint để lấy dữ liệu cho biểu đồ
+    // API endpoint để lấy dữ liệu cho biểu đồ - Returns both gross and net revenue
     @GetMapping("/api/monthly-revenue-data")
     @ResponseBody
     public Map<String, Object> getMonthlyRevenueData(@RequestParam(value = "shopId", required = false) Long shopId) {
-        // Lấy dữ liệu theo shop hoặc tất cả
-        List<Object[]> monthlyStats;
-        if (shopId != null) {
-            monthlyStats = orderRepository.getMonthlyOrderStatisticsByShop(shopId);
-        } else {
-            monthlyStats = orderRepository.getMonthlyOrderStatistics();
-        }
-        
         Map<String, Object> result = new HashMap<>();
         
-        // Tạo mảng dữ liệu cho 12 tháng
-        double[] monthlyRevenue = new double[12];
-        int[] monthlyOrders = new int[12];
-        String[] months = {"Tháng 1", "Tháng 2", "Tháng 3", "Tháng 4", "Tháng 5", "Tháng 6", 
-                          "Tháng 7", "Tháng 8", "Tháng 9", "Tháng 10", "Tháng 11", "Tháng 12"};
-        
-        // Điền dữ liệu từ kết quả truy vấn
-        for (Object[] stats : monthlyStats) {
-            int year = ((Number) stats[0]).intValue();
-            int month = ((Number) stats[1]).intValue();
-            
-            // Lấy năm hiện tại
+        try {
             int currentYear = Calendar.getInstance().get(Calendar.YEAR);
+            double[] monthlyGrossRevenue = new double[12];
+            double[] monthlyNetRevenue = new double[12];
+            double[] monthlyRefundAmount = new double[12];
+            int[] monthlyOrders = new int[12];
+            String[] months = {"Tháng 1", "Tháng 2", "Tháng 3", "Tháng 4", "Tháng 5", "Tháng 6", 
+                              "Tháng 7", "Tháng 8", "Tháng 9", "Tháng 10", "Tháng 11", "Tháng 12"};
             
-            // Chỉ xử lý dữ liệu của năm hiện tại
-            if (year == currentYear && month >= 1 && month <= 12) {
-                // Cố gắng chuyển đổi revenue sang double, xử lý nhiều kiểu dữ liệu có thể có
-                Object revenueObj = stats[3];
-                double revenue = 0;
-                if (revenueObj instanceof Number) {
-                    revenue = ((Number) revenueObj).doubleValue();
+            // Calculate revenue for each month
+            for (int month = 1; month <= 12; month++) {
+                Map<String, Object> monthStats;
+                if (shopId != null) {
+                    monthStats = revenueStatisticsService.getMonthStatisticsByShop(shopId, month, currentYear);
+                } else {
+                    monthStats = revenueStatisticsService.getMonthStatistics(month, currentYear);
                 }
                 
-                // Cố gắng chuyển đổi orderCount sang int
-                Object orderCountObj = stats[2];
-                int orderCount = 0;
-                if (orderCountObj instanceof Number) {
-                    orderCount = ((Number) orderCountObj).intValue();
-                }
+                monthlyGrossRevenue[month - 1] = ((Number) monthStats.get("grossRevenue")).doubleValue();
+                monthlyNetRevenue[month - 1] = ((Number) monthStats.get("netRevenue")).doubleValue();
+                monthlyRefundAmount[month - 1] = ((Number) monthStats.get("refundAmount")).doubleValue();
                 
-                monthlyRevenue[month - 1] = revenue;
-                monthlyOrders[month - 1] = orderCount;
+                // Count orders for this month
+                monthlyOrders[month - 1] = revenueStatisticsService.getOrderCountByMonth(month, currentYear);
             }
+            
+            result.put("grossRevenues", monthlyGrossRevenue);
+            result.put("netRevenues", monthlyNetRevenue);
+            result.put("refundAmounts", monthlyRefundAmount);
+            result.put("revenues", monthlyNetRevenue); // Backward compatibility
+            result.put("orders", monthlyOrders);
+            result.put("months", months);
+        } catch (Exception e) {
+            System.err.println("Lỗi khi lấy dữ liệu doanh thu theo tháng: " + e.getMessage());
+            e.printStackTrace();
+            result.put("grossRevenues", new double[12]);
+            result.put("netRevenues", new double[12]);
+            result.put("refundAmounts", new double[12]);
+            result.put("revenues", new double[12]);
+            result.put("orders", new int[12]);
+            result.put("months", new String[]{"Tháng 1", "Tháng 2", "Tháng 3", "Tháng 4", "Tháng 5", "Tháng 6", 
+                                              "Tháng 7", "Tháng 8", "Tháng 9", "Tháng 10", "Tháng 11", "Tháng 12"});
         }
-        
-        // Chỉ trả về dữ liệu thật từ database
-        result.put("revenues", monthlyRevenue);
-        result.put("orders", monthlyOrders);
-        result.put("months", months);
         
         return result;
     }
@@ -414,9 +410,21 @@ public class RevenueController {
             } else {
                 currentMonthStats = revenueStatisticsService.getCurrentMonthStatistics();
             }
-            model.addAttribute("currentMonthRevenue", currentMonthStats.get("formattedRevenue"));
+            model.addAttribute("currentMonthGrossRevenue", currentMonthStats.get("formattedGrossRevenue"));
+            model.addAttribute("currentMonthNetRevenue", currentMonthStats.get("formattedNetRevenue"));
+            model.addAttribute("currentMonthRefundAmount", currentMonthStats.get("formattedRefundAmount"));
+            model.addAttribute("currentMonthAov", currentMonthStats.get("formattedAov"));
+            model.addAttribute("currentMonthRevenue", currentMonthStats.get("formattedNetRevenue")); // Backward compatibility
             model.addAttribute("growthRate", currentMonthStats.get("growthRate"));
             model.addAttribute("isPositiveGrowth", currentMonthStats.get("isPositiveGrowth"));
+            
+            // Revenue by order status (SHIPPING and CONFIRMED)
+            Map<String, Object> shippingRevenue = revenueStatisticsService.getRevenueByStatus(Order.OrderStatus.SHIPPING, shopId);
+            Map<String, Object> confirmedRevenue = revenueStatisticsService.getRevenueByStatus(Order.OrderStatus.CONFIRMED, shopId);
+            model.addAttribute("shippingRevenue", shippingRevenue.get("formattedRevenue"));
+            model.addAttribute("shippingOrderCount", shippingRevenue.get("formattedOrderCount"));
+            model.addAttribute("confirmedRevenue", confirmedRevenue.get("formattedRevenue"));
+            model.addAttribute("confirmedOrderCount", confirmedRevenue.get("formattedOrderCount"));
             
             // Today's statistics (lọc theo shop nếu có)
             Map<String, Object> todayStats;
@@ -426,7 +434,11 @@ public class RevenueController {
                 todayStats = revenueStatisticsService.getTodayStatistics();
             }
             model.addAttribute("todayOrders", todayStats.get("formattedOrderCount"));
-            model.addAttribute("todayRevenue", todayStats.get("formattedRevenue"));
+            model.addAttribute("todayGrossRevenue", todayStats.get("formattedGrossRevenue"));
+            model.addAttribute("todayNetRevenue", todayStats.get("formattedNetRevenue"));
+            model.addAttribute("todayRefundAmount", todayStats.get("formattedRefundAmount"));
+            model.addAttribute("todayAov", todayStats.get("formattedAov"));
+            model.addAttribute("todayRevenue", todayStats.get("formattedNetRevenue")); // Backward compatibility
             
             // Load default data for charts if needed
             // You can add more specific data here if needed
@@ -441,12 +453,17 @@ public class RevenueController {
             Map<String, Object> periodStats = revenueStatisticsService.getSelectedPeriodStatistics(
                 type, currentYear, currentMonth, currentQuarter);
             System.out.println("CONTROLLER - Period Name: " + periodStats.get("periodName"));
-            System.out.println("CONTROLLER - Formatted Revenue: " + periodStats.get("formattedRevenue"));
+            System.out.println("CONTROLLER - Gross Revenue: " + periodStats.get("formattedGrossRevenue"));
+            System.out.println("CONTROLLER - Net Revenue: " + periodStats.get("formattedNetRevenue"));
+            System.out.println("CONTROLLER - Refund Amount: " + periodStats.get("formattedRefundAmount"));
             
             model.addAttribute("selectedPeriod", periodStats.get("periodName"));
-            // Lấy dữ liệu thật từ database, không sử dụng dữ liệu giả
-            String revenueDisplay = (String)periodStats.get("formattedRevenue");
-            // Nếu không có dữ liệu, hiển thị 0 đ thay vì dữ liệu giả
+            model.addAttribute("selectedGrossRevenue", periodStats.get("formattedGrossRevenue"));
+            model.addAttribute("selectedNetRevenue", periodStats.get("formattedNetRevenue"));
+            model.addAttribute("selectedRefundAmount", periodStats.get("formattedRefundAmount"));
+            
+            // Backward compatibility
+            String revenueDisplay = (String)periodStats.get("formattedNetRevenue");
             if (revenueDisplay == null) {
                 revenueDisplay = "0 đ";
             }

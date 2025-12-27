@@ -20,7 +20,12 @@
     <link rel="stylesheet" href="/css/admin-fonts.css" />
 
     <style>
-      .page-title { color: #333; font-size: 1.8rem; margin: 0; font-weight: 600; }
+      .page-title {
+        color: #333;
+        font-size: 1.8rem;
+        margin: 0;
+        font-weight: 600;
+      }
 
       .form-container {
         background: white;
@@ -63,17 +68,32 @@
         font-weight: 600;
       }
 
-      .status-DRAFT { background: #6c757d; color: white; }
-      .status-SCHEDULED { background: #17a2b8; color: white; }
-      .status-ACTIVE { background: #28a745; color: white; }
-      .status-ENDED { background: #6c757d; color: white; }
-      .status-CANCELLED { background: #dc3545; color: white; }
+      .status-DRAFT {
+        background: #6c757d;
+        color: white;
+      }
+      .status-SCHEDULED {
+        background: #17a2b8;
+        color: white;
+      }
+      .status-ACTIVE {
+        background: #28a745;
+        color: white;
+      }
+      .status-ENDED {
+        background: #6c757d;
+        color: white;
+      }
+      .status-CANCELLED {
+        background: #dc3545;
+        color: white;
+      }
 
       .btn-sm {
         padding: 5px 10px;
         font-size: 12px;
       }
-      
+
       /* Product Grid */
       .product-grid {
         display: grid;
@@ -81,7 +101,7 @@
         gap: 20px;
         margin-top: 20px;
       }
-      
+
       .product-card-select {
         border: 2px solid #e0e0e0;
         border-radius: 12px;
@@ -91,19 +111,19 @@
         cursor: pointer;
         position: relative;
       }
-      
+
       .product-card-select:hover {
         border-color: #667eea;
         box-shadow: 0 4px 15px rgba(102, 126, 234, 0.2);
         transform: translateY(-3px);
       }
-      
+
       .product-card-select.selected {
         border-color: #667eea;
         background: #f0f4ff;
         box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
       }
-      
+
       .product-card-select .product-checkbox {
         position: absolute;
         top: 10px;
@@ -113,7 +133,7 @@
         cursor: pointer;
         z-index: 10;
       }
-      
+
       .product-card-select .product-image {
         width: 100%;
         height: 180px;
@@ -121,7 +141,7 @@
         border-radius: 8px;
         margin-bottom: 10px;
       }
-      
+
       .product-card-select .product-name {
         font-weight: 600;
         font-size: 14px;
@@ -129,34 +149,35 @@
         color: #333;
         display: -webkit-box;
         -webkit-line-clamp: 2;
+        line-clamp: 2;
         -webkit-box-orient: vertical;
         overflow: hidden;
         min-height: 40px;
       }
-      
+
       .product-card-select .product-price {
         color: #ff6b6b;
         font-weight: 700;
         font-size: 16px;
         margin-bottom: 5px;
       }
-      
+
       .product-card-select .product-shop {
         font-size: 12px;
         color: #666;
         margin-bottom: 3px;
       }
-      
+
       .product-card-select .product-category {
         font-size: 12px;
         color: #999;
       }
-      
+
       .loading-spinner {
         text-align: center;
         padding: 40px;
       }
-      
+
       .spinner-border {
         width: 3rem;
         height: 3rem;
@@ -177,7 +198,7 @@
           <!-- Page Header -->
           <div class="page-header">
             <h2 class="page-title">
-              <i class="fas fa-fire"></i> Quản lý sản phẩm Flash Sale: 
+              <i class="fas fa-fire"></i> Quản lý sản phẩm Flash Sale:
               <span th:text="${flashSale.saleName}"></span>
             </h2>
           </div>
@@ -190,31 +211,54 @@
                   <i class="fas fa-info-circle"></i> Thông tin Flash Sale
                 </h5>
               </div>
-              <div class="card-body" style="padding: 20px;">
+              <div class="card-body" style="padding: 20px">
                 <div class="row">
                   <div class="col-md-6">
-                    <p><strong>Tên:</strong> <span th:text="${flashSale.saleName}"></span></p>
-                    <p><strong>Mô tả:</strong> <span th:text="${flashSale.description != null ? flashSale.description : 'Không có'}"></span></p>
-                    <p><strong>Thời gian bắt đầu:</strong> 
-                      <span th:text="${flashSale.startTime != null ? #temporals.format(flashSale.startTime, 'dd/MM/yyyy HH:mm') : ''}"></span>
+                    <p>
+                      <strong>Tên:</strong>
+                      <span th:text="${flashSale.saleName}"></span>
                     </p>
-                    <p><strong>Thời gian kết thúc:</strong> 
-                      <span th:text="${flashSale.endTime != null ? #temporals.format(flashSale.endTime, 'dd/MM/yyyy HH:mm') : ''}"></span>
+                    <p>
+                      <strong>Mô tả:</strong>
+                      <span
+                        th:text="${flashSale.description != null ? flashSale.description : 'Không có'}"
+                      ></span>
+                    </p>
+                    <p>
+                      <strong>Thời gian bắt đầu:</strong>
+                      <span
+                        th:text="${flashSale.startTime != null ? #temporals.format(flashSale.startTime, 'dd/MM/yyyy HH:mm') : ''}"
+                      ></span>
+                    </p>
+                    <p>
+                      <strong>Thời gian kết thúc:</strong>
+                      <span
+                        th:text="${flashSale.endTime != null ? #temporals.format(flashSale.endTime, 'dd/MM/yyyy HH:mm') : ''}"
+                      ></span>
                     </p>
                   </div>
                   <div class="col-md-6">
-                    <p><strong>Trạng thái:</strong> 
-                      <span 
-                        class="badge badge-status" 
+                    <p>
+                      <strong>Trạng thái:</strong>
+                      <span
+                        class="badge badge-status"
                         th:classappend="'status-' + ${flashSale.status}"
                         th:text="${flashSale.status != null ? flashSale.status : ''}"
                       ></span>
                     </p>
-                    <p><strong>Tổng sản phẩm:</strong> <span th:text="${products != null ? products.size() : 0}"></span></p>
+                    <p>
+                      <strong>Tổng sản phẩm:</strong>
+                      <span
+                        th:text="${products != null ? products.size() : 0}"
+                      ></span>
+                    </p>
                   </div>
                 </div>
                 <div class="mt-3">
-                  <a th:href="@{/admin/flash-sales}" class="btn btn-secondary btn-sm">
+                  <a
+                    th:href="@{/admin/flash-sales}"
+                    class="btn btn-secondary btn-sm"
+                  >
                     <i class="fas fa-arrow-left"></i> Quay lại danh sách
                   </a>
                 </div>
@@ -222,15 +266,33 @@
             </div>
 
             <!-- Success/Error Messages -->
-            <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <div
+              th:if="${success}"
+              class="alert alert-success alert-dismissible fade show"
+              role="alert"
+            >
               <span th:text="${success}"></span>
-              <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+              <button
+                type="button"
+                class="close"
+                data-dismiss="alert"
+                aria-label="Close"
+              >
                 <span aria-hidden="true">&times;</span>
               </button>
             </div>
-            <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <div
+              th:if="${error}"
+              class="alert alert-danger alert-dismissible fade show"
+              role="alert"
+            >
               <span th:text="${error}"></span>
-              <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+              <button
+                type="button"
+                class="close"
+                data-dismiss="alert"
+                aria-label="Close"
+              >
                 <span aria-hidden="true">&times;</span>
               </button>
             </div>
@@ -242,59 +304,94 @@
                   <i class="fas fa-search"></i> Tìm kiếm và chọn sản phẩm
                 </h5>
               </div>
-              <div class="card-body" style="padding: 20px;">
+              <div class="card-body" style="padding: 20px">
                 <!-- Search and Filter Bar -->
                 <div class="row mb-3">
                   <div class="col-md-4">
                     <div class="form-group">
-                      <label class="form-label"><i class="fas fa-search"></i> Tìm kiếm sản phẩm</label>
-                      <input type="text" id="searchInput" class="form-control" placeholder="Nhập tên sản phẩm...">
+                      <label class="form-label"
+                        ><i class="fas fa-search"></i> Tìm kiếm sản phẩm</label
+                      >
+                      <input
+                        type="text"
+                        id="searchInput"
+                        class="form-control"
+                        placeholder="Nhập tên sản phẩm..."
+                      />
                     </div>
                   </div>
                   <div class="col-md-3">
                     <div class="form-group">
-                      <label class="form-label"><i class="fas fa-store"></i> Lọc theo Shop</label>
+                      <label class="form-label"
+                        ><i class="fas fa-store"></i> Lọc theo Shop</label
+                      >
                       <select id="shopFilter" class="form-control">
                         <option value="">Tất cả Shop</option>
-                        <option th:each="shop : ${shops}" 
-                                th:value="${shop.shopId}" 
-                                th:text="${shop.shopName}">
-                        </option>
+                        <option
+                          th:each="shop : ${shops}"
+                          th:value="${shop.shopId}"
+                          th:text="${shop.shopName}"
+                        ></option>
                       </select>
                     </div>
                   </div>
                   <div class="col-md-3">
                     <div class="form-group">
-                      <label class="form-label"><i class="fas fa-tags"></i> Lọc theo Danh mục</label>
+                      <label class="form-label"
+                        ><i class="fas fa-tags"></i> Lọc theo Danh mục</label
+                      >
                       <select id="categoryFilter" class="form-control">
                         <option value="">Tất cả Danh mục</option>
-                        <option th:each="category : ${categories}" 
-                                th:value="${category.categoryId}" 
-                                th:text="${category.categoryName}">
-                        </option>
+                        <option
+                          th:each="category : ${categories}"
+                          th:value="${category.categoryId}"
+                          th:text="${category.categoryName}"
+                        ></option>
                       </select>
                     </div>
                   </div>
                   <div class="col-md-2">
                     <div class="form-group">
                       <label class="form-label">&nbsp;</label>
-                      <button type="button" id="searchBtn" class="btn btn-primary btn-block">
+                      <button
+                        type="button"
+                        id="searchBtn"
+                        class="btn btn-primary btn-block"
+                      >
                         <i class="fas fa-search"></i> Tìm
                       </button>
                     </div>
                   </div>
                 </div>
-                
+
                 <!-- Bulk Add Settings -->
-                <div class="row mb-3" style="background: #f8f9fa; padding: 15px; border-radius: 8px;">
+                <div
+                  class="row mb-3"
+                  style="background: #f8f9fa; padding: 15px; border-radius: 8px"
+                >
                   <div class="col-md-12 mb-2">
-                    <div class="d-flex justify-content-between align-items-center">
-                      <strong><i class="fas fa-cog"></i> Cài đặt mặc định cho sản phẩm được chọn:</strong>
+                    <div
+                      class="d-flex justify-content-between align-items-center"
+                    >
+                      <strong
+                        ><i class="fas fa-cog"></i> Cài đặt mặc định cho sản
+                        phẩm được chọn:</strong
+                      >
                       <div>
-                        <button type="button" id="selectAllBtn" class="btn btn-sm btn-outline-primary mr-2" style="display: none;">
+                        <button
+                          type="button"
+                          id="selectAllBtn"
+                          class="btn btn-sm btn-outline-primary mr-2"
+                          style="display: none"
+                        >
                           <i class="fas fa-check-square"></i> Chọn tất cả
                         </button>
-                        <button type="button" id="deselectAllBtn" class="btn btn-sm btn-outline-secondary" style="display: none;">
+                        <button
+                          type="button"
+                          id="deselectAllBtn"
+                          class="btn btn-sm btn-outline-secondary"
+                          style="display: none"
+                        >
                           <i class="fas fa-square"></i> Bỏ chọn tất cả
                         </button>
                       </div>
@@ -303,47 +400,85 @@
                   <div class="col-md-3">
                     <div class="form-group mb-0">
                       <label class="form-label small">Giảm giá (%)</label>
-                      <input type="number" id="defaultDiscount" class="form-control form-control-sm" 
-                             value="20" min="1" max="99" placeholder="%">
+                      <input
+                        type="number"
+                        id="defaultDiscount"
+                        class="form-control form-control-sm"
+                        value="20"
+                        min="1"
+                        max="99"
+                        placeholder="%"
+                      />
                     </div>
                   </div>
                   <div class="col-md-3">
                     <div class="form-group mb-0">
                       <label class="form-label small">Số lượng giới hạn</label>
-                      <input type="number" id="defaultQuantityLimit" class="form-control form-control-sm" 
-                             value="50" min="1" placeholder="Số lượng">
+                      <input
+                        type="number"
+                        id="defaultQuantityLimit"
+                        class="form-control form-control-sm"
+                        value="50"
+                        min="1"
+                        placeholder="Số lượng"
+                      />
                     </div>
                   </div>
                   <div class="col-md-3">
                     <div class="form-group mb-0">
                       <label class="form-label small">Max/User</label>
-                      <input type="number" id="defaultMaxPerUser" class="form-control form-control-sm" 
-                             value="1" min="1" placeholder="Max/User">
+                      <input
+                        type="number"
+                        id="defaultMaxPerUser"
+                        class="form-control form-control-sm"
+                        value="1"
+                        min="1"
+                        placeholder="Max/User"
+                      />
                     </div>
                   </div>
                   <div class="col-md-3">
                     <div class="form-group mb-0">
                       <label class="form-label small">&nbsp;</label>
-                      <button type="button" id="bulkAddBtn" class="btn btn-success btn-block btn-sm" disabled>
-                        <i class="fas fa-plus-circle"></i> Thêm đã chọn (<span id="selectedCount">0</span>)
+                      <button
+                        type="button"
+                        id="bulkAddBtn"
+                        class="btn btn-success btn-block btn-sm"
+                        disabled
+                      >
+                        <i class="fas fa-plus-circle"></i> Thêm đã chọn (<span
+                          id="selectedCount"
+                          >0</span
+                        >)
                       </button>
                     </div>
                   </div>
                 </div>
-                
+
                 <!-- Product Selection Grid -->
                 <div id="productGridContainer">
-                  <div class="text-center" style="padding: 40px;">
-                    <i class="fas fa-search" style="font-size: 3rem; color: #ddd; margin-bottom: 15px;"></i>
-                    <p class="text-muted">Nhập từ khóa và nhấn "Tìm" để tìm kiếm sản phẩm</p>
+                  <div class="text-center" style="padding: 40px">
+                    <i
+                      class="fas fa-search"
+                      style="font-size: 3rem; color: #ddd; margin-bottom: 15px"
+                    ></i>
+                    <p class="text-muted">
+                      Nhập từ khóa và nhấn "Tìm" để tìm kiếm sản phẩm
+                    </p>
                   </div>
                 </div>
-                
+
                 <!-- Pagination -->
-                <div id="paginationContainer" class="mt-3" style="display: none;">
+                <div
+                  id="paginationContainer"
+                  class="mt-3"
+                  style="display: none"
+                >
                   <nav>
-                    <ul class="pagination justify-content-center" id="pagination">
-                    </ul>
+                    <ul
+                      class="pagination justify-content-center"
+                      id="pagination"
+                    ></ul>
                   </nav>
                 </div>
               </div>
@@ -354,7 +489,8 @@
               <div class="card">
                 <div class="card-header">
                   <h5 class="mb-0">
-                    <i class="fas fa-box"></i> Danh sách sản phẩm trong Flash Sale
+                    <i class="fas fa-box"></i> Danh sách sản phẩm trong Flash
+                    Sale
                   </h5>
                 </div>
                 <div class="card-body">
@@ -377,34 +513,53 @@
                       <tbody>
                         <tr th:if="${products == null || products.empty}">
                           <td colspan="10" class="text-center">
-                            <p class="text-muted">Chưa có sản phẩm nào trong flash sale này. Hãy thêm sản phẩm!</p>
+                            <p class="text-muted">
+                              Chưa có sản phẩm nào trong flash sale này. Hãy
+                              thêm sản phẩm!
+                            </p>
                           </td>
                         </tr>
-                        <tr th:if="${products != null && !products.empty}" 
-                            th:each="fsp : ${products}">
+                        <tr
+                          th:if="${products != null && !products.empty}"
+                          th:each="fsp : ${products}"
+                        >
                           <td th:text="${fsp.flashSaleProductId}"></td>
                           <td>
-                            <strong th:text="${fsp.product != null ? fsp.product.productName : 'N/A'}"></strong>
+                            <strong
+                              th:text="${fsp.product != null ? fsp.product.productName : 'N/A'}"
+                            ></strong>
                           </td>
-                          <td th:text="${fsp.originalPrice != null ? #numbers.formatDecimal(fsp.originalPrice, 0, 'COMMA', 0, 'POINT') + ' đ' : 'N/A'}"></td>
+                          <td
+                            th:text="${fsp.originalPrice != null ? #numbers.formatDecimal(fsp.originalPrice, 0, 'COMMA', 0, 'POINT') + ' đ' : 'N/A'}"
+                          ></td>
                           <td>
-                            <strong class="text-danger" th:text="${fsp.flashSalePrice != null ? #numbers.formatDecimal(fsp.flashSalePrice, 0, 'COMMA', 0, 'POINT') + ' đ' : 'N/A'}"></strong>
+                            <strong
+                              class="text-danger"
+                              th:text="${fsp.flashSalePrice != null ? #numbers.formatDecimal(fsp.flashSalePrice, 0, 'COMMA', 0, 'POINT') + ' đ' : 'N/A'}"
+                            ></strong>
                           </td>
                           <td>
-                            <span class="badge badge-success" 
-                                  th:text="${fsp.getDiscountPercentage() != null ? fsp.getDiscountPercentage() + '%' : '0%'}">
+                            <span
+                              class="badge badge-success"
+                              th:text="${fsp.getDiscountPercentage() != null ? fsp.getDiscountPercentage() + '%' : '0%'}"
+                            >
                             </span>
                           </td>
                           <td th:text="${fsp.quantityLimit}"></td>
                           <td th:text="${fsp.soldQuantity}"></td>
                           <td>
-                            <span class="badge badge-info" th:text="${fsp.getRemainingQuantity()}"></span>
+                            <span
+                              class="badge badge-info"
+                              th:text="${fsp.getRemainingQuantity()}"
+                            ></span>
                           </td>
                           <td th:text="${fsp.maxQuantityPerUser}"></td>
                           <td>
-                            <button class="btn btn-sm btn-danger" 
-                                    th:onclick="'removeProduct(' + ${fsp.product.productId} + ')'"
-                                    title="Xóa sản phẩm">
+                            <button
+                              class="btn btn-sm btn-danger"
+                              th:onclick="'removeProduct(' + ${fsp.product.productId} + ')'"
+                              title="Xóa sản phẩm"
+                            >
                               <i class="fas fa-trash"></i>
                             </button>
                           </td>
@@ -426,151 +581,197 @@
     <script src="/assets/js/core/bootstrap.min.js"></script>
     <script src="/assets/js/atlantis.min.js"></script>
 
-    <script>
-      const flashSaleId = [[${flashSale.flashSaleId}]];
+    <script th:inline="javascript">
+      /*<![CDATA[*/
+      const flashSaleId = /*[[${flashSale.flashSaleId}]]*/ 0;
       const existingProductIds = /*[[${existingProductIds}]]*/ [];
       let currentPage = 0;
       let selectedProducts = new Set();
-      
+      /*]]>*/
+
       // Format price
       function formatPrice(price) {
-        return new Intl.NumberFormat('vi-VN', {
-          style: 'currency',
-          currency: 'VND'
+        return new Intl.NumberFormat("vi-VN", {
+          style: "currency",
+          currency: "VND",
         }).format(price);
       }
-      
+
       // Calculate flash sale price from discount percentage
       function calculateFlashSalePrice(originalPrice, discountPercent) {
         return originalPrice * (1 - discountPercent / 100);
       }
-      
+
       // Search products
       function searchProducts(page = 0) {
-        const search = document.getElementById('searchInput').value.trim();
-        const shopId = document.getElementById('shopFilter').value;
-        const categoryId = document.getElementById('categoryFilter').value;
-        
-        const container = document.getElementById('productGridContainer');
-        container.innerHTML = '<div class="loading-spinner"><div class="spinner-border text-primary" role="status"><span class="sr-only">Loading...</span></div></div>';
-        
+        const search = document.getElementById("searchInput").value.trim();
+        const shopId = document.getElementById("shopFilter").value;
+        const categoryId = document.getElementById("categoryFilter").value;
+
+        const container = document.getElementById("productGridContainer");
+        container.innerHTML =
+          '<div class="loading-spinner"><div class="spinner-border text-primary" role="status"><span class="sr-only">Loading...</span></div></div>';
+
         const params = new URLSearchParams({
-          search: search || '',
+          search: search || "",
           page: page,
-          size: 20
+          size: 20,
         });
-        if (shopId) params.append('shopId', shopId);
-        if (categoryId) params.append('categoryId', categoryId);
-        
-        fetch('/admin/flash-sales/' + flashSaleId + '/products/search?' + params.toString())
-          .then(response => response.json())
-          .then(data => {
+        if (shopId) params.append("shopId", shopId);
+        if (categoryId) params.append("categoryId", categoryId);
+
+        fetch(
+          "/admin/flash-sales/" +
+            flashSaleId +
+            "/products/search?" +
+            params.toString()
+        )
+          .then((response) => response.json())
+          .then((data) => {
             if (data.success) {
               renderProducts(data.products);
               renderPagination(data.currentPage, data.totalPages);
               currentPage = data.currentPage;
             } else {
-              container.innerHTML = '<div class="alert alert-danger">' + (data.message || 'Có lỗi xảy ra') + '</div>';
+              container.innerHTML =
+                '<div class="alert alert-danger">' +
+                (data.message || "Có lỗi xảy ra") +
+                "</div>";
             }
           })
-          .catch(error => {
-            console.error('Error:', error);
-            container.innerHTML = '<div class="alert alert-danger">Có lỗi xảy ra khi tìm kiếm sản phẩm!</div>';
+          .catch((error) => {
+            console.error("Error:", error);
+            container.innerHTML =
+              '<div class="alert alert-danger">Có lỗi xảy ra khi tìm kiếm sản phẩm!</div>';
           });
       }
-      
+
       // Render products grid
       function renderProducts(products) {
         currentProducts = products || [];
-        const container = document.getElementById('productGridContainer');
-        
+        const container = document.getElementById("productGridContainer");
+
         if (!products || products.length === 0) {
-          container.innerHTML = '<div class="text-center" style="padding: 40px;"><i class="fas fa-box-open" style="font-size: 3rem; color: #ddd;"></i><p class="text-muted mt-3">Không tìm thấy sản phẩm nào</p></div>';
+          container.innerHTML =
+            '<div class="text-center" style="padding: 40px;"><i class="fas fa-box-open" style="font-size: 3rem; color: #ddd;"></i><p class="text-muted mt-3">Không tìm thấy sản phẩm nào</p></div>';
           updateSelectAllButtons();
           return;
         }
-        
+
         let html = '<div class="product-grid">';
-        products.forEach(function(product) {
+        products.forEach(function (product) {
           const isSelected = selectedProducts.has(product.productId);
-          const discount = parseFloat(document.getElementById('defaultDiscount').value) || 20;
-          const flashSalePrice = calculateFlashSalePrice(product.price, discount);
-          
+          const discount =
+            parseFloat(document.getElementById("defaultDiscount").value) || 20;
+          const flashSalePrice = calculateFlashSalePrice(
+            product.price,
+            discount
+          );
+
           html += `
-            <div class="product-card-select ${isSelected ? 'selected' : ''}" 
+            <div class="product-card-select ${isSelected ? "selected" : ""}"
                  data-product-id="${product.productId}"
                  onclick="toggleProduct(${product.productId})">
-              <input type="checkbox" class="product-checkbox" 
-                     ${isSelected ? 'checked' : ''}
-                     onclick="event.stopPropagation(); toggleProduct(${product.productId})">
-              <img src="${product.productImage ? '/loadImage?imageName=' + product.productImage : '/assets/img/examples/product1.jpg'}" 
-                   alt="${product.productName}" 
+              <input type="checkbox" class="product-checkbox"
+                     ${isSelected ? "checked" : ""}
+                     onclick="event.stopPropagation(); toggleProduct(${
+                       product.productId
+                     })">
+              <img src="${
+                product.productImage
+                  ? "/loadImage?imageName=" + product.productImage
+                  : "/assets/img/examples/product1.jpg"
+              }"
+                   alt="${product.productName}"
                    class="product-image">
               <div class="product-name">${product.productName}</div>
               <div class="product-price">${formatPrice(product.price)}</div>
-              <div class="product-shop"><i class="fas fa-store"></i> ${product.shopName}</div>
-              <div class="product-category"><i class="fas fa-tags"></i> ${product.categoryName}</div>
+              <div class="product-shop"><i class="fas fa-store"></i> ${
+                product.shopName
+              }</div>
+              <div class="product-category"><i class="fas fa-tags"></i> ${
+                product.categoryName
+              }</div>
               <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #eee; font-size: 12px;">
-                <strong>Giá FS (${discount}%):</strong> <span style="color: #ff6b6b; font-weight: 700;">${formatPrice(flashSalePrice)}</span>
+                <strong>Giá FS (${discount}%):</strong> <span style="color: #ff6b6b; font-weight: 700;">${formatPrice(
+            flashSalePrice
+          )}</span>
               </div>
             </div>
           `;
         });
-        html += '</div>';
-        
+        html += "</div>";
+
         container.innerHTML = html;
         updateSelectedCount();
         updateSelectAllButtons();
       }
-      
+
       // Show/hide select all buttons
       function updateSelectAllButtons() {
         const hasProducts = currentProducts && currentProducts.length > 0;
-        document.getElementById('selectAllBtn').style.display = hasProducts ? 'inline-block' : 'none';
-        document.getElementById('deselectAllBtn').style.display = hasProducts ? 'inline-block' : 'none';
+        document.getElementById("selectAllBtn").style.display = hasProducts
+          ? "inline-block"
+          : "none";
+        document.getElementById("deselectAllBtn").style.display = hasProducts
+          ? "inline-block"
+          : "none";
       }
-      
+
       // Render pagination
       function renderPagination(currentPage, totalPages) {
-        const container = document.getElementById('paginationContainer');
-        const pagination = document.getElementById('pagination');
-        
+        const container = document.getElementById("paginationContainer");
+        const pagination = document.getElementById("pagination");
+
         if (totalPages <= 1) {
-          container.style.display = 'none';
+          container.style.display = "none";
           return;
         }
-        
-        container.style.display = 'block';
-        pagination.innerHTML = '';
-        
+
+        container.style.display = "block";
+        pagination.innerHTML = "";
+
         // Previous button
         pagination.innerHTML += `
-          <li class="page-item ${currentPage === 0 ? 'disabled' : ''}">
-            <a class="page-link" href="#" onclick="event.preventDefault(); searchProducts(${currentPage - 1})">Trước</a>
+          <li class="page-item ${currentPage === 0 ? "disabled" : ""}">
+            <a class="page-link" href="#" onclick="event.preventDefault(); searchProducts(${
+              currentPage - 1
+            })">Trước</a>
           </li>
         `;
-        
+
         // Page numbers
         for (let i = 0; i < totalPages; i++) {
-          if (i === 0 || i === totalPages - 1 || (i >= currentPage - 2 && i <= currentPage + 2)) {
+          if (
+            i === 0 ||
+            i === totalPages - 1 ||
+            (i >= currentPage - 2 && i <= currentPage + 2)
+          ) {
             pagination.innerHTML += `
-              <li class="page-item ${i === currentPage ? 'active' : ''}">
-                <a class="page-link" href="#" onclick="event.preventDefault(); searchProducts(${i})">${i + 1}</a>
+              <li class="page-item ${i === currentPage ? "active" : ""}">
+                <a class="page-link" href="#" onclick="event.preventDefault(); searchProducts(${i})">${
+              i + 1
+            }</a>
               </li>
             `;
           } else if (i === currentPage - 3 || i === currentPage + 3) {
-            pagination.innerHTML += '<li class="page-item disabled"><span class="page-link">...</span></li>';
+            pagination.innerHTML +=
+              '<li class="page-item disabled"><span class="page-link">...</span></li>';
           }
         }
-        
+
         // Next button
         pagination.innerHTML += `
-          <li class="page-item ${currentPage >= totalPages - 1 ? 'disabled' : ''}">
-            <a class="page-link" href="#" onclick="event.preventDefault(); searchProducts(${currentPage + 1})">Sau</a>
+          <li class="page-item ${
+            currentPage >= totalPages - 1 ? "disabled" : ""
+          }">
+            <a class="page-link" href="#" onclick="event.preventDefault(); searchProducts(${
+              currentPage + 1
+            })">Sau</a>
           </li>
         `;
       }
-      
+
       // Toggle product selection
       function toggleProduct(productId) {
         if (selectedProducts.has(productId)) {
@@ -581,163 +782,350 @@
         updateSelectedCount();
         renderProducts(currentProducts); // Re-render to update selection state
       }
-      
+
       let currentProducts = [];
-      
+
       // Update selected count
       function updateSelectedCount() {
         const count = selectedProducts.size;
-        document.getElementById('selectedCount').textContent = count;
-        document.getElementById('bulkAddBtn').disabled = count === 0;
+        document.getElementById("selectedCount").textContent = count;
+        document.getElementById("bulkAddBtn").disabled = count === 0;
       }
-      
+
       // Bulk add products
-      function bulkAddProducts() {
+      async function bulkAddProducts() {
         if (selectedProducts.size === 0) {
-          alert('Vui lòng chọn ít nhất một sản phẩm!');
+          alert("Vui lòng chọn ít nhất một sản phẩm!");
           return;
         }
-        
-        const discount = parseFloat(document.getElementById('defaultDiscount').value) || 20;
-        const quantityLimit = parseInt(document.getElementById('defaultQuantityLimit').value) || 50;
-        const maxPerUser = parseInt(document.getElementById('defaultMaxPerUser').value) || 1;
-        
-        if (!confirm(`Bạn có chắc chắn muốn thêm ${selectedProducts.size} sản phẩm vào flash sale với giảm giá ${discount}%?`)) {
+
+        const discount =
+          parseFloat(document.getElementById("defaultDiscount").value) || 20;
+        const quantityLimit =
+          parseInt(document.getElementById("defaultQuantityLimit").value) || 50;
+        const maxPerUser =
+          parseInt(document.getElementById("defaultMaxPerUser").value) || 1;
+
+        if (
+          !confirm(
+            `Bạn có chắc chắn muốn thêm ${selectedProducts.size} sản phẩm vào flash sale với giảm giá ${discount}%?`
+          )
+        ) {
           return;
         }
-        
-        // Get product prices and calculate flash sale prices
-        const productIds = Array.from(selectedProducts);
-        const productData = currentProducts.filter(p => productIds.includes(p.productId));
-        
-        // For bulk add, we'll use a default discount percentage
-        // The backend will calculate the flash sale price
-        const productIdsStr = productIds.join(',');
-        
-        // Calculate average flash sale price (we'll use discount percentage approach)
-        // But we need to send individual prices, so we'll do it one by one or create a better API
-        
-        // For now, let's add them one by one with calculated prices
-        let successCount = 0;
-        let failCount = 0;
-        let completed = 0;
-        
-        productData.forEach(function(product) {
-          const flashSalePrice = calculateFlashSalePrice(product.price, discount);
-          
-          fetch('/admin/flash-sales/' + flashSaleId + '/products/add', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            body: new URLSearchParams({
-              productId: product.productId,
-              flashSalePrice: flashSalePrice.toFixed(2),
-              quantityLimit: quantityLimit,
-              maxQuantityPerUser: maxPerUser
+
+        // Disable button and show loading
+        const btn = document.getElementById("bulkAddBtn");
+        const originalText = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang thêm...';
+
+        try {
+          // Fetch all products from all pages to get full product information
+          const allProducts = await fetchAllProducts();
+          const productIds = Array.from(selectedProducts);
+
+          // Filter to get only selected products with full information
+          const productData = allProducts.filter((p) =>
+            productIds.includes(p.productId)
+          );
+
+          if (productData.length !== productIds.length) {
+            console.warn(
+              `Warning: Only found ${productData.length} products out of ${productIds.length} selected. Some products may not be available.`
+            );
+          }
+
+          if (productData.length === 0) {
+            alert(
+              "Không tìm thấy thông tin sản phẩm đã chọn. Vui lòng thử lại!"
+            );
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+            return;
+          }
+
+          // Add products one by one with calculated prices
+          let successCount = 0;
+          let failCount = 0;
+          let completed = 0;
+          let failedProducts = []; // Store failed products with reasons
+
+          productData.forEach(function (product) {
+            const flashSalePrice = calculateFlashSalePrice(
+              product.price,
+              discount
+            );
+
+            fetch("/admin/flash-sales/" + flashSaleId + "/products/add", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+              },
+              body: new URLSearchParams({
+                productId: product.productId,
+                flashSalePrice: flashSalePrice.toFixed(2),
+                quantityLimit: quantityLimit,
+                maxQuantityPerUser: maxPerUser,
+              }),
             })
-          })
-          .then(response => response.json())
-          .then(data => {
-            completed++;
-            if (data.success) {
-              successCount++;
-            } else {
-              failCount++;
-            }
-            
-            if (completed === productData.length) {
-              alert(`Đã thêm ${successCount} sản phẩm thành công${failCount > 0 ? ', ' + failCount + ' sản phẩm thất bại' : ''}`);
-              selectedProducts.clear();
-              updateSelectedCount();
-              searchProducts(currentPage); // Refresh
-              // Reload page to update product list
-              setTimeout(() => location.reload(), 1000);
-            }
-          })
-          .catch(error => {
-            completed++;
-            failCount++;
-            if (completed === productData.length) {
-              alert(`Đã thêm ${successCount} sản phẩm thành công, ${failCount} sản phẩm thất bại`);
-              selectedProducts.clear();
-              updateSelectedCount();
-              searchProducts(currentPage);
-            }
+              .then((response) => response.json())
+              .then((data) => {
+                completed++;
+                if (data.success) {
+                  successCount++;
+                } else {
+                  failCount++;
+                  failedProducts.push({
+                    name: product.productName || "ID: " + product.productId,
+                    reason: data.message || "Không xác định",
+                  });
+                  console.error(
+                    "Failed to add product:",
+                    product.productId,
+                    product.productName,
+                    data.message
+                  );
+                }
+
+                if (completed === productData.length) {
+                  btn.disabled = false;
+                  btn.innerHTML = originalText;
+
+                  // Show detailed result
+                  let message = `Đã thêm ${successCount} sản phẩm thành công`;
+                  if (failCount > 0) {
+                    message += `\n\n${failCount} sản phẩm thất bại:\n`;
+                    failedProducts.forEach(function (failed, index) {
+                      message += `${index + 1}. ${failed.name}: ${
+                        failed.reason
+                      }\n`;
+                    });
+                  }
+                  alert(message);
+
+                  selectedProducts.clear();
+                  updateSelectedCount();
+                  searchProducts(currentPage); // Refresh
+                  // Reload page to update product list
+                  setTimeout(() => location.reload(), 1000);
+                }
+              })
+              .catch((error) => {
+                completed++;
+                failCount++;
+                failedProducts.push({
+                  name: product.productName || "ID: " + product.productId,
+                  reason: "Lỗi kết nối: " + error.message,
+                });
+                console.error(
+                  "Error adding product:",
+                  product.productId,
+                  product.productName,
+                  error
+                );
+                if (completed === productData.length) {
+                  btn.disabled = false;
+                  btn.innerHTML = originalText;
+
+                  let message = `Đã thêm ${successCount} sản phẩm thành công`;
+                  if (failCount > 0) {
+                    message += `\n\n${failCount} sản phẩm thất bại:\n`;
+                    failedProducts.forEach(function (failed, index) {
+                      message += `${index + 1}. ${failed.name}: ${
+                        failed.reason
+                      }\n`;
+                    });
+                  }
+                  alert(message);
+
+                  selectedProducts.clear();
+                  updateSelectedCount();
+                  searchProducts(currentPage);
+                }
+              });
           });
-        });
+        } catch (error) {
+          console.error("Error in bulkAddProducts:", error);
+          alert("Có lỗi xảy ra khi thêm sản phẩm: " + error.message);
+          btn.disabled = false;
+          btn.innerHTML = originalText;
+        }
       }
-      
+
       // Event listeners
-      document.getElementById('searchBtn').addEventListener('click', function() {
-        currentPage = 0;
-        searchProducts(0);
-      });
-      
-      document.getElementById('searchInput').addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
+      document
+        .getElementById("searchBtn")
+        .addEventListener("click", function () {
           currentPage = 0;
           searchProducts(0);
-        }
-      });
-      
-      document.getElementById('shopFilter').addEventListener('change', function() {
-        currentPage = 0;
-        searchProducts(0);
-      });
-      
-      document.getElementById('categoryFilter').addEventListener('change', function() {
-        currentPage = 0;
-        searchProducts(0);
-      });
-      
-      document.getElementById('bulkAddBtn').addEventListener('click', bulkAddProducts);
-      
-      // Select all / Deselect all
-      document.getElementById('selectAllBtn').addEventListener('click', function() {
-        currentProducts.forEach(function(product) {
-          selectedProducts.add(product.productId);
         });
-        updateSelectedCount();
-        renderProducts(currentProducts);
-      });
-      
-      document.getElementById('deselectAllBtn').addEventListener('click', function() {
-        selectedProducts.clear();
-        updateSelectedCount();
-        renderProducts(currentProducts);
-      });
-      
+
+      document
+        .getElementById("searchInput")
+        .addEventListener("keypress", function (e) {
+          if (e.key === "Enter") {
+            currentPage = 0;
+            searchProducts(0);
+          }
+        });
+
+      document
+        .getElementById("shopFilter")
+        .addEventListener("change", function () {
+          currentPage = 0;
+          searchProducts(0);
+        });
+
+      document
+        .getElementById("categoryFilter")
+        .addEventListener("change", function () {
+          currentPage = 0;
+          searchProducts(0);
+        });
+
+      document
+        .getElementById("bulkAddBtn")
+        .addEventListener("click", bulkAddProducts);
+
+      // Auto-update when default discount changes (to update flash sale price display)
+      document
+        .getElementById("defaultDiscount")
+        .addEventListener("input", function () {
+          if (currentProducts && currentProducts.length > 0) {
+            renderProducts(currentProducts); // Re-render to update flash sale prices
+          }
+        });
+
+      // Fetch all products from all pages
+      async function fetchAllProducts() {
+        const search = document.getElementById("searchInput").value.trim();
+        const shopId = document.getElementById("shopFilter").value;
+        const categoryId = document.getElementById("categoryFilter").value;
+
+        // First, get total pages
+        const params = new URLSearchParams({
+          search: search || "",
+          page: 0,
+          size: 20,
+        });
+        if (shopId) params.append("shopId", shopId);
+        if (categoryId) params.append("categoryId", categoryId);
+
+        try {
+          const firstResponse = await fetch(
+            "/admin/flash-sales/" +
+              flashSaleId +
+              "/products/search?" +
+              params.toString()
+          );
+          const firstData = await firstResponse.json();
+
+          if (!firstData.success) {
+            return [];
+          }
+
+          const totalPages = firstData.totalPages;
+          let allProducts = [...firstData.products];
+
+          // Fetch remaining pages
+          for (let page = 1; page < totalPages; page++) {
+            const pageParams = new URLSearchParams({
+              search: search || "",
+              page: page,
+              size: 20,
+            });
+            if (shopId) pageParams.append("shopId", shopId);
+            if (categoryId) pageParams.append("categoryId", categoryId);
+
+            const response = await fetch(
+              "/admin/flash-sales/" +
+                flashSaleId +
+                "/products/search?" +
+                pageParams.toString()
+            );
+            const data = await response.json();
+
+            if (data.success && data.products) {
+              allProducts = allProducts.concat(data.products);
+            }
+          }
+
+          return allProducts;
+        } catch (error) {
+          console.error("Error fetching all products:", error);
+          return [];
+        }
+      }
+
+      // Select all / Deselect all
+      document
+        .getElementById("selectAllBtn")
+        .addEventListener("click", async function () {
+          const btn = this;
+          const originalText = btn.innerHTML;
+          btn.disabled = true;
+          btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang tải...';
+
+          try {
+            // Fetch all products from all pages
+            const allProducts = await fetchAllProducts();
+
+            // Add all product IDs to selectedProducts
+            allProducts.forEach(function (product) {
+              selectedProducts.add(product.productId);
+            });
+
+            updateSelectedCount();
+            renderProducts(currentProducts); // Re-render current page to show selection
+          } catch (error) {
+            console.error("Error selecting all products:", error);
+            alert("Có lỗi xảy ra khi chọn tất cả sản phẩm!");
+          } finally {
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+          }
+        });
+
+      document
+        .getElementById("deselectAllBtn")
+        .addEventListener("click", function () {
+          selectedProducts.clear();
+          updateSelectedCount();
+          renderProducts(currentProducts);
+        });
+
       // Handle remove product
       function removeProduct(productId) {
-        if (!confirm('Bạn có chắc chắn muốn xóa sản phẩm này khỏi flash sale?')) {
+        if (
+          !confirm("Bạn có chắc chắn muốn xóa sản phẩm này khỏi flash sale?")
+        ) {
           return;
         }
-        
-        fetch('/admin/flash-sales/' + flashSaleId + '/products/remove', {
-          method: 'POST',
+
+        fetch("/admin/flash-sales/" + flashSaleId + "/products/remove", {
+          method: "POST",
           headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
+            "Content-Type": "application/x-www-form-urlencoded",
           },
           body: new URLSearchParams({
-            productId: productId
+            productId: productId,
+          }),
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.success) {
+              alert(data.message);
+              location.reload();
+            } else {
+              alert("Lỗi: " + data.message);
+            }
           })
-        })
-        .then(response => response.json())
-        .then(data => {
-          if (data.success) {
-            alert(data.message);
-            location.reload();
-          } else {
-            alert('Lỗi: ' + data.message);
-          }
-        })
-        .catch(error => {
-          console.error('Error:', error);
-          alert('Có lỗi xảy ra khi xóa sản phẩm!');
-        });
+          .catch((error) => {
+            console.error("Error:", error);
+            alert("Có lỗi xảy ra khi xóa sản phẩm!");
+          });
       }
     </script>
   </body>
 </html>
-
