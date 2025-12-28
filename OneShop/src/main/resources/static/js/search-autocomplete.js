@@ -6,7 +6,7 @@
     let autocompleteCache = {};
     
     function initAutocomplete() {
-        const searchInputs = document.querySelectorAll('input[name="searchQuery"]');
+        const searchInputs = document.querySelectorAll('input[name="productName"], input[name="searchQuery"]');
         
         searchInputs.forEach(input => {
             if (!input.dataset.autocompleteInitialized) {
@@ -24,6 +24,15 @@
         suggestionsContainer = document.createElement('div');
         suggestionsContainer.className = 'autocomplete-suggestions';
         suggestionsContainer.style.display = 'none';
+        suggestionsContainer.style.position = 'absolute';
+        suggestionsContainer.style.top = '100%';
+        suggestionsContainer.style.left = '0';
+        suggestionsContainer.style.right = '0';
+        suggestionsContainer.style.zIndex = '9999';
+        suggestionsContainer.style.background = '#fff';
+        suggestionsContainer.style.border = '1px solid #ddd';
+        suggestionsContainer.style.maxHeight = '280px';
+        suggestionsContainer.style.overflowY = 'auto';
         input.parentElement.style.position = 'relative';
         input.parentElement.appendChild(suggestionsContainer);
         

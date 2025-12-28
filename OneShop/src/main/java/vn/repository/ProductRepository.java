@@ -1,15 +1,16 @@
 package vn.repository;
 
+import java.util.List;
+import java.util.Optional;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-import vn.entity.Product;
 
-import java.util.List;
-import java.util.Optional;
+import vn.entity.Product;
 
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Long> {
@@ -27,8 +28,20 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     List<Product> listProductNew20();
     
     // Search Product
-    @Query(value = "SELECT * FROM products WHERE product_name LIKE CONCAT('%', ?1, '%')", nativeQuery = true)
-    List<Product> searchProduct(String productName);
+        @Query("""
+                SELECT DISTINCT p
+                FROM Product p
+                LEFT JOIN p.brand b
+                LEFT JOIN p.category c
+                WHERE p.status = true
+                AND (
+                        LOWER(p.productName) LIKE LOWER(CONCAT('%', :keyword, '%'))
+                        OR LOWER(b.brandName) LIKE LOWER(CONCAT('%', :keyword, '%'))
+                        OR LOWER(c.categoryName) LIKE LOWER(CONCAT('%', :keyword, '%'))
+                )
+                ORDER BY p.productName
+                """)
+        List<Product> searchProduct(@Param("keyword") String keyword);
     
     /**
      * Search products by keyword in name, brand name, or category name for chatbot
@@ -47,6 +60,18 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
         OFFSET 0 ROWS FETCH NEXT :limit ROWS ONLY
         """, nativeQuery = true)
     List<Product> searchProductsByKeyword(@Param("keyword") String keyword, @Param("limit") int limit);
+
+        /**
+         * Fetch active products by category IDs (for autocomplete category match).
+         */
+        @Query(value = """
+                SELECT DISTINCT p.* FROM products p
+                WHERE p.status = 1
+                AND p.category_id IN (:categoryIds)
+                ORDER BY p.product_name
+                OFFSET 0 ROWS FETCH NEXT :limit ROWS ONLY
+                """, nativeQuery = true)
+        List<Product> findActiveProductsByCategoryIds(@Param("categoryIds") List<Long> categoryIds, @Param("limit") int limit);
     
     // Count quantity by product
     @Query(value = "SELECT c.category_id, c.category_name, COUNT(*) AS SoLuong " +
