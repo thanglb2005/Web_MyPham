@@ -169,7 +169,7 @@
 .countdown-value {
   font-size: 2.5rem;
   font-weight: 900;
-  color: white;
+  color: #ff0000;
   line-height: 1;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
   animation: numberPulse 1s ease-in-out infinite;
