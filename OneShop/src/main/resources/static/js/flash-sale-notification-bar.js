@@ -91,7 +91,7 @@
       .flash-sale-notification-bar .countdown-value {
         font-size: 20px;
         font-weight: 900;
-        color: white;
+        color: #ff0000;
         text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
       }
       .flash-sale-notification-bar .countdown-label {
