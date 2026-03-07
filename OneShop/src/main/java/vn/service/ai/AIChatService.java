@@ -4,20 +4,23 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import vn.service.chat.ChatHistoryService;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 /**
  * Service quản lý AI chat tích hợp với hệ thống chat hiện tại
- * @author OneShop Team
+ *
+ * ---------- CODE CŨ (chưa Singleton): ----------
+ *  @Autowired
+ *  private GeminiService geminiService;
+ *  // Dùng: geminiService.generateResponse(...); geminiService.isApiKeyValid();
+ *
+ * ---------- CODE MỚI (đã Singleton): ----------
+ *  Không inject; gọi GeminiService.getInstance().generateResponse(...); ...
  */
 @Service
 public class AIChatService {
-
-    @Autowired
-    private GeminiService geminiService;
 
     @Autowired
     private ChatHistoryService chatHistoryService;
@@ -37,7 +40,7 @@ public class AIChatService {
                 String context = buildContextFromHistory(roomId);
                 
                 // Gọi GeminiService để lấy phản hồi AI
-                String aiResponse = geminiService.generateResponse(userMessage, context).get();
+                String aiResponse = GeminiService.getInstance().generateResponse(userMessage, context).get();
                 
                 return aiResponse;
                 
@@ -91,7 +94,7 @@ public class AIChatService {
      * @return Tin nhắn chào mừng
      */
     public CompletableFuture<String> generateWelcomeMessage(String roomId, Long shopId) {
-        return geminiService.generateWelcomeMessage(roomId, shopId);
+        return GeminiService.getInstance().generateWelcomeMessage(roomId, shopId);
     }
 
     /**
@@ -99,7 +102,7 @@ public class AIChatService {
      * @return true nếu AI sẵn sàng
      */
     public boolean isAIReady() {
-        return geminiService.isApiKeyValid();
+        return GeminiService.getInstance().isApiKeyValid();
     }
 
     /**
@@ -108,6 +111,6 @@ public class AIChatService {
      * @return Kết quả test
      */
     public CompletableFuture<String> testAI(String testMessage) {
-        return geminiService.generateResponse(testMessage, "Test context");
+        return GeminiService.getInstance().generateResponse(testMessage, "Test context");
     }
 }

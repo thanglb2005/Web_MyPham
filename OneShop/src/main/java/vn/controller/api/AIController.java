@@ -16,15 +16,19 @@ import java.util.concurrent.CompletableFuture;
 
 /**
  * API Controller để test và quản lý AI chatbot
- * @author OneShop Team
+ *
+ * ---------- CODE CŨ (chưa Singleton): ----------
+ *  @Autowired
+ *  private GeminiService geminiService;
+ *  // Trong method: geminiService.isApiKeyValid(); geminiService.generateResponse(...);
+ *
+ * ---------- CODE MỚI (đã Singleton): ----------
+ *  Không inject GeminiService; dùng GeminiService.getInstance() trong từng method.
  */
 @RestController
 @RequestMapping("/api/ai")
 @CrossOrigin(origins = "*")
 public class AIController {
-
-    @Autowired
-    private GeminiService geminiService;
 
     @Autowired
     private AIChatService aiChatService;
@@ -40,11 +44,11 @@ public class AIController {
         Map<String, Object> response = new HashMap<>();
         
         try {
-            boolean isApiKeyValid = geminiService.isApiKeyValid();
+            boolean isApiKeyValid = GeminiService.getInstance().isApiKeyValid();
             response.put("apiKeyValid", isApiKeyValid);
             
             if (isApiKeyValid) {
-                CompletableFuture<Boolean> testResult = geminiService.testConnection();
+                CompletableFuture<Boolean> testResult = GeminiService.getInstance().testConnection();
                 boolean connectionOk = testResult.get();
                 response.put("connectionOk", connectionOk);
                 
@@ -137,7 +141,7 @@ public class AIController {
             String message = request.getOrDefault("message", "Xin chào");
             String context = request.getOrDefault("context", "");
             
-            CompletableFuture<String> aiResponse = geminiService.generateResponse(message, context);
+            CompletableFuture<String> aiResponse = GeminiService.getInstance().generateResponse(message, context);
             String result = aiResponse.get();
             
             response.put("status", "success");
@@ -200,7 +204,7 @@ public class AIController {
                 return ResponseEntity.badRequest().body(response);
             }
             
-            CompletableFuture<String> aiResponse = geminiService.generateResponse(message, context, history);
+            CompletableFuture<String> aiResponse = GeminiService.getInstance().generateResponse(message, context, history);
             String result = aiResponse.get();
             
             response.put("status", "success");
@@ -326,7 +330,7 @@ public class AIController {
             System.out.println("Calling Gemini API with image...");
             
             // Send image + message to Gemini
-            CompletableFuture<String> aiResponse = geminiService.generateResponseWithImage(message, imageData);
+            CompletableFuture<String> aiResponse = GeminiService.getInstance().generateResponseWithImage(message, imageData);
             String result = aiResponse.get();
             
             response.put("status", "success");

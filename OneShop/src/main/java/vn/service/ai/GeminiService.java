@@ -1,9 +1,9 @@
 package vn.service.ai;
 
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.env.Environment;
 import org.springframework.http.*;
-import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import vn.config.ApplicationContextHolder;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -12,26 +12,83 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 /**
- * Service để tích hợp Google Gemini AI cho chatbot
- * @author OneShop Team
+ * Service tích hợp Google Gemini AI cho chatbot.
+ *
+ * ==================================================================================
+ * PHẦN CODE CŨ (CHƯA ÁP DỤNG THREAD-SAFE SINGLETON) - Dùng đối chiếu khi quay video
+ * ==================================================================================
+ *
+ *  @Service
+ *  public class GeminiService {
+ *
+ *      @Value("${gemini.api.key}")
+ *      private String apiKey;
+ *
+ *      @Value("${gemini.model.name:gemini-2.0-flash}")
+ *      private String modelName;
+ *
+ *      @Value("${gemini.max.tokens:1000}")
+ *      private int maxTokens;
+ *
+ *      @Value("${gemini.temperature:0.7}")
+ *      private float temperature;
+ *
+ *      private final RestTemplate restTemplate = new RestTemplate();
+ *      private static final String GEMINI_API_URL = "...";
+ *
+ *      // Constructor public - Spring gọi để tạo bean, mỗi app có 1 bean nhưng không
+ *      // kiểm soát bằng pattern Singleton (phụ thuộc Spring).
+ *      public GeminiService() { }
+ *
+ *      // Không có: private static GeminiService instance;
+ *      // Không có: getInstance();
+ *
+ *      public CompletableFuture<String> generateResponse(...) { ... }
+ *      // ... các method khác giữ nguyên
+ *  }
+ *
+ *  Ở AIController / AIChatService (code cũ):
+ *  @Autowired
+ *  private GeminiService geminiService;
+ *  // Dùng: geminiService.generateResponse(...);
+ *
+ * ==================================================================================
+ * PHIÊN BẢN MỚI (ĐÃ ÁP DỤNG THREAD-SAFE SINGLETON - Cách 2)
+ * - Bỏ @Service; private constructor; đọc config từ ApplicationContextHolder.
+ * - private static GeminiService instance;
+ * - getInstance(): if (instance == null) instance = new GeminiService(); return instance;
+ * - Nơi gọi: GeminiService.getInstance().generateResponse(...);
+ * ==================================================================================
  */
-@Service
 public class GeminiService {
 
-    @Value("${gemini.api.key}")
-    private String apiKey;
+    // ----- SINGLETON (phiên bản mới) -----
+    private static GeminiService instance;
 
-    @Value("${gemini.model.name:gemini-1.5-flash}")
-    private String modelName;
-
-    @Value("${gemini.max.tokens:1000}")
-    private int maxTokens;
-
-    @Value("${gemini.temperature:0.7}")
-    private float temperature;
-
+    private final String apiKey;
+    private final String modelName;
+    private final int maxTokens;
+    private final float temperature;
     private final RestTemplate restTemplate = new RestTemplate();
-    private final String GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent";
+    private static final String GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent";
+
+    private GeminiService() {
+        Environment env = ApplicationContextHolder.getContext() != null
+                ? ApplicationContextHolder.getContext().getEnvironment()
+                : null;
+        this.apiKey = env != null ? env.getProperty("gemini.api.key", "") : "";
+        this.modelName = env != null ? env.getProperty("gemini.model.name", "gemini-2.0-flash") : "gemini-2.0-flash";
+        this.maxTokens = env != null ? Integer.parseInt(env.getProperty("gemini.max.tokens", "1000")) : 1000;
+        this.temperature = env != null ? Float.parseFloat(env.getProperty("gemini.temperature", "0.7")) : 0.7f;
+    }
+
+    public static synchronized GeminiService getInstance() {
+        if (instance == null) {
+            instance = new GeminiService();
+        }
+        return instance;
+    }
+    // ----- Hết phần Singleton -----
 
     /**
      * Gửi tin nhắn đến Gemini AI và nhận phản hồi với context lịch sử hội thoại
