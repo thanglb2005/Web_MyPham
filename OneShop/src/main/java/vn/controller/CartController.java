@@ -19,6 +19,8 @@ import vn.entity.OneXuTransaction;
 import vn.repository.OrderDetailRepository;
 import vn.repository.UserRepository;
 import vn.repository.OneXuTransactionRepository;
+import vn.payment.CheckoutContext;
+import vn.payment.PaymentProcessor;
 import vn.service.CartService;
 import vn.service.OrderService;
 import vn.service.ProductService;
@@ -574,111 +576,145 @@ public class CartController {
             if (deliveryType != null && deliveryType.equalsIgnoreCase("EXPRESS")) {
                 deliveryTypeEnum = Order.DeliveryType.EXPRESS;
             }
-
-            // Chỉ tạo order cho COD
-            // MOMO và BANK_TRANSFER sẽ tạo order sau khi thanh toán thành công
-            if (paymentMethodEnum == Order.PaymentMethod.COD) {
-                Order order = orderService.createOrder(
-                    user,
-                    customerName,
-                    customerEmail,
-                    phone,
-                    fullAddress,
-                    note,
-                    paymentMethodEnum,
-                    cartMap,
-                    promotionDescription.isEmpty() ? null : promotionDescription,
-                    totalDiscount,
-                    shippingFee,
-                    shippingVoucherCode,
-                    shippingVoucherDiscount,
-                    deliveryTypeEnum
-                );
-
-                // Deduct xu from user balance if xu was used
-                Integer xuAmount = (Integer) request.getSession().getAttribute("xuAmount");
-                if (xuAmount != null && xuAmount > 0) {
-                    Double currentBalance = user.getOneXuBalance() != null ? user.getOneXuBalance() : 0.0;
-                    Double newBalance = currentBalance - xuAmount;
-                    if (newBalance < 0) newBalance = 0.0;
-                    
-                    user.setOneXuBalance(newBalance);
-                    // Save to database
-                    userRepository.save(user);
-                    
-                    // Create OneXu transaction record
-                    OneXuTransaction xuTransaction = new OneXuTransaction(
-                        user.getUserId(),
-                        OneXuTransaction.TransactionType.PURCHASE,
-                        -xuAmount.doubleValue(), // Negative because it's a deduction
-                        newBalance,
-                        "Sử dụng " + xuAmount + " xu cho đơn hàng #" + order.getOrderId(),
-                        order.getOrderId()
-                    );
-                    oneXuTransactionRepository.save(xuTransaction);
-                    
-                    // Update user in session
-                    request.getSession().setAttribute("user", user);
-                    
-                    System.out.println("Deducted " + xuAmount + " xu. New balance: " + newBalance + ". Transaction saved.");
-                }
-                
-                // Clear cart after successful COD order
-                cartService.clearCart(user);
-                
-                // Clear voucher and xu session data
-                request.getSession().removeAttribute("oneVoucher");
-                request.getSession().removeAttribute("oneVoucherDiscount");
-                request.getSession().removeAttribute("shopVoucher");
-                request.getSession().removeAttribute("shopVoucherDiscount");
-                request.getSession().removeAttribute("xuAmount");
-                request.getSession().removeAttribute("xuDiscount");
-
-                model.addAttribute("message", "Đặt hàng thành công! Mã đơn hàng: #" + order.getOrderId());
-                model.addAttribute("orderId", order.getOrderId());
-                return "redirect:/order-success?orderId=" + order.getOrderId();
-            } else if (paymentMethodEnum == Order.PaymentMethod.MOMO) {
-                // Tạo order tạm cho MoMo
-                Order momoOrder = orderService.createOrder(
-                    user,
-                    customerName,
-                    customerEmail,
-                    phone,
-                    fullAddress,
-                    note,
-                    paymentMethodEnum,
-                    cartMap,
-                    promotionDescription.isEmpty() ? null : promotionDescription,
-                    totalDiscount,
-                    shippingFee,
-                    shippingVoucherCode,
-                    shippingVoucherDiscount,
-                    deliveryTypeEnum
-                );
-                return "redirect:/payment/momo/create?orderId=" + momoOrder.getOrderId();
-            } else if (paymentMethodEnum == Order.PaymentMethod.BANK_TRANSFER) {
-                // Tạo order tạm cho PayOS
-                Order payosOrder = orderService.createOrder(
-                    user,
-                    customerName,
-                    customerEmail,
-                    phone,
-                    fullAddress,
-                    note,
-                    paymentMethodEnum,
-                    cartMap,
-                    promotionDescription.isEmpty() ? null : promotionDescription,
-                    totalDiscount,
-                    shippingFee,
-                    shippingVoucherCode,
-                    shippingVoucherDiscount,
-                    deliveryTypeEnum
-                );
-                return "redirect:/payos/create-payment?orderId=" + payosOrder.getOrderId();
-            }
             
-            // Fallback - không nên xảy ra
-            return "redirect:/checkout?error=Invalid payment method";
+            // ===== CODE CŨ (CHƯA ÁP DỤNG FACTORY PATTERN) =====
+            //
+            // // Chỉ tạo order cho COD
+            // // MOMO và BANK_TRANSFER sẽ tạo order sau khi thanh toán thành công
+            // if (paymentMethodEnum == Order.PaymentMethod.COD) {
+            //     Order order = orderService.createOrder(
+            //         user,
+            //         customerName,
+            //         customerEmail,
+            //         phone,
+            //         fullAddress,
+            //         note,
+            //         paymentMethodEnum,
+            //         cartMap,
+            //         promotionDescription.isEmpty() ? null : promotionDescription,
+            //         totalDiscount,
+            //         shippingFee,
+            //         shippingVoucherCode,
+            //         shippingVoucherDiscount,
+            //         deliveryTypeEnum
+            //     );
+            //
+            //     // Deduct xu from user balance if xu was used
+            //     Integer xuAmount = (Integer) request.getSession().getAttribute("xuAmount");
+            //     if (xuAmount != null && xuAmount > 0) {
+            //         Double currentBalance = user.getOneXuBalance() != null ? user.getOneXuBalance() : 0.0;
+            //         Double newBalance = currentBalance - xuAmount;
+            //         if (newBalance < 0) newBalance = 0.0;
+            //         
+            //         user.setOneXuBalance(newBalance);
+            //         // Save to database
+            //         userRepository.save(user);
+            //         
+            //         // Create OneXu transaction record
+            //         OneXuTransaction xuTransaction = new OneXuTransaction(
+            //             user.getUserId(),
+            //             OneXuTransaction.TransactionType.PURCHASE,
+            //             -xuAmount.doubleValue(), // Negative because it's a deduction
+            //             newBalance,
+            //             "Sử dụng " + xuAmount + " xu cho đơn hàng #" + order.getOrderId(),
+            //             order.getOrderId()
+            //         );
+            //         oneXuTransactionRepository.save(xuTransaction);
+            //         
+            //         // Update user in session
+            //         request.getSession().setAttribute("user", user);
+            //     }
+            //     
+            //     // Clear cart after successful COD order
+            //     cartService.clearCart(user);
+            //     
+            //     // Clear voucher and xu session data
+            //     request.getSession().removeAttribute("oneVoucher");
+            //     request.getSession().removeAttribute("oneVoucherDiscount");
+            //     request.getSession().removeAttribute("shopVoucher");
+            //     request.getSession().removeAttribute("shopVoucherDiscount");
+            //     request.getSession().removeAttribute("xuAmount");
+            //     request.getSession().removeAttribute("xuDiscount");
+            //
+            //     model.addAttribute("message", "Đặt hàng thành công! Mã đơn hàng: #" + order.getOrderId());
+            //     model.addAttribute("orderId", order.getOrderId());
+            //     return "redirect:/order-success?orderId=" + order.getOrderId();
+            // } else if (paymentMethodEnum == Order.PaymentMethod.MOMO) {
+            //     // Tạo order tạm cho MoMo
+            //     Order momoOrder = orderService.createOrder(
+            //         user,
+            //         customerName,
+            //         customerEmail,
+            //         phone,
+            //         fullAddress,
+            //         note,
+            //         paymentMethodEnum,
+            //         cartMap,
+            //         promotionDescription.isEmpty() ? null : promotionDescription,
+            //         totalDiscount,
+            //         shippingFee,
+            //         shippingVoucherCode,
+            //         shippingVoucherDiscount,
+            //         deliveryTypeEnum
+            //     );
+            //     return "redirect:/payment/momo/create?orderId=" + momoOrder.getOrderId();
+            // } else if (paymentMethodEnum == Order.PaymentMethod.BANK_TRANSFER) {
+            //     // Tạo order tạm cho PayOS
+            //     Order payosOrder = orderService.createOrder(
+            //         user,
+            //         customerName,
+            //         customerEmail,
+            //         phone,
+            //         fullAddress,
+            //         note,
+            //         paymentMethodEnum,
+            //         cartMap,
+            //         promotionDescription.isEmpty() ? null : promotionDescription,
+            //         totalDiscount,
+            //         shippingFee,
+            //         shippingVoucherCode,
+            //         shippingVoucherDiscount,
+            //         deliveryTypeEnum
+            //     );
+            //     return "redirect:/payos/create-payment?orderId=" + payosOrder.getOrderId();
+            // }
+            //
+            // ===== HẾT CODE CŨ =====
+
+            // Code mới: dùng Factory Method để xử lý từng loại thanh toán
+            CheckoutContext ctx = new CheckoutContext(
+                    user,
+                    customerName,
+                    customerEmail,
+                    phone,
+                    fullAddress,
+                    note,
+                    paymentMethodEnum,
+                    cartMap,
+                    promotionDescription,
+                    totalDiscount,
+                    shippingFee,
+                    shippingVoucherCode,
+                    shippingVoucherDiscount,
+                    deliveryTypeEnum,
+                    request,
+                    model
+            );
+
+            PaymentProcessor processor = vn.payment.PaymentProcessorFactory.createProcessor(
+                    paymentMethodEnum,
+                    orderService,
+                    cartService,
+                    userRepository,
+                    oneXuTransactionRepository
+            );
+
+            if (processor == null) {
+                // Fallback - không nên xảy ra
+                return "redirect:/checkout?error=Invalid payment method";
+            }
+
+            return processor.process(ctx);
 
         } catch (Exception e) {
             // Log the error for debugging

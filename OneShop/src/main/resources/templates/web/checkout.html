@@ -1112,6 +1112,10 @@
                         const voucher = (currentDeliveryOptions && currentDeliveryOptions.shippingVouchers || []).find(v => String(v.promotionId) === String(id));
                         selectedShippingVoucher = voucher || null;
                         currentShippingVoucherDiscount = computeShippingVoucherDiscount(selectedShippingVoucher);
+
+                        // Voucher display UI elements (used in both success & fallback paths)
+                        const notAppliedDiv = document.getElementById('shippingVoucherNotApplied');
+                        const appliedDiv = document.getElementById('shippingVoucherApplied');
                         
                         // Apply shipping voucher via API
                         if (selectedShippingVoucher && currentShippingVoucherDiscount > 0) {
@@ -1126,8 +1130,6 @@
                             .then(data => {
                                 if (data.success) {
                                     // Update voucher display UI
-                                    const notAppliedDiv = document.getElementById('shippingVoucherNotApplied');
-                                    const appliedDiv = document.getElementById('shippingVoucherApplied');
                                     const appliedVoucherCode = document.getElementById('appliedVoucherCode');
                                     const appliedVoucherDiscount = document.getElementById('appliedVoucherDiscount');
                                     
@@ -1137,6 +1139,7 @@
                                     if (appliedVoucherCode) appliedVoucherCode.textContent = selectedShippingVoucher.promotionCode;
                                     if (appliedVoucherDiscount) appliedVoucherDiscount.textContent = `-${formatMoney(currentShippingVoucherDiscount)} VNĐ`;
                                     
+                                    showToast('Áp dụng voucher vận chuyển thành công');
                                     updateTotalPrice();
                                     closeShippingVoucherModal();
                                 } else {
@@ -1172,6 +1175,16 @@
                         closeShippingVoucherModal();
                     }
                 });
+
+                let toastTimer = null;
+                function showToast(message) {
+                    const toast = document.getElementById('simpleToast');
+                    if (!toast) return;
+                    toast.textContent = message;
+                    toast.classList.add('show');
+                    if (toastTimer) clearTimeout(toastTimer);
+                    toastTimer = setTimeout(() => toast.classList.remove('show'), 2200);
+                }
                 
                 // Get discount text based on voucher type
                 function getDiscountText(voucher) {
@@ -1301,6 +1314,8 @@
             });
             
         </script>
+
+        <div id="simpleToast" class="simple-toast" aria-live="polite" aria-atomic="true"></div>
         
         <style>
             /* Payment Methods CSS */
@@ -1371,6 +1386,28 @@
             
             .payment-option[data-payment="bank_transfer"] i {
                 color: #0066cc; /* Xanh dương - ngân hàng */
+            }
+
+            .simple-toast {
+                position: fixed;
+                top: 16px;
+                right: 16px;
+                z-index: 9999;
+                background: rgba(17, 151, 68, 0.95);
+                color: #fff;
+                padding: 10px 14px;
+                border-radius: 10px;
+                font-size: 14px;
+                box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+                opacity: 0;
+                transform: translateY(-8px);
+                pointer-events: none;
+                transition: opacity 180ms ease, transform 180ms ease;
+                max-width: min(320px, calc(100vw - 32px));
+            }
+            .simple-toast.show {
+                opacity: 1;
+                transform: translateY(0);
             }
             
             .payment-option[data-payment="momo"] i {
