@@ -21,6 +21,10 @@ import vn.repository.UserRepository;
 import vn.repository.OneXuTransactionRepository;
 import vn.payment.CheckoutContext;
 import vn.payment.PaymentProcessor;
+import vn.strategy.discount.FixedAmountShippingDiscountStrategy;
+import vn.strategy.discount.FreeShippingDiscountStrategy;
+import vn.strategy.discount.PercentageShippingDiscountStrategy;
+import vn.strategy.discount.ShippingDiscountStrategy;
 import vn.service.CartService;
 import vn.service.OrderService;
 import vn.service.ProductService;
@@ -679,27 +683,47 @@ public class CartController {
             //     return "redirect:/payos/create-payment?orderId=" + payosOrder.getOrderId();
             // }
             //
+            // 
+            // ===== CODE CŨ (chưa Builder – dùng constructor 16 tham số, khó đọc, dễ nhầm thứ tự) =====
+            // CheckoutContext ctx = new CheckoutContext(
+            //         user,
+            //         customerName,
+            //         customerEmail,
+            //         phone,
+            //         fullAddress,
+            //         note,
+            //         paymentMethodEnum,
+            //         cartMap,
+            //         promotionDescription,
+            //         totalDiscount,
+            //         shippingFee,
+            //         shippingVoucherCode,
+            //         shippingVoucherDiscount,
+            //         deliveryTypeEnum,
+            //         request,
+            //         model
+            // );
             // ===== HẾT CODE CŨ =====
 
-            // Code mới: dùng Factory Method để xử lý từng loại thanh toán
-            CheckoutContext ctx = new CheckoutContext(
-                    user,
-                    customerName,
-                    customerEmail,
-                    phone,
-                    fullAddress,
-                    note,
-                    paymentMethodEnum,
-                    cartMap,
-                    promotionDescription,
-                    totalDiscount,
-                    shippingFee,
-                    shippingVoucherCode,
-                    shippingVoucherDiscount,
-                    deliveryTypeEnum,
-                    request,
-                    model
-            );
+            // Code mới: Builder pattern – tạo CheckoutContext qua builder(), dễ đọc, dễ so sánh khi quay video
+            CheckoutContext ctx = CheckoutContext.builder()
+                    .user(user)
+                    .customerName(customerName)
+                    .customerEmail(customerEmail)
+                    .phone(phone)
+                    .fullAddress(fullAddress)
+                    .note(note)
+                    .paymentMethod(paymentMethodEnum)
+                    .cartMap(cartMap)
+                    .promotionDescription(promotionDescription)
+                    .totalDiscount(totalDiscount)
+                    .shippingFee(shippingFee)
+                    .shippingVoucherCode(shippingVoucherCode)
+                    .shippingVoucherDiscount(shippingVoucherDiscount)
+                    .deliveryType(deliveryTypeEnum)
+                    .request(request)
+                    .model(model)
+                    .build();
 
             PaymentProcessor processor = vn.payment.PaymentProcessorFactory.createProcessor(
                     paymentMethodEnum,
@@ -1146,30 +1170,34 @@ public class CartController {
                 response.put("message", "Voucher không tồn tại");
                 return response;
             }
-            
             Promotion promotion = promotionOpt.get();
             
-            // Calculate discount
-            double discount = 0.0;
-            switch (promotion.getPromotionType()) {
-                case FREE_SHIPPING:
-                    discount = shippingFee;
-                    break;
-                case PERCENTAGE:
-                    discount = (shippingFee * promotion.getDiscountValue().doubleValue()) / 100.0;
-                    if (promotion.getMaximumDiscountAmount() != null && promotion.getMaximumDiscountAmount().compareTo(BigDecimal.ZERO) > 0) {
-                        discount = Math.min(discount, promotion.getMaximumDiscountAmount().doubleValue());
-                    }
-                    break;
-                case FIXED_AMOUNT:
-                    discount = promotion.getDiscountValue().doubleValue();
-                    break;
-                default:
-                    discount = 0.0;
-            }
-            
+            // ===== CODE CŨ (chưa Strategy – switch theo promotionType, khó mở rộng) =====
+            // double discount = 0.0;
+            // switch (promotion.getPromotionType()) {
+            //     case FREE_SHIPPING:
+            //         discount = shippingFee;
+            //         break;
+            //     case PERCENTAGE:
+            //         discount = (shippingFee * promotion.getDiscountValue().doubleValue()) / 100.0;
+            //         if (promotion.getMaximumDiscountAmount() != null && promotion.getMaximumDiscountAmount().compareTo(BigDecimal.ZERO) > 0) {
+            //             discount = Math.min(discount, promotion.getMaximumDiscountAmount().doubleValue());
+            //         }
+            //         break;
+            //     case FIXED_AMOUNT:
+            //         discount = promotion.getDiscountValue().doubleValue();
+            //         break;
+            //     default:
+            //         discount = 0.0;
+            // }
+            // discount = Math.max(0, Math.min(discount, shippingFee));
+            // ===== HẾT CODE CŨ =====
+
+            // Code mới: Strategy pattern – chọn strategy theo loại khuyến mãi, gọi calculate()
+            ShippingDiscountStrategy strategy = getShippingDiscountStrategy(promotion.getPromotionType());
+            double discount = strategy.calculate(promotion, shippingFee != null ? shippingFee : 0.0);
             // Cap by shipping fee
-            discount = Math.max(0, Math.min(discount, shippingFee));
+            discount = Math.max(0, Math.min(discount, shippingFee != null ? shippingFee : 0.0));
             
             // Save to session
             request.getSession().setAttribute("shippingVoucher", promotion);
@@ -1377,6 +1405,23 @@ public class CartController {
         return response;
     }
     
+    /**
+     * Chọn ShippingDiscountStrategy theo loại khuyến mãi (Strategy pattern – không dùng Factory riêng).
+     */
+    private ShippingDiscountStrategy getShippingDiscountStrategy(Promotion.PromotionType type) {
+        if (type == null) return (p, fee) -> 0.0;
+        switch (type) {
+            case FREE_SHIPPING:
+                return new FreeShippingDiscountStrategy();
+            case PERCENTAGE:
+                return new PercentageShippingDiscountStrategy();
+            case FIXED_AMOUNT:
+                return new FixedAmountShippingDiscountStrategy();
+            default:
+                return (p, fee) -> 0.0;
+        }
+    }
+
     /**
      * Calculate discount amount based on promotion type
      */
