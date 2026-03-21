@@ -164,7 +164,7 @@ public class ProductController {
 
             Shop shop = shopService.findById(shopId).orElse(null);
             if (shop == null) {
-                return "redirect:/admin/products?error=true&action=add";
+                return "redirect:/admin/products?error=true&action=add&message=" + encodeMessage("Không tìm thấy shop được chọn.");
             }
             product.setShop(shop);
             
@@ -189,6 +189,8 @@ public class ProductController {
                 try {
                     String imageUrl = storageService.storeProductImage(file);
                     product.setProductImage(imageUrl);
+                } catch (RuntimeException e) {
+                    return "redirect:/admin/products?error=true&action=add&message=" + encodeMessage(e.getMessage());
                 } catch (Exception e) {
                     // Fallback to old method if Cloudinary fails
                     String fileName = imageStorageService.store(file, product.getProductName());
@@ -198,13 +200,13 @@ public class ProductController {
 
             Product savedProduct = productService.save(product);
             if (savedProduct != null) {
-                return "redirect:/admin/products?success=true&action=add";
+                return "redirect:/admin/products?success=true&action=add&message=" + encodeMessage("Thêm sản phẩm thành công!");
             } else {
-                return "redirect:/admin/products?error=true&action=add";
+                return "redirect:/admin/products?error=true&action=add&message=" + encodeMessage("Không thể thêm sản phẩm.");
             }
         } catch (Exception e) {
             e.printStackTrace();
-            return "redirect:/admin/products?error=true&action=add";
+            return "redirect:/admin/products?error=true&action=add&message=" + encodeMessage("Có lỗi xảy ra khi thêm sản phẩm.");
         }
     }
 
@@ -264,6 +266,8 @@ public class ProductController {
                     try {
                         String imageUrl = storageService.storeProductImage(file);
                         existingProduct.setProductImage(imageUrl);
+                    } catch (RuntimeException e) {
+                        return "redirect:/admin/products?error=true&action=edit&message=" + encodeMessage(e.getMessage());
                     } catch (Exception e) {
                         // Fallback to old method if Cloudinary fails
                         String fileName = imageStorageService.store(file, product.getProductName());
@@ -272,13 +276,13 @@ public class ProductController {
                 }
 
                 productService.save(existingProduct);
-                return "redirect:/admin/products?success=true&action=edit";
+                return "redirect:/admin/products?success=true&action=edit&message=" + encodeMessage("Cập nhật sản phẩm thành công!");
             } catch (Exception e) {
                 e.printStackTrace();
-                return "redirect:/admin/products?error=true&action=edit";
+                return "redirect:/admin/products?error=true&action=edit&message=" + encodeMessage("Có lỗi xảy ra khi cập nhật sản phẩm.");
             }
         }
-        return "redirect:/admin/products?error=true&action=edit";
+        return "redirect:/admin/products?error=true&action=edit&message=" + encodeMessage("Không tìm thấy sản phẩm cần cập nhật.");
     }
 
     // Assign product to shop (change shop mapping only)
@@ -294,13 +298,13 @@ public class ProductController {
             Product product = productService.findById(productId).orElse(null);
             Shop shop = shopService.findById(shopId).orElse(null);
             if (product == null || shop == null) {
-                return "redirect:/admin/products?error=true&action=assign";
+                return "redirect:/admin/products?error=true&action=assign&message=" + encodeMessage("Không tìm thấy sản phẩm hoặc shop.");
             }
             product.setShop(shop);
             productService.save(product);
-            return "redirect:/admin/products?success=true&action=assign";
+            return "redirect:/admin/products?success=true&action=assign&message=" + encodeMessage("Phân công shop thành công.");
         } catch (Exception e) {
-            return "redirect:/admin/products?error=true&action=assign";
+            return "redirect:/admin/products?error=true&action=assign&message=" + encodeMessage("Có lỗi xảy ra khi phân công shop.");
         }
     }
     @GetMapping("/deleteProduct/{id}")
@@ -311,17 +315,21 @@ public class ProductController {
         }
         try {
             productService.deleteById(id);
-            return "redirect:/admin/products?success=true&action=delete";
+            return "redirect:/admin/products?success=true&action=delete&message=" + encodeMessage("Xóa sản phẩm thành công!");
         } catch (org.springframework.dao.DataIntegrityViolationException e) {
             // FK constraint violation (e.g., referenced by order_details)
             boolean soft = productService.softDelete(id);
             String msg = soft
                     ? "Sản phẩm đang được dùng trong đơn hàng, đã chuyển sang trạng thái ngừng kinh doanh."
                     : "Không thể xóa sản phẩm vì đang được tham chiếu.";
-            return "redirect:/admin/products?warning=true&message=" + java.net.URLEncoder.encode(msg, java.nio.charset.StandardCharsets.UTF_8);
+            return "redirect:/admin/products?warning=true&message=" + encodeMessage(msg);
         } catch (Exception e) {
-            return "redirect:/admin/products?error=true&action=delete";
+            return "redirect:/admin/products?error=true&action=delete&message=" + encodeMessage("Có lỗi xảy ra khi xóa sản phẩm.");
         }
+    }
+
+    private String encodeMessage(String message) {
+        return java.net.URLEncoder.encode(message, java.nio.charset.StandardCharsets.UTF_8);
     }
 
     @InitBinder

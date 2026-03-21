@@ -20,6 +20,33 @@
     border: 1px dashed #e9ecef;
     color: #6c757d;
   }
+  .oneshop-alert {
+    border: 0;
+    border-left: 6px solid transparent;
+    border-radius: 12px;
+    box-shadow: 0 12px 26px rgba(17, 24, 39, 0.14);
+    font-weight: 500;
+    animation: oneshopSlideIn .28s ease-out;
+  }
+  .oneshop-alert.alert-success {
+    color: #0f5132;
+    border-left-color: #20c997;
+    background: linear-gradient(90deg, #d1fae5 0%, #ecfdf5 100%);
+  }
+  .oneshop-alert.alert-warning {
+    color: #7c5a03;
+    border-left-color: #f59e0b;
+    background: linear-gradient(90deg, #fef3c7 0%, #fff8e1 100%);
+  }
+  .oneshop-alert.alert-danger {
+    color: #842029;
+    border-left-color: #ef4444;
+    background: linear-gradient(90deg, #fee2e2 0%, #fff1f2 100%);
+  }
+  @keyframes oneshopSlideIn {
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
 </style>
 
 <div class="page-header">
@@ -27,6 +54,29 @@
 </div>
 
 <div class="page-inner">
+  <c:if test="${param.success != null || param.error != null || param.warning != null}">
+    <div class="alert ${param.success != null ? 'alert-success' : (param.warning != null ? 'alert-warning' : 'alert-danger')} alert-dismissible fade show oneshop-alert" role="alert">
+      <i class="fas ${param.success != null ? 'fa-check-circle' : (param.warning != null ? 'fa-exclamation-circle' : 'fa-exclamation-triangle')} mr-2"></i>
+      <c:choose>
+        <c:when test="${not empty param.message}">
+          ${fn:escapeXml(param.message)}
+        </c:when>
+        <c:when test="${param.success != null}">
+          Thao tác thành công.
+        </c:when>
+        <c:when test="${param.warning != null}">
+          Thao tác hoàn tất với cảnh báo.
+        </c:when>
+        <c:otherwise>
+          Có lỗi xảy ra, vui lòng thử lại.
+        </c:otherwise>
+      </c:choose>
+      <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+  </c:if>
+
   <div class="d-flex align-items-center justify-content-between mb-3">
     <form method="get" class="d-flex align-items-center" style="gap:12px">
       <input type="hidden" name="page" value="0" />
@@ -217,17 +267,19 @@ function confirmDeleteBrand(id, name) {
 
 // Success toast cleanup (reuse from categories)
 const urlParams = new URLSearchParams(window.location.search);
-if (urlParams.get('success') || urlParams.get('error')) {
-  let title = '';
-  if (urlParams.get('success') === 'added') title = 'Thêm thương hiệu thành công!';
-  else if (urlParams.get('success') === 'updated') title = 'Cập nhật thương hiệu thành công!';
-  else if (urlParams.get('success') === 'deleted') title = 'Xóa thương hiệu thành công!';
-  else if (urlParams.get('error')) title = 'Có lỗi xảy ra!';
+if (urlParams.get('success') || urlParams.get('error') || urlParams.get('warning')) {
+  const icon = urlParams.get('success') ? 'success' : (urlParams.get('warning') ? 'warning' : 'error');
+  const title = urlParams.get('message') || (icon === 'success' ? 'Thao tác thành công!' : 'Có lỗi xảy ra!');
   if (title) {
-    Swal.fire({ icon: title.includes('lỗi') ? 'error' : 'success', title, showConfirmButton: false, timer: 2000 });
+    Swal.fire({ icon: icon, title, showConfirmButton: false, timer: 2200 });
   }
+  setTimeout(function () {
+    $('.alert').fadeOut('slow');
+  }, 4500);
   urlParams.delete('success');
   urlParams.delete('error');
+  urlParams.delete('warning');
+  urlParams.delete('message');
   const remaining = urlParams.toString();
   const cleanUrl = window.location.pathname + (remaining ? ('?' + remaining) : '');
   window.history.replaceState({}, document.title, cleanUrl);

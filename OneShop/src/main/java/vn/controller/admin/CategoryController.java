@@ -156,6 +156,8 @@ public class CategoryController {
         if (categoryImageFile != null && !categoryImageFile.isEmpty()) {
             try {
                 finalImagePath = storageService.storeCategoryImage(categoryImageFile);
+            } catch (RuntimeException e) {
+                return "redirect:/admin/categories?error=true&action=add&message=" + encodeMessage(e.getMessage());
             } catch (Exception e) {
                 // Fallback to old method if Cloudinary fails
                 finalImagePath = saveUploadedFile(categoryImageFile, categoryName);
@@ -166,7 +168,7 @@ public class CategoryController {
         categoryService.saveCategory(category);
         
         // Build redirect URL with current parameters
-        StringBuilder redirectUrl = new StringBuilder("/admin/categories?success=true&action=add");
+        StringBuilder redirectUrl = new StringBuilder("/admin/categories?success=true&action=add&message=" + encodeMessage("Thêm danh mục thành công!"));
         redirectUrl.append("&page=").append(page);
         redirectUrl.append("&size=").append(size);
         redirectUrl.append("&sortBy=").append(sortBy);
@@ -217,6 +219,8 @@ public class CategoryController {
                 try {
                     String finalImagePath = storageService.storeCategoryImage(categoryImageFile);
                     category.setCategoryImage(finalImagePath);
+                } catch (RuntimeException e) {
+                    return "redirect:/admin/categories?error=true&action=edit&message=" + encodeMessage(e.getMessage());
                 } catch (Exception e) {
                     // Fallback to old method if Cloudinary fails
                     String finalImagePath = saveUploadedFile(categoryImageFile, categoryName);
@@ -229,7 +233,7 @@ public class CategoryController {
         }
         
         // Build redirect URL with current parameters
-        StringBuilder redirectUrl = new StringBuilder("/admin/categories?success=true&action=edit");
+        StringBuilder redirectUrl = new StringBuilder("/admin/categories?success=true&action=edit&message=" + encodeMessage("Cập nhật danh mục thành công!"));
         redirectUrl.append("&page=").append(page);
         redirectUrl.append("&size=").append(size);
         redirectUrl.append("&sortBy=").append(sortBy);
@@ -258,7 +262,7 @@ public class CategoryController {
         categoryService.deleteCategory(id);
         
         // Build redirect URL with current parameters
-        StringBuilder redirectUrl = new StringBuilder("/admin/categories?success=true&action=delete");
+        StringBuilder redirectUrl = new StringBuilder("/admin/categories?success=true&action=delete&message=" + encodeMessage("Xóa danh mục thành công!"));
         redirectUrl.append("&page=").append(page);
         redirectUrl.append("&size=").append(size);
         redirectUrl.append("&sortBy=").append(sortBy);
@@ -341,5 +345,9 @@ public class CategoryController {
                 .replaceAll("[^a-z0-9\\-]", "")  // Remove non-alphanumeric except hyphens
                 .replaceAll("-+", "-")          // Replace multiple hyphens with single
                 .replaceAll("^-|-$", "");       // Remove leading/trailing hyphens
+    }
+
+    private String encodeMessage(String message) {
+        return java.net.URLEncoder.encode(message, java.nio.charset.StandardCharsets.UTF_8);
     }
 }

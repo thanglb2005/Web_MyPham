@@ -115,7 +115,7 @@ public class BrandController {
         }
         
         if (result.hasErrors()) {
-            return "redirect:/admin/brands?error=true";
+            return "redirect:/admin/brands?error=true&message=" + encodeMessage("Dữ liệu thương hiệu không hợp lệ.");
         }
         
         // Handle image upload - sử dụng Cloudinary với fallback
@@ -123,6 +123,8 @@ public class BrandController {
             try {
                 String imageUrl = storageService.storeBrandImage(brandImageFile);
                 brand.setBrandImage(imageUrl);
+            } catch (RuntimeException e) {
+                return "redirect:/admin/brands?error=true&message=" + encodeMessage(e.getMessage());
             } catch (Exception e) {
                 // Fallback to old method if Cloudinary fails
                 try {
@@ -131,13 +133,13 @@ public class BrandController {
                     Files.write(path, brandImageFile.getBytes());
                     brand.setBrandImage(fileName);
                 } catch (IOException ioException) {
-                    return "redirect:/admin/brands?error=image";
+                    return "redirect:/admin/brands?error=image&message=" + encodeMessage("Không thể tải ảnh thương hiệu lên.");
                 }
             }
         }
         
         brandService.save(brand);
-        return "redirect:/admin/brands?success=added";
+        return "redirect:/admin/brands?success=added&message=" + encodeMessage("Thêm thương hiệu thành công!");
     }
     
     /**
@@ -152,18 +154,18 @@ public class BrandController {
         // Check if brand exists
         Optional<Brand> existingBrand = brandService.findById(brand.getBrandId());
         if (existingBrand.isEmpty()) {
-            return "redirect:/admin/brands?error=notfound";
+            return "redirect:/admin/brands?error=notfound&message=" + encodeMessage("Không tìm thấy thương hiệu.");
         }
         
         // Check if name exists for other brands
         Optional<Brand> brandWithName = brandService.findByBrandName(brand.getBrandName());
         if (brandWithName.isPresent() && !brandWithName.get().getBrandId().equals(brand.getBrandId())) {
             result.rejectValue("brandName", "error.brand", "Tên thương hiệu đã tồn tại");
-            return "redirect:/admin/brands?error=duplicate";
+            return "redirect:/admin/brands?error=duplicate&message=" + encodeMessage("Tên thương hiệu đã tồn tại.");
         }
         
         if (result.hasErrors()) {
-            return "redirect:/admin/brands?error=true";
+            return "redirect:/admin/brands?error=true&message=" + encodeMessage("Dữ liệu thương hiệu không hợp lệ.");
         }
         
         // Keep existing image if no new image is uploaded
@@ -184,6 +186,8 @@ public class BrandController {
                 }
                 
                 brand.setBrandImage(imageUrl);
+            } catch (RuntimeException e) {
+                return "redirect:/admin/brands?error=true&message=" + encodeMessage(e.getMessage());
             } catch (Exception e) {
                 // Fallback to old method if Cloudinary fails
                 try {
@@ -204,13 +208,13 @@ public class BrandController {
                     
                     brand.setBrandImage(fileName);
                 } catch (IOException ioException) {
-                    return "redirect:/admin/brands?error=image";
+                    return "redirect:/admin/brands?error=image&message=" + encodeMessage("Không thể cập nhật ảnh thương hiệu.");
                 }
             }
         }
         
         brandService.save(brand);
-        return "redirect:/admin/brands?success=updated";
+        return "redirect:/admin/brands?success=updated&message=" + encodeMessage("Cập nhật thương hiệu thành công!");
     }
     
     /**
@@ -238,10 +242,10 @@ public class BrandController {
             }
             
             brandService.deleteById(id);
-            return "redirect:/admin/brands?success=deleted";
+            return "redirect:/admin/brands?success=deleted&message=" + encodeMessage("Xóa thương hiệu thành công!");
         }
         
-        return "redirect:/admin/brands?error=notfound";
+        return "redirect:/admin/brands?error=notfound&message=" + encodeMessage("Không tìm thấy thương hiệu.");
     }
     
     /**
@@ -264,9 +268,13 @@ public class BrandController {
             Brand brand = brandOpt.get();
             brand.setStatus(!brand.getStatus());
             brandService.save(brand);
-            return "redirect:/admin/brands?success=toggled";
+            return "redirect:/admin/brands?success=toggled&message=" + encodeMessage("Cập nhật trạng thái thương hiệu thành công.");
         }
         
-        return "redirect:/admin/brands?error=notfound";
+        return "redirect:/admin/brands?error=notfound&message=" + encodeMessage("Không tìm thấy thương hiệu.");
+    }
+
+    private String encodeMessage(String message) {
+        return java.net.URLEncoder.encode(message, java.nio.charset.StandardCharsets.UTF_8);
     }
 }

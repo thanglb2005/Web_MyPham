@@ -2,12 +2,65 @@
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
 
+<style>
+  .oneshop-alert {
+    border: 0;
+    border-left: 6px solid transparent;
+    border-radius: 12px;
+    box-shadow: 0 12px 26px rgba(17, 24, 39, 0.14);
+    font-weight: 500;
+    animation: oneshopSlideIn .28s ease-out;
+  }
+  .oneshop-alert.alert-success {
+    color: #0f5132;
+    border-left-color: #20c997;
+    background: linear-gradient(90deg, #d1fae5 0%, #ecfdf5 100%);
+  }
+  .oneshop-alert.alert-warning {
+    color: #7c5a03;
+    border-left-color: #f59e0b;
+    background: linear-gradient(90deg, #fef3c7 0%, #fff8e1 100%);
+  }
+  .oneshop-alert.alert-danger {
+    color: #842029;
+    border-left-color: #ef4444;
+    background: linear-gradient(90deg, #fee2e2 0%, #fff1f2 100%);
+  }
+  @keyframes oneshopSlideIn {
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+</style>
+
 <!-- Page Header -->
 <div class="page-header">
   <h2 class="page-title">Danh mục sản phẩm</h2>
 </div>
 
     <div class="page-inner">
+      <c:if test="${param.success != null || param.error != null || param.warning != null}">
+        <div class="alert ${param.success != null ? 'alert-success' : (param.warning != null ? 'alert-warning' : 'alert-danger')} alert-dismissible fade show oneshop-alert" role="alert">
+          <i class="fas ${param.success != null ? 'fa-check-circle' : (param.warning != null ? 'fa-exclamation-circle' : 'fa-exclamation-triangle')} mr-2"></i>
+          <c:choose>
+            <c:when test="${not empty param.message}">
+              ${fn:escapeXml(param.message)}
+            </c:when>
+            <c:when test="${param.success != null}">
+              Thao tác thành công.
+            </c:when>
+            <c:when test="${param.warning != null}">
+              Thao tác hoàn tất với cảnh báo.
+            </c:when>
+            <c:otherwise>
+              Có lỗi xảy ra, vui lòng thử lại.
+            </c:otherwise>
+          </c:choose>
+          <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+      </c:if>
+
       <div class="d-flex align-items-center justify-content-between mb-3">
         <form method="get" class="d-flex align-items-center" style="gap:12px">
             <input type="hidden" name="page" value="0" />
@@ -212,36 +265,30 @@ function confirmDelete(id, name) {
   });
 }
 
-// Success notification
+// Optional toast + clean URL params
 const urlParams = new URLSearchParams(window.location.search);
-if (urlParams.get('success') === 'true') {
-  const action = urlParams.get('action');
-  let message = '';
-  let icon = 'success';
-
-  if (action === 'add') {
-    message = 'Thêm danh mục thành công!';
-    icon = 'success';
-  } else if (action === 'edit') {
-    message = 'Cập nhật danh mục thành công!';
-    icon = 'success';
-  } else if (action === 'delete') {
-    message = 'Xóa danh mục thành công!';
-    icon = 'success';
-  }
-
-  if (message) {
+if (urlParams.get('success') || urlParams.get('error') || urlParams.get('warning')) {
+  const msg = urlParams.get('message');
+  const icon = urlParams.get('success') ? 'success' : (urlParams.get('warning') ? 'warning' : 'error');
+  if (typeof Swal !== 'undefined') {
     Swal.fire({
       icon: icon,
-      title: message,
+      title: msg || (icon === 'success' ? 'Thao tác thành công!' : 'Có lỗi xảy ra!'),
       showConfirmButton: false,
-      timer: 2000
+      timer: 2200
     });
   }
 
-  // Clean only success-related flags, keep paging/sort/search
+  setTimeout(function () {
+    $('.alert').fadeOut('slow');
+  }, 4500);
+
+  // Keep paging/sort/search, remove message params
   urlParams.delete('success');
+  urlParams.delete('error');
+  urlParams.delete('warning');
   urlParams.delete('action');
+  urlParams.delete('message');
   const remaining = urlParams.toString();
   const cleanUrl = window.location.pathname + (remaining ? ('?' + remaining) : '');
   window.history.replaceState({}, document.title, cleanUrl);
