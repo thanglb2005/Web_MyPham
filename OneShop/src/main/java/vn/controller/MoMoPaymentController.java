@@ -14,11 +14,16 @@ import vn.repository.OneXuTransactionRepository;
 import vn.service.CartService;
 import vn.service.MoMoPaymentService;
 import vn.service.OrderService;
+import vn.payment.gateway.MoMoGatewayAdapter;
+import vn.payment.gateway.PaymentCallbackResult;
 
 @Controller
 @RequestMapping("/payment/momo")
 public class MoMoPaymentController {
 
+    @Autowired
+    private MoMoGatewayAdapter moMoGatewayAdapter;
+    
     @Autowired
     private MoMoPaymentService moMoPaymentService;
 
@@ -40,265 +45,121 @@ public class MoMoPaymentController {
     @Value("${momo.notify.url}")
     private String notifyUrl;
 
-    /**
-     * Tạo payment request với MoMo
-     */
     @GetMapping("/create")
-    public String createPayment(@RequestParam("orderId") Long orderId,
-                               HttpServletRequest request,
-                               Model model) {
+    public String createPayment(@RequestParam("orderId") Long orderId, HttpServletRequest request, Model model) {
         try {
             User user = (User) request.getSession().getAttribute("user");
-            if (user == null) {
-                return "redirect:/login";
-            }
+            if (user == null) return "redirect:/login";
 
             Order order = orderService.getOrderById(orderId);
-            if (order == null) {
-                model.addAttribute("error", "Không tìm thấy đơn hàng!");
+            if (order == null || !order.getUser().getUserId().equals(user.getUserId())) {
+                model.addAttribute("error", "Không tìm thấy hoặc không có quyền truy cập đơn hàng!");
                 return "web/checkout-error";
             }
-
-            // Kiểm tra quyền truy cập đơn hàng
-            if (!order.getUser().getUserId().equals(user.getUserId())) {
-                model.addAttribute("error", "Bạn không có quyền truy cập đơn hàng này!");
-                return "web/checkout-error";
-            }
-
-            // Kiểm tra trạng thái đơn hàng
             if (order.getPaymentPaid()) {
                 model.addAttribute("error", "Đơn hàng đã được thanh toán!");
                 return "web/checkout-error";
             }
 
-            // Tạo payment URL
-            String paymentUrl = moMoPaymentService.createPaymentRequest(order, returnUrl, notifyUrl);
-            
+            String paymentUrl = moMoGatewayAdapter.createPaymentUrl(order, returnUrl, notifyUrl);
             return "redirect:" + paymentUrl;
-
         } catch (Exception e) {
-            model.addAttribute("error", "Lỗi khi tạo thanh toán MoMo: " + e.getMessage());
+            model.addAttribute("error", "Lỗi: " + e.getMessage());
             return "web/checkout-error";
         }
     }
 
-    /**
-     * Xử lý callback từ MoMo khi thanh toán thành công
-     */
     @GetMapping("/return")
-    public String paymentReturn(@RequestParam(value = "orderId", required = false) String orderId,
-                               @RequestParam(value = "resultCode", required = false) String resultCode,
-                               @RequestParam(value = "transId", required = false) String transId,
-                               @RequestParam(value = "amount", required = false) String amount,
-                               HttpServletRequest request,
-                               Model model) {
+    public String paymentReturn(HttpServletRequest request, Model model) {
         try {
-            User user = (User) request.getSession().getAttribute("user");
-            if (user == null) {
-                return "redirect:/login";
-            }
+             PaymentCallbackResult result = moMoGatewayAdapter.processCallback(request);
+             User user = (User) request.getSession().getAttribute("user");
+             if (user == null) return "redirect:/login";
 
-            if (orderId == null) {
-                model.addAttribute("error", "Thiếu thông tin đơn hàng!");
-                return "web/checkout-error";
-            }
+             if (result.getOrderId() == null) {
+                 model.addAttribute("error", result.getMessage());
+                 return "web/checkout-error";
+             }
 
-            // Extract original order ID from MoMo order ID format: "MOMO_123_timestamp"
-            Long orderIdLong;
-            try {
-                if (orderId.startsWith("MOMO_")) {
-                    String[] parts = orderId.split("_");
-                    if (parts.length >= 2) {
-                        orderIdLong = Long.parseLong(parts[1]);
-                    } else {
-                        orderIdLong = Long.parseLong(orderId);
-                    }
-                } else {
-                    orderIdLong = Long.parseLong(orderId);
-                }
-            } catch (NumberFormatException e) {
-                model.addAttribute("error", "Order ID không hợp lệ: " + orderId);
-                return "web/checkout-error";
-            }
+             Order order = orderService.getOrderById(result.getOrderId());
+             if (order == null) {
+                 model.addAttribute("error", "Không tìm thấy đơn hàng!");
+                 return "web/checkout-error";
+             }
 
-            Order order = orderService.getOrderById(orderIdLong);
-            
-            if (order == null) {
-                model.addAttribute("error", "Không tìm thấy đơn hàng!");
-                return "web/checkout-error";
-            }
+             if (result.isSuccess()) {
+                 String orderNote = order.getNote();
+                 if (orderNote != null && orderNote.contains("OneXu:")) {
+                     try {
+                         int xuStartIndex = orderNote.indexOf("OneXu:") + 7;
+                         int xuEndIndex = orderNote.indexOf("xu", xuStartIndex);
+                         if (xuEndIndex > xuStartIndex) {
+                             Integer xuAmount = Integer.parseInt(orderNote.substring(xuStartIndex, xuEndIndex).trim());
+                             Double balance = user.getOneXuBalance() != null ? user.getOneXuBalance() : 0.0;
+                             Double newBalance = Math.max(0, balance - xuAmount);
+                             user.setOneXuBalance(newBalance);
+                             userRepository.save(user);
 
-            // Xử lý kết quả thanh toán
-            boolean paymentSuccess = false;
-            if (resultCode != null && transId != null && amount != null) {
-                Double amountDouble = Double.parseDouble(amount); // Giữ nguyên VND
-                paymentSuccess = moMoPaymentService.processPaymentCallback(orderIdLong, resultCode, transId, amountDouble);
-            }
+                             OneXuTransaction xuTransaction = new OneXuTransaction(
+                                 user.getUserId(), OneXuTransaction.TransactionType.PURCHASE,
+                                 -xuAmount.doubleValue(), newBalance, 
+                                 "Sử dụng " + xuAmount + " xu cho đơn hàng #" + order.getOrderId() + " (MoMo)",
+                                 order.getOrderId()
+                             );
+                             oneXuTransactionRepository.save(xuTransaction);
+                             request.getSession().setAttribute("user", user);
+                         }
+                     } catch (Exception e) { System.out.println("Failed to parse xu amount"); }
+                 }
 
-            if (paymentSuccess) {
-                // Deduct xu from user balance if xu was used (parse from order note)
-                String orderNote = order.getNote();
-                if (orderNote != null && orderNote.contains("OneXu:")) {
-                    try {
-                        // Parse xu amount from note like "OneXu: 50000 xu"
-                        int xuStartIndex = orderNote.indexOf("OneXu:") + 7;
-                        int xuEndIndex = orderNote.indexOf("xu", xuStartIndex);
-                        if (xuEndIndex > xuStartIndex) {
-                            String xuAmountStr = orderNote.substring(xuStartIndex, xuEndIndex).trim();
-                            Integer xuAmount = Integer.parseInt(xuAmountStr);
-                            
-                            Double currentBalance = user.getOneXuBalance() != null ? user.getOneXuBalance() : 0.0;
-                            Double newBalance = currentBalance - xuAmount;
-                            if (newBalance < 0) newBalance = 0.0;
-                            
-                            user.setOneXuBalance(newBalance);
-                            // Save to database
-                            userRepository.save(user);
-                            
-                            // Create OneXu transaction record
-                            OneXuTransaction xuTransaction = new OneXuTransaction(
-                                user.getUserId(),
-                                OneXuTransaction.TransactionType.PURCHASE,
-                                -xuAmount.doubleValue(), // Negative because it's a deduction
-                                newBalance,
-                                "Sử dụng " + xuAmount + " xu cho đơn hàng #" + order.getOrderId() + " (MoMo)",
-                                order.getOrderId()
-                            );
-                            oneXuTransactionRepository.save(xuTransaction);
-                            
-                            // Update user in session
-                            request.getSession().setAttribute("user", user);
-                            
-                            System.out.println("MoMo Payment - Deducted " + xuAmount + " xu. New balance: " + newBalance + ". Transaction saved.");
-                        }
-                    } catch (Exception e) {
-                        System.out.println("Failed to parse xu amount from order note: " + e.getMessage());
-                    }
-                }
-                
-                // Thanh toán thành công - clear cart và hiển thị success
-                cartService.clearCart(user);
-                
-                // Clear voucher and xu session data
-                request.getSession().removeAttribute("oneVoucher");
-                request.getSession().removeAttribute("oneVoucherDiscount");
-                request.getSession().removeAttribute("shopVoucher");
-                request.getSession().removeAttribute("shopVoucherDiscount");
-                request.getSession().removeAttribute("xuAmount");
-                request.getSession().removeAttribute("xuDiscount");
-                
-                model.addAttribute("message", "Thanh toán thành công!");
-                model.addAttribute("order", order);
-                return "web/checkout-success";
-            } else {
-                // Thanh toán thất bại - set order thành CANCELLED
-                order.setPaymentPaid(false);
-                order.setStatus(Order.OrderStatus.CANCELLED);
-                orderService.updateOrder(order);
-                model.addAttribute("error", "Thanh toán thất bại! Giỏ hàng của bạn vẫn được giữ nguyên.");
-                return "web/checkout-error";
-            }
+                 cartService.clearCart(user);
+                 request.getSession().removeAttribute("oneVoucher");
+                 request.getSession().removeAttribute("oneVoucherDiscount");
+                 request.getSession().removeAttribute("shopVoucher");
+                 request.getSession().removeAttribute("shopVoucherDiscount");
+                 request.getSession().removeAttribute("xuAmount");
+                 request.getSession().removeAttribute("xuDiscount");
 
+                 model.addAttribute("message", "Thanh toán thành công!");
+                 model.addAttribute("order", order);
+                 return "web/checkout-success";
+             } else {
+                 model.addAttribute("error", "Thanh toán thất bại! " + result.getMessage());
+                 return "web/checkout-error";
+             }
         } catch (Exception e) {
-            model.addAttribute("error", "Lỗi khi xử lý kết quả thanh toán: " + e.getMessage());
-            return "web/checkout-error";
+             model.addAttribute("error", "Lỗi: " + e.getMessage());
+             return "web/checkout-error";
         }
     }
 
-    /**
-     * Xử lý IPN (Instant Payment Notification) từ MoMo
-     */
     @PostMapping("/notify")
     @ResponseBody
-    public String paymentNotify(@RequestParam(value = "orderId", required = false) String orderId,
-                               @RequestParam(value = "resultCode", required = false) String resultCode,
-                               @RequestParam(value = "transId", required = false) String transId,
-                               @RequestParam(value = "amount", required = false) String amount) {
-        try {
-            if (orderId == null || resultCode == null || transId == null || amount == null) {
-                return "ERROR: Missing parameters";
-            }
-
-            // Extract original order ID from MoMo order ID format: "MOMO_123_timestamp"
-            Long orderIdLong;
-            try {
-                if (orderId.startsWith("MOMO_")) {
-                    String[] parts = orderId.split("_");
-                    if (parts.length >= 2) {
-                        orderIdLong = Long.parseLong(parts[1]);
-                    } else {
-                        orderIdLong = Long.parseLong(orderId);
-                    }
-                } else {
-                    orderIdLong = Long.parseLong(orderId);
-                }
-            } catch (NumberFormatException e) {
-                return "ERROR: Invalid orderId format: " + orderId;
-            }
-
-            Double amountDouble = Double.parseDouble(amount); // Giữ nguyên VND
-            
-            boolean success = moMoPaymentService.processPaymentCallback(orderIdLong, resultCode, transId, amountDouble);
-            
-            if (success) {
-                // Thanh toán thành công - clear cart
-                Order order = orderService.getOrderById(orderIdLong);
-                if (order != null) {
-                    cartService.clearCart(order.getUser());
-                }
-                return "SUCCESS";
-            } else {
-                // Thanh toán thất bại - set order thành CANCELLED
-                Order order = orderService.getOrderById(orderIdLong);
-                if (order != null) {
-                    order.setPaymentPaid(false);
-                    order.setStatus(Order.OrderStatus.CANCELLED);
-                    order.setNote(order.getNote() + " | MoMo Payment Failed - Code: " + resultCode);
-                    orderService.updateOrder(order);
-                }
-                return "FAILED";
-            }
-
-        } catch (Exception e) {
-            return "ERROR: " + e.getMessage();
-        }
+    public String paymentNotify(HttpServletRequest request) {
+         try {
+             vn.payment.gateway.PaymentWebhookResult result = moMoGatewayAdapter.processWebhook(request, null);
+             
+             // Update cart clear after success webhook if not already cleared
+             if (result.isSuccess() && result.getOrderId() != null) {
+                 Order order = orderService.getOrderById(result.getOrderId());
+                 if (order != null) cartService.clearCart(order.getUser());
+                 return "SUCCESS";
+             }
+             return "FAILED";
+         } catch (Exception e) {
+             return "ERROR: " + e.getMessage();
+         }
     }
 
-    /**
-     * Test MoMo API connection
-     */
     @GetMapping("/test")
     @ResponseBody
     public String testMoMoAPI() {
-        try {
-            // Tạo order test
-            Order testOrder = new Order();
-            testOrder.setOrderId(999999L);
-            testOrder.setTotalAmount(10000.0); // 10,000 VND
-            
-            String testReturnUrl = "http://localhost:8080/payment/momo/return";
-            String testNotifyUrl = "http://localhost:8080/payment/momo/notify";
-            
-            String paymentUrl = moMoPaymentService.createPaymentRequest(testOrder, testReturnUrl, testNotifyUrl);
-            
-            return "MoMo API Test Success! Payment URL: " + paymentUrl;
-            
-        } catch (Exception e) {
-            return "MoMo API Test Failed: " + e.getMessage();
-        }
+         return "Testing via Gateway Adapter";
     }
 
-    /**
-     * Kiểm tra trạng thái thanh toán
-     */
     @GetMapping("/status/{orderId}")
     @ResponseBody
     public String checkPaymentStatus(@PathVariable("orderId") Long orderId) {
-        try {
-            boolean isPaid = moMoPaymentService.checkPaymentStatus(orderId);
-            return isPaid ? "PAID" : "UNPAID";
-        } catch (Exception e) {
-            return "ERROR: " + e.getMessage();
-        }
+        return moMoPaymentService.checkPaymentStatus(orderId) ? "PAID" : "UNPAID";
     }
 }
