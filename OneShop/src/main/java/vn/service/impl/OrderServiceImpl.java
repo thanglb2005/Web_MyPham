@@ -5,6 +5,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import vn.observer.order.OrderStatusChangedEvent;
+import vn.observer.order.OrderStatusSubject;
 import vn.entity.CartItem;
 import vn.entity.Order;
 import vn.entity.OrderDetail;
@@ -48,6 +50,9 @@ public class OrderServiceImpl implements OrderService {
     
     @Autowired
     private FlashSaleService flashSaleService;
+
+    @Autowired
+    private OrderStatusSubject orderStatusSubject;
 
     @Override
     @Transactional
@@ -243,7 +248,12 @@ public class OrderServiceImpl implements OrderService {
                     }
                 }
             }
+            // ===== CODE CŨ (chưa Observer) =====
+            // orderRepository.save(order);
+            // ===== HẾT CODE CŨ =====
+
             orderRepository.save(order);
+            publishOrderStatusChanged(order, oldStatus, newStatus, "OrderService.updateOrderStatus");
         });
     }
 
@@ -293,6 +303,8 @@ public class OrderServiceImpl implements OrderService {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy đơn hàng với ID: " + orderId));
 
+        Order.OrderStatus oldStatus = order.getStatus();
+
         if (order.getStatus() != Order.OrderStatus.PENDING) {
             throw new IllegalStateException("Chỉ có thể xác nhận đơn hàng ở trạng thái 'Chờ xác nhận'.");
         }
@@ -325,7 +337,11 @@ public class OrderServiceImpl implements OrderService {
         }
 
         order.setStatus(Order.OrderStatus.CONFIRMED);
+        // ===== CODE CŨ (chưa Observer) =====
+        // orderRepository.save(order);
+        // ===== HẾT CODE CŨ =====
         orderRepository.save(order);
+        publishOrderStatusChanged(order, oldStatus, Order.OrderStatus.CONFIRMED, "OrderService.confirmOrder");
     }
 
     @Override
@@ -333,6 +349,8 @@ public class OrderServiceImpl implements OrderService {
     public void cancelOrder(Long orderId, User vendor) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy đơn hàng #" + orderId));
+
+        Order.OrderStatus oldStatus = order.getStatus();
 
         // Security Check: Ensure the vendor owns this order
         if (order.getShop() == null || !order.getShop().getVendor().equals(vendor)) {
@@ -361,7 +379,36 @@ public class OrderServiceImpl implements OrderService {
         // Optionally, you can set a reason for cancellation
         // order.setCancellationReason("Hủy bởi người bán");
         order.setCancelledDate(LocalDateTime.now());
+        // ===== CODE CŨ (chưa Observer) =====
+        // orderRepository.save(order);
+        // ===== HẾT CODE CŨ =====
         orderRepository.save(order);
+        publishOrderStatusChanged(order, oldStatus, Order.OrderStatus.CANCELLED, "OrderService.cancelOrder");
+    }
+
+    /**
+     * Notify observers khi trạng thái đơn hàng thay đổi.
+     */
+    private void publishOrderStatusChanged(Order order,
+                                           Order.OrderStatus oldStatus,
+                                           Order.OrderStatus newStatus,
+                                           String source) {
+        if (order == null || oldStatus == null || newStatus == null || oldStatus == newStatus) {
+            return;
+        }
+
+        Long userId = order.getUser() != null ? order.getUser().getUserId() : null;
+        OrderStatusChangedEvent event = new OrderStatusChangedEvent(
+                order.getOrderId(),
+                userId,
+                order.getCustomerEmail(),
+                order.getCustomerName(),
+                oldStatus,
+                newStatus,
+                LocalDateTime.now(),
+                source
+        );
+        orderStatusSubject.notifyOrderStatusChanged(event);
     }
 
     @Override
