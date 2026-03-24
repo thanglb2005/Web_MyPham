@@ -11,19 +11,27 @@ import java.util.concurrent.CompletableFuture;
 /**
  * Service quản lý AI chat tích hợp với hệ thống chat hiện tại
  *
- * ---------- CODE CŨ (chưa Singleton): ----------
+ * ---------- CODE CŨ (giai đoạn 1 — Spring bean) ----------
  *  @Autowired
  *  private GeminiService geminiService;
- *  // Dùng: geminiService.generateResponse(...); geminiService.isApiKeyValid();
+ *  // geminiService.generateResponse(...); geminiService.isApiKeyValid();
  *
- * ---------- CODE MỚI (đã Singleton): ----------
- *  Không inject; gọi GeminiService.getInstance().generateResponse(...); ...
+ * ---------- CODE CŨ (giai đoạn 2 — Singleton, chưa Proxy) ----------
+ *  // GeminiService.getInstance().generateResponse(...);
+ *  // GeminiService.getInstance().isApiKeyValid();
+ *
+ * ---------- CODE MỚI (Singleton + Proxy): ----------
+ *  {@code @Autowired GeminiClient geminiClient} — {@code @Primary} là {@link GeminiClientProxy} → {@link GeminiService#getInstance()}.
+ *  Trong từng method bên dưới có khối comment CODE CŨ để quay video đối chiếu.
  */
 @Service
 public class AIChatService {
 
     @Autowired
     private ChatHistoryService chatHistoryService;
+
+    @Autowired
+    private GeminiClient geminiClient;
 
     /**
      * Xử lý tin nhắn từ người dùng và tạo phản hồi AI
@@ -39,8 +47,13 @@ public class AIChatService {
                 // Lấy lịch sử chat gần đây để làm context
                 String context = buildContextFromHistory(roomId);
                 
-                // Gọi GeminiService để lấy phản hồi AI
-                String aiResponse = GeminiService.getInstance().generateResponse(userMessage, context).get();
+                // ===== CODE CŨ (chưa Proxy — gọi trực tiếp Singleton) =====
+                // String aiResponse = GeminiService.getInstance()
+                //         .generateResponse(userMessage, context).get();
+                // ===== HẾT CODE CŨ =====
+
+                // Gọi qua GeminiClient (Proxy có thể cache khi không có conversation history ở tầng API khác)
+                String aiResponse = geminiClient.generateResponse(userMessage, context).get();
                 
                 return aiResponse;
                 
@@ -94,7 +107,10 @@ public class AIChatService {
      * @return Tin nhắn chào mừng
      */
     public CompletableFuture<String> generateWelcomeMessage(String roomId, Long shopId) {
-        return GeminiService.getInstance().generateWelcomeMessage(roomId, shopId);
+        // ===== CODE CŨ (chưa Proxy) =====
+        // return GeminiService.getInstance().generateWelcomeMessage(roomId, shopId);
+        // ===== HẾT CODE CŨ =====
+        return geminiClient.generateWelcomeMessage(roomId, shopId);
     }
 
     /**
@@ -102,7 +118,10 @@ public class AIChatService {
      * @return true nếu AI sẵn sàng
      */
     public boolean isAIReady() {
-        return GeminiService.getInstance().isApiKeyValid();
+        // ===== CODE CŨ (chưa Proxy) =====
+        // return GeminiService.getInstance().isApiKeyValid();
+        // ===== HẾT CODE CŨ =====
+        return geminiClient.isApiKeyValid();
     }
 
     /**
@@ -111,6 +130,9 @@ public class AIChatService {
      * @return Kết quả test
      */
     public CompletableFuture<String> testAI(String testMessage) {
-        return GeminiService.getInstance().generateResponse(testMessage, "Test context");
+        // ===== CODE CŨ (chưa Proxy) =====
+        // return GeminiService.getInstance().generateResponse(testMessage, "Test context");
+        // ===== HẾT CODE CŨ =====
+        return geminiClient.generateResponse(testMessage, "Test context");
     }
 }

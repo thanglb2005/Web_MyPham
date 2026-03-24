@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.*;
 import vn.entity.Product;
 import vn.repository.ProductRepository;
 import vn.service.ai.AIChatService;
-import vn.service.ai.GeminiService;
+import vn.service.ai.GeminiClient;
 
 import java.util.HashMap;
 import java.util.List;
@@ -17,14 +17,21 @@ import java.util.concurrent.CompletableFuture;
 /**
  * API Controller để test và quản lý AI chatbot
  *
- * ---------- CODE CŨ (chưa Singleton): ----------
+ * ---------- CODE CŨ (giai đoạn 1 — Spring bean) ----------
  *  @Autowired
  *  private GeminiService geminiService;
  *  // Trong method: geminiService.isApiKeyValid(); geminiService.generateResponse(...);
  *
- * ---------- CODE MỚI (đã Singleton): ----------
- *  Không inject GeminiService; dùng GeminiService.getInstance() trong từng method.
+ * ---------- CODE CŨ (giai đoạn 2 — Singleton, chưa Proxy) ----------
+ *  // Không inject; trong method: GeminiService.getInstance().isApiKeyValid();
+ *  // GeminiService.getInstance().generateResponse(...);
+ *
+ * ---------- CODE MỚI (Singleton + Proxy): ----------
+ *  {@code @Autowired GeminiClient geminiClient} — bean {@code @Primary} là {@link vn.service.ai.GeminiClientProxy},
+ *  Proxy ủy quyền cho RealSubject Singleton {@code GeminiService.getInstance()}.
+ *  Dưới mỗi endpoint, em giữ các dòng gọi {@code getInstance()} trong comment để quay video đối chiếu.
  */
+
 @RestController
 @RequestMapping("/api/ai")
 @CrossOrigin(origins = "*")
@@ -36,6 +43,9 @@ public class AIController {
     @Autowired
     private ProductRepository productRepository;
 
+    @Autowired
+    private GeminiClient geminiClient;
+
     /**
      * Test kết nối với Gemini API
      */
@@ -44,11 +54,32 @@ public class AIController {
         Map<String, Object> response = new HashMap<>();
         
         try {
-            boolean isApiKeyValid = GeminiService.getInstance().isApiKeyValid();
+            // ===== CODE CŨ (chưa Proxy — gọi trực tiếp GeminiService.getInstance()) =====
+            // boolean isApiKeyValid = GeminiService.getInstance().isApiKeyValid();
+            // response.put("apiKeyValid", isApiKeyValid);
+            // if (isApiKeyValid) {
+            //     CompletableFuture<Boolean> testResult = GeminiService.getInstance().testConnection();
+            //     boolean connectionOk = testResult.get();
+            //     response.put("connectionOk", connectionOk);
+            //     if (connectionOk) {
+            //         response.put("status", "success");
+            //         response.put("message", "Gemini API kết nối thành công");
+            //     } else {
+            //         response.put("status", "error");
+            //         response.put("message", "Gemini API không phản hồi");
+            //     }
+            // } else {
+            //     response.put("status", "error");
+            //     response.put("message", "API key không hợp lệ hoặc chưa được cấu hình");
+            // }
+            // ===== HẾT CODE CŨ =====
+
+            // Code mới: inject GeminiClient (@Primary = GeminiClientProxy → RealSubject Singleton)
+            boolean isApiKeyValid = geminiClient.isApiKeyValid();
             response.put("apiKeyValid", isApiKeyValid);
             
             if (isApiKeyValid) {
-                CompletableFuture<Boolean> testResult = GeminiService.getInstance().testConnection();
+                CompletableFuture<Boolean> testResult = geminiClient.testConnection();
                 boolean connectionOk = testResult.get();
                 response.put("connectionOk", connectionOk);
                 
@@ -141,7 +172,11 @@ public class AIController {
             String message = request.getOrDefault("message", "Xin chào");
             String context = request.getOrDefault("context", "");
             
-            CompletableFuture<String> aiResponse = GeminiService.getInstance().generateResponse(message, context);
+            // ===== CODE CŨ (chưa Proxy — gọi trực tiếp Singleton) =====
+            // CompletableFuture<String> aiResponse = GeminiService.getInstance().generateResponse(message, context);
+            // ===== HẾT CODE CŨ =====
+
+            CompletableFuture<String> aiResponse = geminiClient.generateResponse(message, context);
             String result = aiResponse.get();
             
             response.put("status", "success");
@@ -204,7 +239,12 @@ public class AIController {
                 return ResponseEntity.badRequest().body(response);
             }
             
-            CompletableFuture<String> aiResponse = GeminiService.getInstance().generateResponse(message, context, history);
+            // ===== CODE CŨ (chưa Proxy — gọi trực tiếp Singleton) =====
+            // CompletableFuture<String> aiResponse =
+            //         GeminiService.getInstance().generateResponse(message, context, history);
+            // ===== HẾT CODE CŨ =====
+
+            CompletableFuture<String> aiResponse = geminiClient.generateResponse(message, context, history);
             String result = aiResponse.get();
             
             response.put("status", "success");
@@ -329,8 +369,13 @@ public class AIController {
             
             System.out.println("Calling Gemini API with image...");
             
-            // Send image + message to Gemini
-            CompletableFuture<String> aiResponse = GeminiService.getInstance().generateResponseWithImage(message, imageData);
+            // ===== CODE CŨ (chưa Proxy — gọi trực tiếp Singleton) =====
+            // CompletableFuture<String> aiResponse =
+            //         GeminiService.getInstance().generateResponseWithImage(message, imageData);
+            // ===== HẾT CODE CŨ =====
+
+            // Send image + message to Gemini (Proxy delegate thẳng RealSubject, không cache ảnh)
+            CompletableFuture<String> aiResponse = geminiClient.generateResponseWithImage(message, imageData);
             String result = aiResponse.get();
             
             response.put("status", "success");

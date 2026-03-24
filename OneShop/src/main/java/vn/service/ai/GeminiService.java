@@ -14,9 +14,7 @@ import java.util.concurrent.CompletableFuture;
 /**
  * Service tích hợp Google Gemini AI cho chatbot.
  *
- * ==================================================================================
- * PHẦN CODE CŨ (CHƯA ÁP DỤNG THREAD-SAFE SINGLETON) - Dùng đối chiếu khi quay video
- * ==================================================================================
+ * PHẦN CODE CŨ
  *
  *  @Service
  *  public class GeminiService {
@@ -36,33 +34,22 @@ import java.util.concurrent.CompletableFuture;
  *      private final RestTemplate restTemplate = new RestTemplate();
  *      private static final String GEMINI_API_URL = "...";
  *
- *      // Constructor public - Spring gọi để tạo bean, mỗi app có 1 bean nhưng không
- *      // kiểm soát bằng pattern Singleton (phụ thuộc Spring).
- *      public GeminiService() { }
- *
- *      // Không có: private static GeminiService instance;
- *      // Không có: getInstance();
- *
- *      public CompletableFuture<String> generateResponse(...) { ... }
- *      // ... các method khác giữ nguyên
+ *      public GeminiService() 
+ *      {
+ * 
+ *      }
+ 
  *  }
  *
- *  Ở AIController / AIChatService (code cũ):
- *  @Autowired
- *  private GeminiService geminiService;
- *  // Dùng: geminiService.generateResponse(...);
- *
  * ==================================================================================
- * PHIÊN BẢN MỚI (ĐÃ ÁP DỤNG THREAD-SAFE SINGLETON - Cách 2)
- * - Bỏ @Service; private constructor; đọc config từ ApplicationContextHolder.
- * - private static GeminiService instance;
- * - getInstance(): if (instance == null) instance = new GeminiService(); return instance;
- * - Nơi gọi: GeminiService.getInstance().generateResponse(...);
+ * PHIÊN BẢN MỚI (ĐÃ ÁP DỤNG THREAD-SAFE SINGLETON )
  * ==================================================================================
+ * Client trong ứng dụng nên dùng {@link GeminiClient} (Spring inject {@link GeminiClientProxy} @Primary),
+ * Proxy ủy quyền cho Singleton này (RealSubject).
  */
-public class GeminiService {
+public class GeminiService implements GeminiClient {
 
-    // ----- SINGLETON (phiên bản mới) -----
+    // ----- SINGLETON  -----
     private static GeminiService instance;
 
     private final String apiKey;
@@ -266,13 +253,6 @@ public class GeminiService {
      */
     public boolean isApiKeyValid() {
         return apiKey != null && !apiKey.trim().isEmpty() && !apiKey.equals("YOUR_GEMINI_API_KEY_HERE");
-    }
-
-    /**
-     * Overload method for backward compatibility (no conversation history)
-     */
-    public CompletableFuture<String> generateResponse(String userMessage, String context) {
-        return generateResponse(userMessage, context, null);
     }
 
     /**
