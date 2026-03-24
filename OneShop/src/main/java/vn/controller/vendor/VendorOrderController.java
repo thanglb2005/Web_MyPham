@@ -21,12 +21,9 @@ import vn.repository.ShippingProviderRepository;
 import vn.repository.UserRepository;
 import vn.service.OrderService;
 import vn.service.RefundService;
-import vn.service.SendMailService;
 import vn.service.ShopService;
 
 import java.time.LocalDateTime;
-import java.text.NumberFormat;
-import java.util.Locale;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -45,9 +42,6 @@ public class VendorOrderController {
     
     @Autowired
     private ShopService shopService;
-
-    @Autowired
-    private SendMailService sendMailService;
 
     @Autowired
     private OrderDetailRepository orderDetailRepository;
@@ -278,12 +272,14 @@ public class VendorOrderController {
 
             // Confirm the order
             orderService.confirmOrder(orderId);
-            try {
-                Order confirmed = orderService.findById(orderId).orElse(null);
-                if (confirmed != null) {
-                    sendOrderConfirmedEmail(confirmed);
-                }
-            } catch (Exception ignore) {}
+            // ===== CODE CŨ (gửi mail trực tiếp — trùng với EmailOrderStatusObserver) =====
+            // try {
+            //     Order confirmed = orderService.findById(orderId).orElse(null);
+            //     if (confirmed != null) {
+            //         sendOrderConfirmedEmail(confirmed);
+            //     }
+            // } catch (Exception ignore) {}
+            // ===== Mail HTML đẹp do OrderStatusEmailComposer + Observer gửi =====
             redirectAttributes.addFlashAttribute("success", "Đã xác nhận đơn hàng #" + orderId + " thành công.");
         } catch (Exception e) {
             e.printStackTrace(); // Log full stack trace
@@ -465,12 +461,13 @@ public class VendorOrderController {
             }
             
             orderService.updateOrderStatus(orderId, Order.OrderStatus.CONFIRMED);
-            try {
-                Order confirmed = orderService.findById(orderId).orElse(null);
-                if (confirmed != null) {
-                    sendOrderConfirmedEmail(confirmed);
-                }
-            } catch (Exception ignore) {}
+            // ===== CODE CŨ (gửi mail trực tiếp — trùng với EmailOrderStatusObserver) =====
+            // try {
+            //     Order confirmed = orderService.findById(orderId).orElse(null);
+            //     if (confirmed != null) {
+            //         sendOrderConfirmedEmail(confirmed);
+            //     }
+            // } catch (Exception ignore) {}
             redirectAttributes.addFlashAttribute("success", "Đã xác nhận đơn hàng #" + orderId);
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Lỗi xác nhận đơn hàng: " + e.getMessage());
@@ -828,68 +825,6 @@ public class VendorOrderController {
         }
         return orderService.findWithDetailsByIdAndShopIdIn(orderId, shopIds)
                 .orElseGet(() -> orderService.findByIdAndShopIdIn(orderId, shopIds).orElse(null));
-    }
-
-    private void sendOrderConfirmedEmail(Order order) {
-        try {
-            String to = order.getCustomerEmail() != null ? order.getCustomerEmail() :
-                    (order.getUser() != null ? order.getUser().getEmail() : null);
-            if (to == null || to.isEmpty()) return;
-
-            String shopName = (order.getShop() != null && order.getShop().getShopName() != null)
-                    ? order.getShop().getShopName() : "OneShop";
-            String subject = "Xác nhận đơn hàng #" + order.getOrderId() + " - " + shopName;
-
-            NumberFormat vnd = NumberFormat.getCurrencyInstance(new Locale("vi", "VN"));
-            double total = order.getTotalAmount() != null ? order.getTotalAmount() : 0.0;
-            String payment = order.getPaymentMethod() != null ? order.getPaymentMethod().name() : "COD";
-
-            StringBuilder itemsHtml = new StringBuilder();
-            try {
-                java.util.List<OrderDetail> details = orderDetailRepository.findByOrderIdWithProductAndShop(order.getOrderId());
-                for (OrderDetail d : details) {
-                    String name = d.getProductName() != null ? d.getProductName() :
-                            (d.getProduct() != null ? d.getProduct().getProductName() : "Sản phẩm");
-                    int qty = d.getQuantity() != null ? d.getQuantity() : 0;
-                    double unit = d.getUnitPrice() != null ? d.getUnitPrice() : 0.0;
-                    double line = d.getTotalPrice() != null ? d.getTotalPrice() : unit * qty;
-                    itemsHtml.append("<tr>")
-                            .append("<td style='padding:8px 12px;border-bottom:1px solid #eee'>").append(name).append("</td>")
-                            .append("<td style='padding:8px 12px;text-align:center;border-bottom:1px solid #eee'>").append(qty).append("</td>")
-                            .append("<td style='padding:8px 12px;text-align:right;border-bottom:1px solid #eee'>").append(vnd.format(unit)).append("</td>")
-                            .append("<td style='padding:8px 12px;text-align:right;border-bottom:1px solid #eee'>").append(vnd.format(line)).append("</td>")
-                            .append("</tr>");
-                }
-            } catch (Exception ignore) {}
-
-            String eta = order.getEstimatedDeliveryDate() != null ? order.getEstimatedDeliveryDate().toString() : "(sẽ thông báo sau)";
-            String body = "" +
-                    "<div style='font-family:Arial,Helvetica,sans-serif;line-height:1.6;color:#111'>" +
-                    "<h2 style='color:#0a7cff;margin:0 0 12px'>Đơn hàng đã được xác nhận ✅</h2>" +
-                    "<p>Chào " + (order.getCustomerName() != null ? order.getCustomerName() : "bạn") + ",</p>" +
-                    "<p>Đơn hàng <strong>#" + order.getOrderId() + "</strong> của bạn tại <strong>" + shopName + "</strong> đã được người bán xác nhận và đang được chuẩn bị giao.</p>" +
-                    "<div style='margin:16px 0;padding:12px;background:#f6f9ff;border:1px solid #e3efff;border-radius:8px'>" +
-                    "<p style='margin:0'><strong>Địa chỉ nhận:</strong> " + (order.getShippingAddress() != null ? order.getShippingAddress() : "(chưa có)") + "</p>" +
-                    "<p style='margin:4px 0 0'><strong>Thanh toán:</strong> " + payment + "</p>" +
-                    "<p style='margin:4px 0 0'><strong>Dự kiến giao:</strong> " + eta + "</p>" +
-                    "</div>" +
-                    "<table style='width:100%;border-collapse:collapse;margin-top:8px'>" +
-                    "<thead><tr>" +
-                    "<th style='text-align:left;padding:8px 12px;border-bottom:2px solid #ddd'>Sản phẩm</th>" +
-                    "<th style='text-align:center;padding:8px 12px;border-bottom:2px solid #ddd'>SL</th>" +
-                    "<th style='text-align:right;padding:8px 12px;border-bottom:2px solid #ddd'>Đơn giá</th>" +
-                    "<th style='text-align:right;padding:8px 12px;border-bottom:2px solid #ddd'>Thành tiền</th>" +
-                    "</tr></thead><tbody>" + itemsHtml + "</tbody></table>" +
-                    "<p style='text-align:right;margin:12px 0;font-size:16px'><strong>Tổng cộng: " + vnd.format(total) + "</strong></p>" +
-                    "<div style='margin-top:16px'>" +
-                    "<a href='http://localhost:8080/my-orders' style='display:inline-block;background:#0a7cff;color:#fff;padding:10px 16px;border-radius:6px;text-decoration:none'>Theo dõi đơn hàng</a>" +
-                    "</div>" +
-                    "<p>Nếu bạn cần hỗ trợ, hãy phản hồi email này hoặc liên hệ CSKH.</p>" +
-                    "<p style='margin-top:16px'>Trân trọng,<br/>Đội ngũ OneShop</p>" +
-                    "</div>";
-
-            sendMailService.queue(to, subject, body);
-        } catch (Exception ignored) { }
     }
 
 }
