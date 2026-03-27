@@ -7,6 +7,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import vn.observer.order.OrderStatusChangedEvent;
 import vn.observer.order.OrderStatusSubject;
+import vn.state.order.OrderStateFactory;
+import vn.state.order.OrderTransitionContext;
 import vn.entity.CartItem;
 import vn.entity.Order;
 import vn.entity.OrderDetail;
@@ -30,6 +32,11 @@ import java.util.Map;
 import java.util.Optional;
 import jakarta.persistence.EntityNotFoundException;
 
+/**
+ * ---------- CODE MỚI (State pattern — đơn hàng) ----------
+ * Chuyển trạng thái qua {@link vn.state.order.OrderStateFactory} + {@link vn.state.order.OrderState};
+ * code cũ tại {@code updateOrderStatus} / {@code confirmOrder} / {@code cancelOrder} được giữ trong comment.
+ */
 @Service
 public class OrderServiceImpl implements OrderService {
 
@@ -53,6 +60,18 @@ public class OrderServiceImpl implements OrderService {
 
     @Autowired
     private OrderStatusSubject orderStatusSubject;
+
+    @Autowired
+    private OrderStateFactory orderStateFactory;
+
+    private OrderTransitionContext transitionContextFor(Order order) {
+        return new OrderTransitionContext(
+                order,
+                orderRepository,
+                productService,
+                oneXuService,
+                this::publishOrderStatusChanged);
+    }
 
     @Override
     @Transactional
@@ -230,30 +249,28 @@ public class OrderServiceImpl implements OrderService {
     public void updateOrderStatus(Long orderId, Order.OrderStatus newStatus) {
         Optional<Order> orderOptional = orderRepository.findById(orderId);
         orderOptional.ifPresent(order -> {
-            Order.OrderStatus oldStatus = order.getStatus();
-            order.setStatus(newStatus);
-            
-            if (newStatus == Order.OrderStatus.SHIPPING && order.getShippedDate() == null) {
-                order.setShippedDate(LocalDateTime.now());
-            } else if (newStatus == Order.OrderStatus.DELIVERED && order.getDeliveredDate() == null) {
-                order.setDeliveredDate(LocalDateTime.now());
-                
-                // Thưởng One Xu khi đơn hàng được giao thành công (1% giá trị đơn hàng)
-                if (oldStatus != Order.OrderStatus.DELIVERED) {
-                    try {
-                        oneXuService.rewardFromOrder(order.getUser().getUserId(), orderId, order.getTotalAmount());
-                    } catch (Exception e) {
-                        // Log error but don't fail the order status update
-                        System.err.println("Error rewarding One Xu for order " + orderId + ": " + e.getMessage());
-                    }
-                }
-            }
-            // ===== CODE CŨ (chưa Observer) =====
+            // ===== CODE CŨ (chưa State pattern) =====
+            // Order.OrderStatus oldStatus = order.getStatus();
+            // order.setStatus(newStatus);
+            // if (newStatus == Order.OrderStatus.SHIPPING && order.getShippedDate() == null) {
+            //     order.setShippedDate(LocalDateTime.now());
+            // } else if (newStatus == Order.OrderStatus.DELIVERED && order.getDeliveredDate() == null) {
+            //     order.setDeliveredDate(LocalDateTime.now());
+            //     if (oldStatus != Order.OrderStatus.DELIVERED) {
+            //         try {
+            //             oneXuService.rewardFromOrder(order.getUser().getUserId(), orderId, order.getTotalAmount());
+            //         } catch (Exception e) {
+            //             System.err.println("Error rewarding One Xu for order " + orderId + ": " + e.getMessage());
+            //         }
+            //     }
+            // }
             // orderRepository.save(order);
+            // publishOrderStatusChanged(order, oldStatus, newStatus, "OrderService.updateOrderStatus");
             // ===== HẾT CODE CŨ =====
 
-            orderRepository.save(order);
-            publishOrderStatusChanged(order, oldStatus, newStatus, "OrderService.updateOrderStatus");
+            // State pattern: hành vi cập nhật status + ngày giao + OneXu + Observer nằm trong OrderState (AbstractOrderState)
+            orderStateFactory.forOrder(order).updateStatus(
+                    transitionContextFor(order), newStatus, "OrderService.updateOrderStatus");
         });
     }
 
@@ -303,45 +320,19 @@ public class OrderServiceImpl implements OrderService {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy đơn hàng với ID: " + orderId));
 
-        Order.OrderStatus oldStatus = order.getStatus();
-
-        if (order.getStatus() != Order.OrderStatus.PENDING) {
-            throw new IllegalStateException("Chỉ có thể xác nhận đơn hàng ở trạng thái 'Chờ xác nhận'.");
-        }
-
-        // Validate stock availability before confirming
-        if (order.getOrderDetails() != null && !order.getOrderDetails().isEmpty()) {
-            for (OrderDetail orderDetail : order.getOrderDetails()) {
-                Product product = orderDetail.getProduct();
-                if (product.getQuantity() < orderDetail.getQuantity()) {
-                    throw new IllegalStateException(
-                        "Sản phẩm '" + product.getProductName() + "' không đủ tồn kho. " +
-                        "Cần: " + orderDetail.getQuantity() + ", Có: " + product.getQuantity()
-                    );
-                }
-            }
-        }
-
-        // Deduct stock for each order detail
-        if (order.getOrderDetails() != null && !order.getOrderDetails().isEmpty()) {
-            for (OrderDetail orderDetail : order.getOrderDetails()) {
-                Product product = orderDetail.getProduct();
-                int oldQuantity = product.getQuantity();
-                int newQuantity = product.getQuantity() - orderDetail.getQuantity();
-                product.setQuantity(newQuantity);
-                productService.save(product);
-                System.out.println("Deducted " + orderDetail.getQuantity() + " units of product '" + 
-                    product.getProductName() + "' (ID: " + product.getProductId() + ") from stock. " +
-                    "Old stock: " + oldQuantity + ", New stock: " + newQuantity);
-            }
-        }
-
-        order.setStatus(Order.OrderStatus.CONFIRMED);
-        // ===== CODE CŨ (chưa Observer) =====
+        // ===== CODE CŨ (chưa State pattern) =====
+        // Order.OrderStatus oldStatus = order.getStatus();
+        // if (order.getStatus() != Order.OrderStatus.PENDING) {
+        //     throw new IllegalStateException("Chỉ có thể xác nhận đơn hàng ở trạng thái 'Chờ xác nhận'.");
+        // }
+        // // validate tồn kho + trừ kho từng OrderDetail, productService.save(...)
+        // order.setStatus(Order.OrderStatus.CONFIRMED);
         // orderRepository.save(order);
+        // publishOrderStatusChanged(order, oldStatus, Order.OrderStatus.CONFIRMED, "OrderService.confirmOrder");
         // ===== HẾT CODE CŨ =====
-        orderRepository.save(order);
-        publishOrderStatusChanged(order, oldStatus, Order.OrderStatus.CONFIRMED, "OrderService.confirmOrder");
+
+        // State pattern: chỉ PendingOrderState (và tương đương) mới thực hiện confirm; các state khác ném IllegalStateException
+        orderStateFactory.forOrder(order).confirm(transitionContextFor(order));
     }
 
     @Override
@@ -350,40 +341,18 @@ public class OrderServiceImpl implements OrderService {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy đơn hàng #" + orderId));
 
-        Order.OrderStatus oldStatus = order.getStatus();
-
-        // Security Check: Ensure the vendor owns this order
+        // Security: giữ ở service (không thuộc state object)
         if (order.getShop() == null || !order.getShop().getVendor().equals(vendor)) {
             throw new IllegalStateException("Bạn không có quyền hủy đơn hàng này.");
         }
 
-        // Business Logic Check: Only PENDING or CONFIRMED orders can be cancelled by vendor
-        if (order.getStatus() != Order.OrderStatus.PENDING && order.getStatus() != Order.OrderStatus.CONFIRMED) {
-            throw new IllegalStateException("Chỉ có thể hủy đơn hàng khi ở trạng thái 'Chờ xác nhận' hoặc 'Đã xác nhận'.");
-        }
-
-        // Restore stock for each order detail (always restore when cancelling)
-        if (order.getOrderDetails() != null && !order.getOrderDetails().isEmpty()) {
-            for (OrderDetail orderDetail : order.getOrderDetails()) {
-                Product product = orderDetail.getProduct();
-                int newQuantity = product.getQuantity() + orderDetail.getQuantity();
-                product.setQuantity(newQuantity);
-                productService.save(product);
-                System.out.println("Restored " + orderDetail.getQuantity() + " units of product '" + 
-                    product.getProductName() + "' (ID: " + product.getProductId() + ") to stock. " +
-                    "New stock: " + newQuantity);
-            }
-        }
-
-        order.setStatus(Order.OrderStatus.CANCELLED);
-        // Optionally, you can set a reason for cancellation
-        // order.setCancellationReason("Hủy bởi người bán");
-        order.setCancelledDate(LocalDateTime.now());
-        // ===== CODE CŨ (chưa Observer) =====
-        // orderRepository.save(order);
+        // ===== CODE CŨ (chưa State pattern) =====
+        // if (order.getStatus() != PENDING && order.getStatus() != CONFIRMED) throw ...
+        // hoàn kho nếu CONFIRMED, set CANCELLED, cancelledDate, save, publish
         // ===== HẾT CODE CŨ =====
-        orderRepository.save(order);
-        publishOrderStatusChanged(order, oldStatus, Order.OrderStatus.CANCELLED, "OrderService.cancelOrder");
+
+        // State pattern: PendingOrderState / ConfirmedOrderState xử lý hủy + hoàn kho; state khác ném IllegalStateException
+        orderStateFactory.forOrder(order).cancelByVendor(transitionContextFor(order), vendor);
     }
 
     /**
@@ -497,6 +466,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional
     public void markOverdueOrders() {
+        // (Giữ nguyên logic cũ, không đi qua OrderStateFactory) — batch đánh dấu OVERDUE không gọi publishOrderStatusChanged như trước.
         LocalDateTime currentTime = LocalDateTime.now();
         List<Order> ordersToMark = orderRepository.findOrdersToMarkOverdue(currentTime);
         int updatedCount = 0;
