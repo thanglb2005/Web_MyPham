@@ -3,7 +3,6 @@ package vn.controller;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
-import java.math.BigDecimal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -15,7 +14,6 @@ import vn.entity.Order;
 import vn.entity.OrderDetail;
 import vn.entity.Product;
 import vn.entity.User;
-import vn.entity.OneXuTransaction;
 import vn.repository.OrderDetailRepository;
 import vn.repository.UserRepository;
 import vn.repository.OneXuTransactionRepository;
@@ -30,6 +28,14 @@ import vn.service.OrderService;
 import vn.service.ProductService;
 import vn.service.PromotionService;
 import vn.entity.Promotion;
+import vn.command.cart.CartCommandInvoker;
+import vn.command.cart.CartCommandResult;
+import vn.command.cart.ClearCartCommand;
+import vn.command.cart.RemoveFromCartCommand;
+import vn.command.cart.SelectAllCartItemsCommand;
+import vn.command.cart.SelectShopCartItemsCommand;
+import vn.command.cart.UpdateCartItemSelectedCommand;
+import vn.command.cart.UpdateCartQuantityCommand;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -39,8 +45,20 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+/**
+ * ---------- CODE CŨ (chưa Command) ----------
+ * Các endpoint giỏ hàng gọi trực tiếp {@link CartService} trong method controller.
+ *
+ * ---------- CODE MỚI (Command pattern) ----------
+ * Thao tác giỏ ({@code /cart/update}, {@code remove}, {@code clear}, chọn hàng, {@code /add-to-cart}, …)
+ * đóng gói thành {@link vn.command.cart.CartCommand}, thực thi qua {@link CartCommandInvoker}.
+ * Code cũ được giữ trong comment từng method để quay video đối chiếu.
+ */
 @Controller
 public class CartController {
+
+    @Autowired
+    private CartCommandInvoker cartCommandInvoker;
 
     @Autowired
     private ProductService productService;
@@ -76,17 +94,40 @@ public class CartController {
         }
 
         Product product = productService.findById(productId).orElse(null);
-        if (product != null) {
+
+        // ===== CODE CŨ (chưa Command) =====
+        // if (product != null) {
+        //     try {
+        //         cartService.addToCart(user, product, quantity);
+        //         redirectAttributes.addFlashAttribute("success", "Đã thêm sản phẩm vào giỏ hàng.");
+        //     } catch (IllegalArgumentException e) {
+        //         redirectAttributes.addFlashAttribute("error", e.getMessage());
+        //     } catch (Exception e) {
+        //         redirectAttributes.addFlashAttribute("error", "Có lỗi xảy ra khi thêm sản phẩm vào giỏ hàng.");
+        //     }
+        // } else {
+        //     redirectAttributes.addFlashAttribute("error", "Sản phẩm không tồn tại hoặc đã bị gỡ.");
+        // }
+        // ===== HẾT CODE CŨ =====
+
+        // Command pattern (inline command): đóng gói yêu cầu add-to-cart thành object có execute()
+        CartCommandResult addResult = cartCommandInvoker.invoke(() -> {
+            if (product == null) {
+                return CartCommandResult.failure("Sản phẩm không tồn tại hoặc đã bị gỡ.");
+            }
             try {
                 cartService.addToCart(user, product, quantity);
-                redirectAttributes.addFlashAttribute("success", "Đã thêm sản phẩm vào giỏ hàng.");
+                return CartCommandResult.ok();
             } catch (IllegalArgumentException e) {
-                redirectAttributes.addFlashAttribute("error", e.getMessage());
+                return CartCommandResult.failure(e.getMessage());
             } catch (Exception e) {
-                redirectAttributes.addFlashAttribute("error", "Có lỗi xảy ra khi thêm sản phẩm vào giỏ hàng.");
+                return CartCommandResult.failure("Có lỗi xảy ra khi thêm sản phẩm vào giỏ hàng.");
             }
-        } else {
-            redirectAttributes.addFlashAttribute("error", "Sản phẩm không tồn tại hoặc đã bị gỡ.");
+        });
+        if (addResult.isSuccess()) {
+            redirectAttributes.addFlashAttribute("success", "Đã thêm sản phẩm vào giỏ hàng.");
+        } else if (addResult.getMessage() != null) {
+            redirectAttributes.addFlashAttribute("error", addResult.getMessage());
         }
 
         // Redirect back to previous page (Referer) if safe, else fallback
@@ -205,12 +246,21 @@ public class CartController {
         }
 
         Product product = productService.findById(productId).orElse(null);
-        if (product != null) {
-            try {
-                cartService.updateCartItemQuantity(user, product, quantity);
-            } catch (IllegalArgumentException e) {
-                redirectAttributes.addFlashAttribute("error", e.getMessage());
-            }
+
+        // ===== CODE CŨ (chưa Command) =====
+        // if (product != null) {
+        //     try {
+        //         cartService.updateCartItemQuantity(user, product, quantity);
+        //     } catch (IllegalArgumentException e) {
+        //         redirectAttributes.addFlashAttribute("error", e.getMessage());
+        //     }
+        // }
+        // ===== HẾT CODE CŨ =====
+
+        CartCommandResult r = cartCommandInvoker.invoke(
+                new UpdateCartQuantityCommand(user, product, quantity, cartService));
+        if (!r.isSuccess() && r.getMessage() != null) {
+            redirectAttributes.addFlashAttribute("error", r.getMessage());
         }
 
         return "redirect:/cart";
@@ -226,9 +276,14 @@ public class CartController {
         }
 
         Product product = productService.findById(productId).orElse(null);
-        if (product != null) {
-            cartService.removeFromCart(user, product);
-        }
+
+        // ===== CODE CŨ (chưa Command) =====
+        // if (product != null) {
+        //     cartService.removeFromCart(user, product);
+        // }
+        // ===== HẾT CODE CŨ =====
+
+        cartCommandInvoker.invoke(new RemoveFromCartCommand(user, product, cartService));
 
         return "redirect:/cart";
     }
@@ -240,7 +295,11 @@ public class CartController {
             return "redirect:/login";
         }
 
-        cartService.clearCart(user);
+        // ===== CODE CŨ (chưa Command) =====
+        // cartService.clearCart(user);
+        // ===== HẾT CODE CŨ =====
+
+        cartCommandInvoker.invoke(new ClearCartCommand(user, cartService));
         return "redirect:/cart";
     }
 
@@ -270,19 +329,30 @@ public class CartController {
         }
 
         Product product = productService.findById(productId).orElse(null);
-        if (product != null) {
-            cartService.updateCartItemSelected(user, product, selected);
-            
-            // Get updated cart totals
-            Double selectedTotal = cartService.getSelectedCartTotalPrice(user);
-            Integer selectedCount = cartService.getSelectedCartItemCount(user);
-            
+
+        // ===== CODE CŨ (chưa Command) =====
+        // if (product != null) {
+        //     cartService.updateCartItemSelected(user, product, selected);
+        //     Double selectedTotal = cartService.getSelectedCartTotalPrice(user);
+        //     Integer selectedCount = cartService.getSelectedCartItemCount(user);
+        //     response.put("success", true);
+        //     response.put("selectedTotal", selectedTotal);
+        //     response.put("selectedCount", selectedCount);
+        // } else {
+        //     response.put("success", false);
+        //     response.put("message", "Sản phẩm không tồn tại");
+        // }
+        // ===== HẾT CODE CŨ =====
+
+        CartCommandResult r = cartCommandInvoker.invoke(
+                new UpdateCartItemSelectedCommand(user, product, selected, cartService));
+        if (r.isSuccess()) {
             response.put("success", true);
-            response.put("selectedTotal", selectedTotal);
-            response.put("selectedCount", selectedCount);
+            response.put("selectedTotal", r.getSelectedTotal());
+            response.put("selectedCount", r.getSelectedCount());
         } else {
             response.put("success", false);
-            response.put("message", "Sản phẩm không tồn tại");
+            response.put("message", r.getMessage() != null ? r.getMessage() : "Lỗi");
         }
 
         return response;
@@ -301,15 +371,20 @@ public class CartController {
             return response;
         }
 
-        cartService.updateAllCartItemsSelected(user, selected);
-        
-        // Get updated cart totals
-        Double selectedTotal = cartService.getSelectedCartTotalPrice(user);
-        Integer selectedCount = cartService.getSelectedCartItemCount(user);
-        
-        response.put("success", true);
-        response.put("selectedTotal", selectedTotal);
-        response.put("selectedCount", selectedCount);
+        // ===== CODE CŨ (chưa Command) =====
+        // cartService.updateAllCartItemsSelected(user, selected);
+        // Double selectedTotal = cartService.getSelectedCartTotalPrice(user);
+        // Integer selectedCount = cartService.getSelectedCartItemCount(user);
+        // response.put("success", true);
+        // response.put("selectedTotal", selectedTotal);
+        // response.put("selectedCount", selectedCount);
+        // ===== HẾT CODE CŨ =====
+
+        CartCommandResult r = cartCommandInvoker.invoke(
+                new SelectAllCartItemsCommand(user, selected, cartService));
+        response.put("success", r.isSuccess());
+        response.put("selectedTotal", r.getSelectedTotal());
+        response.put("selectedCount", r.getSelectedCount());
 
         return response;
     }
@@ -328,15 +403,20 @@ public class CartController {
             return response;
         }
 
-        cartService.updateShopItemsSelected(user, shopId, selected);
-        
-        // Get updated cart totals
-        Double selectedTotal = cartService.getSelectedCartTotalPrice(user);
-        Integer selectedCount = cartService.getSelectedCartItemCount(user);
-        
-        response.put("success", true);
-        response.put("selectedTotal", selectedTotal);
-        response.put("selectedCount", selectedCount);
+        // ===== CODE CŨ (chưa Command) =====
+        // cartService.updateShopItemsSelected(user, shopId, selected);
+        // Double selectedTotal = cartService.getSelectedCartTotalPrice(user);
+        // Integer selectedCount = cartService.getSelectedCartItemCount(user);
+        // response.put("success", true);
+        // response.put("selectedTotal", selectedTotal);
+        // response.put("selectedCount", selectedCount);
+        // ===== HẾT CODE CŨ =====
+
+        CartCommandResult r = cartCommandInvoker.invoke(
+                new SelectShopCartItemsCommand(user, shopId, selected, cartService));
+        response.put("success", r.isSuccess());
+        response.put("selectedTotal", r.getSelectedTotal());
+        response.put("selectedCount", r.getSelectedCount());
 
         return response;
     }
