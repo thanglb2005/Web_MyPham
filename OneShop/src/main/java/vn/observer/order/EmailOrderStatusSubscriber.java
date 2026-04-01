@@ -9,22 +9,22 @@ import vn.service.mail.OrderStatusEmailComposer;
 import vn.service.mail.OrderStatusEmailComposer.OrderStatusEmailContent;
 
 /**
- * Observer gửi email khi trạng thái đơn hàng thay đổi.
+ * Subscriber gửi email khi trạng thái đơn hàng thay đổi.
  * Nội dung HTML do {@link OrderStatusEmailComposer} dựng (cùng chất lượng với mail vendor/shipper trước đây).
  * <p>
  * Dùng {@link OrderRepository} thay vì {@code OrderService} để tránh vòng phụ thuộc:
- * OrderServiceImpl → OrderStatusSubject → observer này.
+ * OrderServiceImpl → OrderStatusPublisher → subscriber này.
  */
 @Component
-public class EmailOrderStatusObserver implements OrderStatusObserver {
+public class EmailOrderStatusSubscriber implements OrderStatusSubscriber {
 
     private final SendMailService sendMailService;
     private final OrderRepository orderRepository;
     private final OrderStatusEmailComposer emailComposer;
 
-    public EmailOrderStatusObserver(SendMailService sendMailService,
-                                    OrderRepository orderRepository,
-                                    OrderStatusEmailComposer emailComposer) {
+    public EmailOrderStatusSubscriber(SendMailService sendMailService,
+                                      OrderRepository orderRepository,
+                                      OrderStatusEmailComposer emailComposer) {
         this.sendMailService = sendMailService;
         this.orderRepository = orderRepository;
         this.emailComposer = emailComposer;
@@ -32,7 +32,7 @@ public class EmailOrderStatusObserver implements OrderStatusObserver {
 
     @Override
     @Transactional(readOnly = true)
-    public void onOrderStatusChanged(OrderStatusChangedEvent event) {
+    public void update(OrderStatusChangedEvent event) {
         Order order = loadOrderForEmail(event.getOrderId());
         if (order == null) {
             return;

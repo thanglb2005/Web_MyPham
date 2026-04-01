@@ -50,7 +50,30 @@ public class OrderStatusEmailComposer {
             return Optional.of(buildOrderDelivered(order));
         }
 
+        if (newStatus == Order.OrderStatus.RETURN_REQUESTED && oldStatus == Order.OrderStatus.DELIVERED) {
+            return Optional.of(buildReturnRequested(order));
+        }
+
+        if (newStatus == Order.OrderStatus.RETURNED
+                && (oldStatus == Order.OrderStatus.RETURN_REQUESTED || oldStatus == Order.OrderStatus.DELIVERED)) {
+            return Optional.of(buildOrderReturned(order));
+        }
+
+        if (newStatus == Order.OrderStatus.CANCELLED && oldStatus != null && oldStatus != Order.OrderStatus.CANCELLED) {
+            return Optional.of(buildOrderCancelled(order, oldStatus));
+        }
+
         return Optional.empty();
+    }
+
+    private static String escapeHtml(String s) {
+        if (s == null || s.isEmpty()) {
+            return "";
+        }
+        return s.replace("&", "&amp;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;")
+                .replace("\"", "&quot;");
     }
 
     private NumberFormat vndFormat() {
@@ -205,6 +228,114 @@ public class OrderStatusEmailComposer {
                 "<p style='margin-top:16px'>Cảm ơn bạn đã mua sắm tại <strong>" + shopName + "</strong>. Hẹn gặp lại bạn trong những lần sau!</p>" +
                 "<p style='margin-top:16px'>Trân trọng,<br/>Đội ngũ OneShop</p>" +
                 "</div>";
+
+        return new OrderStatusEmailContent(subject, body);
+    }
+
+    private OrderStatusEmailContent buildReturnRequested(Order order) {
+        String shopName = (order.getShop() != null && order.getShop().getShopName() != null)
+                ? order.getShop().getShopName() : "OneShop";
+        String subject = "Đã nhận yêu cầu hoàn trả - Đơn #" + order.getOrderId() + " - " + shopName;
+        String reason = escapeHtml(order.getCancellationReason());
+        if (reason.isEmpty()) {
+            reason = "(không có lý do kèm theo)";
+        }
+        NumberFormat vnd = vndFormat();
+        double total = order.getTotalAmount() != null ? order.getTotalAmount() : 0.0;
+
+        String body = ""
+                + "<div style='font-family:Arial,Helvetica,sans-serif;line-height:1.6;color:#111'>"
+                + "<h2 style='color:#b45309;margin:0 0 12px'>Yêu cầu hoàn trả đã được ghi nhận</h2>"
+                + "<p>Chào " + (order.getCustomerName() != null ? escapeHtml(order.getCustomerName()) : "bạn") + ",</p>"
+                + "<p>Chúng tôi đã nhận yêu cầu trả hàng / hoàn tiền cho đơn <strong>#" + order.getOrderId()
+                + "</strong> tại <strong>" + escapeHtml(shopName) + "</strong>.</p>"
+                + "<div style='margin:16px 0;padding:12px;background:#fffbeb;border:1px solid #fcd34d;border-radius:8px'>"
+                + "<p style='margin:0'><strong>Lý do bạn cung cấp:</strong></p>"
+                + "<p style='margin:8px 0 0;white-space:pre-wrap'>" + reason + "</p>"
+                + "</div>"
+                + "<p>Shop sẽ xem xét và phản hồi trong thời gian sớm nhất. Tổng giá trị đơn (tham khảo): <strong>"
+                + vnd.format(total) + "</strong>.</p>"
+                + "<div style='margin-top:16px'>"
+                + "<a href='" + baseUrl + "/user/my-orders?status=return_requested' "
+                + "style='display:inline-block;background:#b45309;color:#fff;padding:10px 16px;border-radius:6px;text-decoration:none'>"
+                + "Xem đơn hàng</a>"
+                + "</div>"
+                + "<p style='margin-top:16px'>Trân trọng,<br/>Đội ngũ OneShop</p>"
+                + "</div>";
+
+        return new OrderStatusEmailContent(subject, body);
+    }
+
+    private OrderStatusEmailContent buildOrderReturned(Order order) {
+        String shopName = (order.getShop() != null && order.getShop().getShopName() != null)
+                ? order.getShop().getShopName() : "OneShop";
+        String subject = "Hoàn trả đã được duyệt - Đơn #" + order.getOrderId() + " - " + shopName;
+        NumberFormat vnd = vndFormat();
+        double total = order.getTotalAmount() != null ? order.getTotalAmount() : 0.0;
+        String itemsHtml = buildItemsTableHtml(order);
+
+        String body = ""
+                + "<div style='font-family:Arial,Helvetica,sans-serif;line-height:1.6;color:#111'>"
+                + "<h2 style='color:#15803d;margin:0 0 12px'>Hoàn trả / hoàn tiền đã được xử lý</h2>"
+                + "<p>Chào " + (order.getCustomerName() != null ? escapeHtml(order.getCustomerName()) : "bạn") + ",</p>"
+                + "<p>Yêu cầu hoàn trả cho đơn <strong>#" + order.getOrderId() + "</strong> tại <strong>"
+                + escapeHtml(shopName) + "</strong> đã được <strong>duyệt</strong>. "
+                + "Tiền hoàn sẽ được chuyển theo phương thức bạn đã chọn (OneXu hoặc chuyển khoản) trong thời gian xử lý của hệ thống và ngân hàng.</p>"
+                + "<table style='width:100%;border-collapse:collapse;margin-top:8px'>"
+                + "<thead><tr>"
+                + "<th style='text-align:left;padding:8px 12px;border-bottom:2px solid #ddd'>Sản phẩm</th>"
+                + "<th style='text-align:center;padding:8px 12px;border-bottom:2px solid #ddd'>SL</th>"
+                + "<th style='text-align:right;padding:8px 12px;border-bottom:2px solid #ddd'>Đơn giá</th>"
+                + "<th style='text-align:right;padding:8px 12px;border-bottom:2px solid #ddd'>Thành tiền</th>"
+                + "</tr></thead><tbody>" + itemsHtml + "</tbody></table>"
+                + "<p style='text-align:right;margin:12px 0;font-size:16px'><strong>Tổng đơn (tham khảo): " + vnd.format(total) + "</strong></p>"
+                + "<div style='margin-top:16px'>"
+                + "<a href='" + baseUrl + "/user/my-orders' style='display:inline-block;background:#15803d;color:#fff;padding:10px 16px;border-radius:6px;text-decoration:none'>"
+                + "Theo dõi đơn hàng</a>"
+                + "</div>"
+                + "<p style='margin-top:16px'>Trân trọng,<br/>Đội ngũ OneShop</p>"
+                + "</div>";
+
+        return new OrderStatusEmailContent(subject, body);
+    }
+
+    private OrderStatusEmailContent buildOrderCancelled(Order order, Order.OrderStatus oldStatus) {
+        String shopName = (order.getShop() != null && order.getShop().getShopName() != null)
+                ? order.getShop().getShopName() : "OneShop";
+        String subject = "Đơn hàng đã hủy - #" + order.getOrderId() + " - " + shopName;
+        String reason = escapeHtml(order.getCancellationReason());
+        if (reason.isEmpty()) {
+            reason = "(không có ghi chú từ người bán)";
+        }
+        NumberFormat vnd = vndFormat();
+        double total = order.getTotalAmount() != null ? order.getTotalAmount() : 0.0;
+        String itemsHtml = buildItemsTableHtml(order);
+
+        String body = ""
+                + "<div style='font-family:Arial,Helvetica,sans-serif;line-height:1.6;color:#111'>"
+                + "<h2 style='color:#b91c1c;margin:0 0 12px'>Đơn hàng đã bị hủy</h2>"
+                + "<p>Chào " + (order.getCustomerName() != null ? escapeHtml(order.getCustomerName()) : "bạn") + ",</p>"
+                + "<p>Đơn hàng <strong>#" + order.getOrderId() + "</strong> tại <strong>" + escapeHtml(shopName)
+                + "</strong> đã chuyển sang trạng thái <strong>Đã hủy</strong> "
+                + "(trước đó: <strong>" + oldStatus.name() + "</strong>).</p>"
+                + "<div style='margin:16px 0;padding:12px;background:#fef2f2;border:1px solid #fecaca;border-radius:8px'>"
+                + "<p style='margin:0'><strong>Ghi chú / lý do:</strong></p>"
+                + "<p style='margin:8px 0 0;white-space:pre-wrap'>" + reason + "</p>"
+                + "</div>"
+                + "<table style='width:100%;border-collapse:collapse;margin-top:8px'>"
+                + "<thead><tr>"
+                + "<th style='text-align:left;padding:8px 12px;border-bottom:2px solid #ddd'>Sản phẩm</th>"
+                + "<th style='text-align:center;padding:8px 12px;border-bottom:2px solid #ddd'>SL</th>"
+                + "<th style='text-align:right;padding:8px 12px;border-bottom:2px solid #ddd'>Đơn giá</th>"
+                + "<th style='text-align:right;padding:8px 12px;border-bottom:2px solid #ddd'>Thành tiền</th>"
+                + "</tr></thead><tbody>" + itemsHtml + "</tbody></table>"
+                + "<p style='text-align:right;margin:12px 0;font-size:16px'><strong>Tổng đơn (tham khảo): " + vnd.format(total) + "</strong></p>"
+                + "<div style='margin-top:16px'>"
+                + "<a href='" + baseUrl + "/user/my-orders' style='display:inline-block;background:#374151;color:#fff;padding:10px 16px;border-radius:6px;text-decoration:none'>"
+                + "Xem đơn hàng</a>"
+                + "</div>"
+                + "<p style='margin-top:16px'>Trân trọng,<br/>Đội ngũ OneShop</p>"
+                + "</div>";
 
         return new OrderStatusEmailContent(subject, body);
     }

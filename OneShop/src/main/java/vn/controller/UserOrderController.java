@@ -20,6 +20,7 @@ import vn.repository.OrderRepository;
 import vn.repository.OrderDetailRepository;
 import vn.repository.UserRepository;
 import vn.service.CommentService;
+import vn.service.OrderService;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -44,6 +45,9 @@ public class UserOrderController {
     
     @Autowired
     private vn.service.OneXuService oneXuService;
+
+    @Autowired
+    private OrderService orderService;
 
     /**
      * Hiển thị trang lịch sử đơn hàng của user với các tab theo trạng thái
@@ -275,7 +279,7 @@ public class UserOrderController {
     }
 
     /**
-     * Hủy đơn hàng (chỉ được hủy khi đơn hàng ở trạng thái PENDING hoặc CONFIRMED)
+     * Hủy đơn hàng (chỉ khi chưa giao: NEW / PENDING / CONFIRMED — đi qua OrderService để mail + audit)
      */
     @GetMapping("/cancel-order/{orderId}")
     public String cancelOrder(@PathVariable Long orderId, HttpSession session) {
@@ -296,11 +300,14 @@ public class UserOrderController {
             return "redirect:/user/my-orders";
         }
 
-        // Chỉ cho phép hủy đơn hàng khi ở trạng thái PENDING hoặc CONFIRMED
-        if (order.getStatus() == Order.OrderStatus.PENDING || 
-            order.getStatus() == Order.OrderStatus.CONFIRMED) {
-            order.setStatus(Order.OrderStatus.CANCELLED);
+        // Chỉ cho phép hủy khi chưa giao (NEW/PENDING: chờ xác nhận; CONFIRMED: đã xác nhận nhưng khách vẫn được hủy theo policy cũ)
+        if (order.getStatus() == Order.OrderStatus.NEW
+                || order.getStatus() == Order.OrderStatus.PENDING
+                || order.getStatus() == Order.OrderStatus.CONFIRMED) {
+            order.setCancellationReason("Khách hàng chủ động hủy đơn");
+            order.setCancelledDate(LocalDateTime.now());
             orderRepository.save(order);
+            orderService.updateOrderStatus(orderId, Order.OrderStatus.CANCELLED, "UserOrderController.cancelOrder");
         }
 
         return "redirect:/user/my-orders?status=cancelled";
@@ -407,12 +414,12 @@ public class UserOrderController {
         }
 
         try {
-            // Lưu lý do trả hàng và chuyển trạng thái sang RETURN_REQUESTED
+            // Lưu lý do (đơn vẫn DELIVERED) rồi chuyển trạng thái qua OrderService để Observer/Publisher gửi mail
             order.setCancellationReason(returnReason.trim());
             order.setCancelledDate(LocalDateTime.now());
-            order.setStatus(Order.OrderStatus.RETURN_REQUESTED); // Chuyển sang trạng thái "Đang xử lý hoàn trả"
             orderRepository.save(order);
-            
+            orderService.updateOrderStatus(orderId, Order.OrderStatus.RETURN_REQUESTED);
+
             // Tạo refund request với phương thức đã chọn
             refundService.createRefundRequestFromUser(orderId, user.getUserId(), refundMethod,
                     bankName, bankAccountNumber, accountHolderName, bankBranch, contactPhone);

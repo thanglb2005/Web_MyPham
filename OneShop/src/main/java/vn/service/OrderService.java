@@ -32,7 +32,14 @@ public interface OrderService {
 
     Collection<Order> getOrdersByUser(User user);
 
-    void updateOrderStatus(Long orderId, Order.OrderStatus newStatus);
+    /**
+     * Cập nhật trạng thái đơn; {@code eventSource} ghi vào {@link vn.observer.order.OrderStatusChangedEvent} (audit / debug).
+     */
+    void updateOrderStatus(Long orderId, Order.OrderStatus newStatus, String eventSource);
+
+    default void updateOrderStatus(Long orderId, Order.OrderStatus newStatus) {
+        updateOrderStatus(orderId, newStatus, "OrderService.updateOrderStatus");
+    }
 
     void assignShipper(Long orderId, User shipper);
 

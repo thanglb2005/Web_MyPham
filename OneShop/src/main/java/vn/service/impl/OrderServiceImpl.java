@@ -6,7 +6,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import vn.observer.order.OrderStatusChangedEvent;
-import vn.observer.order.OrderStatusSubject;
+import vn.observer.order.OrderStatusPublisher;
 import vn.state.order.OrderStateFactory;
 import vn.state.order.OrderTransitionContext;
 import vn.entity.CartItem;
@@ -59,7 +59,7 @@ public class OrderServiceImpl implements OrderService {
     private FlashSaleService flashSaleService;
 
     @Autowired
-    private OrderStatusSubject orderStatusSubject;
+    private OrderStatusPublisher orderStatusPublisher;
 
     @Autowired
     private OrderStateFactory orderStateFactory;
@@ -246,7 +246,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional
-    public void updateOrderStatus(Long orderId, Order.OrderStatus newStatus) {
+    public void updateOrderStatus(Long orderId, Order.OrderStatus newStatus, String eventSource) {
         Optional<Order> orderOptional = orderRepository.findById(orderId);
         orderOptional.ifPresent(order -> {
             // ===== CODE CŨ (chưa State pattern) =====
@@ -270,7 +270,7 @@ public class OrderServiceImpl implements OrderService {
 
             // State pattern: hành vi cập nhật status + ngày giao + OneXu + Observer nằm trong OrderState (AbstractOrderState)
             orderStateFactory.forOrder(order).updateStatus(
-                    transitionContextFor(order), newStatus, "OrderService.updateOrderStatus");
+                    transitionContextFor(order), newStatus, eventSource);
         });
     }
 
@@ -377,7 +377,7 @@ public class OrderServiceImpl implements OrderService {
                 LocalDateTime.now(),
                 source
         );
-        orderStatusSubject.notifyOrderStatusChanged(event);
+        orderStatusPublisher.notifySubscribers(event);
     }
 
     @Override

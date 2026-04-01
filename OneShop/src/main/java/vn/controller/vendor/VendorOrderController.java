@@ -272,7 +272,7 @@ public class VendorOrderController {
 
             // Confirm the order
             orderService.confirmOrder(orderId);
-            // ===== CODE CŨ (gửi mail trực tiếp — trùng với EmailOrderStatusObserver) =====
+            // ===== CODE CŨ (gửi mail trực tiếp — trùng với EmailOrderStatusSubscriber) =====
             // try {
             //     Order confirmed = orderService.findById(orderId).orElse(null);
             //     if (confirmed != null) {
@@ -461,7 +461,7 @@ public class VendorOrderController {
             }
             
             orderService.updateOrderStatus(orderId, Order.OrderStatus.CONFIRMED);
-            // ===== CODE CŨ (gửi mail trực tiếp — trùng với EmailOrderStatusObserver) =====
+            // ===== CODE CŨ (gửi mail trực tiếp — trùng với EmailOrderStatusSubscriber) =====
             // try {
             //     Order confirmed = orderService.findById(orderId).orElse(null);
             //     if (confirmed != null) {

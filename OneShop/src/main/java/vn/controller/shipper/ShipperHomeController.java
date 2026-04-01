@@ -187,7 +187,7 @@ public class ShipperHomeController {
                     // Cập nhật trạng thái đơn hàng sang SHIPPING
                     orderService.updateOrderStatus(orderId, Order.OrderStatus.SHIPPING);
                     
-                    // ===== CODE CŨ (gửi mail trực tiếp — trùng với EmailOrderStatusObserver) =====
+                    // ===== CODE CŨ (gửi mail trực tiếp — trùng với EmailOrderStatusSubscriber) =====
                     // try {
                     //     Order picked = orderService.getOrderById(orderId);
                     //     if (picked != null) {
@@ -240,7 +240,7 @@ public class ShipperHomeController {
                     return "redirect:/shipper/home";
                 }
                 
-                // ===== CODE CŨ (gửi mail trực tiếp — trùng với EmailOrderStatusObserver) =====
+                // ===== CODE CŨ (gửi mail trực tiếp — trùng với EmailOrderStatusSubscriber) =====
                 // if (status == Order.OrderStatus.DELIVERED) {
                 //     try {
                 //         Order delivered = orderService.getOrderById(orderId);
