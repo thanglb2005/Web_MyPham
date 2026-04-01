@@ -47,7 +47,8 @@ public class CodPaymentProcessor implements PaymentProcessor {
                 ctx.getShippingFee(),
                 ctx.getShippingVoucherCode(),
                 ctx.getShippingVoucherDiscount(),
-                ctx.getDeliveryType()
+                ctx.getDeliveryType(),
+                ctx.getShippingInfoId()
         );
 
         // Deduct xu from user balance if xu was used (logic copy từ CartController)

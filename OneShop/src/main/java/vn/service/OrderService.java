@@ -28,6 +28,12 @@ public interface OrderService {
                       Double shippingFee, String shippingVoucherCode, Double shippingVoucherDiscount,
                       Order.DeliveryType deliveryType);
 
+    Order createOrder(User user, String customerName, String customerEmail, String customerPhone,
+                      String shippingAddress, String note, Order.PaymentMethod paymentMethod,
+                      Map<Long, CartItem> cartItems, String promotionCode, Double discountAmount,
+                      Double shippingFee, String shippingVoucherCode, Double shippingVoucherDiscount,
+                      Order.DeliveryType deliveryType, Long shippingInfoId);
+
     Order getOrderById(Long orderId);
 
     Collection<Order> getOrdersByUser(User user);

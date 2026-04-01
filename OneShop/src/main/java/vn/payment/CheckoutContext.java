@@ -30,6 +30,7 @@ public class CheckoutContext {
     private final String shippingVoucherCode;
     private final Double shippingVoucherDiscount;
     private final Order.DeliveryType deliveryType;
+    private final Long shippingInfoId;
     private final HttpServletRequest request;
     private final Model model;
 
@@ -51,6 +52,7 @@ public class CheckoutContext {
         this.shippingVoucherCode = builder.shippingVoucherCode;
         this.shippingVoucherDiscount = builder.shippingVoucherDiscount;
         this.deliveryType = builder.deliveryType;
+        this.shippingInfoId = builder.shippingInfoId;
         this.request = builder.request;
         this.model = builder.model;
     }
@@ -74,6 +76,7 @@ public class CheckoutContext {
         private String shippingVoucherCode;
         private Double shippingVoucherDiscount;
         private Order.DeliveryType deliveryType;
+        private Long shippingInfoId;
         private HttpServletRequest request;
         private Model model;
 
@@ -93,6 +96,7 @@ public class CheckoutContext {
         public Builder shippingVoucherCode(String shippingVoucherCode) { this.shippingVoucherCode = shippingVoucherCode; return this; }
         public Builder shippingVoucherDiscount(Double shippingVoucherDiscount) { this.shippingVoucherDiscount = shippingVoucherDiscount; return this; }
         public Builder deliveryType(Order.DeliveryType deliveryType) { this.deliveryType = deliveryType; return this; }
+        public Builder shippingInfoId(Long shippingInfoId) { this.shippingInfoId = shippingInfoId; return this; }
         public Builder request(HttpServletRequest request) { this.request = request; return this; }
         public Builder model(Model model) { this.model = model; return this; }
 
@@ -116,6 +120,7 @@ public class CheckoutContext {
     public String getShippingVoucherCode() { return shippingVoucherCode; }
     public Double getShippingVoucherDiscount() { return shippingVoucherDiscount; }
     public Order.DeliveryType getDeliveryType() { return deliveryType; }
+    public Long getShippingInfoId() { return shippingInfoId; }
     public HttpServletRequest getRequest() { return request; }
     public Model getModel() { return model; }
 }

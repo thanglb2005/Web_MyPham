@@ -30,7 +30,8 @@ public class PayOsPaymentProcessor implements PaymentProcessor {
                 ctx.getShippingFee(),
                 ctx.getShippingVoucherCode(),
                 ctx.getShippingVoucherDiscount(),
-                ctx.getDeliveryType()
+                ctx.getDeliveryType(),
+                ctx.getShippingInfoId()
         );
 
         return "redirect:/payos/create-payment?orderId=" + payosOrder.getOrderId();

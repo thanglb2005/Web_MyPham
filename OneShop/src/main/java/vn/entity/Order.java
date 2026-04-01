@@ -35,6 +35,10 @@ public class Order {
 
     @Column(name = "shipping_address", nullable = false, length = 500, columnDefinition = "NVARCHAR(500)")
     private String shippingAddress;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "shipping_info_id")
+    private CustomerShippingInfo shippingInfo;
     
     @Column(name = "pickup_address", length = 500, columnDefinition = "NVARCHAR(500)")
     private String pickupAddress;  // Địa chỉ lấy hàng (từ shop/vendor)

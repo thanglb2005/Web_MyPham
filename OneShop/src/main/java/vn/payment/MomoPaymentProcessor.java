@@ -30,7 +30,8 @@ public class MomoPaymentProcessor implements PaymentProcessor {
                 ctx.getShippingFee(),
                 ctx.getShippingVoucherCode(),
                 ctx.getShippingVoucherDiscount(),
-                ctx.getDeliveryType()
+                ctx.getDeliveryType(),
+                ctx.getShippingInfoId()
         );
 
         return "redirect:/payment/momo/create?orderId=" + momoOrder.getOrderId();

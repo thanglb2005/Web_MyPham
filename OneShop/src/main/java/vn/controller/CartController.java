@@ -10,13 +10,16 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import vn.dto.CartByShopDTO;
 import vn.entity.CartItem;
 import vn.entity.CartItemEntity;
+import vn.entity.CustomerShippingInfo;
 import vn.entity.Order;
 import vn.entity.OrderDetail;
 import vn.entity.Product;
 import vn.entity.User;
+import vn.entity.Address;
 import vn.repository.OrderDetailRepository;
 import vn.repository.UserRepository;
 import vn.repository.OneXuTransactionRepository;
+import vn.repository.CustomerShippingInfoRepository;
 import vn.payment.CheckoutContext;
 import vn.payment.PaymentProcessor;
 import vn.strategy.discount.FixedAmountShippingDiscountStrategy;
@@ -81,6 +84,9 @@ public class CartController {
     
     @Autowired
     private OneXuTransactionRepository oneXuTransactionRepository;
+
+    @Autowired
+    private CustomerShippingInfoRepository customerShippingInfoRepository;
 
     @GetMapping("/add-to-cart")
     public String addToCart(@RequestParam("productId") Long productId,
@@ -520,6 +526,28 @@ public class CartController {
         model.addAttribute("finalPrice", finalPrice);
         model.addAttribute("user", user);
 
+        List<CustomerShippingInfo> shippingInfos =
+                customerShippingInfoRepository.findByUserUserIdOrderByIsDefaultDescCreatedAtDesc(user.getUserId());
+        // Auto-set mặc định nếu chưa có cái nào được đặt mặc định
+        if (!shippingInfos.isEmpty()) {
+            boolean hasDefault = shippingInfos.stream().anyMatch(i -> Boolean.TRUE.equals(i.getIsDefault()));
+            if (!hasDefault) {
+                CustomerShippingInfo first = shippingInfos.get(0);
+                first.setIsDefault(true);
+                first.setUpdatedAt(java.time.LocalDateTime.now());
+                customerShippingInfoRepository.save(first);
+                // Reload để lấy data mới nhất
+                shippingInfos = customerShippingInfoRepository
+                        .findByUserUserIdOrderByIsDefaultDescCreatedAtDesc(user.getUserId());
+            }
+        }
+        model.addAttribute("shippingInfos", shippingInfos);
+        if (!shippingInfos.isEmpty()) {
+            CustomerShippingInfo defaultInfo = shippingInfos.get(0);
+            model.addAttribute("defaultShippingInfo", defaultInfo);
+            model.addAttribute("selectedShippingInfoId", defaultInfo.getShippingInfoId());
+        }
+
         return "web/checkout";
     }
 
@@ -530,6 +558,9 @@ public class CartController {
                                  @RequestParam("address") String address,
                                  @RequestParam(value = "province", required = false) String province,
                                  @RequestParam(value = "commune", required = false) String commune,
+                                 @RequestParam(value = "selectedShippingInfoId", required = false) Long selectedShippingInfoId,
+                                 @RequestParam(value = "setDefaultShippingInfoId", required = false) Long setDefaultShippingInfoId,
+                                 @RequestParam(value = "saveShippingInfo", required = false, defaultValue = "false") Boolean saveShippingInfo,
                                  @RequestParam(value = "note", required = false) String note,
                                  @RequestParam("paymentMethod") String paymentMethod,
                                  @RequestParam(value = "city", required = false) String city,
@@ -542,13 +573,6 @@ public class CartController {
             return "redirect:/login";
         }
 
-        // Validate phone number (Vietnam format: 10 digits, start with 03, 05, 07, 08, 09)
-        String phonePattern = "^(0)(3|5|7|8|9)[0-9]{8}$";
-        if (phone == null || !phone.matches(phonePattern)) {
-            model.addAttribute("error", "Số điện thoại không hợp lệ.");
-            return "redirect:/checkout?error=invalid-phone";
-        }
-
         List<CartItemEntity> cartItemEntities = cartService.getSelectedCartItems(user);
         System.out.println("Selected cart items count: " + cartItemEntities.size());
         if (cartItemEntities.isEmpty()) {
@@ -557,6 +581,83 @@ public class CartController {
         }
 
         try {
+            // Resolve shipping info:
+            // - If selectedShippingInfoId exists, use saved receiver info/address
+            // - Else use manually entered fields and optionally save as history
+            Long effectiveShippingInfoId = null;
+            String effectiveCustomerName = customerName;
+            String effectivePhone = phone;
+            String fullAddress;
+            if (selectedShippingInfoId != null) {
+                Optional<CustomerShippingInfo> shippingInfoOpt = customerShippingInfoRepository
+                        .findByShippingInfoIdAndUserUserId(selectedShippingInfoId, user.getUserId());
+                if (shippingInfoOpt.isEmpty()) {
+                    return "redirect:/checkout?error=invalid-shipping-info";
+                }
+                CustomerShippingInfo selectedInfo = shippingInfoOpt.get();
+                if (setDefaultShippingInfoId != null && setDefaultShippingInfoId.equals(selectedInfo.getShippingInfoId())) {
+                    List<CustomerShippingInfo> allInfos = customerShippingInfoRepository
+                            .findByUserUserIdOrderByIsDefaultDescCreatedAtDesc(user.getUserId());
+                    for (CustomerShippingInfo info : allInfos) {
+                        info.setIsDefault(info.getShippingInfoId().equals(setDefaultShippingInfoId));
+                        info.setUpdatedAt(java.time.LocalDateTime.now());
+                    }
+                    customerShippingInfoRepository.saveAll(allInfos);
+                }
+                effectiveShippingInfoId = selectedInfo.getShippingInfoId();
+                effectiveCustomerName = selectedInfo.getReceiverName();
+                effectivePhone = selectedInfo.getReceiverPhone();
+                fullAddress = selectedInfo.getAddress().getFullAddress();
+            } else {
+                StringBuilder fullAddressBuilder = new StringBuilder();
+                if (address != null && !address.trim().isEmpty()) {
+                    fullAddressBuilder.append(address.trim());
+                }
+                if (commune != null && !commune.trim().isEmpty()) {
+                    if (fullAddressBuilder.length() > 0) {
+                        fullAddressBuilder.append(", ");
+                    }
+                    fullAddressBuilder.append(commune.trim());
+                }
+                if (province != null && !province.trim().isEmpty()) {
+                    if (fullAddressBuilder.length() > 0) {
+                        fullAddressBuilder.append(", ");
+                    }
+                    fullAddressBuilder.append(province.trim());
+                }
+                fullAddress = fullAddressBuilder.toString();
+
+                List<CustomerShippingInfo> userShippingInfos =
+                        customerShippingInfoRepository.findByUserUserIdOrderByIsDefaultDescCreatedAtDesc(user.getUserId());
+                boolean shouldSaveShippingInfo = Boolean.TRUE.equals(saveShippingInfo) || userShippingInfos.isEmpty();
+
+                if (shouldSaveShippingInfo && !fullAddress.isBlank()) {
+                    Address newAddress = new Address();
+                    newAddress.setStreet(address != null ? address.trim() : "");
+                    newAddress.setWard(commune != null ? commune.trim() : "");
+                    newAddress.setCity(province != null ? province.trim() : "");
+
+                    CustomerShippingInfo shippingInfo = new CustomerShippingInfo();
+                    shippingInfo.setUser(user);
+                    shippingInfo.setReceiverName(effectiveCustomerName);
+                    shippingInfo.setReceiverPhone(effectivePhone);
+                    shippingInfo.setAddress(newAddress);
+                    shippingInfo.setIsDefault(userShippingInfos.isEmpty());
+                    shippingInfo.setCreatedAt(java.time.LocalDateTime.now());
+                    shippingInfo.setUpdatedAt(java.time.LocalDateTime.now());
+
+                    CustomerShippingInfo savedShippingInfo = customerShippingInfoRepository.save(shippingInfo);
+                    effectiveShippingInfoId = savedShippingInfo.getShippingInfoId();
+                }
+            }
+
+            // Validate phone number (Vietnam format: 10 digits, start with 03, 05, 07, 08, 09)
+            String phonePattern = "^(0)(3|5|7|8|9)[0-9]{8}$";
+            if (effectivePhone == null || !effectivePhone.matches(phonePattern)) {
+                model.addAttribute("error", "Số điện thoại không hợp lệ.");
+                return "redirect:/checkout?error=invalid-phone";
+            }
+
             // Normalize payment method string to avoid casing/whitespace issues
             String normalizedPaymentMethod = paymentMethod == null ? "" : paymentMethod.trim().toLowerCase();
 
@@ -575,25 +676,6 @@ public class CartController {
                     // Unknown method -> fail early to avoid accidental COD
                     return "redirect:/checkout?error=Invalid payment method";
             }
-
-            // Tạo địa chỉ đầy đủ từ các thông tin: địa chỉ cụ thể, phường/xã, tỉnh/thành phố
-            StringBuilder fullAddressBuilder = new StringBuilder();
-            if (address != null && !address.trim().isEmpty()) {
-                fullAddressBuilder.append(address.trim());
-            }
-            if (commune != null && !commune.trim().isEmpty()) {
-                if (fullAddressBuilder.length() > 0) {
-                    fullAddressBuilder.append(", ");
-                }
-                fullAddressBuilder.append(commune.trim());
-            }
-            if (province != null && !province.trim().isEmpty()) {
-                if (fullAddressBuilder.length() > 0) {
-                    fullAddressBuilder.append(", ");
-                }
-                fullAddressBuilder.append(province.trim());
-            }
-            String fullAddress = fullAddressBuilder.toString();
 
             // Convert CartItemEntity to CartItem Map for OrderService
             Map<Long, CartItem> cartMap = convertToCartItemMap(cartItemEntities);
@@ -618,9 +700,9 @@ public class CartController {
             System.out.println("Total Cart Price: " + totalCartPrice);
             System.out.println("======================");
             
-            System.out.println("Customer name: " + customerName);
+            System.out.println("Customer name: " + effectiveCustomerName);
             System.out.println("Customer email: " + customerEmail);
-            System.out.println("Phone: " + phone);
+            System.out.println("Phone: " + effectivePhone);
             System.out.println("Address: " + fullAddress);
             System.out.println("Payment method: " + paymentMethodEnum);
 
@@ -788,9 +870,9 @@ public class CartController {
             // Code mới: Builder pattern – tạo CheckoutContext qua builder(), dễ đọc, dễ so sánh khi quay video
             CheckoutContext ctx = CheckoutContext.builder()
                     .user(user)
-                    .customerName(customerName)
+                    .customerName(effectiveCustomerName)
                     .customerEmail(customerEmail)
-                    .phone(phone)
+                    .phone(effectivePhone)
                     .fullAddress(fullAddress)
                     .note(note)
                     .paymentMethod(paymentMethodEnum)
@@ -801,6 +883,7 @@ public class CartController {
                     .shippingVoucherCode(shippingVoucherCode)
                     .shippingVoucherDiscount(shippingVoucherDiscount)
                     .deliveryType(deliveryTypeEnum)
+                    .shippingInfoId(effectiveShippingInfoId)
                     .request(request)
                     .model(model)
                     .build();

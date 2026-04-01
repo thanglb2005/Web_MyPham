@@ -1,4 +1,4 @@
-﻿CREATE DATABASE WebMyPham;
+CREATE DATABASE WebMyPham;
 GO
 USE WebMyPham;
 GO
@@ -53,6 +53,42 @@ VALUES
 ('user.png','vendor2@mypham.com',N'Lê Quốc Cường','$2a$10$ayifKZuAybB3F.RGIEs89O8zLicZhK9hiS4ut9dDaGz6RQLd.8Ly6','2025-10-07',1),
 ('user.png','shipper@mypham.com',N'Phạm Văn Giao','$2a$10$ayifKZuAybB3F.RGIEs89O8zLicZhK9hiS4ut9dDaGz6RQLd.8Ly6','2025-10-08',1),
 ('user.png','cskh@mypham.com',N'Nguyễn Thị Linh - CSKH','$2a$10$ayifKZuAybB3F.RGIEs89O8zLicZhK9hiS4ut9dDaGz6RQLd.8Ly6','2025-10-10',1);
+GO
+
+/* ===============================
+   TABLE: addresses (Address theo UML)
+   - Bỏ district, chỉ gồm: addressId, street, ward, city
+   =============================== */
+CREATE TABLE dbo.addresses (
+    address_id BIGINT IDENTITY(1,1) PRIMARY KEY,
+    street NVARCHAR(255) NOT NULL,
+    ward NVARCHAR(100) NOT NULL,
+    city NVARCHAR(100) NOT NULL
+);
+GO
+
+/* ===============================
+   TABLE: customer_shipping_infos
+   - 1 customer có nhiều thông tin nhận hàng
+   - Mỗi thông tin nhận hàng gồm: tên, SĐT, địa chỉ
+   =============================== */
+CREATE TABLE dbo.customer_shipping_infos (
+    shipping_info_id BIGINT IDENTITY(1,1) PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    receiver_name NVARCHAR(255) NOT NULL,
+    receiver_phone NVARCHAR(20) NOT NULL,
+    address_id BIGINT NOT NULL,
+    is_default BIT NOT NULL DEFAULT 0,
+    created_at DATETIME2 NOT NULL DEFAULT GETDATE(),
+    updated_at DATETIME2 NOT NULL DEFAULT GETDATE(),
+
+    CONSTRAINT FK_customer_shipping_infos_user FOREIGN KEY(user_id) REFERENCES dbo.[user](user_id),
+    CONSTRAINT FK_customer_shipping_infos_address FOREIGN KEY(address_id) REFERENCES dbo.addresses(address_id)
+);
+GO
+
+CREATE INDEX IX_customer_shipping_infos_user_id ON dbo.customer_shipping_infos(user_id);
+CREATE INDEX IX_customer_shipping_infos_address_id ON dbo.customer_shipping_infos(address_id);
 GO
 
 /* ===============================
@@ -260,6 +296,7 @@ CREATE TABLE dbo.orders (
     customer_email NVARCHAR(255) NOT NULL,
     customer_phone NVARCHAR(20) NOT NULL,
     shipping_address NVARCHAR(500) NOT NULL,
+    shipping_info_id BIGINT NULL, -- Tham chiếu thông tin nhận hàng đã lưu của customer
     pickup_address NVARCHAR(500) NULL,  -- Địa chỉ lấy hàng (từ shop/vendor)
     package_type NVARCHAR(100) NULL,   -- Loại hàng: Hàng nhỏ, Hàng dễ vỡ, Thực phẩm, etc.
     weight FLOAT NULL,                  -- Khối lượng (kg)
@@ -294,7 +331,8 @@ CREATE TABLE dbo.orders (
     CONSTRAINT FK_orders_user FOREIGN KEY(user_id) REFERENCES dbo.[user](user_id),
     CONSTRAINT FK_orders_shipper FOREIGN KEY(shipper_id) REFERENCES dbo.[user](user_id),
     CONSTRAINT FK_orders_shop FOREIGN KEY(shop_id) REFERENCES dbo.shops(shop_id),
-    CONSTRAINT FK_orders_shipping_provider FOREIGN KEY(shipping_provider_id) REFERENCES dbo.shipping_providers(provider_id)
+    CONSTRAINT FK_orders_shipping_provider FOREIGN KEY(shipping_provider_id) REFERENCES dbo.shipping_providers(provider_id),
+    CONSTRAINT FK_orders_shipping_info FOREIGN KEY(shipping_info_id) REFERENCES dbo.customer_shipping_infos(shipping_info_id)
 );
 
 -- Create indexes for better performance

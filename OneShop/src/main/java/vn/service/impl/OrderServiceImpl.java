@@ -16,9 +16,11 @@ import vn.entity.Product;
 import vn.entity.Shop;
 import vn.entity.User;
 import vn.entity.FlashSaleProduct;
+import vn.entity.CustomerShippingInfo;
 import vn.repository.OrderDetailRepository;
 import vn.repository.OrderRepository;
 import vn.repository.ProductRepository;
+import vn.repository.CustomerShippingInfoRepository;
 import vn.service.FlashSaleService;
 import vn.service.OrderService;
 import vn.service.OneXuService;
@@ -64,6 +66,9 @@ public class OrderServiceImpl implements OrderService {
     @Autowired
     private OrderStateFactory orderStateFactory;
 
+    @Autowired
+    private CustomerShippingInfoRepository customerShippingInfoRepository;
+
     private OrderTransitionContext transitionContextFor(Order order) {
         return new OrderTransitionContext(
                 order,
@@ -93,7 +98,7 @@ public class OrderServiceImpl implements OrderService {
         // Delegate to the full method with default delivery type
         return createOrder(user, customerName, customerEmail, customerPhone, shippingAddress, note, 
                           paymentMethod, cartItems, promotionCode, discountAmount, shippingFee, 
-                          shippingVoucherCode, shippingVoucherDiscount, Order.DeliveryType.STANDARD);
+                          shippingVoucherCode, shippingVoucherDiscount, Order.DeliveryType.STANDARD, null);
     }
     
     @Override
@@ -107,6 +112,22 @@ public class OrderServiceImpl implements OrderService {
         if (cartItems == null || cartItems.isEmpty()) {
             throw new IllegalArgumentException("Cart cannot be empty to create an order.");
         }
+        return createOrder(user, customerName, customerEmail, customerPhone, shippingAddress, note,
+                paymentMethod, cartItems, promotionCode, discountAmount, shippingFee,
+                shippingVoucherCode, shippingVoucherDiscount, deliveryType, null);
+    }
+
+    @Override
+    @Transactional
+    public Order createOrder(User user, String customerName, String customerEmail, String customerPhone,
+                             String shippingAddress, String note, Order.PaymentMethod paymentMethod,
+                             Map<Long, CartItem> cartItems, String promotionCode, Double discountAmount,
+                             Double shippingFee, String shippingVoucherCode, Double shippingVoucherDiscount,
+                             Order.DeliveryType deliveryType, Long shippingInfoId) {
+
+        if (cartItems == null || cartItems.isEmpty()) {
+            throw new IllegalArgumentException("Cart cannot be empty to create an order.");
+        }
 
         Order order = new Order();
         order.setUser(user);
@@ -114,6 +135,10 @@ public class OrderServiceImpl implements OrderService {
         order.setCustomerEmail(customerEmail);
         order.setCustomerPhone(customerPhone);
         order.setShippingAddress(shippingAddress);
+        if (shippingInfoId != null) {
+            CustomerShippingInfo shippingInfo = customerShippingInfoRepository.findById(shippingInfoId).orElse(null);
+            order.setShippingInfo(shippingInfo);
+        }
         order.setNote(note);
         order.setPaymentMethod(paymentMethod);
         order.setStatus(Order.OrderStatus.PENDING);

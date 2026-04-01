@@ -69,40 +69,81 @@
                         <div class="account-content">
                             <div class="row">
                                 <form class="user-form" th:action="@{/checkout}" method="post" id="checkoutForm">
+                                    <input type="hidden" id="setDefaultShippingInfoId" name="setDefaultShippingInfoId" value="" />
+                                    <div class="shipping-selected-card" th:if="${shippingInfos != null and !#lists.isEmpty(shippingInfos)}">
+                                        <div class="shipping-selected-header">
+                                            <span><i class="fas fa-map-marker-alt"></i> Địa Chỉ Nhận Hàng</span>
+                                            <button type="button" id="openAddressModalBtn" class="shipping-change-btn">Thay Đổi</button>
+                                        </div>
+                                        <div class="shipping-selected-body">
+                                            <div class="shipping-selected-name-line">
+                                                <strong id="selectedReceiverName"
+                                                        th:text="${defaultShippingInfo != null ? defaultShippingInfo.receiverName : ''}">Người nhận</strong>
+                                                <span id="selectedReceiverPhone"
+                                                      th:text="${defaultShippingInfo != null ? defaultShippingInfo.receiverPhone : ''}">SĐT</span>
+                                                <span class="default-badge" id="selectedDefaultBadge"
+                                                      th:style="${defaultShippingInfo != null and defaultShippingInfo.markedDefault} ? '' : 'display:none'">Mặc Định</span>
+                                            </div>
+                                            <div id="selectedReceiverAddress" class="shipping-selected-address"
+                                                 th:text="${defaultShippingInfo != null ? (defaultShippingInfo.address.street + ', ' + defaultShippingInfo.address.ward + ', ' + defaultShippingInfo.address.city) : ''}">
+                                                Địa chỉ nhận hàng
+                                            </div>
+                                        </div>
+                                    </div>
+
                                     <div class="form-group">
                                         <label for="customerEmail" style="font-weight: 500; color: #333; margin-bottom: 8px; display: block;">Email</label>
                                         <input type="email" id="customerEmail" name="customerEmail" th:value="${user.email}" class="form-control" placeholder="Email" readonly="readonly" />
                                     </div>
+
+                                    <div class="form-group hidden-address-fields" th:if="${shippingInfos != null and !#lists.isEmpty(shippingInfos)}">
+                                        <label for="selectedShippingInfoId" style="font-weight: 500; color: #333; margin-bottom: 8px; display: block;">Địa chỉ đã lưu</label>
+                                        <select id="selectedShippingInfoId" name="selectedShippingInfoId" class="form-control" style="height: 45px;">
+                                            <option value="">-- Nhập thông tin mới --</option>
+                                            <option th:each="info : ${shippingInfos}"
+                                                    th:value="${info.shippingInfoId}"
+                                                    th:selected="${selectedShippingInfoId != null and selectedShippingInfoId == info.shippingInfoId}"
+                                                    th:data-name="${info.receiverName}"
+                                                    th:data-phone="${info.receiverPhone}"
+                                                    th:data-street="${info.address.street}"
+                                                    th:data-ward="${info.address.ward}"
+                                                    th:data-city="${info.address.city}"
+                                                    th:data-is-default="${info.isDefault}"
+                                                    th:text="${info.receiverName + ' | ' + info.receiverPhone + ' | ' + info.address.street + ', ' + info.address.ward + ', ' + info.address.city + (info.isDefault ? ' (Mặc định)' : '')}">
+                                            </option>
+                                        </select>
+                                        <small style="color: #666; font-size: 13px; margin-top: 5px; display: block;">Bạn có thể chọn thông tin nhận hàng đã lưu hoặc nhập mới.</small>
+                                    </div>
                                     
-                                    <div class="form-group">
+                                    <div class="form-group manual-address-group">
                                         <label for="customerName" style="font-weight: 500; color: #333; margin-bottom: 8px; display: block;">Họ và tên <span style="color: red;">*</span></label>
-                                        <input type="text" id="customerName" name="customerName" th:value="${user.name}" class="form-control" placeholder="Họ tên" required="required" />
+                                        <input type="text" id="customerName" name="customerName" th:value="${defaultShippingInfo != null ? defaultShippingInfo.receiverName : user.name}" class="form-control" placeholder="Họ tên" required="required" />
                                     </div>
 
-                                    <div class="form-group">
+                                    <div class="form-group manual-address-group">
                                         <label for="phone" style="font-weight: 500; color: #333; margin-bottom: 8px; display: block;">Số điện thoại <span style="color: red;">*</span></label>
-                                        <input type="tel" id="phone" name="phone" class="form-control" placeholder="Số điện thoại (VD: 0912345678)" required="required" pattern="^(0)(3|5|7|8|9)[0-9]{8}$" title="Số điện thoại phải là 10 số và bắt đầu bằng 03, 05, 07, 08 hoặc 09" />
+                                        <input type="tel" id="phone" name="phone" class="form-control" th:value="${defaultShippingInfo != null ? defaultShippingInfo.receiverPhone : ''}" placeholder="Số điện thoại (VD: 0912345678)" required="required" pattern="^(0)(3|5|7|8|9)[0-9]{8}$" title="Số điện thoại phải là 10 số và bắt đầu bằng 03, 05, 07, 08 hoặc 09" />
                                         <small id="phoneError" style="color: red; font-size: 13px; margin-top: 5px; display: none;">Số điện thoại không hợp lệ. Vui lòng nhập số điện thoại Việt Nam (10 số, bắt đầu bằng 03, 05, 07, 08, 09)</small>
                                     </div>
 
-                                    <div class="form-group">
+                                    <div class="form-group manual-address-group">
                                         <label for="province" style="font-weight: 500; color: #333; margin-bottom: 8px; display: block;">Tỉnh/Thành phố <span style="color: red;">*</span></label>
                                         <select id="province" name="province" class="form-control" required="required" style="height: 45px;">
                                             <option value="">-- Chọn Tỉnh/Thành phố --</option>
                                         </select>
                                     </div>
 
-                                    <div class="form-group">
+                                    <div class="form-group manual-address-group">
                                         <label for="commune" style="font-weight: 500; color: #333; margin-bottom: 8px; display: block;">Quận/Huyện/Xã/Phường <span style="color: red;">*</span></label>
                                         <select id="commune" name="commune" class="form-control" required="required" style="height: 45px;" disabled>
                                             <option value="">-- Chọn Quận/Huyện/Xã/Phường --</option>
                                         </select>
                                     </div>
 
-                                    <div class="form-group">
+                                    <div class="form-group manual-address-group">
                                         <label for="address" style="font-weight: 500; color: #333; margin-bottom: 8px; display: block;">Địa chỉ cụ thể <span style="color: red;">*</span></label>
                                         <div style="position: relative;">
-                                            <input type="text" id="address" name="address" class="form-control" placeholder="Số nhà, tên đường..." required="required" style="padding-right: 50px;" />
+                                            <input type="text" id="address" name="address" class="form-control" th:value="${defaultShippingInfo != null ? defaultShippingInfo.address.street : ''}" placeholder="Số nhà, tên đường..." required="required" style="padding-right: 50px;" />
                                             <button type="button" id="openMapBtn" style="
                                                 position: absolute;
                                                 right: 8px;
@@ -127,7 +168,66 @@
                                         <label for="note" style="font-weight: 500; color: #333; margin-bottom: 8px; display: block;">Ghi chú đơn hàng</label>
                                         <textarea id="note" name="note" class="form-control" placeholder="Ghi chú thêm về đơn hàng (nếu có)" rows="3" style="resize: vertical;"></textarea>
                                     </div>
+
+                                    <div class="form-group save-shipping-row" th:if="${shippingInfos == null or #lists.isEmpty(shippingInfos)}">
+                                        <label>
+                                            <input type="checkbox" name="saveShippingInfo" value="true" checked="checked" />
+                                            <span>Lưu thông tin nhận hàng này cho lần sau</span>
+                                        </label>
+                                    </div>
+
+                                    <div class="form-group save-shipping-row" th:if="${shippingInfos != null and !#lists.isEmpty(shippingInfos)}">
+                                        <label>
+                                            <input type="checkbox" name="saveShippingInfo" value="true" />
+                                            <span>Lưu thông tin mới vào sổ địa chỉ</span>
+                                        </label>
+                                    </div>
                                 </form>
+
+                                <div id="addressModalOverlay" class="address-modal-overlay">
+                                    <div class="address-modal">
+                                        <div class="address-modal-header">
+                                            <h5>Địa Chỉ Của Tôi</h5>
+                                            <button type="button" id="closeAddressModalBtn" class="address-close-btn">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </div>
+                                        <div class="address-modal-body">
+                                            <div class="address-item"
+                                                 th:each="info : ${shippingInfos}"
+                                                 th:attr="data-shipping-id=${info.shippingInfoId},data-name=${info.receiverName},data-phone=${info.receiverPhone},data-street=${info.address.street},data-ward=${info.address.ward},data-city=${info.address.city},data-is-default=${info.isDefault}">
+                                                <label class="address-item-label">
+                                                    <input type="radio"
+                                                           name="shippingInfoRadio"
+                                                           th:value="${info.shippingInfoId}"
+                                                           th:checked="${selectedShippingInfoId != null and selectedShippingInfoId == info.shippingInfoId}" />
+                                                    <span class="address-item-custom-radio"></span>
+                                                    <div class="address-item-content">
+                                                        <div class="address-item-name-line">
+                                                            <strong th:text="${info.receiverName}">Tên</strong>
+                                                            <span th:text="${info.receiverPhone}">SĐT</span>
+                                                        </div>
+                                                        <div class="address-item-address"
+                                                             th:text="${info.address.street + ', ' + info.address.ward + ', ' + info.address.city}">
+                                                            Địa chỉ
+                                                        </div>
+                                                        <span class="default-badge" th:if="${info.markedDefault}">Mặc định</span>
+                                                    </div>
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div class="address-modal-footer">
+                                            <label class="set-default-checkbox">
+                                                <input type="checkbox" id="setAsDefaultAddressCheckbox" />
+                                                <span>Đặt làm địa chỉ mặc định</span>
+                                            </label>
+                                            <button type="button" id="useManualAddressBtn" class="address-add-btn">
+                                                <i class="fas fa-plus"></i> Nhập Địa Chỉ Mới
+                                            </button>
+                                            <button type="button" id="applyAddressBtn" class="address-apply-btn">Xác nhận</button>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -665,6 +765,189 @@
                     }
                 });
             });
+
+            // Shipping info selection (history/default vs nhập mới)
+            document.addEventListener('DOMContentLoaded', function() {
+                const shippingInfoSelect = document.getElementById('selectedShippingInfoId');
+                const customerNameInput = document.getElementById('customerName');
+                const phoneInput = document.getElementById('phone');
+                const addressInput = document.getElementById('address');
+                const provinceSelect = document.getElementById('province');
+                const communeSelect = document.getElementById('commune');
+                const manualAddressGroups = document.querySelectorAll('.manual-address-group');
+                const saveShippingRows = document.querySelectorAll('.save-shipping-row');
+                const selectedNameLabel = document.getElementById('selectedReceiverName');
+                const selectedPhoneLabel = document.getElementById('selectedReceiverPhone');
+                const selectedAddressLabel = document.getElementById('selectedReceiverAddress');
+                const selectedDefaultBadge = document.getElementById('selectedDefaultBadge');
+                const openAddressModalBtn = document.getElementById('openAddressModalBtn');
+                const closeAddressModalBtn = document.getElementById('closeAddressModalBtn');
+                const addressModalOverlay = document.getElementById('addressModalOverlay');
+                const applyAddressBtn = document.getElementById('applyAddressBtn');
+                const useManualAddressBtn = document.getElementById('useManualAddressBtn');
+                const setAsDefaultAddressCheckbox = document.getElementById('setAsDefaultAddressCheckbox');
+                const setDefaultShippingInfoIdInput = document.getElementById('setDefaultShippingInfoId');
+
+                if (!customerNameInput || !phoneInput || !addressInput || !provinceSelect || !communeSelect) {
+                    return;
+                }
+
+                function ensureSingleOption(selectEl, label) {
+                    selectEl.innerHTML = '';
+                    const opt = document.createElement('option');
+                    opt.value = label;
+                    opt.textContent = label;
+                    selectEl.appendChild(opt);
+                    selectEl.value = label;
+                }
+
+                function toggleManualAddressFields(disabled) {
+                    provinceSelect.disabled = disabled;
+                    communeSelect.disabled = disabled;
+                    provinceSelect.required = !disabled;
+                    communeSelect.required = !disabled;
+                    manualAddressGroups.forEach(el => {
+                        el.style.display = disabled ? 'none' : '';
+                    });
+                    saveShippingRows.forEach(el => {
+                        el.style.display = disabled ? 'none' : '';
+                    });
+                }
+
+                function applySelectedShippingInfo() {
+                    if (!shippingInfoSelect) return;
+                    const selectedOption = shippingInfoSelect.options[shippingInfoSelect.selectedIndex];
+                    const selectedId = shippingInfoSelect.value;
+                    const hasSavedInfo = selectedId && selectedId.trim() !== '';
+
+                    if (hasSavedInfo) {
+                        customerNameInput.value = selectedOption.getAttribute('data-name') || '';
+                        phoneInput.value = selectedOption.getAttribute('data-phone') || '';
+                        addressInput.value = selectedOption.getAttribute('data-street') || '';
+
+                        const ward = selectedOption.getAttribute('data-ward') || '';
+                        const city = selectedOption.getAttribute('data-city') || '';
+                        ensureSingleOption(provinceSelect, city);
+                        ensureSingleOption(communeSelect, ward);
+                        toggleManualAddressFields(true);
+
+                        if (selectedNameLabel) selectedNameLabel.textContent = customerNameInput.value || '';
+                        if (selectedPhoneLabel) selectedPhoneLabel.textContent = phoneInput.value || '';
+                        if (selectedAddressLabel) {
+                            selectedAddressLabel.textContent = [addressInput.value, ward, city].filter(Boolean).join(', ');
+                        }
+                        const isDefault = selectedOption.getAttribute('data-is-default');
+                        if (selectedDefaultBadge) {
+                            selectedDefaultBadge.style.display = (isDefault === 'true') ? '' : 'none';
+                        }
+
+                        document.dispatchEvent(new CustomEvent('saved-shipping-selected', {
+                            detail: { city: city }
+                        }));
+                    } else {
+                        toggleManualAddressFields(false);
+                    }
+                }
+
+                if (shippingInfoSelect) {
+                    shippingInfoSelect.addEventListener('change', applySelectedShippingInfo);
+                    applySelectedShippingInfo();
+                }
+
+                if (openAddressModalBtn && addressModalOverlay) {
+                    openAddressModalBtn.addEventListener('click', function() {
+                        addressModalOverlay.classList.add('show');
+                    });
+                }
+
+                if (closeAddressModalBtn && addressModalOverlay) {
+                    closeAddressModalBtn.addEventListener('click', function() {
+                        addressModalOverlay.classList.remove('show');
+                    });
+                }
+
+                if (addressModalOverlay) {
+                    addressModalOverlay.addEventListener('click', function(e) {
+                        if (e.target === addressModalOverlay) {
+                            addressModalOverlay.classList.remove('show');
+                        }
+                    });
+                }
+
+                if (applyAddressBtn && shippingInfoSelect) {
+                    applyAddressBtn.addEventListener('click', function() {
+                        const checkedRadio = document.querySelector('input[name="shippingInfoRadio"]:checked');
+                        if (!checkedRadio) {
+                            if (addressModalOverlay) addressModalOverlay.classList.remove('show');
+                            return;
+                        }
+
+                        const doApply = function(isNowDefault) {
+                            shippingInfoSelect.value = checkedRadio.value;
+                            // Cập nhật data-is-default trên option để badge đồng bộ
+                            const targetOption = shippingInfoSelect.querySelector('option[value="' + checkedRadio.value + '"]');
+                            if (targetOption && isNowDefault) {
+                                // đặt lại tất cả về false, option này true
+                                shippingInfoSelect.querySelectorAll('option').forEach(o => o.setAttribute('data-is-default', 'false'));
+                                targetOption.setAttribute('data-is-default', 'true');
+                                // Cập nhật badge trong modal
+                                document.querySelectorAll('.address-item').forEach(function(item) {
+                                    const badge = item.querySelector('.default-badge');
+                                    if (badge) badge.style.display = (item.getAttribute('data-shipping-id') === checkedRadio.value) ? '' : 'none';
+                                    item.setAttribute('data-is-default', item.getAttribute('data-shipping-id') === checkedRadio.value ? 'true' : 'false');
+                                });
+                            }
+                            shippingInfoSelect.dispatchEvent(new Event('change'));
+                            if (addressModalOverlay) addressModalOverlay.classList.remove('show');
+                        };
+
+                        const wantDefault = setAsDefaultAddressCheckbox && setAsDefaultAddressCheckbox.checked;
+                        if (wantDefault) {
+                            fetch('/api/shipping-info/set-default', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                                body: 'shippingInfoId=' + encodeURIComponent(checkedRadio.value)
+                            })
+                            .then(function(res) { return res.json(); })
+                            .then(function(data) {
+                                if (data.success) {
+                                    setAsDefaultAddressCheckbox.checked = false;
+                                    doApply(true);
+                                } else {
+                                    alert(data.message || 'Không thể đặt mặc định. Vui lòng thử lại.');
+                                }
+                            })
+                            .catch(function() {
+                                alert('Lỗi kết nối. Vui lòng thử lại.');
+                            });
+                        } else {
+                            doApply(false);
+                        }
+                    });
+                }
+
+                if (useManualAddressBtn && shippingInfoSelect) {
+                    useManualAddressBtn.addEventListener('click', function() {
+                        shippingInfoSelect.value = '';
+                        if (setDefaultShippingInfoIdInput) {
+                            setDefaultShippingInfoIdInput.value = '';
+                        }
+                        shippingInfoSelect.dispatchEvent(new Event('change'));
+                        customerNameInput.value = '';
+                        phoneInput.value = '';
+                        addressInput.value = '';
+                        provinceSelect.value = '';
+                        communeSelect.innerHTML = '<option value="">-- Chọn Quận/Huyện/Xã/Phường --</option>';
+                        communeSelect.disabled = true;
+                        if (selectedNameLabel) selectedNameLabel.textContent = '';
+                        if (selectedPhoneLabel) selectedPhoneLabel.textContent = '';
+                        if (selectedAddressLabel) selectedAddressLabel.textContent = '';
+                        if (addressModalOverlay) {
+                            addressModalOverlay.classList.remove('show');
+                        }
+                    });
+                }
+            });
             
             // Address selection - Province and Commune
             document.addEventListener('DOMContentLoaded', function() {
@@ -718,6 +1001,13 @@
                             }
                         });
                 }
+
+                document.addEventListener('saved-shipping-selected', function(event) {
+                    const selectedCity = event?.detail?.city;
+                    if (selectedCity) {
+                        checkDeliveryOptions(selectedCity);
+                    }
+                });
                 
                 // Function to update total price
                 function updateTotalPrice() {
@@ -1266,6 +1556,17 @@
                         checkDeliveryOptions(selectedProvinceName);
                     }
                 });
+
+                // Initial load: if a saved shipping info is pre-selected (default),
+                // trigger delivery options immediately without requiring user click.
+                const initialSavedShippingSelect = document.getElementById('selectedShippingInfoId');
+                if (initialSavedShippingSelect && initialSavedShippingSelect.value) {
+                    const selectedOption = initialSavedShippingSelect.options[initialSavedShippingSelect.selectedIndex];
+                    const initialCity = selectedOption ? selectedOption.getAttribute('data-city') : null;
+                    if (initialCity && initialCity.trim() !== '') {
+                        checkDeliveryOptions(initialCity.trim());
+                    }
+                }
                 
                 // Handle form submission - replace province and commune IDs with names
                 form.addEventListener('submit', function(e) {
@@ -1318,6 +1619,192 @@
         <div id="simpleToast" class="simple-toast" aria-live="polite" aria-atomic="true"></div>
         
         <style>
+            .hidden-address-fields {
+                display: none;
+            }
+
+            .shipping-selected-card {
+                border: 1px solid #f0d7d7;
+                border-radius: 10px;
+                padding: 14px 16px;
+                margin-bottom: 14px;
+                background: #fff;
+            }
+
+            .shipping-selected-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                color: #33a3cc;
+                font-weight: 600;
+                margin-bottom: 8px;
+                font-size: 15px;
+            }
+
+            .shipping-selected-name-line {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                font-size: 16px;
+                color: #2d2d2d;
+            }
+
+            .shipping-selected-address {
+                color: #4a4a4a;
+                margin-top: 4px;
+            }
+
+            .shipping-change-btn {
+                border: none;
+                background: transparent;
+                color: #2f9ad6;
+                font-weight: 500;
+            }
+
+            .default-badge {
+                border: 1px solid #9dcfe2;
+                color: #33a3cc;
+                padding: 2px 8px;
+                border-radius: 4px;
+                font-size: 12px;
+                line-height: 1.5;
+            }
+
+            .address-modal-overlay {
+                position: fixed;
+                inset: 0;
+                background: rgba(0, 0, 0, 0.45);
+                z-index: 5000;
+                display: none;
+                align-items: center;
+                justify-content: center;
+                padding: 16px;
+            }
+
+            .address-modal-overlay.show {
+                display: flex;
+            }
+
+            .address-modal {
+                width: min(760px, 100%);
+                max-height: 85vh;
+                background: #fff;
+                border-radius: 8px;
+                overflow: hidden;
+                display: flex;
+                flex-direction: column;
+            }
+
+            .address-modal-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 16px 20px;
+                border-bottom: 1px solid #eee;
+            }
+
+            .address-modal-body {
+                overflow-y: auto;
+                padding: 4px 20px 12px;
+            }
+
+            .address-item {
+                border-bottom: 1px solid #f0f0f0;
+                padding: 12px 0;
+            }
+
+            .address-item-label {
+                display: flex;
+                align-items: flex-start;
+                gap: 12px;
+                width: 100%;
+                cursor: pointer;
+                margin: 0;
+            }
+
+            .address-item-label input[type="radio"] {
+                margin-top: 6px;
+            }
+
+            .address-item-name-line {
+                display: flex;
+                gap: 10px;
+                align-items: center;
+                margin-bottom: 4px;
+                font-size: 18px;
+            }
+
+            .address-item-address {
+                color: #555;
+                margin-bottom: 6px;
+                font-size: 16px;
+            }
+
+            .address-modal-footer {
+                border-top: 1px solid #eee;
+                padding: 14px 20px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+
+            .set-default-checkbox {
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+                margin: 0;
+                font-size: 14px;
+                color: #333;
+            }
+
+            .address-add-btn,
+            .address-apply-btn {
+                border: none;
+                border-radius: 6px;
+                padding: 10px 16px;
+                font-weight: 600;
+            }
+
+            .address-add-btn {
+                background: #33a3cc;
+                color: #fff;
+            }
+
+            .address-apply-btn {
+                background: #33a3cc;
+                color: #fff;
+            }
+
+            .address-close-btn {
+                border: none;
+                background: transparent;
+                font-size: 20px;
+                color: #666;
+            }
+
+            .save-shipping-row {
+                margin-top: 8px;
+            }
+
+            .save-shipping-row label {
+                display: inline-flex !important;
+                align-items: center !important;
+                justify-content: flex-start !important;
+                gap: 8px;
+                margin: 0;
+                font-weight: 500;
+                color: #333;
+            }
+
+            .save-shipping-row input[type="checkbox"] {
+                margin: 0;
+                width: 16px;
+                height: 16px;
+                flex: 0 0 auto;
+            }
+
             /* Payment Methods CSS */
             .payment-methods {
                 display: flex;
