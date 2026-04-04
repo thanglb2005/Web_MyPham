@@ -1,14 +1,25 @@
 package vn.state.order;
 
 import vn.entity.Order;
+import vn.entity.User;
 import vn.service.OneXuService;
 import vn.service.ProductService;
 import vn.repository.OrderRepository;
 
 /**
- * Context truyền vào các {@link OrderState}: đơn hàng + dependency cần cho chuyển trạng thái.
+ * ① Context (State Design Pattern — GoF).
+ *
+ * <p>Giữ tham chiếu đến {@link OrderState} hiện tại và delegate các hành vi
+ * phụ thuộc trạng thái sang State. ConcreteState có thể gọi
+ * {@link #changeState(OrderState)} để chuyển trạng thái.</p>
+ *
+ * <p>Cung cấp các dependency (repository, service, publisher) cho ConcreteState
+ * sử dụng khi thực hiện logic nghiệp vụ.</p>
  */
 public final class OrderTransitionContext {
+
+    /** ① Thuộc tính state — tham chiếu đến State hiện tại. */
+    private OrderState state;
 
     private final Order order;
     private final OrderRepository orderRepository;
@@ -16,7 +27,13 @@ public final class OrderTransitionContext {
     private final OneXuService oneXuService;
     private final OrderStatusPublisher publisher;
 
-    public OrderTransitionContext(Order order,
+    /**
+     * ① Context(initialState, ...) — Constructor nhận state ban đầu (GoF).
+     *
+     * @param initialState state ban đầu, được xác định bởi {@link OrderStateFactory}
+     */
+    public OrderTransitionContext(OrderState initialState,
+                                  Order order,
                                   OrderRepository orderRepository,
                                   ProductService productService,
                                   OneXuService oneXuService,
@@ -26,7 +43,42 @@ public final class OrderTransitionContext {
         this.productService = productService;
         this.oneXuService = oneXuService;
         this.publisher = publisher;
+        changeState(initialState);  // gán state + setContext
     }
+
+    /**
+     * ① changeState(state) — Phương thức cho phép ConcreteState chuyển trạng thái (GoF mục ④).
+     *
+     * @param newState state mới cần chuyển sang
+     */
+    public void changeState(OrderState newState) {
+        this.state = newState;
+        newState.setContext(this);  // ③ gán context cho state mới
+    }
+
+    // ──────────────────────────────────────────────
+    // ① Delegate methods — doThis() / doThat() (GoF)
+    // Context delegate sang state.method()
+    // ──────────────────────────────────────────────
+
+    /** Delegate: xác nhận đơn hàng. */
+    public void confirm() {
+        state.confirm();
+    }
+
+    /** Delegate: hủy đơn bởi vendor. */
+    public void cancelByVendor(User vendor) {
+        state.cancelByVendor(vendor);
+    }
+
+    /** Delegate: cập nhật trạng thái tổng quát. */
+    public void updateStatus(Order.OrderStatus newStatus, String source) {
+        state.updateStatus(newStatus, source);
+    }
+
+    // ──────────────────────────────────────────────
+    // Getter / helper cho ConcreteState sử dụng
+    // ──────────────────────────────────────────────
 
     public Order getOrder() {
         return order;

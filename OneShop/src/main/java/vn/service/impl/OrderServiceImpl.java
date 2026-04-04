@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import vn.observer.order.OrderStatusChangedEvent;
 import vn.observer.order.OrderStatusPublisher;
+import vn.state.order.OrderState;
 import vn.state.order.OrderStateFactory;
 import vn.state.order.OrderTransitionContext;
 import vn.entity.CartItem;
@@ -69,8 +70,14 @@ public class OrderServiceImpl implements OrderService {
     @Autowired
     private CustomerShippingInfoRepository customerShippingInfoRepository;
 
-    private OrderTransitionContext transitionContextFor(Order order) {
+    /**
+     * ⑤ Client tạo Context với state ban đầu (GoF).
+     * Context nhận initialState, gọi changeState → setContext trước khi trả về.
+     */
+    private OrderTransitionContext contextFor(Order order) {
+        OrderState initialState = orderStateFactory.forOrder(order);
         return new OrderTransitionContext(
+                initialState,
                 order,
                 orderRepository,
                 productService,
@@ -274,28 +281,9 @@ public class OrderServiceImpl implements OrderService {
     public void updateOrderStatus(Long orderId, Order.OrderStatus newStatus, String eventSource) {
         Optional<Order> orderOptional = orderRepository.findById(orderId);
         orderOptional.ifPresent(order -> {
-            // ===== CODE CŨ (chưa State pattern) =====
-            // Order.OrderStatus oldStatus = order.getStatus();
-            // order.setStatus(newStatus);
-            // if (newStatus == Order.OrderStatus.SHIPPING && order.getShippedDate() == null) {
-            //     order.setShippedDate(LocalDateTime.now());
-            // } else if (newStatus == Order.OrderStatus.DELIVERED && order.getDeliveredDate() == null) {
-            //     order.setDeliveredDate(LocalDateTime.now());
-            //     if (oldStatus != Order.OrderStatus.DELIVERED) {
-            //         try {
-            //             oneXuService.rewardFromOrder(order.getUser().getUserId(), orderId, order.getTotalAmount());
-            //         } catch (Exception e) {
-            //             System.err.println("Error rewarding One Xu for order " + orderId + ": " + e.getMessage());
-            //         }
-            //     }
-            // }
-            // orderRepository.save(order);
-            // publishOrderStatusChanged(order, oldStatus, newStatus, "OrderService.updateOrderStatus");
-            // ===== HẾT CODE CŨ =====
-
-            // State pattern: hành vi cập nhật status + ngày giao + OneXu + Observer nằm trong OrderState (AbstractOrderState)
-            orderStateFactory.forOrder(order).updateStatus(
-                    transitionContextFor(order), newStatus, eventSource);
+            // ⑤ Client gọi qua Context (GoF): Context delegate → State.updateStatus()
+            OrderTransitionContext context = contextFor(order);
+            context.updateStatus(newStatus, eventSource);
         });
     }
 
@@ -345,19 +333,9 @@ public class OrderServiceImpl implements OrderService {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy đơn hàng với ID: " + orderId));
 
-        // ===== CODE CŨ (chưa State pattern) =====
-        // Order.OrderStatus oldStatus = order.getStatus();
-        // if (order.getStatus() != Order.OrderStatus.PENDING) {
-        //     throw new IllegalStateException("Chỉ có thể xác nhận đơn hàng ở trạng thái 'Chờ xác nhận'.");
-        // }
-        // // validate tồn kho + trừ kho từng OrderDetail, productService.save(...)
-        // order.setStatus(Order.OrderStatus.CONFIRMED);
-        // orderRepository.save(order);
-        // publishOrderStatusChanged(order, oldStatus, Order.OrderStatus.CONFIRMED, "OrderService.confirmOrder");
-        // ===== HẾT CODE CŨ =====
-
-        // State pattern: chỉ PendingOrderState (và tương đương) mới thực hiện confirm; các state khác ném IllegalStateException
-        orderStateFactory.forOrder(order).confirm(transitionContextFor(order));
+        // ⑤ Client gọi qua Context (GoF): Context delegate → State.confirm()
+        OrderTransitionContext context = contextFor(order);
+        context.confirm();
     }
 
     @Override
@@ -371,13 +349,9 @@ public class OrderServiceImpl implements OrderService {
             throw new IllegalStateException("Bạn không có quyền hủy đơn hàng này.");
         }
 
-        // ===== CODE CŨ (chưa State pattern) =====
-        // if (order.getStatus() != PENDING && order.getStatus() != CONFIRMED) throw ...
-        // hoàn kho nếu CONFIRMED, set CANCELLED, cancelledDate, save, publish
-        // ===== HẾT CODE CŨ =====
-
-        // State pattern: PendingOrderState / ConfirmedOrderState xử lý hủy + hoàn kho; state khác ném IllegalStateException
-        orderStateFactory.forOrder(order).cancelByVendor(transitionContextFor(order), vendor);
+        // ⑤ Client gọi qua Context (GoF): Context delegate → State.cancelByVendor()
+        OrderTransitionContext context = contextFor(order);
+        context.cancelByVendor(vendor);
     }
 
     /**
@@ -491,14 +465,14 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional
     public void markOverdueOrders() {
-        // (Giữ nguyên logic cũ, không đi qua OrderStateFactory) — batch đánh dấu OVERDUE không gọi publishOrderStatusChanged như trước.
         LocalDateTime currentTime = LocalDateTime.now();
         List<Order> ordersToMark = orderRepository.findOrdersToMarkOverdue(currentTime);
         int updatedCount = 0;
         
         for (Order order : ordersToMark) {
-            order.setStatus(Order.OrderStatus.OVERDUE);
-            orderRepository.save(order);
+            // ⑤ Đi qua State Pattern (GoF) thay vì set trực tiếp
+            OrderTransitionContext context = contextFor(order);
+            context.updateStatus(Order.OrderStatus.OVERDUE, "OrderService.markOverdueOrders");
             updatedCount++;
             
             System.out.println("Order #" + order.getOrderId() + " marked as OVERDUE - " +

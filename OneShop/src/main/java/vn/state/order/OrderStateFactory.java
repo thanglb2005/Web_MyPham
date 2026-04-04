@@ -1,45 +1,56 @@
 package vn.state.order;
 
-import java.util.EnumMap;
-import java.util.Map;
-
 import org.springframework.stereotype.Component;
 
 import vn.entity.Order;
 
 /**
- * Map {@link Order.OrderStatus} → {@link OrderState} (State pattern).
+ * Factory map {@link Order.OrderStatus} → {@link OrderState} (State pattern).
+ *
+ * <p>Tạo instance mới mỗi lần vì mỗi ConcreteState giữ tham chiếu riêng
+ * đến {@link OrderTransitionContext} (theo chuẩn GoF).</p>
  */
 @Component
 public class OrderStateFactory {
 
-    private final Map<Order.OrderStatus, OrderState> byStatus = new EnumMap<>(Order.OrderStatus.class);
-
-    public OrderStateFactory() {
-        PendingOrderState pending = new PendingOrderState();
-        NewOrderState newState = new NewOrderState();
-        ConfirmedOrderState confirmed = new ConfirmedOrderState();
-        StandardOrderState standard = new StandardOrderState();
-
-        byStatus.put(Order.OrderStatus.PENDING, pending);
-        byStatus.put(Order.OrderStatus.NEW, newState);
-        byStatus.put(Order.OrderStatus.CONFIRMED, confirmed);
-        byStatus.put(Order.OrderStatus.SHIPPING, standard);
-        byStatus.put(Order.OrderStatus.DELIVERED, standard);
-        byStatus.put(Order.OrderStatus.OVERDUE, standard);
-        byStatus.put(Order.OrderStatus.CANCELLED, standard);
-        byStatus.put(Order.OrderStatus.RETURN_REQUESTED, standard);
-        byStatus.put(Order.OrderStatus.RETURNED, standard);
-    }
-
+    /**
+     * Tạo OrderState tương ứng với trạng thái hiện tại của đơn hàng.
+     *
+     * @param order đơn hàng cần lấy state
+     * @return OrderState mới (instance riêng)
+     */
     public OrderState forOrder(Order order) {
         if (order == null || order.getStatus() == null) {
             throw new IllegalArgumentException("Order hoặc status không hợp lệ.");
         }
-        OrderState state = byStatus.get(order.getStatus());
-        if (state == null) {
-            return new StandardOrderState();
+        return createForStatus(order.getStatus());
+    }
+
+    /**
+     * Static factory method: tạo OrderState cho một status cụ thể.
+     * ConcreteState gọi method này khi cần chuyển trạng thái qua
+     * {@code context.changeState(OrderStateFactory.createForStatus(newStatus))}.
+     *
+     * @param status trạng thái đơn hàng
+     * @return OrderState mới tương ứng
+     */
+    public static OrderState createForStatus(Order.OrderStatus status) {
+        switch (status) {
+            case PENDING:
+                return new PendingOrderState();
+            case NEW:
+                return new NewOrderState();
+            case CONFIRMED:
+                return new ConfirmedOrderState();
+            case SHIPPING:
+            case DELIVERED:
+            case OVERDUE:
+            case CANCELLED:
+            case RETURN_REQUESTED:
+            case RETURNED:
+                return new StandardOrderState();
+            default:
+                return new StandardOrderState();
         }
-        return state;
     }
 }

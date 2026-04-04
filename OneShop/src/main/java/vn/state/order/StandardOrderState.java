@@ -1,7 +1,10 @@
 package vn.state.order;
 
 /**
- * Các trạng thái còn lại chỉ dùng {@link AbstractOrderState#updateStatus} (shipper, giao hàng, trả hàng, …).
+ * ③ ConcreteState: trạng thái chung (SHIPPING, DELIVERED, OVERDUE, CANCELLED, RETURN_REQUESTED, RETURNED).
+ *
+ * <p>Chỉ dùng {@link AbstractOrderState#updateStatus} cho cập nhật trạng thái tổng quát
+ * (shipper, giao hàng, trả hàng, …). Không cho confirm hay hủy vendor.</p>
  */
 public final class StandardOrderState extends AbstractOrderState {
 }
