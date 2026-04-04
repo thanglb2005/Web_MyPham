@@ -276,20 +276,10 @@
             
             <!-- Bottom section - Checkout -->
             <div style="padding: 16px;">
-                <div style="display: flex; align-items: center; justify-content: space-between;">
-                    <!-- Left side - Select options -->
-                    <div style="display: flex; align-items: center; gap: 20px;">
-                        <label style="display: flex; align-items: center; font-size: 14px; color: #333; cursor: pointer;">
-                            <input type="checkbox" id="selectAllBottom" onchange="toggleSelectAll(this)" style="margin-right: 8px; transform: scale(1.1); accent-color: #33a3cc;">
-                            <span>Chọn Tất Cả (<span id="total-items-footer">[[${totalItems}]]</span>)</span>
-                        </label>
-                        <button style="background: none; border: none; color: #333; font-size: 14px; cursor: pointer; padding: 0; text-decoration: underline;">Xóa</button>
-                        <button style="background: none; border: none; color: #333; font-size: 14px; cursor: pointer; padding: 0; text-decoration: underline;">Bỏ sản phẩm không hoạt động</button>
-                        <button style="background: none; border: none; color: #ee4d2d; font-size: 14px; cursor: pointer; padding: 0; text-decoration: underline;">Lưu vào mục Đã thích</button>
-                    </div>
+                <div style="display: flex; align-items: center; justify-content: flex-end; gap: 32px;">
                     
                     <!-- Right side - Price and checkout -->
-                    <div style="display: flex; align-items: center; gap: 20px;">
+                    <div style="display: flex; align-items: center;">
                         <div class="cart-footer-summary" style="text-align: right;">
                             <!-- No vouchers applied -->
                             <div th:if="${totalDiscount == null or totalDiscount == 0}" style="font-size: 16px; color: #333; margin-bottom: 2px;">
@@ -725,15 +715,13 @@
                     selectedCountFooter = footerContainer.querySelector('#selected-count-footer');
                 }
                 
-            if (selectedTotalFooter) {
-                selectedTotalFooter.textContent = formatNumber(selectedTotal);
-            }
-            if (selectedCountFooter) {
-                selectedCountFooter.textContent = selectedCount;
+                if (selectedTotalFooter) {
+                    selectedTotalFooter.textContent = formatNumber(selectedTotal);
+                }
+                if (selectedCountFooter) {
+                    selectedCountFooter.textContent = selectedCount;
                 }
             }
-            
-            const selectAllBottom = document.getElementById('selectAllBottom');
             
             if (selectedTotalElement) {
                 selectedTotalElement.textContent = formatNumber(selectedTotal) + ' VNĐ';
@@ -743,15 +731,6 @@
             }
             if (checkoutCountElement) {
                 checkoutCountElement.textContent = selectedCount;
-            }
-            
-            // Sync bottom select all checkbox
-            if (selectAllBottom) {
-                const selectAllTop = document.getElementById('selectAll');
-                if (selectAllTop) {
-                    selectAllBottom.checked = selectAllTop.checked;
-                    selectAllBottom.indeterminate = selectAllTop.indeterminate;
-                }
             }
             
             // Disable checkout button if no items selected

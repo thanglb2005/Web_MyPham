@@ -31,6 +31,7 @@ import vn.service.OrderService;
 import vn.service.ProductService;
 import vn.service.PromotionService;
 import vn.entity.Promotion;
+import vn.command.cart.AddToCartCommand;
 import vn.command.cart.CartCommandInvoker;
 import vn.command.cart.CartCommandResult;
 import vn.command.cart.ClearCartCommand;
@@ -116,20 +117,9 @@ public class CartController {
         // }
         // ===== HẾT CODE CŨ =====
 
-        // Command pattern (inline command): đóng gói yêu cầu add-to-cart thành object có execute()
-        CartCommandResult addResult = cartCommandInvoker.invoke(() -> {
-            if (product == null) {
-                return CartCommandResult.failure("Sản phẩm không tồn tại hoặc đã bị gỡ.");
-            }
-            try {
-                cartService.addToCart(user, product, quantity);
-                return CartCommandResult.ok();
-            } catch (IllegalArgumentException e) {
-                return CartCommandResult.failure(e.getMessage());
-            } catch (Exception e) {
-                return CartCommandResult.failure("Có lỗi xảy ra khi thêm sản phẩm vào giỏ hàng.");
-            }
-        });
+        // ⑤ Client tạo ConcreteCommand rồi gán vào Invoker (GoF)
+        cartCommandInvoker.setCommand(new AddToCartCommand(user, product, quantity, cartService));
+        CartCommandResult addResult = cartCommandInvoker.executeCommand();
         if (addResult.isSuccess()) {
             redirectAttributes.addFlashAttribute("success", "Đã thêm sản phẩm vào giỏ hàng.");
         } else if (addResult.getMessage() != null) {
@@ -263,8 +253,9 @@ public class CartController {
         // }
         // ===== HẾT CODE CŨ =====
 
-        CartCommandResult r = cartCommandInvoker.invoke(
-                new UpdateCartQuantityCommand(user, product, quantity, cartService));
+        // ⑤ Client: setCommand → executeCommand (GoF)
+        cartCommandInvoker.setCommand(new UpdateCartQuantityCommand(user, product, quantity, cartService));
+        CartCommandResult r = cartCommandInvoker.executeCommand();
         if (!r.isSuccess() && r.getMessage() != null) {
             redirectAttributes.addFlashAttribute("error", r.getMessage());
         }
@@ -289,7 +280,9 @@ public class CartController {
         // }
         // ===== HẾT CODE CŨ =====
 
-        cartCommandInvoker.invoke(new RemoveFromCartCommand(user, product, cartService));
+        // ⑤ Client: setCommand → executeCommand (GoF)
+        cartCommandInvoker.setCommand(new RemoveFromCartCommand(user, product, cartService));
+        cartCommandInvoker.executeCommand();
 
         return "redirect:/cart";
     }
@@ -305,7 +298,9 @@ public class CartController {
         // cartService.clearCart(user);
         // ===== HẾT CODE CŨ =====
 
-        cartCommandInvoker.invoke(new ClearCartCommand(user, cartService));
+        // ⑤ Client: setCommand → executeCommand (GoF)
+        cartCommandInvoker.setCommand(new ClearCartCommand(user, cartService));
+        cartCommandInvoker.executeCommand();
         return "redirect:/cart";
     }
 
@@ -350,8 +345,9 @@ public class CartController {
         // }
         // ===== HẾT CODE CŨ =====
 
-        CartCommandResult r = cartCommandInvoker.invoke(
-                new UpdateCartItemSelectedCommand(user, product, selected, cartService));
+        // ⑤ Client: setCommand → executeCommand (GoF)
+        cartCommandInvoker.setCommand(new UpdateCartItemSelectedCommand(user, product, selected, cartService));
+        CartCommandResult r = cartCommandInvoker.executeCommand();
         if (r.isSuccess()) {
             response.put("success", true);
             response.put("selectedTotal", r.getSelectedTotal());
@@ -386,8 +382,9 @@ public class CartController {
         // response.put("selectedCount", selectedCount);
         // ===== HẾT CODE CŨ =====
 
-        CartCommandResult r = cartCommandInvoker.invoke(
-                new SelectAllCartItemsCommand(user, selected, cartService));
+        // ⑤ Client: setCommand → executeCommand (GoF)
+        cartCommandInvoker.setCommand(new SelectAllCartItemsCommand(user, selected, cartService));
+        CartCommandResult r = cartCommandInvoker.executeCommand();
         response.put("success", r.isSuccess());
         response.put("selectedTotal", r.getSelectedTotal());
         response.put("selectedCount", r.getSelectedCount());
@@ -418,8 +415,9 @@ public class CartController {
         // response.put("selectedCount", selectedCount);
         // ===== HẾT CODE CŨ =====
 
-        CartCommandResult r = cartCommandInvoker.invoke(
-                new SelectShopCartItemsCommand(user, shopId, selected, cartService));
+        // ⑤ Client: setCommand → executeCommand (GoF)
+        cartCommandInvoker.setCommand(new SelectShopCartItemsCommand(user, shopId, selected, cartService));
+        CartCommandResult r = cartCommandInvoker.executeCommand();
         response.put("success", r.isSuccess());
         response.put("selectedTotal", r.getSelectedTotal());
         response.put("selectedCount", r.getSelectedCount());
