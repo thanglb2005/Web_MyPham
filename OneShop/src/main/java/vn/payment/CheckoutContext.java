@@ -6,6 +6,7 @@ import vn.entity.CartItem;
 import vn.entity.Order;
 import vn.entity.User;
 
+import java.util.Collections;
 import java.util.Map;
 
 /**
@@ -45,7 +46,7 @@ public class CheckoutContext {
         this.fullAddress = builder.fullAddress;
         this.note = builder.note;
         this.paymentMethod = builder.paymentMethod;
-        this.cartMap = builder.cartMap;
+        this.cartMap = builder.cartMap != null ? Collections.unmodifiableMap(builder.cartMap) : null;
         this.promotionDescription = builder.promotionDescription;
         this.totalDiscount = builder.totalDiscount;
         this.shippingFee = builder.shippingFee;
@@ -102,6 +103,15 @@ public class CheckoutContext {
 
         /** Chuẩn Builder: build() tạo product bằng cách gọi constructor private nhận this (Builder). */
         public CheckoutContext build() {
+            if (this.user == null) {
+                throw new IllegalStateException("User không được để trống khi Checkout!");
+            }
+            if (this.paymentMethod == null) {
+                throw new IllegalStateException("Phương thức thanh toán là bắt buộc!");
+            }
+            if (this.cartMap == null || this.cartMap.isEmpty()) {
+                throw new IllegalStateException("Giỏ hàng không có sản phẩm!");
+            }
             return new CheckoutContext(this);
         }
     }

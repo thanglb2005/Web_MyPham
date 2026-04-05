@@ -9,6 +9,12 @@ public class FixedAmountShippingDiscountStrategy implements ShippingDiscountStra
 
     @Override
     public double calculate(Promotion promotion, double shippingFee) {
-        return promotion.getDiscountValue().doubleValue();
+        if (promotion == null || promotion.getDiscountValue() == null) {
+            return 0.0;
+        }
+        
+        // Mức giảm tĩnh nhưng quan trọng nhất: không được giảm quá số tiền ship thực tế!
+        double discount = promotion.getDiscountValue().doubleValue();
+        return Math.min(discount, shippingFee);
     }
 }

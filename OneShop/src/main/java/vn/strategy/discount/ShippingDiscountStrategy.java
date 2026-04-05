@@ -13,7 +13,7 @@ public interface ShippingDiscountStrategy {
      *
      * @param promotion   Voucher áp dụng
      * @param shippingFee Phí ship hiện tại (VNĐ)
-     * @return Số tiền được giảm (chưa cap bởi shippingFee – Context sẽ cap nếu cần)
+     * @return Số tiền được giảm (đã được tự động giới hạn không vượt quá phí ship hiện tại)
      */
     double calculate(Promotion promotion, double shippingFee);
 }

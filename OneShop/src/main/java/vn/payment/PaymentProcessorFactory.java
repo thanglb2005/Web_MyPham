@@ -17,13 +17,19 @@ public class PaymentProcessorFactory {
                                                    CartService cartService,
                                                    UserRepository userRepository,
                                                    OneXuTransactionRepository oneXuTransactionRepository) {
-        if (method == Order.PaymentMethod.COD) {
-            return new CodPaymentProcessor(orderService, cartService, userRepository, oneXuTransactionRepository);
-        } else if (method == Order.PaymentMethod.MOMO) {
-            return new MomoPaymentProcessor(orderService);
-        } else if (method == Order.PaymentMethod.BANK_TRANSFER) {
-            return new PayOsPaymentProcessor(orderService);
+        if (method == null) {
+            throw new IllegalArgumentException("Phương thức thanh toán không được để trống (null).");
         }
-        return null;
+
+        switch (method) {
+            case COD:
+                return new CodPaymentProcessor(orderService, cartService, userRepository, oneXuTransactionRepository);
+            case MOMO:
+                return new MomoPaymentProcessor(orderService);
+            case BANK_TRANSFER:
+                return new PayOsPaymentProcessor(orderService);
+            default:
+                throw new IllegalArgumentException("Không hỗ trợ phương thức thanh toán: " + method);
+        }
     }
 }
