@@ -89,6 +89,9 @@ public class CartController {
     @Autowired
     private CustomerShippingInfoRepository customerShippingInfoRepository;
 
+    @Autowired
+    private vn.payment.PaymentProcessorFactory paymentProcessorFactory;
+
     @GetMapping("/add-to-cart")
     public String addToCart(@RequestParam("productId") Long productId,
                             @RequestParam(value = "quantity", defaultValue = "1") Integer quantity,
@@ -886,13 +889,7 @@ public class CartController {
                     .model(model)
                     .build();
 
-            PaymentProcessor processor = vn.payment.PaymentProcessorFactory.createProcessor(
-                    paymentMethodEnum,
-                    orderService,
-                    cartService,
-                    userRepository,
-                    oneXuTransactionRepository
-            );
+            PaymentProcessor processor = paymentProcessorFactory.getProcessor(paymentMethodEnum);
 
             if (processor == null) {
                 // Fallback - không nên xảy ra
