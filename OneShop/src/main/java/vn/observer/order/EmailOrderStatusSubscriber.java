@@ -33,24 +33,30 @@ public class EmailOrderStatusSubscriber implements OrderStatusSubscriber {
     @Override
     @Transactional(readOnly = true)
     public void update(OrderStatusChangedEvent event) {
-        Order order = loadOrderForEmail(event.getOrderId());
-        if (order == null) {
-            return;
+        try {
+            Order order = loadOrderForEmail(event.getOrderId());
+            if (order == null) {
+                return;
+            }
+    
+            OrderStatusEmailContent content = emailComposer
+                    .buildForTransition(order, event.getOldStatus(), event.getNewStatus())
+                    .orElse(null);
+            if (content == null) {
+                return;
+            }
+    
+            String to = resolveCustomerEmail(order, event);
+            if (to == null || to.isEmpty()) {
+                return;
+            }
+    
+            // Đưa công việc gửi mail vào Queue nền (tránh block main thread)
+            sendMailService.queue(to, content.subject(), content.htmlBody());
+        } catch (Exception e) {
+            System.err.println("[EmailOrderStatusSubscriber] Lỗi trong quá trình chuẩn bị mail, đã bắt Try-Catch để không chết chìm vòng lặp For: " + e.getMessage());
+            e.printStackTrace();
         }
-
-        OrderStatusEmailContent content = emailComposer
-                .buildForTransition(order, event.getOldStatus(), event.getNewStatus())
-                .orElse(null);
-        if (content == null) {
-            return;
-        }
-
-        String to = resolveCustomerEmail(order, event);
-        if (to == null || to.isEmpty()) {
-            return;
-        }
-
-        sendMailService.queue(to, content.subject(), content.htmlBody());
     }
 
     private String resolveCustomerEmail(Order order, OrderStatusChangedEvent event) {

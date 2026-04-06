@@ -52,6 +52,7 @@ public final class PendingOrderState extends AbstractOrderState {
         context.publish(oldStatus, Order.OrderStatus.CONFIRMED, "OrderService.confirmOrder");
 
         // ④ State tự chuyển trạng thái qua Context (GoF)
+        // Chuyển vỏ bọc state từ Pending sang Comfirmed
         context.changeState(new ConfirmedOrderState());
     }
 

@@ -38,10 +38,9 @@ public class OrderStateFactory {
         switch (status) {
             case PENDING:
                 return new PendingOrderState();
-            case NEW:
-                return new NewOrderState();
             case CONFIRMED:
                 return new ConfirmedOrderState();
+            case NEW:
             case SHIPPING:
             case DELIVERED:
             case OVERDUE:

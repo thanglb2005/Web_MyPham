@@ -333,7 +333,7 @@ public class OrderServiceImpl implements OrderService {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy đơn hàng với ID: " + orderId));
 
-        // ⑤ Client gọi qua Context (GoF): Context delegate → State.confirm()
+        // Client gọi qua Context (GoF): Context delegate → State.confirm()
         OrderTransitionContext context = contextFor(order);
         context.confirm();
     }
