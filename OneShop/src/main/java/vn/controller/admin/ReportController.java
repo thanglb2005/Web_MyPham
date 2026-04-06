@@ -8,7 +8,13 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import jakarta.servlet.http.HttpSession;
 import vn.controller.admin.template.AbstractAdminRevenueReportController;
-import vn.controller.admin.template.AdminReportQueries;
+import vn.controller.admin.template.query.BrandReportQuery;
+import vn.controller.admin.template.query.CategoryReportQuery;
+import vn.controller.admin.template.query.MonthReportQuery;
+import vn.controller.admin.template.query.ProductReportQuery;
+import vn.controller.admin.template.query.QuarterReportQuery;
+import vn.controller.admin.template.query.UserReportQuery;
+import vn.controller.admin.template.query.YearReportQuery;
 
 /**
  * Controller báo cáo thống kê doanh thu (admin).
@@ -22,13 +28,36 @@ import vn.controller.admin.template.AdminReportQueries;
  * Khung thuật toán cố định nằm trong
  * {@link vn.controller.admin.template.AbstractAdminRevenueReportController#renderRevenueStatisticsReport};
  * phần khác nhau theo loại báo cáo là {@link vn.controller.admin.template.AdminReportQuery}
- * (tạo qua {@link AdminReportQueries}).
+ * được tách thành các concrete class riêng trong package {@code vn.controller.admin.template.query}.
  * Hai method {@code reportProducts} và {@code reportCategories} có khối CODE CŨ comment đầy đủ để quay video;
  * các endpoint còn lại cùng khung — comment ngắn, tránh file quá dài.
  */
 @Controller
 @RequestMapping("/admin")
 public class ReportController extends AbstractAdminRevenueReportController {
+    private final ProductReportQuery productReportQuery;
+    private final CategoryReportQuery categoryReportQuery;
+    private final YearReportQuery yearReportQuery;
+    private final MonthReportQuery monthReportQuery;
+    private final QuarterReportQuery quarterReportQuery;
+    private final UserReportQuery userReportQuery;
+    private final BrandReportQuery brandReportQuery;
+
+    public ReportController(ProductReportQuery productReportQuery,
+                            CategoryReportQuery categoryReportQuery,
+                            YearReportQuery yearReportQuery,
+                            MonthReportQuery monthReportQuery,
+                            QuarterReportQuery quarterReportQuery,
+                            UserReportQuery userReportQuery,
+                            BrandReportQuery brandReportQuery) {
+        this.productReportQuery = productReportQuery;
+        this.categoryReportQuery = categoryReportQuery;
+        this.yearReportQuery = yearReportQuery;
+        this.monthReportQuery = monthReportQuery;
+        this.quarterReportQuery = quarterReportQuery;
+        this.userReportQuery = userReportQuery;
+        this.brandReportQuery = brandReportQuery;
+    }
 
     @GetMapping("/report-products")
     public String reportProducts(HttpSession session, Model model,
@@ -67,7 +96,7 @@ public class ReportController extends AbstractAdminRevenueReportController {
         return renderRevenueStatisticsReport(
                 session, model, startDateStr, endDateStr, shopId,
                 "Thống kê theo sản phẩm", "products",
-                AdminReportQueries.products(orderDetailRepository));
+                productReportQuery);
     }
 
     @GetMapping("/report-categories")
@@ -107,7 +136,7 @@ public class ReportController extends AbstractAdminRevenueReportController {
         return renderRevenueStatisticsReport(
                 session, model, startDateStr, endDateStr, shopId,
                 "Thống kê theo danh mục", "categories",
-                AdminReportQueries.categories(orderDetailRepository));
+                categoryReportQuery);
     }
 
     @GetMapping("/report-years")
@@ -119,7 +148,7 @@ public class ReportController extends AbstractAdminRevenueReportController {
         return renderRevenueStatisticsReport(
                 session, model, startDateStr, endDateStr, shopId,
                 "Thống kê theo năm", "years",
-                AdminReportQueries.years(orderDetailRepository));
+                yearReportQuery);
     }
 
     @GetMapping("/report-months")
@@ -131,7 +160,7 @@ public class ReportController extends AbstractAdminRevenueReportController {
         return renderRevenueStatisticsReport(
                 session, model, startDateStr, endDateStr, shopId,
                 "Thống kê theo tháng", "months",
-                AdminReportQueries.months(orderDetailRepository));
+                monthReportQuery);
     }
 
     @GetMapping("/report-quarters")
@@ -143,7 +172,7 @@ public class ReportController extends AbstractAdminRevenueReportController {
         return renderRevenueStatisticsReport(
                 session, model, startDateStr, endDateStr, shopId,
                 "Thống kê theo quý", "quarters",
-                AdminReportQueries.quarters(orderDetailRepository));
+                quarterReportQuery);
     }
 
     @GetMapping("/report-users")
@@ -155,7 +184,7 @@ public class ReportController extends AbstractAdminRevenueReportController {
         return renderRevenueStatisticsReport(
                 session, model, startDateStr, endDateStr, shopId,
                 "Thống kê theo khách hàng", "users",
-                AdminReportQueries.users(orderDetailRepository));
+                userReportQuery);
     }
 
     @GetMapping("/report-brands")
@@ -167,6 +196,6 @@ public class ReportController extends AbstractAdminRevenueReportController {
         return renderRevenueStatisticsReport(
                 session, model, startDateStr, endDateStr, shopId,
                 "Thống kê theo thương hiệu", "brands",
-                AdminReportQueries.brands(orderDetailRepository));
+                brandReportQuery);
     }
 }

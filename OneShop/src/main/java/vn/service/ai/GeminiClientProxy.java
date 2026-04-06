@@ -24,6 +24,7 @@ public class GeminiClientProxy implements GeminiClient {
     private final boolean cacheEnabled;
     private final long ttlMs;
     private final int maxEntries;
+    private final GeminiClient realSubject;
 
     private final Map<String, CacheEntry> responseCache = new ConcurrentHashMap<>();
 
@@ -34,11 +35,8 @@ public class GeminiClientProxy implements GeminiClient {
         this.cacheEnabled = cacheEnabled;
         this.ttlMs = Math.max(1, ttlSeconds) * 1000L;
         this.maxEntries = Math.max(16, maxEntries);
-    }
-
-    /** RealSubject: Singleton trong {@link GeminiService}. */
-    private GeminiClient realSubject() {
-        return GeminiService.getInstance();
+        // UML Proxy association: giữ tham chiếu RealSubject
+        this.realSubject = GeminiService.getInstance();
     }
 
     @Override
@@ -56,34 +54,34 @@ public class GeminiClientProxy implements GeminiClient {
                 return CompletableFuture.completedFuture(hit.text);
             }
 
-            return realSubject().generateResponse(userMessage, context, conversationHistory)
+            return realSubject.generateResponse(userMessage, context, conversationHistory)
                     .thenApply(text -> {
                         putCache(key, text);
                         return text;
                     });
         }
 
-        return realSubject().generateResponse(userMessage, context, conversationHistory);
+        return realSubject.generateResponse(userMessage, context, conversationHistory);
     }
 
     @Override
     public boolean isApiKeyValid() {
-        return realSubject().isApiKeyValid();
+        return realSubject.isApiKeyValid();
     }
 
     @Override
     public CompletableFuture<Boolean> testConnection() {
-        return realSubject().testConnection();
+        return realSubject.testConnection();
     }
 
     @Override
     public CompletableFuture<String> generateWelcomeMessage(String roomId, Long shopId) {
-        return realSubject().generateWelcomeMessage(roomId, shopId);
+        return realSubject.generateWelcomeMessage(roomId, shopId);
     }
 
     @Override
     public CompletableFuture<String> generateResponseWithImage(String userMessage, String imageBase64) {
-        return realSubject().generateResponseWithImage(userMessage, imageBase64);
+        return realSubject.generateResponseWithImage(userMessage, imageBase64);
     }
 
     private String buildCacheKey(String message, String context) {

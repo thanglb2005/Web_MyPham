@@ -31,3 +31,6 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# Local Spring config (do not commit from this machine)
+src/main/resources/application.properties
