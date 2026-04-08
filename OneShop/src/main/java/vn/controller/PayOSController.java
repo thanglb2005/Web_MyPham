@@ -7,7 +7,7 @@ import vn.entity.Order;
 import vn.entity.User;
 import vn.service.OrderService;
 import vn.service.CartService;
-import vn.payment.gateway.PayOSGatewayAdapter;
+import vn.payment.gateway.PaymentGatewayAdapter;
 import vn.payment.gateway.PaymentCallbackResult;
 import vn.payment.gateway.PaymentWebhookResult;
 import jakarta.servlet.http.HttpServletRequest;
@@ -22,12 +22,13 @@ public class PayOSController {
 
     private final OrderService orderService;
     private final CartService cartService;
-    private final PayOSGatewayAdapter payosGatewayAdapter;
+    private final PaymentGatewayAdapter paymentGateway;
 
-    public PayOSController(OrderService orderService, CartService cartService, PayOSGatewayAdapter payosGatewayAdapter) {
+    public PayOSController(OrderService orderService, CartService cartService,
+                           @org.springframework.beans.factory.annotation.Qualifier("payOSGatewayAdapter") PaymentGatewayAdapter paymentGateway) {
         this.orderService = orderService;
         this.cartService = cartService;
-        this.payosGatewayAdapter = payosGatewayAdapter;
+        this.paymentGateway = paymentGateway;
     }
 
     @GetMapping("/payos/create-payment")
@@ -36,7 +37,7 @@ public class PayOSController {
             Order order = orderService.findById(orderId).orElse(null);
             if (order == null) return "redirect:/checkout?error=Khong tim thay don hang";
              
-            String paymentUrl = payosGatewayAdapter.createPaymentUrl(order, payosReturnUrl, payosReturnUrl.replace("/return", "/cancel"));
+            String paymentUrl = paymentGateway.createPaymentUrl(order, payosReturnUrl, payosReturnUrl.replace("/return", "/cancel"));
             return "redirect:" + paymentUrl;
         } catch (Exception e) {
             String encodedParams = "";
@@ -52,7 +53,7 @@ public class PayOSController {
         User user = (User) request.getSession().getAttribute("user");
         if (user == null) return "redirect:/login";
 
-        PaymentCallbackResult result = payosGatewayAdapter.processCallback(request);
+        PaymentCallbackResult result = paymentGateway.processCallback(request);
         if (result.getOrderId() == null) return "redirect:/checkout-error?message=Loi xu ly thanh toan";
 
         Order order = orderService.findById(result.getOrderId()).orElse(null);
@@ -96,7 +97,7 @@ public class PayOSController {
     public Map<String, Object> webhook(@RequestBody String payload, HttpServletRequest request) {
         Map<String, Object> response = new HashMap<>();
         try {
-            PaymentWebhookResult result = payosGatewayAdapter.processWebhook(request, payload);
+            PaymentWebhookResult result = paymentGateway.processWebhook(request, payload);
             if (!result.isValidSignature()) {
                 response.put("success", false);
                 response.put("message", "Invalid signature");

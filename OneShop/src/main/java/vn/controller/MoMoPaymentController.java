@@ -14,7 +14,7 @@ import vn.repository.OneXuTransactionRepository;
 import vn.service.CartService;
 import vn.service.MoMoPaymentService;
 import vn.service.OrderService;
-import vn.payment.gateway.MoMoGatewayAdapter;
+import vn.payment.gateway.PaymentGatewayAdapter;
 import vn.payment.gateway.PaymentCallbackResult;
 
 @Controller
@@ -22,7 +22,8 @@ import vn.payment.gateway.PaymentCallbackResult;
 public class MoMoPaymentController {
 
     @Autowired
-    private MoMoGatewayAdapter moMoGatewayAdapter;
+    @org.springframework.beans.factory.annotation.Qualifier("moMoGatewayAdapter")
+    private PaymentGatewayAdapter paymentGateway;
     
     @Autowired
     private MoMoPaymentService moMoPaymentService;
@@ -61,7 +62,7 @@ public class MoMoPaymentController {
                 return "web/checkout-error";
             }
 
-            String paymentUrl = moMoGatewayAdapter.createPaymentUrl(order, returnUrl, notifyUrl);
+            String paymentUrl = paymentGateway.createPaymentUrl(order, returnUrl, notifyUrl);
             return "redirect:" + paymentUrl;
         } catch (Exception e) {
             model.addAttribute("error", "Lỗi: " + e.getMessage());
@@ -72,7 +73,7 @@ public class MoMoPaymentController {
     @GetMapping("/return")
     public String paymentReturn(HttpServletRequest request, Model model) {
         try {
-             PaymentCallbackResult result = moMoGatewayAdapter.processCallback(request);
+             PaymentCallbackResult result = paymentGateway.processCallback(request);
              User user = (User) request.getSession().getAttribute("user");
              if (user == null) return "redirect:/login";
 
@@ -137,7 +138,7 @@ public class MoMoPaymentController {
     @ResponseBody
     public String paymentNotify(HttpServletRequest request) {
          try {
-             vn.payment.gateway.PaymentWebhookResult result = moMoGatewayAdapter.processWebhook(request, null);
+             vn.payment.gateway.PaymentWebhookResult result = paymentGateway.processWebhook(request, null);
              
              // Update cart clear after success webhook if not already cleared
              if (result.isSuccess() && result.getOrderId() != null) {

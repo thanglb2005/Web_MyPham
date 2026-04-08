@@ -1,69 +1,79 @@
 package vn.payment.gateway;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import vn.entity.Order;
+import vn.service.PayOSPaymentService;
 
-import javax.crypto.Mac;
-import javax.crypto.spec.SecretKeySpec;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Adapter cho PayOS Payment Gateway (Adapter Pattern).
+ * 
+ * Cấu trúc theo Adapter Pattern:
+ * - Client Interface: PaymentGatewayAdapter
+ * - Adapter: PayOSGatewayAdapter (class này)
+ * - Adaptee/Service: PayOSPaymentService
+ * 
+ * Adapter chuyển đổi interface PaymentGatewayAdapter sang các method của PayOSPaymentService.
+ */
 @Component
 public class PayOSGatewayAdapter implements PaymentGatewayAdapter {
 
-    @Value("${payos.client-id:}")
-    private String payosClientId;
-
-    @Value("${payos.api-key:}")
-    private String payosApiKey;
-
-    @Value("${payos.checksum-key:}")
-    private String payosChecksumKey;
+    // Adaptee - Service được wrap bởi Adapter
+    private final PayOSPaymentService payOSPaymentService;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
+
+    public PayOSGatewayAdapter(PayOSPaymentService payOSPaymentService) {
+        this.payOSPaymentService = payOSPaymentService;
+    }
 
     @Override
     public String createPaymentUrl(Order order, String returnUrl, String notifyUrl) {
         try {
-            Map<String, Object> paymentData = new HashMap<>();
+            // Chuyển đổi dữ liệu từ Order sang format PayOS (convertToServiceFormat)
+            Map<String, Object> paymentData = convertOrderToPayOSFormat(order, returnUrl, notifyUrl);
             
-            // Xử lý tạo orderCode là duy nhất: orderId * 10000 + random(0-9999). 
-            // Điều này vì PayOS bắt buộc mỗi lần tạo link là 1 orderCode khác nhau (cho dù user retry thanh toán order cũ)
-            long randomPart = (long) (Math.random() * 10000L); 
-            long uniqueOrderCode = order.getOrderId() * 10000L + randomPart;
-            paymentData.put("orderCode", uniqueOrderCode);
-            
-            Double paymentAmount = (order.getFinalAmount() != null && order.getFinalAmount() > 0) 
-                    ? order.getFinalAmount() 
-                    : order.getTotalAmount();
-            paymentData.put("amount", (int) Math.round(paymentAmount));
-
-            String description = "Đơn hàng #" + order.getOrderId();
-            if (description.length() > 25) {
-                description = description.substring(0, 25);
-            }
-            paymentData.put("description", description);
-            
-            // Cố định Order ID thực trên Return URL để dễ dàng lấy lại bên callback
-            String finalReturnUrl = returnUrl + (returnUrl.contains("?") ? "&" : "?") + "orderId=" + order.getOrderId();
-            paymentData.put("returnUrl", finalReturnUrl);
-            
-            String cancelUrl = notifyUrl != null && !notifyUrl.isEmpty() ? notifyUrl : returnUrl.replace("/return", "/cancel");
-            cancelUrl = cancelUrl + (cancelUrl.contains("?") ? "&" : "?") + "orderId=" + order.getOrderId();
-            paymentData.put("cancelUrl", cancelUrl);
-
-            return callPayOSAPI(paymentData);
+            // Gọi method của Adaptee (PayOSPaymentService)
+            return payOSPaymentService.callPayOSAPI(paymentData);
         } catch (Exception e) {
             throw new RuntimeException("Lỗi tạo thanh toán PayOS: " + e.getMessage(), e);
         }
+    }
+
+    /**
+     * Chuyển đổi Order sang format dữ liệu của PayOS (convertToServiceFormat trong Adapter Pattern)
+     */
+    private Map<String, Object> convertOrderToPayOSFormat(Order order, String returnUrl, String notifyUrl) {
+        Map<String, Object> paymentData = new HashMap<>();
+        
+        // Xử lý tạo orderCode là duy nhất: orderId * 10000 + random(0-9999)
+        long randomPart = (long) (Math.random() * 10000L);
+        long uniqueOrderCode = order.getOrderId() * 10000L + randomPart;
+        paymentData.put("orderCode", uniqueOrderCode);
+        
+        Double paymentAmount = (order.getFinalAmount() != null && order.getFinalAmount() > 0) 
+                ? order.getFinalAmount() 
+                : order.getTotalAmount();
+        paymentData.put("amount", (int) Math.round(paymentAmount));
+
+        String description = "Đơn hàng #" + order.getOrderId();
+        if (description.length() > 25) {
+            description = description.substring(0, 25);
+        }
+        paymentData.put("description", description);
+        
+        String finalReturnUrl = returnUrl + (returnUrl.contains("?") ? "&" : "?") + "orderId=" + order.getOrderId();
+        paymentData.put("returnUrl", finalReturnUrl);
+        
+        String cancelUrl = notifyUrl != null && !notifyUrl.isEmpty() ? notifyUrl : returnUrl.replace("/return", "/cancel");
+        cancelUrl = cancelUrl + (cancelUrl.contains("?") ? "&" : "?") + "orderId=" + order.getOrderId();
+        paymentData.put("cancelUrl", cancelUrl);
+
+        return paymentData;
     }
 
     @Override
@@ -101,7 +111,9 @@ public class PayOSGatewayAdapter implements PaymentGatewayAdapter {
         String signature = request.getHeader("x-payos-signature");
         try {
             Map<String, Object> payloadMap = objectMapper.readValue(payload, Map.class);
-            if (!verifyWebhookSignature(payloadMap, signature)) {
+            
+            // Gọi method verifyWebhookSignature của Adaptee
+            if (!payOSPaymentService.verifyWebhookSignature(payloadMap, signature)) {
                 return new PaymentWebhookResult(false, false, "ERROR", null, "Invalid webhook signature");
             }
 
@@ -121,77 +133,5 @@ public class PayOSGatewayAdapter implements PaymentGatewayAdapter {
         } catch (Exception e) {
             return new PaymentWebhookResult(false, false, "ERROR", null, e.getMessage());
         }
-    }
-
-    private String callPayOSAPI(Map<String, Object> paymentData) throws Exception {
-        String apiUrl = "https://api-merchant.payos.vn/v2/payment-requests";
-        String signature = createPayOSSignature(paymentData);
-        paymentData.put("signature", signature);
-
-        HttpClient client = HttpClient.newHttpClient();
-        String jsonPayload = objectMapper.writeValueAsString(paymentData);
-
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(apiUrl))
-                .header("Content-Type", "application/json")
-                .header("x-client-id", payosClientId)
-                .header("x-api-key", payosApiKey)
-                .POST(HttpRequest.BodyPublishers.ofString(jsonPayload))
-                .build();
-
-        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-
-        if (response.statusCode() == 200) {
-            @SuppressWarnings("unchecked")
-            Map<String, Object> responseData = objectMapper.readValue(response.body(), Map.class);
-            if ("00".equals(responseData.get("code"))) {
-                @SuppressWarnings("unchecked")
-                Map<String, Object> data = (Map<String, Object>) responseData.get("data");
-                if (data != null && data.containsKey("checkoutUrl")) {
-                    return (String) data.get("checkoutUrl");
-                }
-            } else {
-                 throw new RuntimeException("PayOS code not 00: " + responseData.get("desc"));
-            }
-        }
-        throw new RuntimeException("Server error contacting PayOS. HTTP " + response.statusCode());
-    }
-
-    private String createPayOSSignature(Map<String, Object> paymentData) throws Exception {
-        StringBuilder dataString = new StringBuilder();
-        dataString.append("amount=").append(paymentData.get("amount"));
-        dataString.append("&cancelUrl=").append(paymentData.get("cancelUrl"));
-        dataString.append("&description=").append(paymentData.get("description"));
-        dataString.append("&orderCode=").append(paymentData.get("orderCode"));
-        dataString.append("&returnUrl=").append(paymentData.get("returnUrl"));
-
-        return signWithHmacSHA256(dataString.toString(), payosChecksumKey);
-    }
-
-    private boolean verifyWebhookSignature(Map<String, Object> payload, String signature) {
-        try {
-            if (signature == null || signature.isEmpty()) return false;
-            String dataString = objectMapper.writeValueAsString(payload);
-            String expectedSignature = signWithHmacSHA256(dataString, payosChecksumKey);
-            return expectedSignature.equals(signature);
-        } catch (Exception e) {
-            return false;
-        }
-    }
-
-    private String signWithHmacSHA256(String data, String key) throws Exception {
-        Mac mac = Mac.getInstance("HmacSHA256");
-        SecretKeySpec secretKeySpec = new SecretKeySpec(key.getBytes("UTF-8"), "HmacSHA256");
-        mac.init(secretKeySpec);
-        byte[] signatureBytes = mac.doFinal(data.getBytes("UTF-8"));
-        return bytesToHex(signatureBytes);
-    }
-
-    private String bytesToHex(byte[] bytes) {
-        StringBuilder result = new StringBuilder();
-        for (byte b : bytes) {
-            result.append(String.format("%02x", b));
-        }
-        return result.toString();
     }
 }
