@@ -34,3 +34,6 @@ build/
 
 # Local Spring config (do not commit from this machine)
 src/main/resources/application.properties
+
+# Docker secrets
+.env

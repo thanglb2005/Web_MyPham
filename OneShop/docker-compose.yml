@@ -1,0 +1,92 @@
+# OneShop: Spring Boot + SQL Server — chạy: copy .env.example -> .env rồi: docker compose up -d --build
+#
+# Hostname "sqlserver" là tên service trong file này; Docker DNS nội bộ resolve tên đó
+# thành IP container DB. Từ máy host bạn vẫn dùng localhost:1433 nếu đã map port.
+
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: oneshop-sqlserver
+    # Bắt buộc trên Apple Silicon / ARM nếu image chỉ có amd64
+    platform: linux/amd64
+    environment:
+      ACCEPT_EULA: "Y"
+      # Mặc định dev (đổi trong file .env cho môi trường thật)
+      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD:-YourStrong!Passw0rd}
+      MSSQL_PID: Developer
+    ports:
+      - "1433:1433"
+    volumes:
+      - mssql_data:/var/opt/mssql
+    networks:
+      - oneshop-net
+    healthcheck:
+      # Dùng SQLCMDPASSWORD để tránh -P và ký tự đặc biệt trong mật khẩu
+      test:
+        [
+          "CMD-SHELL",
+          'export SQLCMDPASSWORD="$$MSSQL_SA_PASSWORD" && /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -C -Q "SELECT 1" || exit 1',
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 40s
+
+  # Tạo database WebMyPham một lần (Hibernate ddl-auto=update chỉ tạo bảng, không tạo DB)
+  db-init:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: oneshop-db-init
+    platform: linux/amd64
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+    environment:
+      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD:-YourStrong!Passw0rd}
+    networks:
+      - oneshop-net
+    entrypoint: ["/bin/bash", "-c"]
+    command:
+      - |
+        set -e
+        echo "Creating database WebMyPham if not exists..."
+        export SQLCMDPASSWORD="$$MSSQL_SA_PASSWORD"
+        /opt/mssql-tools18/bin/sqlcmd -S sqlserver -U sa -C -Q "IF DB_ID('WebMyPham') IS NULL CREATE DATABASE WebMyPham;"
+        echo "db-init done."
+    restart: "no"
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: oneshop-app
+    depends_on:
+      db-init:
+        condition: service_completed_successfully
+      sqlserver:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: "jdbc:sqlserver://sqlserver:1433;databaseName=WebMyPham;encrypt=true;trustServerCertificate=true;sendStringParametersAsUnicode=true"
+      SPRING_DATASOURCE_USERNAME: sa
+      SPRING_DATASOURCE_PASSWORD: ${MSSQL_SA_PASSWORD:-YourStrong!Passw0rd}
+      # Liên kết trong email / OAuth redirect: truy cập từ trình duyệt trên máy host
+      APP_BASE_URL: ${APP_BASE_URL:-http://localhost:8080}
+      LANG: C.UTF-8
+      LC_ALL: C.UTF-8
+      JAVA_TOOL_OPTIONS: "-Dfile.encoding=UTF-8 -Dsun.jnu.encoding=UTF-8"
+    ports:
+      - "8080:8080"
+    networks:
+      - oneshop-net
+    # Ảnh sản phẩm / thương hiệu / nhà cung cấp đọc từ đĩa (LoadImageController).
+    # Map thư mục upload trên máy Windows vào container — copy dữ liệu từ project local vào ./upload/... trước khi chạy.
+    volumes:
+      - ./upload/images:/app/upload/images
+      - ./upload/brands:/app/upload/brands
+      - ./upload/providers:/app/upload/providers
+
+volumes:
+  mssql_data:
+
+networks:
+  oneshop-net:
+    driver: bridge

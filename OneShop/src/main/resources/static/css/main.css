@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Lora:wght@300;400;500;600;700;800;900&amp;display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Lora:wght@300;400;500;600;700;800;900&display=swap");
 /* @import url("https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800;900&amp;display=swap"); */
 /* @import url("https://fonts.googleapis.com/css2?family=Playfair:wght@400;500;600;700;800;900&amp;display=swap"); */
 :root {
@@ -16,7 +16,8 @@
   --h5height: 26px;
   --h6height: 26px;
   --bodyheight: 26px;
-  --pfamily: "Lora", sans-serif;
+  /* Lora + he thong font ho tro tieng Viet (fallback khi Google Fonts loi) */
+  --pfamily: "Lora", "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
   --red: #ff3838;
   --gray: #777777;
   --text: #555555;

@@ -43,11 +43,10 @@
 			<optional>true</optional>
 		</dependency>
 
-		<!-- SQL Server JDBC -->
+		<!-- SQL Server JDBC (phiên bản do Spring Boot BOM quản lý — tương thích Java 21) -->
 		<dependency>
 			<groupId>com.microsoft.sqlserver</groupId>
 			<artifactId>mssql-jdbc</artifactId>
-			<version>10.2.3.jre17</version>
 			<scope>runtime</scope>
 		</dependency>
 		
