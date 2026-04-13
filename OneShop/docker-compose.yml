@@ -65,6 +65,8 @@ services:
       sqlserver:
         condition: service_healthy
     environment:
+      # Dùng application-prod.properties (MoMo/PayOS/OAuth theo APP_BASE_URL, tắt show-sql, Hibernate prod)
+      SPRING_PROFILES_ACTIVE: prod
       SPRING_DATASOURCE_URL: "jdbc:sqlserver://sqlserver:1433;databaseName=WebMyPham;encrypt=true;trustServerCertificate=true;sendStringParametersAsUnicode=true"
       SPRING_DATASOURCE_USERNAME: sa
       SPRING_DATASOURCE_PASSWORD: ${MSSQL_SA_PASSWORD:-YourStrong!Passw0rd}

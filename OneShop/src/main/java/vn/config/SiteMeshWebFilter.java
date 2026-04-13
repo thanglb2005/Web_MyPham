@@ -17,6 +17,7 @@ public class SiteMeshWebFilter extends ConfigurableSiteMeshFilter {
         builder.addDecoratorPath("/admin/providers", "admin.jsp");
         builder.addDecoratorPath("/admin/users", "admin.jsp");
         builder.addDecoratorPath("/admin/shops", "admin.jsp");
+        builder.addDecoratorPath("/admin/shops/", "admin.jsp");
         builder.addDecoratorPath("/admin/products", "admin.jsp");
         builder.addDecoratorPath("/admin/orders", "admin.jsp");
         builder.addDecoratorPath("/admin/shippers-list", "admin.jsp");

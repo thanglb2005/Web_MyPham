@@ -21,7 +21,7 @@ public class SiteMeshConfig {
                 filter.addUrlPatterns("/admin/brands");
                 filter.addUrlPatterns("/admin/providers");
                 filter.addUrlPatterns("/admin/users");
-                filter.addUrlPatterns("/admin/shops");
+                filter.addUrlPatterns("/admin/shops", "/admin/shops/");
                 filter.addUrlPatterns("/admin/products");
                 filter.addUrlPatterns("/admin/orders");
         filter.addUrlPatterns("/admin/shippers-list");

@@ -24,7 +24,7 @@ import java.util.Map;
 import java.util.Optional;
 
 @Controller
-@RequestMapping("/admin/shops")
+@RequestMapping("/admin")
 public class AdminShopController {
 
     @Autowired
@@ -33,7 +33,13 @@ public class AdminShopController {
     @Autowired
     private OrderRepository orderRepository;
 
-    @GetMapping
+    /** Dễ gõ nhầm /admin/shop — chuyển hướng rõ ràng (tránh 404). */
+    @GetMapping("/shop")
+    public String redirectShopTypo() {
+        return "redirect:/admin/shops";
+    }
+
+    @GetMapping({"/shops", "/shops/"})
     public String listShops(@RequestParam(value = "status", required = false) Shop.ShopStatus status,
                             @RequestParam(value = "q", required = false) String query,
                             @RequestParam(value = "page", defaultValue = "0") int page,
@@ -111,7 +117,7 @@ public class AdminShopController {
         return "admin/shops";
     }
 
-    @PostMapping("/{shopId}/status")
+    @PostMapping("/shops/{shopId}/status")
     public String updateShopStatus(@PathVariable Long shopId,
                                    @RequestParam("status") Shop.ShopStatus status,
                                    @RequestParam(value = "reason", required = false) String reason,
@@ -134,7 +140,7 @@ public class AdminShopController {
         return "redirect:/admin/shops";
     }
 
-    @GetMapping("/pending-count")
+    @GetMapping("/shops/pending-count")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> getPendingCount() {
         long pendingCount = shopService.findByStatus(Shop.ShopStatus.PENDING).size();
@@ -143,7 +149,7 @@ public class AdminShopController {
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/{shopId}/quick-approve")
+    @PostMapping("/shops/{shopId}/quick-approve")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> quickApprove(@PathVariable Long shopId) {
         Map<String, Object> response = new HashMap<>();
