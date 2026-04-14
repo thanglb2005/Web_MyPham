@@ -7,7 +7,7 @@ import vn.entity.Order;
 import vn.entity.User;
 import vn.service.OrderService;
 import vn.service.CartService;
-import vn.payment.gateway.PaymentGatewayAdapter;
+import vn.payment.gateway.PaymentGatewayPort;
 import vn.payment.gateway.PaymentCallbackResult;
 import vn.payment.gateway.PaymentWebhookResult;
 import jakarta.servlet.http.HttpServletRequest;
@@ -22,10 +22,10 @@ public class PayOSController {
 
     private final OrderService orderService;
     private final CartService cartService;
-    private final PaymentGatewayAdapter paymentGateway;
+    private final PaymentGatewayPort paymentGateway;
 
     public PayOSController(OrderService orderService, CartService cartService,
-                           @org.springframework.beans.factory.annotation.Qualifier("payOSGatewayAdapter") PaymentGatewayAdapter paymentGateway) {
+                           @org.springframework.beans.factory.annotation.Qualifier("payOSGatewayAdapter") PaymentGatewayPort paymentGateway) {
         this.orderService = orderService;
         this.cartService = cartService;
         this.paymentGateway = paymentGateway;

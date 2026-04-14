@@ -1,5 +1,7 @@
 package vn.service;
 
+import vn.dto.PayOSPaymentRequestDTO;
+
 import java.util.Map;
 
 /**
@@ -10,17 +12,27 @@ public interface PayOSPaymentService {
 
     /**
      * Gọi PayOS API để tạo link thanh toán
-     * @param paymentData Dữ liệu thanh toán theo format PayOS
+     * @param requestDto Dữ liệu thanh toán theo format PayOS
      * @return URL checkout từ PayOS
      */
-    String callPayOSAPI(Map<String, Object> paymentData);
+    String createPaymentRequest(PayOSPaymentRequestDTO requestDto);
+
+    /**
+     * Xử lý callback/webhook từ PayOS
+     * @param orderId ID đơn hàng
+     * @param resultCode Mã kết quả callback
+     * @param transId Transaction ID (nếu có)
+     * @param amount Số tiền (nếu có)
+     * @return true nếu thanh toán thành công
+     */
+    boolean processPaymentCallback(Long orderId, String resultCode, String transId, Double amount);
 
     /**
      * Tạo chữ ký cho request PayOS
-     * @param paymentData Dữ liệu thanh toán
+     * @param requestDto Dữ liệu thanh toán
      * @return Chữ ký HMAC-SHA256
      */
-    String createSignature(Map<String, Object> paymentData);
+    String createSignature(PayOSPaymentRequestDTO requestDto);
 
     /**
      * Xác thực chữ ký webhook từ PayOS

@@ -1,17 +1,15 @@
 package vn.service;
 
-import vn.entity.Order;
+import vn.dto.MomoPaymentRequestDTO;
 
 public interface MoMoPaymentService {
     
     /**
      * Tạo payment request với MoMo
-     * @param order Đơn hàng cần thanh toán
-     * @param returnUrl URL trả về sau khi thanh toán thành công
-     * @param notifyUrl URL callback từ MoMo
+     * @param requestDto Dữ liệu thanh toán đã được adapter chuyển đổi
      * @return Payment URL từ MoMo
      */
-    String createPaymentRequest(Order order, String returnUrl, String notifyUrl);
+    String createPaymentRequest(MomoPaymentRequestDTO requestDto);
     
     /**
      * Xử lý callback từ MoMo
@@ -23,10 +21,4 @@ public interface MoMoPaymentService {
      */
     boolean processPaymentCallback(Long orderId, String resultCode, String transId, Double amount);
     
-    /**
-     * Kiểm tra trạng thái thanh toán
-     * @param orderId ID đơn hàng
-     * @return true nếu thanh toán thành công
-     */
-    boolean checkPaymentStatus(Long orderId);
 }

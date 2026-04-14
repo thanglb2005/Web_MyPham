@@ -3,7 +3,7 @@ package vn.payment.gateway;
 import jakarta.servlet.http.HttpServletRequest;
 import vn.entity.Order;
 
-public interface PaymentGatewayAdapter {
+public interface PaymentGatewayPort {
     /**
      * Tạo URL thanh toán chuyển hướng người dùng
      */

@@ -12,9 +12,8 @@ import vn.entity.OneXuTransaction;
 import vn.repository.UserRepository;
 import vn.repository.OneXuTransactionRepository;
 import vn.service.CartService;
-import vn.service.MoMoPaymentService;
 import vn.service.OrderService;
-import vn.payment.gateway.PaymentGatewayAdapter;
+import vn.payment.gateway.PaymentGatewayPort;
 import vn.payment.gateway.PaymentCallbackResult;
 
 @Controller
@@ -23,10 +22,7 @@ public class MoMoPaymentController {
 
     @Autowired
     @org.springframework.beans.factory.annotation.Qualifier("moMoGatewayAdapter")
-    private PaymentGatewayAdapter paymentGateway;
-    
-    @Autowired
-    private MoMoPaymentService moMoPaymentService;
+    private PaymentGatewayPort paymentGateway;
 
     @Autowired
     private OrderService orderService;
@@ -161,6 +157,7 @@ public class MoMoPaymentController {
     @GetMapping("/status/{orderId}")
     @ResponseBody
     public String checkPaymentStatus(@PathVariable("orderId") Long orderId) {
-        return moMoPaymentService.checkPaymentStatus(orderId) ? "PAID" : "UNPAID";
+        Order order = orderService.getOrderById(orderId);
+        return (order != null && order.getPaymentPaid()) ? "PAID" : "UNPAID";
     }
 }

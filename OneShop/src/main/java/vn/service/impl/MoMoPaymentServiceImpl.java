@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import vn.dto.MomoPaymentRequestDTO;
 import vn.entity.Order;
 import vn.service.MoMoPaymentService;
 import vn.service.OrderService;
@@ -45,8 +46,12 @@ public class MoMoPaymentServiceImpl implements MoMoPaymentService {
     private final RestTemplate restTemplate = new RestTemplate();
 
     @Override
-    public String createPaymentRequest(Order order, String returnUrl, String notifyUrl) {
+    public String createPaymentRequest(MomoPaymentRequestDTO requestDto) {
         try {
+            Order order = requestDto.getOrder();
+            String returnUrl = requestDto.getReturnUrl();
+            String notifyUrl = requestDto.getNotifyUrl();
+
             // Tạo requestId và orderId unique để tránh trùng lặp
             String timestamp = String.valueOf(System.currentTimeMillis());
             String requestId = "REQ_" + order.getOrderId() + "_" + timestamp;
@@ -165,16 +170,6 @@ public class MoMoPaymentServiceImpl implements MoMoPaymentService {
 
         } catch (Exception e) {
             throw new RuntimeException("Lỗi khi xử lý payment callback: " + e.getMessage(), e);
-        }
-    }
-
-    @Override
-    public boolean checkPaymentStatus(Long orderId) {
-        try {
-            Order order = orderService.getOrderById(orderId);
-            return order != null && order.getPaymentPaid();
-        } catch (Exception e) {
-            return false;
         }
     }
 

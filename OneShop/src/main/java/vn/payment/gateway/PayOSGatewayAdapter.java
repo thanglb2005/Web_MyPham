@@ -3,42 +3,42 @@ package vn.payment.gateway;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Component;
+import vn.dto.PayOSPaymentRequestDTO;
 import vn.entity.Order;
 import vn.service.PayOSPaymentService;
 
-import java.util.HashMap;
 import java.util.Map;
 
 /**
  * Adapter cho PayOS Payment Gateway (Adapter Pattern).
  * 
  * Cấu trúc theo Adapter Pattern:
- * - Client Interface: PaymentGatewayAdapter
+ * - Client Interface: PaymentGatewayPort
  * - Adapter: PayOSGatewayAdapter (class này)
  * - Adaptee/Service: PayOSPaymentService
  * 
- * Adapter chuyển đổi interface PaymentGatewayAdapter sang các method của PayOSPaymentService.
+ * Adapter chuyển đổi interface PaymentGatewayPort sang các method của PayOSPaymentService.
  */
 @Component
-public class PayOSGatewayAdapter implements PaymentGatewayAdapter {
+public class PayOSGatewayAdapter implements PaymentGatewayPort {
 
     // Adaptee - Service được wrap bởi Adapter
-    private final PayOSPaymentService payOSPaymentService;
+    private final PayOSPaymentService adaptee;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     public PayOSGatewayAdapter(PayOSPaymentService payOSPaymentService) {
-        this.payOSPaymentService = payOSPaymentService;
+        this.adaptee = payOSPaymentService;
     }
 
     @Override
     public String createPaymentUrl(Order order, String returnUrl, String notifyUrl) {
         try {
             // Chuyển đổi dữ liệu từ Order sang format PayOS (convertToServiceFormat)
-            Map<String, Object> paymentData = convertOrderToPayOSFormat(order, returnUrl, notifyUrl);
+            PayOSPaymentRequestDTO requestDto = convertToServiceFormat(order, returnUrl, notifyUrl);
             
             // Gọi method của Adaptee (PayOSPaymentService)
-            return payOSPaymentService.callPayOSAPI(paymentData);
+            return adaptee.createPaymentRequest(requestDto);
         } catch (Exception e) {
             throw new RuntimeException("Lỗi tạo thanh toán PayOS: " + e.getMessage(), e);
         }
@@ -47,62 +47,42 @@ public class PayOSGatewayAdapter implements PaymentGatewayAdapter {
     /**
      * Chuyển đổi Order sang format dữ liệu của PayOS (convertToServiceFormat trong Adapter Pattern)
      */
-    private Map<String, Object> convertOrderToPayOSFormat(Order order, String returnUrl, String notifyUrl) {
-        Map<String, Object> paymentData = new HashMap<>();
-        
+    private PayOSPaymentRequestDTO convertToServiceFormat(Order order, String returnUrl, String notifyUrl) {
         // Xử lý tạo orderCode là duy nhất: orderId * 10000 + random(0-9999)
         long randomPart = (long) (Math.random() * 10000L);
         long uniqueOrderCode = order.getOrderId() * 10000L + randomPart;
-        paymentData.put("orderCode", uniqueOrderCode);
         
         Double paymentAmount = (order.getFinalAmount() != null && order.getFinalAmount() > 0) 
                 ? order.getFinalAmount() 
                 : order.getTotalAmount();
-        paymentData.put("amount", (int) Math.round(paymentAmount));
+        int amount = (int) Math.round(paymentAmount);
 
         String description = "Đơn hàng #" + order.getOrderId();
         if (description.length() > 25) {
             description = description.substring(0, 25);
         }
-        paymentData.put("description", description);
         
         String finalReturnUrl = returnUrl + (returnUrl.contains("?") ? "&" : "?") + "orderId=" + order.getOrderId();
-        paymentData.put("returnUrl", finalReturnUrl);
         
         String cancelUrl = notifyUrl != null && !notifyUrl.isEmpty() ? notifyUrl : returnUrl.replace("/return", "/cancel");
         cancelUrl = cancelUrl + (cancelUrl.contains("?") ? "&" : "?") + "orderId=" + order.getOrderId();
-        paymentData.put("cancelUrl", cancelUrl);
 
-        return paymentData;
+        return new PayOSPaymentRequestDTO(uniqueOrderCode, amount, description, finalReturnUrl, cancelUrl);
     }
 
     @Override
     public PaymentCallbackResult processCallback(HttpServletRequest request) {
-        String status = request.getParameter("status");
-        String orderIdStr = request.getParameter("orderId");
-        String orderCodeStr = request.getParameter("orderCode");
-        String code = request.getParameter("code");
-        String cancel = request.getParameter("cancel");
+        CallbackData callbackData = convertCallbackToServiceFormat(request);
 
-        Long originalOrderId = null;
-        try {
-            if (orderIdStr != null && !orderIdStr.isEmpty()) {
-                originalOrderId = Long.parseLong(orderIdStr);
-            } else if (orderCodeStr != null && !orderCodeStr.isEmpty()) {
-                originalOrderId = Long.parseLong(orderCodeStr) / 10000L;
-            }
-        } catch (NumberFormatException e) {
+        Long originalOrderId = parseOrderId(callbackData.orderId(), callbackData.orderCode());
+        if (originalOrderId == null) {
             return new PaymentCallbackResult(false, false, null, null, 0D, "Order ID format invalid");
         }
 
-        if (originalOrderId == null) {
-            return new PaymentCallbackResult(false, false, null, null, 0D, "Thiếu Order ID trong callback");
-        }
+        boolean isCancel = "true".equals(callbackData.cancel()) || "CANCELLED".equals(callbackData.status());
+        boolean isSuccess = adaptee.processPaymentCallback(originalOrderId, normalizeResultCode(callbackData), null, 0D);
 
-        boolean isCancel = "true".equals(cancel) || "CANCELLED".equals(status);
-        boolean isSuccess = "success".equals(status) || "00".equals(code);
-
-        return new PaymentCallbackResult(isSuccess, isCancel, originalOrderId, null, 0D, "PayOS return " + status);
+        return new PaymentCallbackResult(isSuccess, isCancel, originalOrderId, null, 0D, "PayOS return " + callbackData.status());
     }
 
     @Override
@@ -110,10 +90,10 @@ public class PayOSGatewayAdapter implements PaymentGatewayAdapter {
     public PaymentWebhookResult processWebhook(HttpServletRequest request, String payload) {
         String signature = request.getHeader("x-payos-signature");
         try {
-            Map<String, Object> payloadMap = objectMapper.readValue(payload, Map.class);
+            Map<String, Object> payloadMap = convertWebhookToServiceFormat(payload);
             
             // Gọi method verifyWebhookSignature của Adaptee
-            if (!payOSPaymentService.verifyWebhookSignature(payloadMap, signature)) {
+            if (!adaptee.verifyWebhookSignature(payloadMap, signature)) {
                 return new PaymentWebhookResult(false, false, "ERROR", null, "Invalid webhook signature");
             }
 
@@ -124,7 +104,7 @@ public class PayOSGatewayAdapter implements PaymentGatewayAdapter {
                 
                 if (orderCode != null) {
                     long originalOrderId = orderCode.longValue() / 10000L;
-                    boolean isSuccess = "PAID".equals(status);
+                    boolean isSuccess = adaptee.processPaymentCallback(originalOrderId, status, null, 0D);
                     return new PaymentWebhookResult(isSuccess, true, status, originalOrderId, "Webhook from PayOS");
                 }
             }
@@ -133,5 +113,44 @@ public class PayOSGatewayAdapter implements PaymentGatewayAdapter {
         } catch (Exception e) {
             return new PaymentWebhookResult(false, false, "ERROR", null, e.getMessage());
         }
+    }
+
+    @SuppressWarnings("unchecked")
+    private Map<String, Object> convertWebhookToServiceFormat(String payload) throws Exception {
+        return objectMapper.readValue(payload, Map.class);
+    }
+
+    private CallbackData convertCallbackToServiceFormat(HttpServletRequest request) {
+        return new CallbackData(
+                request.getParameter("status"),
+                request.getParameter("orderId"),
+                request.getParameter("orderCode"),
+                request.getParameter("code"),
+                request.getParameter("cancel")
+        );
+    }
+
+    private Long parseOrderId(String orderId, String orderCode) {
+        try {
+            if (orderId != null && !orderId.isEmpty()) {
+                return Long.parseLong(orderId);
+            }
+            if (orderCode != null && !orderCode.isEmpty()) {
+                return Long.parseLong(orderCode) / 10000L;
+            }
+            return null;
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    private String normalizeResultCode(CallbackData callbackData) {
+        if (callbackData.code() != null && !callbackData.code().isEmpty()) {
+            return callbackData.code();
+        }
+        return callbackData.status();
+    }
+
+    private record CallbackData(String status, String orderId, String orderCode, String code, String cancel) {
     }
 }

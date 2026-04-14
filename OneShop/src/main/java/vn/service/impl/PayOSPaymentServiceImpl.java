@@ -3,6 +3,7 @@ package vn.service.impl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import vn.dto.PayOSPaymentRequestDTO;
 import vn.service.PayOSPaymentService;
 
 import javax.crypto.Mac;
@@ -11,6 +12,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -34,9 +36,10 @@ public class PayOSPaymentServiceImpl implements PayOSPaymentService {
     private static final String PAYOS_API_URL = "https://api-merchant.payos.vn/v2/payment-requests";
 
     @Override
-    public String callPayOSAPI(Map<String, Object> paymentData) {
+    public String createPaymentRequest(PayOSPaymentRequestDTO requestDto) {
         try {
-            String signature = createSignature(paymentData);
+            Map<String, Object> paymentData = convertToPayOSPayload(requestDto);
+            String signature = createSignature(requestDto);
             paymentData.put("signature", signature);
 
             HttpClient client = HttpClient.newHttpClient();
@@ -72,14 +75,22 @@ public class PayOSPaymentServiceImpl implements PayOSPaymentService {
     }
 
     @Override
-    public String createSignature(Map<String, Object> paymentData) {
+    public boolean processPaymentCallback(Long orderId, String resultCode, String transId, Double amount) {
+        if (orderId == null || resultCode == null) {
+            return false;
+        }
+        return "00".equals(resultCode) || "PAID".equalsIgnoreCase(resultCode) || "success".equalsIgnoreCase(resultCode);
+    }
+
+    @Override
+    public String createSignature(PayOSPaymentRequestDTO requestDto) {
         try {
             StringBuilder dataString = new StringBuilder();
-            dataString.append("amount=").append(paymentData.get("amount"));
-            dataString.append("&cancelUrl=").append(paymentData.get("cancelUrl"));
-            dataString.append("&description=").append(paymentData.get("description"));
-            dataString.append("&orderCode=").append(paymentData.get("orderCode"));
-            dataString.append("&returnUrl=").append(paymentData.get("returnUrl"));
+            dataString.append("amount=").append(requestDto.getAmount());
+            dataString.append("&cancelUrl=").append(requestDto.getCancelUrl());
+            dataString.append("&description=").append(requestDto.getDescription());
+            dataString.append("&orderCode=").append(requestDto.getOrderCode());
+            dataString.append("&returnUrl=").append(requestDto.getReturnUrl());
 
             return signWithHmacSHA256(dataString.toString(), payosChecksumKey);
         } catch (Exception e) {
@@ -97,6 +108,16 @@ public class PayOSPaymentServiceImpl implements PayOSPaymentService {
         } catch (Exception e) {
             return false;
         }
+    }
+
+    private Map<String, Object> convertToPayOSPayload(PayOSPaymentRequestDTO requestDto) {
+        Map<String, Object> paymentData = new HashMap<>();
+        paymentData.put("orderCode", requestDto.getOrderCode());
+        paymentData.put("amount", requestDto.getAmount());
+        paymentData.put("description", requestDto.getDescription());
+        paymentData.put("returnUrl", requestDto.getReturnUrl());
+        paymentData.put("cancelUrl", requestDto.getCancelUrl());
+        return paymentData;
     }
 
     private String signWithHmacSHA256(String data, String key) throws Exception {
