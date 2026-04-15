@@ -25,6 +25,7 @@ import vn.payment.PaymentProcessor;
 import vn.strategy.discount.FixedAmountShippingDiscountStrategy;
 import vn.strategy.discount.FreeShippingDiscountStrategy;
 import vn.strategy.discount.PercentageShippingDiscountStrategy;
+import vn.strategy.discount.ShippingDiscountContext;
 import vn.strategy.discount.ShippingDiscountStrategy;
 import vn.service.CartService;
 import vn.service.OrderService;
@@ -1351,9 +1352,11 @@ public class CartController {
             // discount = Math.max(0, Math.min(discount, shippingFee));
             // ===== HẾT CODE CŨ =====
 
-            // Code mới: Strategy pattern – chọn strategy theo loại khuyến mãi, gọi calculate()
+            // Code mới: Controller đóng vai trò client, chọn strategy rồi giao Context thực thi.
             ShippingDiscountStrategy strategy = getShippingDiscountStrategy(promotion.getPromotionType());
-            double discount = strategy.calculate(promotion, shippingFee != null ? shippingFee : 0.0);
+            ShippingDiscountContext discountContext = new ShippingDiscountContext();
+            discountContext.setStrategy(strategy);
+            double discount = discountContext.calculateDiscount(promotion, shippingFee != null ? shippingFee : 0.0);
             // Cap by shipping fee
             discount = Math.max(0, Math.min(discount, shippingFee != null ? shippingFee : 0.0));
             
